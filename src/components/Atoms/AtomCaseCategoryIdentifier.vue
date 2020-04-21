@@ -39,6 +39,6 @@ div.casecategoryidentifier
   position: relative
   border: black 1px solid
   margin: auto
-  width: 38px
-  height: 38px
+  width: 32px
+  height: 32px
 </style>

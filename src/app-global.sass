@@ -56,14 +56,19 @@ div.caseitem
 // 規定のボックスデザイン
 // ■　作業中　■
 //
-// EditItemfoo...の編集ビュー部分での共通スタイル
-// <div class="overlay">
-//   <div class="overlay-content">
+// EditItem... の編集ビュー部分での共通スタイル
+// <div class="edititem-overlay">
+//   <div class="edititem-overlay-content">
 //     モーダルダイアログの内容を記載
+//     <div class="content-title" />
+//     <div class="flex-content" />
+//             ...
+//     <div class="flex-content" />
+//     <div class="content-bottom" />
 //   </div>
 // </div>
-div.overlay
-  z-index: 999
+div.edititem-overlay
+  z-index: 99
   position: fixed !important
   top: 0
   left: 0
@@ -74,7 +79,8 @@ div.overlay
   justify-content: center
   padding-left: 40px
   overflow-y: auto
-div.overlay-content
+
+div.edititem-overlay-content
   position: relative
   display: block
   background: white
@@ -84,4 +90,47 @@ div.overlay-content
   margin: 16px
   padding: 16px
   line-height: 1.3em
-  
+  div.content-title
+    padding: 8px
+    font-size: 24px
+  div.flex-content
+    display: flex
+    padding-top: 0.2em
+    padding-bottom: 0.2em
+    select
+      font-size: 100%
+      margin-top: 0.5em
+      padding-left: 8px
+      padding-right: 8px
+      width: 100%
+      min-height: 1.5em
+      option
+        height: 1.3em
+        padding-top: 0.2em
+        padding-bottom: 0.2em
+    input
+      width: 95%
+      height: 1.5em
+      padding-top: 2px
+      padding-bottom: 2px
+      margin-left: 8px
+      margin-right: 8px
+    div.selectionbox
+      padding: 8px
+      margin: 8px 0.5em
+      min-height: 1.8em
+  div.content-bottom
+    padding-left: 8px
+    padding-right: 8px
+    div.controls
+      display: flex
+      height: 2.5em
+      div
+        input
+          width: 95%
+          height: 1.5em
+          padding-top: 2px
+          padding-bottom: 2px
+          margin-left: 8px
+          margin-right: 8px
+

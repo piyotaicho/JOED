@@ -23,6 +23,7 @@
 
 <script>
 import AtomCaseCategoryIdentifier from '@/components/Atoms/AtomCaseCategoryIdentifier'
+import SelectionTree from '@/views/ItemHandler'
 
 export default {
   name: 'Caseitem',
@@ -53,26 +54,18 @@ export default {
       }
     },
     CaseDiagnosis () {
-      return this.GetTextPropInHash(this.$ItemDocument.Diagnoses[0])
+      return SelectionTree.getPropertyValue(this.$ItemDocument.Diagnoses[0])
+      // return this.GetTextPropInHash(this.$ItemDocument.Diagnoses[0])
     },
     CaseProcedure () {
-      return this.GetTextPropInHash(this.$ItemDocument.Procedures[0])
+      return SelectionTree.getPropertyValue(this.$ItemDocument.Procedures[0])
+      // return this.GetTextPropInHash(this.$ItemDocument.Procedures[0])
     },
     CaseNotification () {
       return this.$ItemDocument.PresentAE ? '合併症あり' : ''
     }
   },
   methods: {
-    GetTextPropInHash (hash = {}) {
-      if (hash.Text) {
-        return hash.Text
-      } else {
-        for (var i in hash) {
-          return this.GetTextPropInHash(hash[i])
-        }
-        return ''
-      }
-    },
     MoveToEditView () {
       this.$router.push({ name: 'edit', params: { uid: this.uid } })
     }

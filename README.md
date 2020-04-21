@@ -10,6 +10,7 @@
 追加パッケージ
 
 - vuedraggable
+- cross-plathome-YuGothic
 
 ### 試験環境
 

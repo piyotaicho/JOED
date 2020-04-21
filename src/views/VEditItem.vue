@@ -77,8 +77,8 @@
         <draggable tag="ul" handle=".handle" v-model="CaseData.Diagnoses">
           <li v-for="(item, index) in CaseData.Diagnoses" v-bind:key="index">
             <span class="handle">[ = ] </span>
-            <span> {{GetItemValueAsText(item)}} </span>
-            <span class="edit-button" v-on:click="OpenEditView('手術診断', index, item)"> [EDIT] </span>
+            <span> {{ItemValue(item)}} </span>
+             <span class="edit-button" v-on:click="OpenEditView('手術診断', index, item)"> [EDIT] </span>
           </li>
         </draggable>
         <span class="new-entry-button" v-on:click="OpenEditView('手術診断')"></span>
@@ -88,7 +88,7 @@
         <draggable tag="ul" handle=".handle" v-model="CaseData.Procedures">
           <li v-for="(item, index) in CaseData.Procedures" v-bind:key="index">
             <span class="handle">[ = ] </span>
-            <span> {{GetItemValueAsText(item)}} </span>
+            <span> {{ItemValue(item)}} </span>
             <span class="edit-button" v-on:click="OpenEditView('実施手術', index, item)"> [EDIT] </span>
           </li>
         </draggable>
@@ -117,13 +117,14 @@
     </div>
     <!--モーダルダイアログとしてルーティングを使用する-->
     <div>
-      <router-view v-on:data-change="EditListItem"></router-view>
+      <router-view v-on:data-upsert="EditListItem"></router-view>
     </div>
   </div>
 </template>
 
 <script>
 import draggable from 'vuedraggable'
+import SelectionTree from '@/views/ItemHandler'
 
 export default {
   name: 'ViewEditItem',
@@ -222,9 +223,6 @@ export default {
       },
       set (newvalue) {
         this.CaseData.PresentAE = !newvalue
-        // if (typeof (newvalue) === 'boolean') {
-        //   this.CaseData.PresentAE = !newvalue
-        // }
       }
     },
     IsEditingExistingItem () {
@@ -232,8 +230,8 @@ export default {
     }
   },
   methods: {
-    GetItemValueAsText (item) {
-      var GetTextInHash = (h = {}) => {
+    ItemValue (item) {
+      /* var GetTextInHash = (h = {}) => {
       // ハッシュを辿って Text のkeyをもつ最初の値を返す
         if (h.Text) {
           return h.Text
@@ -243,8 +241,8 @@ export default {
           }
           return ''
         }
-      }
-      return GetTextInHash(item)
+      } */
+      return SelectionTree.getPropertyValue(item)
     },
     IsObjectEmpty (value) {
       return ((typeof (value) === 'string' && value === '') ||

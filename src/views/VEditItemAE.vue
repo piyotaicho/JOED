@@ -1,11 +1,11 @@
 <template>
-    <div class="overlay">
-      <div class="overlay-content">
-        <div class="title-box">
+    <div class="edititem-overlay">
+      <div class="edititem-overlay-content">
+        <div class="content-title">
           <span>合併症</span>
         </div>
 
-        <div class="filter-box">
+        <div class="flex-content">
           <div class="w30">
             <span>合併症の内容</span>
           </div>
@@ -21,7 +21,7 @@
             </select>
           </div>
         </div>
-        <div class="filter-box" v-show="ShowPerfusionRelated">
+        <div class="flex-content" v-show="ShowPerfusionRelated">
           <div class="w30">
             <span>発生した合併症</span>
           </div>
@@ -68,7 +68,7 @@
             </div>
           </div>
         </div>
-        <div class="filter-box" v-show="ShowInjuries">
+        <div class="flex-content" v-show="ShowInjuries">
           <div class="w30">
             <span>関連する機器</span>
           </div>
@@ -159,7 +159,7 @@
             </div>
           </div>
         </div>
-        <div class="filter-box" v-show="ShowInjuries">
+        <div class="flex-content" v-show="ShowInjuries">
           <div class="w30">
             <span>発生した合併症</span>
           </div>
@@ -176,7 +176,7 @@
             </div>
           </div>
         </div>
-        <div class="filter-box" v-show="ShowDrugRelated">
+        <div class="flex-content" v-show="ShowDrugRelated">
           <div class="w30">
             <span>関連する薬剤</span>
           </div>
@@ -205,7 +205,7 @@
             </div>
           </div>
         </div>
-        <div class="filter-box" v-show="ShowDrugRelated">
+        <div class="flex-content" v-show="ShowDrugRelated">
           <div class="w30">
             <span>発生した合併症</span>
           </div>
@@ -228,7 +228,7 @@
             </label>
           </div>
         </div>
-        <div class="filter-box" v-show="ShowRemnunts">
+        <div class="flex-content" v-show="ShowRemnunts">
           <div class="w30">
             <span>遺残したもの</span>
           </div>
@@ -265,7 +265,7 @@
             </div>
           </div>
         </div>
-        <div class="filter-box" v-show="ShowPostoperative">
+        <div class="flex-content" v-show="ShowPostoperative">
           <div class="w30">
             <span>合併症の内容</span>
           </div>
@@ -406,7 +406,7 @@
             </div>
           </div>
         </div>
-        <div class="filter-box" v-show="ShowLocations">
+        <div class="flex-content" v-show="ShowLocations">
           <div class="w30">
             <span>発生部位</span>
           </div>
@@ -495,7 +495,7 @@
             </div>
           </div>
         </div>
-        <div class="filter-box" v-show="ShowBleedings">
+        <div class="flex-content" v-show="ShowBleedings">
           <div class="w30">
             <span>出血量</span>
           </div>
@@ -509,7 +509,7 @@
             <span><p>出血量が不明な場合はチェックボックスをチェックしてください。</p></span>
           </div>
         </div>
-        <div class="filter-box"> <!-- Grade -->
+        <div class="flex-content"> <!-- Grade -->
           <div class="w30">
             <span>合併症の程度</span>
           </div>
@@ -524,7 +524,7 @@
             </select>
           </div>
         </div>
-        <div class="filter-box"> <!-- Course -->
+        <div class="flex-content"> <!-- Course -->
           <div class="w30">
             <span>転帰</span>
           </div>
@@ -606,7 +606,7 @@
           </div>
         </div>
 
-        <div class="bottom-box">
+        <div class="content-bottom">
           <div>
             <span v-on:click="GoBack"> [編集の取り消し] </span>
             <span v-on:click="CommitChanges"> [編集内容の登録] </span>
@@ -731,45 +731,10 @@ export default {
       this.GoBack()
     },
     EmitItem (value) {
-      this.$emit('data-change',
+      this.$emit('data-upsert',
         'AE', this.ItemIndex, value
       )
     }
   }
 }
 </script>
-
-<style lang="sass" scoped>
-  div.title-box
-    padding: 8px
-    font-size: 24px
-  div.filter-box
-    display: flex
-    padding-top: 0.8em
-    padding-bottom: 0.8em
-    div.box
-      padding: 8px
-      margin: 8px 0.5em
-      select
-        margin-top: 0.5em
-        padding-left: 8px
-        padding-right: 8px
-        width: 100%
-        option
-          height: 1.3em
-          padding-top: 0.2em
-          padding-bottom: 0.2em
-  div.bottom-box
-    padding: 8px
-    div.controls
-      display: flex
-      height: 1.8em
-      div
-        input
-          width: 100%
-          height: 1.3em
-          padding-top: 2px
-          padding-bottom: 2px
-          margin-left: 8px
-          margin-right: 8px
-</style>
