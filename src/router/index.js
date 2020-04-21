@@ -1,22 +1,49 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
+import ViewLoginAndAuthenticate from '@/views/VLoginAndAuthenticate'
+import ViewListOfCaseitems from '@/views/VListOfCaseitems'
+import ViewEditItem from '@/views/VEditItem'
+import ViewEditItemDiagnosis from '@/views/VEditItemDiagnosis'
+import ViewEditItemProcedure from '@/views/VEditItemProcedure'
+import ViewEditItemAE from '@/views/VEditItemAE'
 
 Vue.use(VueRouter)
 
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: Home
+    component: ViewLoginAndAuthenticate
   },
   {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+    name: 'list',
+    path: '/list',
+    component: ViewListOfCaseitems
+  },
+  {
+    name: 'edit',
+    path: '/edit/:uid',
+    component: ViewEditItem,
+    props: true,
+    children: [
+      {
+        name: 'diagnosis',
+        path: 'diagnosis',
+        component: ViewEditItemDiagnosis,
+        props: true
+      },
+      {
+        name: 'procedure',
+        path: 'procedure',
+        component: ViewEditItemProcedure,
+        props: true
+      },
+      {
+        name: 'AE',
+        path: 'AE',
+        component: ViewEditItemAE,
+        props: true
+      }
+    ]
   }
 ]
 
