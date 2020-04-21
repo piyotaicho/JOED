@@ -1,5 +1,6 @@
 module.exports = {
-  baseUrl: './',
+  publicPath: './',
+  productionSourceMap: false,
   configureWebpack: {
     devtool: 'source-map'
   }

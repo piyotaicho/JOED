@@ -1,24 +1,22 @@
-# joed5
+# 合併症アンケートシステム JOED version.5
 
-## Project setup
-```
-npm install
-```
+日本産科婦人科内視鏡学会の合併症アンケートシステムの最新版開発環境です。
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## 構成
 
-### Compiles and minifies for production
-```
-npm run build
-```
+- vue cli + vuex + router
+- nedb
 
-### Lints and fixes files
-```
-npm run lint
-```
+追加パッケージ
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+- vuedraggable
+
+### 試験環境
+
+マイルストーンごとに公開予定：
+
+https://p4testsuite.hostingerapp.com/JOEDv5/
+
+- 2020-04-20 とりあえず、症例リストを作れるようになりましたので公開
+
+データはブラウザのストレージに保存されます、そのうちストレージ削除やサンプルデータ読み込みのリンクも作成します。
