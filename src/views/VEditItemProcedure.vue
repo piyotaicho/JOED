@@ -4,15 +4,16 @@
         <div class="content-title">
           <span>実施手術</span>
         </div>
+        <!-- 選択ペイン -->
         <div class="flex-content">
           <div class="w20 selectionbox">
             <div><span>[カテゴリ]</span></div>
             <select v-model="Category"
               size="8"
-              v-on:change="TargetOrgan = '', SelectedItem = ''">
-              <option v-for="(item,key,index) in GetCategories"
-                v-bind:key="index"
-                v-bind:value="item">
+              @change="TargetOrgan = '', SelectedItem = ''">
+              <option v-for="(item,key,index) in Categories"
+                :key="index"
+                :value="item">
                 {{item}}
               </option>
             </select>
@@ -21,63 +22,71 @@
             <div><span>[対象臓器]</span></div>
             <select v-model="TargetOrgan"
               size="8"
-              v-on:change="SelectedItem = ''">
-              <option v-if="GetTargetOrgans.length===0" value=""/>
-              <option v-for="(item,key,index) in GetTargetOrgans"
-                v-bind:key="index"
-                v-bind:value="item">
+              @change="SelectedItem = ''">
+              <option v-if="TargetOrgans.length===0" value=""/>
+              <option v-for="(item,key,index) in TargetOrgans"
+                :key="index"
+                :value="item">
                 {{item}}
               </option>
             </select>
           </div>
           <div class="w60 selectionbox">
             <div><span>[候補術式]</span></div>
-            <select v-model="SelectedItem"
+            <select
               size="8"
-              v-on:change="OnSelected()"
-              v-on:dblclick="CommitChanges()">
-              <option v-if="GetCandidateItems.length===0" value=""/>
-              <option v-for="(item,key,index) in GetCandidateItems"
-                v-bind:key="index"
-                v-bind:value="item">
+              :value="SelectedItem"
+              @change="OnSelected"
+              @dblclick="CommitChanges()">
+              <option v-if="CandidateItems.length===0" value=""/>
+              <option v-for="(item,key,index) in CandidateItems"
+                :key="index"
+                :value="item">
                 {{item}}
               </option>
             </select>
           </div>
         </div>
-        <div class="flex-content" v-if="AdditionalProcedure.Title">
+        <!-- 追加術式ペイン -->
+        <div class="flex-content" v-if="Description.AdditionalProcedureTitle">
           <div class="w20"></div>
-          <div class="w20 selectionbox"><span>[{{AdditionalProcedure.Title}}]</span></div>
-          <div class="w50 selectionbox">
-            <select v-model="AdditionalProcedure.value" size="1" v-on:dblclick="CommitChanges()">
-              <option v-for="(item,key,index) in AdditionalProcedure.Options"
-                v-bind:key="index"
-                v-bind:value="item">
+          <div class="w20"><span>追加術式 : </span></div>
+          <div class="w60"><span>[{{Description.AdditionalProcedureTitle}}]</span></div>
+        </div>
+        <!-- 追加情報ペイン -->
+        <div class="flex-content" v-if="Description.Title">
+          <div class="w20"></div>
+          <div class="w20 selectionbox"><span>[{{Description.Title}}]</span></div>
+          <div class="w50 selectionbox" v-if="Description.Multi === false">
+            <select v-model="DescriptionValue[0]" @dblclick="CommitChanges()">
+              <option v-for="item of Description.Options"
+                :key="item"
+                :value="item">
                 {{item}}
               </option>
             </select>
           </div>
+          <div class="w50 selectionbox" v-if="Description.Multi === true">
+            <label v-for="item in Description.Options" :key="item">
+              <input type="checkbox" v-model="DescriptionValue" :value="item" />
+              {{item}}
+            </label>
+          </div>
         </div>
+        <!-- コントロールペイン -->
         <div class="content-bottom">
           <div class="controls">
             <div class="w20">
               <span>入力術式 : </span>
             </div>
             <div class="w60">
-              <input type="Text" disabled v-model.lazy="EditableItem" v-on:keydown.enter="SubmitOnEnterkey"/>
+              <input type="Text" :disabled="Description.Title" v-model="EditableItem" @keydown.enter="SubmitOnEnterkey"/>
             </div>
             <div class="w20"> [SEARCH] </div>
           </div>
           <div class="controls">
-            <div><span v-on:click="GoBack"> [編集の取り消し] </span></div>
-            <div><span v-on:click="CommitChanges"> [編集内容の登録] </span></div>
-            <div>
-              <span v-if="ItemIndex >= 0"
-                v-on:click="EraseItem"
-                style="color: red">
-                [このエントリを削除]
-              </span>
-            </div>
+            <div v-if="!disableCancel"><span @click="GoBack"> [編集の取り消し] </span></div>
+            <div><span @click="CommitChanges"> [編集内容の登録] </span></div>
           </div>
         </div>
       </div>
@@ -86,90 +95,149 @@
 
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
-import ProcedureTree from '@/views/ProcedureItemList'
+import ProcedureTree from '@/assets/ProcedureItemList'
 
-const ItemTree = new ProcedureTree()
+const ProceduresTree = new ProcedureTree()
 
 export default {
+  name: 'ViewEditItemProcedure',
   mixins: [
     EditItemMixins
   ],
+  props: {
+    disableCancel: {
+      type: Boolean,
+      default: false
+    }
+  },
   data () {
     return ({
-      AdditionalProcedure: {
+      Description: {
+        AdditionalProcedureTitle: '',
         Title: '',
         Options: [],
-        value: ''
+        Multi: false,
+        Value: []
       }
     })
   },
   mounted () {
-    // mixin で基本的な部分は展開済み, AdditionalProcedureを展開する
+    // mixin で基本的な部分は展開済み, Description/AdditionalProcedureを展開する
     if (this.ItemValue) {
-      this.SetAdditionalProcedure()
-      const AdditionalProcedure = ProcedureTree.getPropertyValue(this.ItemValue, 'AdditionalProcedure')
-      if (AdditionalProcedure) {
-        this.AdditionalProcedure.Title = Object.keys(AdditionalProcedure)[0]
-        this.AdditionalProcedure.value = AdditionalProcedure[this.AdditionalProcedure.Title]
+      if (this.ItemValue.AdditionalProcedure) {
+        const selectedItemObject = ProceduresTree.getSelectedItemByName(this.Category, this.TargetOrgan, this.SelectedItem)
+        this.SetAdditionalProcedure(selectedItemObject)
+        if (this.ItemValue.AdditionalProcedure.Description) {
+          Object.assign(this.Description.Value, this.ItemValue.AdditionalProcedure.Description)
+        }
+      } else if (this.ItemValue.Description) {
+        Object.assign(this.Description.Value, this.ItemValue.Description)
       }
     }
   },
   computed: {
-    GetCategories () {
-      return ItemTree.fetchCategories()
+    Categories () {
+      return ProceduresTree.fetchCategories()
     },
-    GetTargetOrgans () {
-      return ItemTree.fetchTargets(this.Category)
+    TargetOrgans () {
+      return ProceduresTree.fetchTargets(this.Category)
     },
-    GetCandidateItems () {
-      return ItemTree.fetchSelections(this.Category, this.TargetOrgan)
+    CandidateItems () {
+      return ProceduresTree.fetchSelections(this.Category, this.TargetOrgan)
+    },
+    DescriptionValue: {
+      set (newvalue) {
+        if (typeof newvalue === 'string') {
+          this.Description.Value.splice(0)
+          if (newvalue !== undefined) {
+            this.Description.Value.push(newvalue)
+          }
+        } else {
+          this.Description.Value = newvalue
+        }
+      },
+      get () {
+        return this.Description.Value
+      }
     }
   },
   methods: {
-    OnSelected () {
-      this.EditableItem = this.SelectedItem
-      this.ItemEdited = false
-      this.SetAdditionalProcedure()
+    OnSelected (event) {
+      const newValue = event.target.value
+      this.SelectedItem = newValue
+      this.EditableItem = newValue
+
+      const selectedItemObject = ProceduresTree.getSelectedItemByName(this.Category, this.TargetOrgan, newValue)
+
+      this.SetAdditionalProcedure(selectedItemObject)
     },
-    SetAdditionalProcedure () {
-      const queryItemIndex = (aim) => this.GetCandidateItems.findIndex(item => item === aim)
 
-      this.AdditionalProcedure.Title = ''
-      this.AdditionalProcedure.Options.length = 0
-      this.AdditionalProcedure.value = ''
+    SetAdditionalProcedure (item) {
+      const additionalProcedure = ProcedureTree.getAdditioninalProcedure(item)
 
-      if (this.Category !== '' && this.TargetOrgan !== '' && this.SelectedItem !== '') {
-        let item = ItemTree[this.Category][this.TargetOrgan][queryItemIndex(this.SelectedItem)]
-        if (typeof item === 'object') {
-          item = item[this.SelectedItem].AdditionalProcedure
-          if (typeof item === 'object') {
-            this.AdditionalProcedure.Title = Object.keys(item)[0]
-            this.AdditionalProcedure.Options = item[this.AdditionalProcedure.Title]
-          } else {
-            this.AdditionalProcedure.Title = item
-            this.AdditionalProcedure.Options = ['なし', 'あり']
-          }
-        }
+      if (additionalProcedure) {
+        this.Description.AdditionalProcedureTitle = additionalProcedure
+
+        const additionalItem = ProceduresTree.getSelectedItemByName(this.Category, this.TargetOrgan, additionalProcedure)
+        this.SetDescription(additionalItem)
+      } else {
+        this.Description.AdditionalProcedureTitle = ''
+        this.SetDescription(item)
       }
     },
+
+    SetDescription (item) {
+      const setDescriptionProperties = (Title, Multi, Options) => {
+        this.Description.Title = Title
+        this.$nextTick().then(() => {
+          this.Description.Multi = Multi
+          this.$nextTick().then(() => {
+            if (Options.length === 0) {
+              this.Description.Options.splice(0)
+            } else {
+              this.Description.Options = Options
+            }
+          })
+        })
+      }
+
+      const descriptionTitle = ProcedureTree.getDescriptionTitle(item)
+      this.Description.Value = []
+
+      if (descriptionTitle) {
+        setDescriptionProperties(
+          descriptionTitle,
+          ProcedureTree.isDescriptionMultiple(item),
+          ProcedureTree.getDescriptionValue(item)
+        )
+      } else {
+        setDescriptionProperties('', false, [])
+      }
+    },
+
     CommitChanges () {
       if (this.Category !== '' &&
         this.TrimmedEditableItem !== '' &&
-        (this.AdditionalProcedure.Title === '' || (this.AdditionalProcedure.Title !== '' && this.AdditionalProcedure.value !== ''))
+        (this.Description.AdditionalProcedureTitle === '' || (this.Description.AdditionalProcedureTitle !== '' && this.Description.Value.length > 0))
       ) {
+        // アイテムオブジェクトを整形
         const temporaryItem = {}
-        if (this.ItemEdited) {
-          temporaryItem[this.Category] = {
-            Text: this.TrimmedEditableItem,
-            UserTyped: true
-          }
+        temporaryItem.Text = this.TrimmedEditableItem
+
+        if (this.IsItemEdited) {
+          temporaryItem.Chain = [this.Category]
+          temporaryItem.UserTyped = true
         } else {
-          temporaryItem[this.Category] = {
-            [this.TargetOrgan]: { Text: this.TrimmedEditableItem }
-          }
-          if (this.AdditionalProcedure.Title !== '') {
-            temporaryItem[this.Category][this.TargetOrgan].AdditionalProcedure = {
-              [this.AdditionalProcedure.Title]: this.AdditionalProcedure.value
+          temporaryItem.Chain = [this.Category, this.TargetOrgan]
+
+          if (this.Description.AdditionalProcedureTitle !== '') {
+            temporaryItem.AdditionalProcedure = {
+              Text: this.Description.AdditionalProcedureTitle,
+              Description: this.Description.Value
+            }
+          } else {
+            if (this.Description.Title !== '') {
+              temporaryItem.Description = this.Description.Value
             }
           }
         }
@@ -177,10 +245,8 @@ export default {
         this.GoBack()
       }
     },
-    EmitItem (value) {
-      this.$emit('data-upsert',
-        '実施手術', this.ItemIndex, value
-      )
+    EmitItem (item) {
+      this.$emit('data-upsert', '実施手術', this.ItemIndex, item)
     }
   }
 }

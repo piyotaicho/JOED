@@ -1,6 +1,6 @@
 <template>
   <div class="caseitem">
-    <AtomCaseCategoryIdentifier v-bind:category="CaseCategory"></AtomCaseCategoryIdentifier>
+    <AtomCaseCategoryIdentifier :category="CaseCategory"></AtomCaseCategoryIdentifier>
     <div class="caseitem-description">
       <div class="caseitem-row">
         <span class="w20"> {{CaseDate}} </span>
@@ -11,11 +11,11 @@
       <div class="caseitem-row">
         <span class="w40"> {{CaseDiagnosis}} </span>
         <span class="w40"> {{CaseProcedure}} </span>
-        <span class="w20" v-bind:class="CaseNotification?'caution-badge':''"> {{CaseNotification}} </span>
+        <span class="w20" :class="CaseNotification?'caution-badge':''"> {{CaseNotification}} </span>
       </div>
     </div>
     <div class="caseitem-controller">
-      <span v-on:click="MoveToEditView()"> [EDIT] </span>
+      <span @click="MoveToEditView()"> [EDIT] </span>
       <span> [REMOVE] </span>
     </div>
   </div>
@@ -23,7 +23,7 @@
 
 <script>
 import AtomCaseCategoryIdentifier from '@/components/Atoms/AtomCaseCategoryIdentifier'
-import SelectionTree from '@/views/ItemHandler'
+import SelectionTree from '@/assets/ItemHandler'
 
 export default {
   name: 'Caseitem',

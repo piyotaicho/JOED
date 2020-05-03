@@ -12,7 +12,7 @@
       </div>
     </div>
     <div class="itemlist">
-      <caseitem v-for="uid in Uids" v-bind:key="uid" v-bind:uid="uid"></caseitem>
+      <caseitem v-for="uid in Uids" :key="uid" :uid="uid"></caseitem>
     </div>
   </div>
 </template>

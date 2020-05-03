@@ -4,11 +4,11 @@
 
     <div class="dialog-row">
       <span>パスワード : </span>
-      <input type="password" v-model="PasswordString" id="password-entry-box" v-bind:disabled="isPasswordFieldIsDisabled" />
+      <input type="password" v-model="PasswordString" id="password-entry-box" :disabled="isPasswordFieldIsDisabled" />
     </div>
 
     <div class="dialog-row">
-        <input type="button" value="ログイン" v-on:click="PerformAuthentication" />
+        <input type="button" value="ログイン" @click="PerformAuthentication" />
     </div>
   </div>
 </template>

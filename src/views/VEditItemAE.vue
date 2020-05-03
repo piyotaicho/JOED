@@ -10,7 +10,7 @@
             <span>合併症の内容</span>
           </div>
           <div class="w70">
-            <select v-bind:value="Category" v-on:change="Category = $event.target.value, OnCategoryChanged">
+            <select :value="Category" @change="Category = $event.target.value, OnCategoryChanged">
               <option value="出血">総出血量500ml以上</option>
               <option value="気腹・潅流操作">気腹・潅流操作</option>
               <option value="機器の不具合・破損">機器の不具合・破損</option>
@@ -501,12 +501,16 @@
           </div>
           <div class="w70">
             <div>
-              <span>
-                <input type="checkbox" v-model="BloodCountCheckbox"/>
-              </span>
-              <input v-model="AE.BloodCount" placeholder="出血量を入力してください"/> ml
+              <input v-model="AE.BloodCount" :disabled="BloodCountCheckbox" placeholder="出血量を入力してください"/> ml
             </div>
-            <span><p>出血量が不明な場合はチェックボックスをチェックしてください。</p></span>
+            <div>
+              <label>
+                <input type="checkbox"
+                  :value="BloodCountCheckbox"
+                  @change="OnUnknownBleedingCheck($event)"/>
+                出血量不明
+              </label>
+            </div>
           </div>
         </div>
         <div class="flex-content"> <!-- Grade -->
@@ -608,10 +612,10 @@
 
         <div class="content-bottom">
           <div>
-            <span v-on:click="GoBack"> [編集の取り消し] </span>
-            <span v-on:click="CommitChanges"> [編集内容の登録] </span>
+            <span @click="GoBack"> [編集の取り消し] </span>
+            <span @click="CommitChanges"> [編集内容の登録] </span>
             <span v-if="Validate">★</span>
-            <span v-if="this.ItemIndex >= 0" v-on:click="EraseItem" style="color: red"> [このエントリを削除] </span>
+            <span v-if="this.ItemIndex >= 0" @click="EraseItem" style="color: red"> [このエントリを削除] </span>
           </div>
         </div>
       </div>
@@ -619,6 +623,8 @@
 </template>
 
 <script>
+import { ZenToHan } from '@/assets/ZenHanChars'
+
 export default {
   props: {
     ItemIndex: {
@@ -636,7 +642,7 @@ export default {
         Title: [],
         Cause: [],
         Location: [],
-        BloodCount: undefined,
+        BloodCount: '',
         Grade: '',
         Course: []
       },
@@ -685,7 +691,7 @@ export default {
     Validate () {
       var ValidateCategory = {}
       ValidateCategory['出血'] = () =>
-        !!this.AE.BloodCount && !!this.AE.Bloodcount.match(/^(不明|\d+)$/)
+        !!this.AE.BloodCount && !!this.AE.Bloodcount.trim().match(/^(不明|\d+)$/)
       ValidateCategory['気腹・潅流操作'] = () =>
         !!this.AE.Title.length
       ValidateCategory['機器の不具合・破損'] = () =>
@@ -703,10 +709,22 @@ export default {
   },
   methods: {
     OnCategoryChanged () {
-      this.AE.Title.length = 0
-      this.AE.Cause.length = 0
-      this.AE.Location.length = 0
-      this.AE.BloodCount = undefined
+      this.AE.Title.splice(0)
+      this.AE.Cause.splice(0)
+      this.AE.Location.splice(0)
+      this.AE.BloodCount = ''
+    },
+    OnUnknownBleedingCheck (event) {
+      console.log('CHANGED')
+      if (event.target.checked) {
+        this.BloodCountCheckbox = true
+        this.AE.BloodCount = '不明'
+      } else {
+        this.BloodCountCheckbox = false
+        if (this.AE.BloodCount === '不明') {
+          this.AE.BloodCount = ''
+        }
+      }
     },
     GoBack () {
       this.$router.go(-1)
@@ -715,6 +733,7 @@ export default {
       if (this.Validate) {
         var key
         var filteredItems = { Category: this.Category }
+        this.AE.BloodCount = ZenToHan(this.AE.BloodCount.trim())
         for (key in this.AE) {
           if (!!this.AE[key] &&
             (Array.isArray(this.AE[key]) ? this.AE[key].length > 0 : true)) {

@@ -1,5 +1,5 @@
 <template>
-  <div class="casecategoryidentifier" v-bind:style="{backgroundColor: BoxColor}"></div>
+  <div class="casecategoryidentifier" :style="{backgroundColor: BoxColor}"></div>
 </template>
 
 <script>

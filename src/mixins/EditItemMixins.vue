@@ -1,5 +1,5 @@
 <script>
-import SelectionTree from '@/views/ItemHandler'
+import SelectionTree from '@/assets/ItemHandler'
 
 export default {
   props: {
@@ -20,34 +20,26 @@ export default {
     }
   },
   mounted () {
-    if (this.ItemValue) {
+    if (Object.keys(this.ItemValue).length > 0) {
       const tree = SelectionTree.getItemChain(this.ItemValue)
       const enterdItem = tree.pop()
 
       this.Category = tree[0]
-      this.TargetOrgan = tree[1]
-      this.SelectedItem = enterdItem
-
-      this.EditableItem = enterdItem
+      this.$nextTick().then(() => {
+        this.TargetOrgan = tree[1]
+        this.$nextTick().then(() => {
+          this.SelectedItem = enterdItem
+          this.$nextTick().then(() => {
+            this.EditableItem = enterdItem
+          })
+        })
+      })
     }
   },
   computed: {
-    // 以下はmixinでは定義できない
-    //
-    // GetCategories () {
-    //   return Object.keys({ /* SelectionTree */ })
-    // },
-    //
-    // GetTargetOrgans () {
-    //   return ({ /* SelectionTree */ }[this.Category]) ? Object.keys({ /* SelectionTree */ }[this.Category]) : []
-    // },
-    //
-    // GetCandidateItems () {
-    //   return (this.Category !== '' && this.TargetOrgan !== '') ? { /* SelectionTree */ }[this.Category][this.TargetOrgan] : []
-    // },
-
     TrimmedEditableItem () {
-      return this.EditableItem.replace(/^[\s|\u3000]+$/g, '')
+      const enteredValue = this.EditableItem.toString().trim()
+      return enteredValue.replace(/^[\s|\u3000]+$/g, '')
     },
 
     IsReadyToCommit () {
@@ -56,7 +48,7 @@ export default {
 
     IsItemEdited () {
       return this.SelectedItem !== this.EditableItem
-    },
+    } /*,
 
     GetItemValueAsText () {
       return SelectionTree.getPropertyValue(this.ItemValue)
@@ -64,7 +56,7 @@ export default {
 
     GetItemValueTree () {
       return SelectionTree.getItemChain(this.ItemValue)
-    }
+    } */
   },
   methods: {
     GoBack () {
@@ -80,7 +72,7 @@ export default {
     CommitChanges () {
       this.EmitItem(this.IsItemEdited
         ? { Text: this.TrimmedEditableItem, UserTyped: true }
-        : { [this.Category]: { [this.TargetOrgan]: { Text: this.TrimmedEditableItem } } })
+        : { Text: this.TrimmedEditableItem, Chain: [this.Category, this.TargetOrgan] })
       this.GoBack()
     },
 

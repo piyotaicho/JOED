@@ -1,4 +1,18 @@
 // global stylesheet(sass) for joed5
+html
+  font-family: cross-plathome-yu-gothic, Arial, Helvetica, sans-serif
+  background-color: #dddddd
+  font-size: 14px
+  overflow-y: hidden
+  user-select: none
+input
+  font-size: 14px
+  user-select: text
+option
+  font-size: 14px
+select
+  -webkit-appearance: menulist-button
+
 // ％指定幅のブロック
 .w10
   width: 10%
@@ -90,6 +104,13 @@ div.edititem-overlay-content
   margin: 16px
   padding: 16px
   line-height: 1.3em
+  input:text
+    width: 95%
+    height: 1.5em
+    padding-top: 2px
+    padding-bottom: 2px
+    margin-left: 8px
+    margin-right: 8px
   div.content-title
     padding: 8px
     font-size: 24px
@@ -97,40 +118,70 @@ div.edititem-overlay-content
     display: flex
     padding-top: 0.2em
     padding-bottom: 0.2em
-    select
-      font-size: 100%
-      margin-top: 0.5em
-      padding-left: 8px
-      padding-right: 8px
-      width: 100%
-      min-height: 1.5em
-      option
-        height: 1.3em
-        padding-top: 0.2em
-        padding-bottom: 0.2em
-    input
-      width: 95%
-      height: 1.5em
-      padding-top: 2px
-      padding-bottom: 2px
-      margin-left: 8px
-      margin-right: 8px
     div.selectionbox
       padding: 8px
       margin: 8px 0.5em
       min-height: 1.8em
+      select
+        font-size: 100%
+        margin-top: 0.5em
+        padding-left: 8px
+        padding-right: 8px
+        width: 100%
+        min-height: 1.5em
+        option
+          height: 1.3em
+          padding-top: 0.2em
+          padding-bottom: 0.2em
   div.content-bottom
     padding-left: 8px
     padding-right: 8px
+    display: flex
+    flex-direction: column
     div.controls
       display: flex
       height: 2.5em
       div
-        input
-          width: 95%
-          height: 1.5em
-          padding-top: 2px
-          padding-bottom: 2px
-          margin-left: 8px
-          margin-right: 8px
-
+//
+// 編集セクション
+//
+div.section
+  position: relative
+  background: white
+  width: 800px
+  min-height: 48px
+  border: 1px solid black
+  margin-top: 21px
+  padding-bottom: 4px
+  span.section-title
+    margin: 4px
+    font-size: 120%
+  span.new-entry-button
+    position: absolute
+    right: 4px
+    bottom: 4px
+    width: 40px
+    height: 40px
+    background: url('assets/icon-add.png')
+  div.list-item
+    border: 0
+    margin: 1px 8px 2px 42px
+    div.item-description
+      position: relative
+      background: #eeeeee
+      line-height: 1.5
+      padding: 0.5em
+      margin-right: 48px
+      margin-bottom: 2px
+      list-style: none
+      span.handle
+        margin-left: 12px
+        margin-right: 18px
+      span.edit-button
+        position: absolute
+        right: 20px
+        margin-top: auto
+        margin-bottom: auto
+    &:first-child
+      border-left: black 2px solid
+      margin-left: 40px

@@ -9,10 +9,10 @@
             <div><span>[カテゴリ]</span></div>
             <select v-model="Category"
               size="8"
-              v-on:change="TargetOrgan = '', SelectedItem = ''">
-              <option v-for="(item,key,index) in GetCategories"
-                v-bind:key="index"
-                v-bind:value="item">
+              @change="TargetOrgan = '', SelectedItem = ''">
+              <option v-for="(item,key,index) in Categories"
+                :key="index"
+                :value="item">
                 {{item}}
               </option>
             </select>
@@ -21,11 +21,11 @@
             <div><span>[対象臓器]</span></div>
             <select v-model="TargetOrgan"
               size="8"
-              v-on:change="SelectedItem = ''">
-              <option v-if="GetTargetOrgans.length===0" value=""/>
-              <option v-for="(item,key,index) in GetTargetOrgans"
-                v-bind:key="index"
-                v-bind:value="item">
+              @change="SelectedItem = ''">
+              <option v-if="TargetOrgans.length===0" value=""/>
+              <option v-for="(item,key,index) in TargetOrgans"
+                :key="index"
+                :value="item">
                 {{item}}
               </option>
             </select>
@@ -34,12 +34,12 @@
             <div><span>[候補病名]</span></div>
             <select v-model="SelectedItem"
               size="8"
-              v-on:change="EditableItem = SelectedItem; ItemEdited = false"
-              v-on:dblclick="CommitChanges()">
-              <option v-if="GetCandidateItems.length===0" value=""/>
-              <option v-for="(item,key,index) in GetCandidateItems"
-                v-bind:key="index"
-                v-bind:value="item">
+              @change="EditableItem = SelectedItem; ItemEdited = false"
+              @dblclick="CommitChanges()">
+              <option v-if="CandidateItems.length===0" value=""/>
+              <option v-for="(item,key,index) in CandidateItems"
+                :key="index"
+                :value="item">
                 {{item}}
               </option>
             </select>
@@ -51,14 +51,14 @@
               <span>入力病名 : </span>
             </div>
             <div class="w60">
-              <input type="Text" v-model.lazy="EditableItem" v-on:keydown.enter="SubmitOnEnterkey"/>
+              <input type="Text" v-model.lazy="EditableItem" @keydown.enter="SubmitOnEnterkey"/>
             </div>
             <div class="w20"> [SEARCH] </div>
           </div>
           <div>
-            <span v-on:click="GoBack"> [編集の取り消し] </span>
-            <span v-on:click="CommitChanges"> [編集内容の登録] </span>
-            <span v-if="this.ItemIndex >= 0" v-on:click="EraseItem" style="color: red"> [このエントリを削除] </span>
+            <span @click="GoBack"> [編集の取り消し] </span>
+            <span @click="CommitChanges"> [編集内容の登録] </span>
+            <span v-if="this.ItemIndex >= 0" @click="EraseItem" style="color: red"> [このエントリを削除] </span>
           </div>
         </div>
       </div>
@@ -67,23 +67,23 @@
 
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
-import DiagnosisTree from '@/views/DiagnosisItemList'
+import DiagnosisTree from '@/assets/DiagnosisItemList'
 
-const ItemTree = new DiagnosisTree()
+const DiagnosesTree = new DiagnosisTree()
 
 export default {
   mixins: [
     EditItemMixins
   ],
   computed: {
-    GetCategories () {
-      return ItemTree.fetchCategories()
+    Categories () {
+      return DiagnosesTree.fetchCategories()
     },
-    GetTargetOrgans () {
-      return ItemTree.fetchTargets(this.Category)
+    TargetOrgans () {
+      return DiagnosesTree.fetchTargets(this.Category)
     },
-    GetCandidateItems () {
-      return ItemTree.fetchSelections(this.Category, this.TargetOrgan)
+    CandidateItems () {
+      return DiagnosesTree.fetchSelections(this.Category, this.TargetOrgan)
     }
   },
   methods: {

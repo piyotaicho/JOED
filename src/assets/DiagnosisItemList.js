@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-import SelectionTree from '@/views/ItemHandler'
+import SelectionTree from '@/assets/ItemHandler'
 
 export default class DiagnosisTree extends SelectionTree {
   constructor () {
