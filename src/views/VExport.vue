@@ -1,9 +1,9 @@
 <template>
-  <div></div>
+  <div>Export items</div>
 </template>
 
 <script>
 export default {
-  name: 'ViewPreferences'
+  name: 'ViewExport'
 }
 </script>

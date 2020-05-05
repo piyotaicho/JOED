@@ -8,7 +8,7 @@
         <span class="left-aligned">SORT</span>
         <span class="left-aligned">FITER</span>
         <span class="left-aligned">SEARCH</span>
-        <span class="right-aligned">キテレツ病院</span>
+        <span class="right-aligned"><router-link to="/utilities">キテレツ病院</router-link></span>
       </div>
     </div>
     <div class="itemlist">

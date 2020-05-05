@@ -20,7 +20,10 @@ const store = new Vuex.Store({
   state: {
     // データベースの症例部分(SqeuentialIdをもつ)のキャッシュ
     // データベースの変更作業が行われる度にロードする。InfinityScrollと連動予定。
-    DataStore: []
+    DataStore: [],
+    Filters: {}, // フィルターの設定
+    Orders: {}, // ソートの設定
+    Settings: {} // システム設定
   },
   getters: {
     GetDatastore (state) {

@@ -27,36 +27,21 @@
       </div>
     </div>
     <div class="edit-bottom">
-      <EditSection
-        sectionName="手術診断"
+      <EditSectionDiagnoses
         :container.sync="CaseData.Diagnoses"
         @removeitem="RemoveListItem('手術診断', $event)"
         @addnewitem="OpenEditView('手術診断')" />
 
-      <EditSection
-        sectionName="実施手術"
+      <EditSectionProcedures
         :container.sync="CaseData.Procedures"
         @removeitem="RemoveListItem('実施手術', $event)"
         @addnewitem="OpenEditView('実施手術')" />
 
-      <EditSection
-        sectionName="合併症"
+      <EditSectionAEs
         :container.sync="CaseData.AEs"
-        optionCaption="合併症なし"
         :optionValue.sync="IsNoAEs"
         @removeitem="RemoveListItem('AE', $event)"
-        @addnewitem="OpenEditView('AE')"
-        v-slot="slotProps">
-        <span class="w20">{{ slotProps.item.Category }}</span>
-        <span class="w30">
-          {{ (slotProps.item.Category === '出血')
-            ? (slotProps.item.BloodCount === '不明'
-              ? '出血量不明'
-              : slotProps.item.BloodCount + 'ml')
-            : slotProps.item.Title[0] }}
-        </span>
-        <span class="w20">( Grade : {{slotProps.item.Grade}} )</span>
-      </EditSection>
+        @addnewitem="OpenEditView('AE')"/>
     </div>
 
     <!-- コントロールボタン群 -->
@@ -77,7 +62,9 @@
 <script>
 // import draggable from 'vuedraggable'
 import SelectionTree from '@/assets/ItemHandler'
-import EditSection from '@/components/EditSection'
+import EditSectionDiagnoses from '@/components/EditSectionDiagnoses'
+import EditSectionProcedures from '@/components/EditSectionProcedures'
+import EditSectionAEs from '@/components/EditSectionAEs'
 import InputProcedureTime from '@/components/InputProcedureTime'
 import InputDateOfProcedure from '@/components/InputDateOfProcedure'
 import InputTextField from '@/components/InputTextField'
@@ -86,7 +73,12 @@ import { ZenToHan } from '@/assets/ZenHanChars'
 export default {
   name: 'ViewEditItem',
   components: {
-    EditSection, InputProcedureTime, InputDateOfProcedure, InputTextField
+    InputProcedureTime,
+    InputDateOfProcedure,
+    InputTextField,
+    EditSectionDiagnoses,
+    EditSectionProcedures,
+    EditSectionAEs
   },
   props: {
     uid: {
@@ -288,7 +280,7 @@ div.editview
   top: 50%
   background-color: ivory
   Text-align: left
-  margin: auto auto
+  margin-left: 48px
   padding: 14px 20px
   border: black 1px solid
   border-radius: 5px
