@@ -19,6 +19,7 @@
 https://p4testsuite.hostingerapp.com/JOEDv5/
 
 - 2020-04-20 とりあえず、症例リストを作れるようになりましたので公開
+- 2020-05-07 保存データベースの構造を変更したため後方互換が無くなりました,基本的な登録機能は実装できました.(Database-Managerを用意しましたのでデータベースのリセットにご利用ください)
 
 データはブラウザのストレージに保存されます、そのうちストレージ削除やサンプルデータ読み込みのリンクも作成します。
 
@@ -70,9 +71,9 @@ https://p4testsuite.hostingerapp.com/JOEDv5/
 |名称                        |タイプ  |フォーマット規則|必須項目|エクスポート対象|解説|
 |:--------------------------|:-----:|:--:|:--:|:--:|:--|
 |Text                       |string | |X|X|術式名、術式マスタから引用|
-|TypeOfProcedure            |string |(腹腔鏡\|腹腔鏡悪性\|ロボット支援下\|ロボット支援下悪性\|子宮鏡\|卵管鏡)| | |術式マスタから引用|
-|AssociatedProcedures       |array  | | | |関連術式のProcedureオブジェクト|
-|Description                |object | | |X|
+|Chain                      |array  | | | |選択ツリー[Category, Target]|
+|Description                |array  | | |x|付随情報
+|AdditionalProcedure        |object | | |x|併施術式 { Text: ..., Description: ...}
 
 ### オブジェクト:AE
 |名称                        |タイプ  |フォーマット規則|必須項目|エクスポート対象|解説|
@@ -83,7 +84,7 @@ https://p4testsuite.hostingerapp.com/JOEDv5/
 |Location                   |string | | |X|合併症の発生部位|
 |BloodCount                 |integer| | |X|出血の場合の出血量|
 |Grade                      |string |([1245]\|3[ab])|X|X|合併症のグレード|
-|Course                     |string | |X|X|合併症の転帰|
+|Course                     |array  | |X|X|合併症の転帰|
 
 ### マスタオブジェクト:InstituteList
 |名称                        |タイプ  |解説
@@ -97,17 +98,19 @@ https://p4testsuite.hostingerapp.com/JOEDv5/
 |:--------------------------|:-----:|:--|
 |Diagnosis                  |string |診断名|
 |ICD10                      |string |ICD-10コード(未実装)
-|Location                   |array  |部位 ["子宮","卵巣","卵管","その他"]|
 |Category                   |array  |関連手技 ["腹腔鏡","ロボット支援下","子宮鏡","卵管鏡"]|
+|Target                     |array  |部位 ["子宮","卵巣","卵管","その他"]|
+|Notification               |string |入力時に表示されるおしらせ|
+|Procedure                  |string |1:1で紐付けられた術式|
 |StartOfYearOfDataset       |integer|適用可能年開始|
-|EndOfYearOfDataset         |integer|適用可能年終了<br/>これより後の年次ではこの病名はこの区分は無効かつ登録出来ない|
+|EndOfYearOfDataset         |integer|適用可能年終了<br/>これより後の年次ではこの病名は無効かつ登録出来ない|
 
 ### オブジェクト:DiagnosisItems
 DiagnosisMasterから作成される
 ```javascript
 {
     'Category': {
-        'Location': {
+        'Target': {
             'Diagnosis'
         }
     }
@@ -118,27 +121,27 @@ DiagnosisMasterから作成される
 |名称                        |タイプ  |解説
 |:--------------------------|:-----:|:--|
 |Procedure                  |string |手技名|
-|Target                     |array  |部位 ["子宮","卵巣","卵管","その他"]|
-|TypeOfProcedure            |array  |関連手技 []|
+|STEM7                      |string |STEM7コード(未実装)|
 |Category                   |array  |良悪性分類 ["腹腔鏡","腹腔鏡悪性","ロボット","ロボット悪性","子宮鏡","卵管鏡"]|
-|StartOfYearOfDataset       |integer|適用可能年開始|
-|EndOfYearOfDataset         |integer|適用可能年終了<br/>これより後の年次ではこの術式はこの区分は無効かつ登録出来ない|
+|Target                     |array  |部位 ["子宮","卵巣","卵管","その他"]|
+|StartOfYearOfDataset       |string |適用可能年開始|
+|EndOfYearOfDataset         |string |適用可能年終了<br/>これより後の年次ではこの術式はこの区分は無効かつ登録出来ない|
 |Ditto                      |array  |同時に入力できない同一手技に相当する手技名|
-|AdditionalProcedure        |string |同時に展開を行う関連術式|
-|DescriptionTitle           |string |補助情報の見出し<br/>$で終了するタイトル名は補助情報を複数保持できる|
-|Descriptions               |array  |補助情報の候補|
+|AdditionalProcedure        |string |同時に展開を行う関連術式<br/>基本的には同一の選択チェーン内にある|
+|DescriptionTitle           |string |補助情報の見出し|
+|Descriptions               |array  |補助情報の候補<br/>$Multiをメンバにもつ場合複数の内容を保持できる|
 
 ### オブジェクト:DiagnosisItems
 ProcedureMasterから作成される
 ```javascript
 {
     'Category': {
-        'Location': {
-            'Procedure',
+        'Target': {
+            'Procedure', // なにも付随情報が無い場合
             {
                 'Procedure': {
                     Ditto: [],
-                    AdditionalProcedure: [...AdditionalProcedure],
+                    AdditionalProcedure: text,
                     Description: {
                         DescriptionTitle: [...Descriptions]
                     }

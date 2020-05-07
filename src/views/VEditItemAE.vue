@@ -533,6 +533,8 @@
             <span>転帰</span>
           </div>
           <div class="w70">
+            <!-- Grade 1-2 -->
+            <div>Grade 1-2</div>
             <div>
               <label>
                 <input type="checkbox" v-model="AE.Course" value="経過観察">
@@ -551,6 +553,8 @@
                 再入院
               </label>
             </div>
+            <!-- Grade 2 -->
+            <div>Grade 2</div>
             <div>
               <label>
                 <input type="checkbox" v-model="AE.Course" value="輸血～自己血輸血・術中回収血">
@@ -561,6 +565,8 @@
                 輸血・血液製剤
               </label>
             </div>
+            <!-- Grade 3 -->
+            <div>Grade 3</div>
             <div>
               <label>
                 <input type="checkbox" v-model="AE.Course" value="術中の追加手術～腹腔鏡">
@@ -595,12 +601,16 @@
                 そのほか術後のIVRを含む再手術
               </label>
             </div>
+            <!-- Grade 4 -->
+            <div>Grade 4</div>
             <div>
               <label>
                 <input type="checkbox" v-model="AE.Course" value="合併症管理のためのICU入室">
                 合併症管理のためのICU入室
               </label>
             </div>
+            <!-- Grade 5 -->
+            <div>Grade 5</div>
             <div>
               <label>
                 <input type="checkbox" v-model="AE.Course" value="死亡">
