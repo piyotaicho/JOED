@@ -48,15 +48,7 @@ export default {
 
     IsItemEdited () {
       return this.SelectedItem !== this.EditableItem
-    } /*,
-
-    GetItemValueAsText () {
-      return SelectionTree.getPropertyValue(this.ItemValue)
-    },
-
-    GetItemValueTree () {
-      return SelectionTree.getItemChain(this.ItemValue)
-    } */
+    }
   },
   methods: {
     GoBack () {

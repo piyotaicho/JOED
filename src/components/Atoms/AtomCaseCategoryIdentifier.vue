@@ -34,7 +34,7 @@ export default {
 }
 </script>
 
-<style lang='sass' scoped>
+<style lang='sass'>
 div.casecategoryidentifier
   position: relative
   border: black 1px solid

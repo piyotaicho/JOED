@@ -119,16 +119,16 @@ export default {
   created () {
     if (this.uid > 0) {
       // 既存データの編集なのでデータベースからフィールドをコピーする
-      var Item = this.$store.getters.GetItemObject(this.uid)
+      const item = this.$store.getters.GetItemObject(this.uid)
       for (var key in this.CaseData) {
-        if (Item[key] !== undefined) {
+        if (item[key] !== undefined) {
           if (
-            toString.call(Item[key]) === '[object Object]' ||
-            toString.call(Item[key]) === '[object Array]'
+            toString.call(item[key]) === '[object Object]' ||
+            toString.call(item[key]) === '[object Array]'
           ) {
-            Object.assign(this.CaseData[key], Item[key])
+            Object.assign(this.CaseData[key], item[key])
           } else {
-            this.CaseData[key] = Item[key]
+            this.CaseData[key] = item[key]
           }
         }
       }
@@ -225,7 +225,7 @@ export default {
     },
     DoRemoveItem () {
       if (this.uid > 0) {
-        this.$store.dispatch('RemoveItemFromDatastore', { SqeuentialId: this.uid })
+        this.$store.dispatch('RemoveItemFromDatastore', { SequentialId: this.uid })
         return true
       }
       return false
@@ -234,8 +234,8 @@ export default {
       if (this.Validate) {
         var payload = {}
         Object.assign(payload, this.CaseData)
-        // SqeuentialIdの設定、0は新規レコード
-        payload.SqeuentialId = this.uid
+        // SequentialIdの設定、0は新規レコード
+        payload.SequentialId = Number(this.uid)
 
         // テキストフィールドの整形
         payload.Name = payload.Name.trim()

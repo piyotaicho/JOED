@@ -1,5 +1,5 @@
 <template>
-  <div class="caseitem">
+  <div class="caseitem" @dblclick="MoveToEditView()">
     <AtomCaseCategoryIdentifier :category="CaseCategory"></AtomCaseCategoryIdentifier>
     <div class="caseitem-description">
       <div class="caseitem-row">
@@ -54,12 +54,10 @@ export default {
       }
     },
     CaseDiagnosis () {
-      return SelectionTree.getPropertyValue(this.$ItemDocument.Diagnoses[0])
-      // return this.GetTextPropInHash(this.$ItemDocument.Diagnoses[0])
+      return SelectionTree.getItemValue(this.$ItemDocument.Diagnoses[0])
     },
     CaseProcedure () {
-      return SelectionTree.getPropertyValue(this.$ItemDocument.Procedures[0])
-      // return this.GetTextPropInHash(this.$ItemDocument.Procedures[0])
+      return SelectionTree.getItemValue(this.$ItemDocument.Procedures[0])
     },
     CaseNotification () {
       return this.$ItemDocument.PresentAE ? '合併症あり' : ''

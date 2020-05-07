@@ -7,23 +7,23 @@
         合併症なし
       </label>
     </span>
-    <draggable handle=".handle" v-model="ItemContainer">
-      <div class="list-item"
-        v-for="(item, index) in ItemContainer"
-        :key="index">
-        <ItemOfSection :item="item" @click="RemoveItem(index)" v-slot="slotProps">
-          <span class="w20">{{ slotProps.item.Category }}</span>
-          <span class="w30">
-            {{ (slotProps.item.Category === '出血')
-              ? (slotProps.item.BloodCount === '不明'
-                ? '出血量不明'
-                : slotProps.item.BloodCount + 'ml')
-              : slotProps.item.Title[0] }}
-          </span>
-          <span class="w20">( Grade : {{slotProps.item.Grade}} )</span>
-        </ItemOfSection>
-      </div>
-    </draggable>
+    <!-- Quick hack for designs -->
+    <div class="list-item" style="display: none;"><div class="item-description"></div></div>
+    <div class="list-item"
+      v-for="(item, index) in ItemContainer"
+      :key="index">
+      <ItemOfSection :item="item" @click="RemoveItem(index)" :draggable="false" v-slot="slotProps">
+        <span class="w20">{{ slotProps.item.Category }}</span>
+        <span class="w30">
+          {{ (slotProps.item.Category === '出血')
+            ? (slotProps.item.BloodCount === '不明'
+              ? '出血量不明'
+              : slotProps.item.BloodCount + 'ml')
+            : slotProps.item.Title[0] }}
+        </span>
+        <span class="w20">( Grade : {{slotProps.item.Grade}} )</span>
+      </ItemOfSection>
+    </div>
     <span class="new-entry-button" @click="AddNewItem()"></span>
   </div>
 </template>

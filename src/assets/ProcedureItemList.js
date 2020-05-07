@@ -3,22 +3,6 @@ import SelectionTree from '@/assets/ItemHandler'
 
 export default class ProcedureTree extends SelectionTree {
   constructor () {
-    /*
-    アイテムリストの構成
-    Category: {
-      Target: {
-        手技名,
-        {
-          手技名: {
-            Ditto: [同時入力できない同一手技]
-            AdditionalProcedure: '同時展開される手技' // 原則的に同一カテゴリ・対象
-            Description: { 補助情報のタイトル: [候補] } 候補に $Multi があるときは複数選択
-            Notification: 'お知らせメッセージの内容'
-          }
-        }
-      }
-    }
-    */
     super({
       腹腔鏡: {
         子宮: [

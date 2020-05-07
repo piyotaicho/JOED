@@ -4,9 +4,10 @@
     <hr/>
     <span>JOED5は以下のオープンソースコンポーネントを利用して作成されています.</span>
     <ul>
-      <li><a href="https://cli.vuejs.org/"></a>vue cli 3</li>
+      <li><a href="https://cli.vuejs.org/">vue cli 3</a></li>
       <li><a href="https://github.com/louischatriot/nedb">nedb</a></li>
       <li><a href="https://github.com/SortableJS/Vue.Draggable">vuedraggable</a></li>
+      <li><a href="https://github.com/rxon/cross-platform-yu-gothic">cross-platform-yu-gothic</a></li>
     </ul>
   </div>
 </template>

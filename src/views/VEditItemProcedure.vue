@@ -125,7 +125,7 @@ export default {
     // mixin で基本的な部分は展開済み, Description/AdditionalProcedureを展開する
     if (this.ItemValue) {
       if (this.ItemValue.AdditionalProcedure) {
-        const selectedItemObject = ProceduresTree.getSelectedItemByName(this.Category, this.TargetOrgan, this.SelectedItem)
+        const selectedItemObject = ProceduresTree.getItemByName(this.Category, this.TargetOrgan, this.SelectedItem)
         this.SetAdditionalProcedure(selectedItemObject)
         if (this.ItemValue.AdditionalProcedure.Description) {
           Object.assign(this.Description.Value, this.ItemValue.AdditionalProcedure.Description)
@@ -137,13 +137,13 @@ export default {
   },
   computed: {
     Categories () {
-      return ProceduresTree.fetchCategories()
+      return ProceduresTree.Categories()
     },
     TargetOrgans () {
-      return ProceduresTree.fetchTargets(this.Category)
+      return ProceduresTree.Targets(this.Category)
     },
     CandidateItems () {
-      return ProceduresTree.fetchSelections(this.Category, this.TargetOrgan)
+      return ProceduresTree.Candidates(this.Category, this.TargetOrgan)
     },
     DescriptionValue: {
       set (newvalue) {
@@ -167,7 +167,7 @@ export default {
       this.SelectedItem = newValue
       this.EditableItem = newValue
 
-      const selectedItemObject = ProceduresTree.getSelectedItemByName(this.Category, this.TargetOrgan, newValue)
+      const selectedItemObject = ProceduresTree.getItemByName(this.Category, this.TargetOrgan, newValue)
 
       this.SetAdditionalProcedure(selectedItemObject)
     },
@@ -178,7 +178,7 @@ export default {
       if (additionalProcedure) {
         this.Description.AdditionalProcedureTitle = additionalProcedure
 
-        const additionalItem = ProceduresTree.getSelectedItemByName(this.Category, this.TargetOrgan, additionalProcedure)
+        const additionalItem = ProceduresTree.getItemByName(this.Category, this.TargetOrgan, additionalProcedure)
         this.SetDescription(additionalItem)
       } else {
         this.Description.AdditionalProcedureTitle = ''
@@ -218,7 +218,7 @@ export default {
     CommitChanges () {
       if (this.Category !== '' &&
         this.TrimmedEditableItem !== '' &&
-        (this.Description.AdditionalProcedureTitle === '' || (this.Description.AdditionalProcedureTitle !== '' && this.Description.Value.length > 0))
+        (this.Description.Title === '' || (this.Description.Title !== '' && this.Description.Value.length > 0))
       ) {
         // アイテムオブジェクトを整形
         const temporaryItem = {}

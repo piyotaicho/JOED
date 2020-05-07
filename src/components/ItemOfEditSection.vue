@@ -1,8 +1,11 @@
 <template>
   <div class="item-description">
-    <span class="handle">[ = ] </span>
+    <span class="handle">{{Handle}} </span>
     <slot :item="item">
       <span>{{Title}}</span>
+      <span v-if="item.Description">
+        ( {{Description}} )
+      </span>
     </slot>
     <span class="remove-button" @click="onClick()"> [REMOVE] </span>
   </div>
@@ -17,11 +20,26 @@ export default {
     item: {
       type: Object,
       required: true
+    },
+    draggable: {
+      type: Boolean,
+      default: true
     }
   },
   computed: {
+    Handle () {
+      return this.draggable ? '[ = ]' : ' -- '
+    },
     Title () {
-      return SelectionTree.getPropertyValue(this.item)
+      return SelectionTree.getItemValue(this.item)
+    },
+    Description () {
+      if (this.item.Description) {
+        return (this.item.Description.length > 1)
+          ? [...this.item.Description].join(', ')
+          : this.item.Description[0]
+      }
+      return ''
     }
   },
   methods: {

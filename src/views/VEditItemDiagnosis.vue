@@ -77,13 +77,13 @@ export default {
   ],
   computed: {
     Categories () {
-      return DiagnosesTree.fetchCategories()
+      return DiagnosesTree.Categories()
     },
     TargetOrgans () {
-      return DiagnosesTree.fetchTargets(this.Category)
+      return DiagnosesTree.Targets(this.Category)
     },
     CandidateItems () {
-      return DiagnosesTree.fetchSelections(this.Category, this.TargetOrgan)
+      return DiagnosesTree.Candidates(this.Category, this.TargetOrgan)
     }
   },
   methods: {

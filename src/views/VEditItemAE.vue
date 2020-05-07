@@ -715,7 +715,6 @@ export default {
       this.AE.BloodCount = ''
     },
     OnUnknownBleedingCheck (event) {
-      console.log('CHANGED')
       if (event.target.checked) {
         this.BloodCountCheckbox = true
         this.AE.BloodCount = '不明'
