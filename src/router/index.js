@@ -4,6 +4,8 @@ import VueRouter from 'vue-router'
 import ViewLoginAndAuthenticate from '@/views/VLoginAndAuthenticate'
 
 import ViewListOfCaseitems from '@/views/VListOfCaseitems'
+import ViewListSort from '@/views/VListSort'
+import ViewListFilter from '@/views/VListFilter'
 
 import ViewEditItem from '@/views/VEditItem'
 import ViewEditItemDiagnosis from '@/views/VEditItemDiagnosis'
@@ -25,7 +27,19 @@ const routes = [
   {
     name: 'list',
     path: '/list',
-    component: ViewListOfCaseitems
+    component: ViewListOfCaseitems,
+    children: [
+      {
+        name: 'sort',
+        path: 'sort',
+        component: ViewListSort
+      },
+      {
+        name: 'filter',
+        path: 'filter',
+        component: ViewListFilter
+      }
+    ]
   },
   {
     name: 'edit',

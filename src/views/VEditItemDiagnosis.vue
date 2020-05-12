@@ -58,7 +58,6 @@
           <div>
             <span @click="GoBack"> [編集の取り消し] </span>
             <span @click="CommitChanges"> [編集内容の登録] </span>
-            <span v-if="this.ItemIndex >= 0" @click="EraseItem" style="color: red"> [このエントリを削除] </span>
           </div>
         </div>
       </div>
@@ -67,7 +66,7 @@
 
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
-import DiagnosisTree from '@/assets/DiagnosisItemList'
+import DiagnosisTree from '@/modules/DiagnosisItemList'
 
 const DiagnosesTree = new DiagnosisTree()
 
@@ -87,10 +86,12 @@ export default {
     }
   },
   methods: {
-    EmitItem (value) {
-      this.$emit('data-upsert',
-        '手術診断', this.ItemIndex, value
-      )
+    CommitChanges () {
+      this.$emit('data-upsert', '手術診断', this.ItemIndex,
+        this.IsItemEdited
+          ? { Text: this.TrimmedEditableItem, UserTyped: true }
+          : { Text: this.TrimmedEditableItem, Chain: [this.Category, this.TargetOrgan] })
+      this.GoBack()
     }
   }
 }

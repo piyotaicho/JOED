@@ -23,7 +23,7 @@
 
 <script>
 import AtomCaseCategoryIdentifier from '@/components/Atoms/AtomCaseCategoryIdentifier'
-import SelectionTree from '@/assets/ItemHandler'
+import DbItems from '@/modules/DbItemHandler'
 
 export default {
   name: 'Caseitem',
@@ -54,10 +54,10 @@ export default {
       }
     },
     CaseDiagnosis () {
-      return SelectionTree.getItemValue(this.$ItemDocument.Diagnoses[0])
+      return DbItems.getItemValue(this.$ItemDocument.Diagnoses[0])
     },
     CaseProcedure () {
-      return SelectionTree.getItemValue(this.$ItemDocument.Procedures[0])
+      return DbItems.getItemValue(this.$ItemDocument.Procedures[0])
     },
     CaseNotification () {
       return this.$ItemDocument.PresentAE ? '合併症あり' : ''

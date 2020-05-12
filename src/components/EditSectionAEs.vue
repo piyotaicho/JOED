@@ -12,7 +12,7 @@
     <div class="list-item"
       v-for="(item, index) in ItemContainer"
       :key="index">
-      <ItemOfSection :item="item" @click="RemoveItem(index)" :draggable="false" v-slot="slotProps">
+      <ItemOfSection :item="item" @click="RemoveItem(index)" :draggable="false" #default="slotProps">
         <span class="w20">{{ slotProps.item.Category }}</span>
         <span class="w30">
           {{ (slotProps.item.Category === '出血')

@@ -625,7 +625,6 @@
             <span @click="GoBack"> [編集の取り消し] </span>
             <span @click="CommitChanges"> [編集内容の登録] </span>
             <span v-if="Validate">★</span>
-            <span v-if="this.ItemIndex >= 0" @click="EraseItem" style="color: red"> [このエントリを削除] </span>
           </div>
         </div>
       </div>
@@ -633,7 +632,7 @@
 </template>
 
 <script>
-import { ZenToHan } from '@/assets/ZenHanChars'
+import { ZenToHan } from '@/modules/ZenHanChars'
 
 export default {
   props: {
@@ -750,18 +749,9 @@ export default {
           }
         }
 
-        this.EmitItem(filteredItems)
+        this.$emit('data-upsert', 'AE', this.ItemIndex, filteredItems)
         this.GoBack()
       }
-    },
-    EraseItem () {
-      this.EmitItem('')
-      this.GoBack()
-    },
-    EmitItem (value) {
-      this.$emit('data-upsert',
-        'AE', this.ItemIndex, value
-      )
     }
   }
 }

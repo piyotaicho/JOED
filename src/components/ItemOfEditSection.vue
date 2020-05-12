@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import SelectionTree from '@/assets/ItemHandler'
+import DbItems from '@/modules/DbItemHandler'
 
 export default {
   name: 'ItemOfSection',
@@ -31,7 +31,7 @@ export default {
       return this.draggable ? '[ = ]' : ' -- '
     },
     Title () {
-      return SelectionTree.getItemValue(this.item)
+      return DbItems.getItemValue(this.item)
     },
     Description () {
       if (this.item.Description) {

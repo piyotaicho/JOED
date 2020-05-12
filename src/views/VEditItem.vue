@@ -60,15 +60,14 @@
 </template>
 
 <script>
-// import draggable from 'vuedraggable'
-import SelectionTree from '@/assets/ItemHandler'
+import DbItems from '@/modules/DbItemHandler'
 import EditSectionDiagnoses from '@/components/EditSectionDiagnoses'
 import EditSectionProcedures from '@/components/EditSectionProcedures'
 import EditSectionAEs from '@/components/EditSectionAEs'
 import InputProcedureTime from '@/components/InputProcedureTime'
 import InputDateOfProcedure from '@/components/InputDateOfProcedure'
 import InputTextField from '@/components/InputTextField'
-import { ZenToHan } from '@/assets/ZenHanChars'
+import { ZenToHan } from '@/modules/ZenHanChars'
 
 export default {
   name: 'ViewEditItem',
@@ -260,7 +259,7 @@ export default {
         }
 
         // 区分コードの抽出
-        payload.TypeOfProcedure = SelectionTree.getItemChain(payload.Procedures[0])[0]
+        payload.TypeOfProcedure = DbItems.getItemChain(payload.Procedures[0])[0]
 
         this.$store.dispatch('UpsertItemInDatastore', payload)
 

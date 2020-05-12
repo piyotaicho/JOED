@@ -1,5 +1,5 @@
 <script>
-import SelectionTree from '@/assets/ItemHandler'
+import DbItems from '@/modules/DbItemHandler'
 
 export default {
   props: {
@@ -20,8 +20,8 @@ export default {
     }
   },
   mounted () {
-    if (Object.keys(this.ItemValue).length > 0) {
-      const tree = SelectionTree.getItemChain(this.ItemValue)
+    if (this.ItemValue && Object.keys(this.ItemValue).length > 0) {
+      const tree = DbItems.getItemChain(this.ItemValue)
       const enterdItem = tree.pop()
 
       this.Category = tree[0]
@@ -59,22 +59,6 @@ export default {
       if (event.keyCode === 13) {
         this.CommitChanges()
       }
-    },
-
-    CommitChanges () {
-      this.EmitItem(this.IsItemEdited
-        ? { Text: this.TrimmedEditableItem, UserTyped: true }
-        : { Text: this.TrimmedEditableItem, Chain: [this.Category, this.TargetOrgan] })
-      this.GoBack()
-    },
-
-    EraseItem () {
-      this.EmitItem('')
-      this.GoBack()
-    },
-
-    EmitItem (value) {
-      // mixinの中ではなにもしない
     }
   }
 }

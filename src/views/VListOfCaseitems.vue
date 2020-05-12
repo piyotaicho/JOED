@@ -3,27 +3,24 @@
     <router-link to="/edit/0/">
       <div class="new-item-button"></div>
     </router-link>
-    <div class="header">
-      <div>
-        <span class="left-aligned">SORT</span>
-        <span class="left-aligned">FITER</span>
-        <span class="left-aligned">SEARCH</span>
-        <span class="right-aligned"><router-link to="/utilities">キテレツ病院</router-link></span>
-      </div>
-    </div>
+
+    <MenuBar />
     <div class="itemlist">
       <Caseitem v-for="uid in Uids" :key="uid" :uid="uid" />
     </div>
+
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
+import MenuBar from '@/components/MenuBar'
 import Caseitem from '@/components/Caseitem'
 
 export default {
   name: 'ViewListOfCaseitems',
   components: {
-    Caseitem
+    MenuBar, Caseitem
   },
   mounted () {
     this.$store.dispatch('ReloadDatastore')
@@ -44,31 +41,6 @@ export default {
 /* ========================================
     症例一覧画面  VListOfCaseitems
    ======================================== */
-// トップステータスバー
-div.header
-  position: fixed
-  display: flex
-  justify-content: center
-  left: 0
-  top: 0
-  width: 100%
-  height: 32px
-  background-color: #dbdbdb
-  padding-top: 3px
-  justify-content: space-between
-  div
-    position: relative
-    width: 900px
-    display: flex
-    justify-content: space-around
-
-span.left-aligned
-  margin-left: 4em
-
-span.right-aligned
-  margin-right: 4em
-  margin-left: 16em
-
 // リストコンテナ
 div.itemlist
   position: absolute
@@ -76,9 +48,13 @@ div.itemlist
   top: 32px
   width: 100%
   height: 100%
-  margin-bottom: 80px
   background-color: ivory
   overflow: auto
+  &::after
+    display: block
+    height: 60px
+    width: 1px
+    content: ''
 
 div.new-item-button
   z-index: 2

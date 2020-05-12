@@ -62,14 +62,14 @@
               <option v-for="item of Description.Options"
                 :key="item"
                 :value="item">
-                {{item}}
+                {{spliceMarker(item)}}
               </option>
             </select>
           </div>
           <div class="w50 selectionbox" v-if="Description.Multi === true">
             <label v-for="item in Description.Options" :key="item">
               <input type="checkbox" v-model="DescriptionValue" :value="item" />
-              {{item}}
+              {{spliceMarker(item)}}
             </label>
           </div>
         </div>
@@ -95,7 +95,7 @@
 
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
-import ProcedureTree from '@/assets/ProcedureItemList'
+import ProcedureTree from '@/modules/ProcedureItemList'
 
 const ProceduresTree = new ProcedureTree()
 
@@ -125,8 +125,8 @@ export default {
     // mixin で基本的な部分は展開済み, Description/AdditionalProcedureを展開する
     if (this.ItemValue) {
       if (this.ItemValue.AdditionalProcedure) {
-        const selectedItemObject = ProceduresTree.getItemByName(this.Category, this.TargetOrgan, this.SelectedItem)
-        this.SetAdditionalProcedure(selectedItemObject)
+        const selectedItemObject = ProcedureTree.getItemByName(this.Category, this.TargetOrgan, this.SelectedItem)
+        this.setDataAdditionalProcedure(selectedItemObject)
         if (this.ItemValue.AdditionalProcedure.Description) {
           Object.assign(this.Description.Value, this.ItemValue.AdditionalProcedure.Description)
         }
@@ -162,6 +162,10 @@ export default {
     }
   },
   methods: {
+    spliceMarker (str) {
+      return str[str.length - 1] !== '$' ? str : str.substr(0, str.length - 1)
+    },
+
     OnSelected (event) {
       const newValue = event.target.value
       this.SelectedItem = newValue
@@ -169,24 +173,23 @@ export default {
 
       const selectedItemObject = ProceduresTree.getItemByName(this.Category, this.TargetOrgan, newValue)
 
-      this.SetAdditionalProcedure(selectedItemObject)
+      this.setDataAdditionalProcedure(selectedItemObject)
     },
 
-    SetAdditionalProcedure (item) {
+    setDataAdditionalProcedure (item) {
       const additionalProcedure = ProcedureTree.getAdditioninalProcedure(item)
-
       if (additionalProcedure) {
         this.Description.AdditionalProcedureTitle = additionalProcedure
 
         const additionalItem = ProceduresTree.getItemByName(this.Category, this.TargetOrgan, additionalProcedure)
-        this.SetDescription(additionalItem)
+        this.setDataDescription(additionalItem)
       } else {
         this.Description.AdditionalProcedureTitle = ''
-        this.SetDescription(item)
+        this.setDataDescription(item)
       }
     },
 
-    SetDescription (item) {
+    setDataDescription (item) {
       const setDescriptionProperties = (Title, Multi, Options) => {
         this.Description.Title = Title
         this.$nextTick().then(() => {
@@ -202,7 +205,7 @@ export default {
       }
 
       const descriptionTitle = ProcedureTree.getDescriptionTitle(item)
-      this.Description.Value = []
+      this.Description.Value.splice(0)
 
       if (descriptionTitle) {
         setDescriptionProperties(
@@ -220,8 +223,9 @@ export default {
         this.TrimmedEditableItem !== '' &&
         (this.Description.Title === '' || (this.Description.Title !== '' && this.Description.Value.length > 0))
       ) {
-        // アイテムオブジェクトを整形
         const temporaryItem = {}
+        const descriptionValue = this.Description.Value.filter(item => item[item.length - 1] !== '$')
+
         temporaryItem.Text = this.TrimmedEditableItem
 
         if (this.IsItemEdited) {
@@ -231,22 +235,24 @@ export default {
           temporaryItem.Chain = [this.Category, this.TargetOrgan]
 
           if (this.Description.AdditionalProcedureTitle !== '') {
-            temporaryItem.AdditionalProcedure = {
-              Text: this.Description.AdditionalProcedureTitle,
-              Description: this.Description.Value
+            if (descriptionValue.length > 0) {
+              temporaryItem.AdditionalProcedure = {
+                Text: this.Description.AdditionalProcedureTitle,
+                Description: descriptionValue
+              }
             }
           } else {
-            if (this.Description.Title !== '') {
-              temporaryItem.Description = this.Description.Value
+            if (this.Description.Title !== '' && descriptionValue.length > 0) {
+              temporaryItem.Description = descriptionValue
+            } else {
+              // 最終的なvalidation - 登録出来ないパターン
+              return
             }
           }
         }
-        this.EmitItem(temporaryItem)
+        this.$emit('data-upsert', '実施手術', this.ItemIndex, temporaryItem)
         this.GoBack()
       }
-    },
-    EmitItem (item) {
-      this.$emit('data-upsert', '実施手術', this.ItemIndex, item)
     }
   }
 }

@@ -21,6 +21,7 @@ const store = new Vuex.Store({
     // データベースの症例部分(SequentialIdをもつ)のキャッシュ
     // データベースの変更作業が行われる度にロードする。InfinityScrollと連動予定。
     DataStore: [],
+    CurrentIndex: -1, // pageficationではないが表示されているデータのインデックス
     Filters: {}, // フィルターの設定
     Orders: {}, // ソートの設定
     Settings: {} // システム設定
@@ -32,12 +33,9 @@ const store = new Vuex.Store({
     CountDatastore (state) {
       return state.DataStore.length
     },
-    // SequentialIdの配列を取得する
     GetUids (state) {
       return state.DataStore.map(
         item => item.SequentialId
-      ).filter(
-        filteritem => filteritem
       )
     },
     // SequentialId をもつドキュメントを取得する
@@ -61,8 +59,7 @@ const store = new Vuex.Store({
     // データベースのキャッシュ更新～変更操作のあとは必ず呼び出す
     ReloadDatastore (context) {
       DatabaseInstance.find(
-        { SequentialId: { $gt: 0 } }/*,
-        { _id: 0 } */
+        { SequentialId: { $gt: 0 } }
       )
         .sort({
           SequentialId: 1
