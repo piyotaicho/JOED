@@ -33,6 +33,19 @@ import EditSectionMixins from '@/mixins/EditSectionMixins'
 
 export default {
   name: 'EditSectionAEs',
-  mixins: [EditSectionMixins]
+  mixins: [EditSectionMixins],
+  watch: {
+    optionValue () {
+      this.Validate()
+    }
+  },
+  methods: {
+    Validate () {
+      // 合併症ありなしと合併症入力の有無との整合性確認
+      const adequacy = (!this.optionValue && this.container.length > 0) ||
+        (this.optionValue && this.container.length === 0)
+      this.$emit('validate', adequacy)
+    }
+  }
 }
 </script>

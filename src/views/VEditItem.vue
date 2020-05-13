@@ -30,18 +30,21 @@
       <EditSectionDiagnoses
         :container.sync="CaseData.Diagnoses"
         @removeitem="RemoveListItem('手術診断', $event)"
-        @addnewitem="OpenEditView('手術診断')" />
+        @addnewitem="OpenEditView('手術診断')"
+        @validate="setValidationStatus('手術診断', $event)" />
 
       <EditSectionProcedures
         :container.sync="CaseData.Procedures"
         @removeitem="RemoveListItem('実施手術', $event)"
-        @addnewitem="OpenEditView('実施手術')" />
+        @addnewitem="OpenEditView('実施手術')"
+        @validate="setValidationStatus('実施手術', $event)" />
 
       <EditSectionAEs
         :container.sync="CaseData.AEs"
         :optionValue.sync="IsNoAEs"
         @removeitem="RemoveListItem('AE', $event)"
-        @addnewitem="OpenEditView('AE')"/>
+        @addnewitem="OpenEditView('AE')"
+        @validate="setValidationStatus('AE', $event)" />
     </div>
 
     <!-- コントロールボタン群 -->
@@ -111,8 +114,14 @@ export default {
           手術診断: 'Diagnoses',
           実施手術: 'Procedures',
           AE: 'AEs'
+        },
+        Varidation: {
+          手術診断: 0,
+          実施手術: 1,
+          AE: 2
         }
-      }
+      },
+      ValidationStatus: [false, false, false]
     })
   },
   created () {
@@ -135,15 +144,15 @@ export default {
   },
   computed: {
     Validate () {
-      const BasicInformations = this.CaseData.Age > 0 &&
+      return this.ValidateBasicInformations && this.ValidationStatus.every(item => item)
+    },
+    ValidateBasicInformations () {
+      return this.CaseData.Age > 0 &&
         !!this.CaseData.InstitutionalPatientId.trim() &&
         !!this.CaseData.DateOfProcedure &&
         !!this.CaseData.ProcedureTime &&
         this.CaseData.Diagnoses.length > 0 &&
         this.CaseData.Procedures.length > 0
-      const AEAdequacy = (!this.CaseData.PresentAE && !this.CaseData.AEs.length > 0) ||
-        (this.CaseData.PresentAE && this.CaseData.AEs.length > 0)
-      return BasicInformations && AEAdequacy
     },
     IsNoAEs: {
       get () {
@@ -162,6 +171,29 @@ export default {
       return ((typeof (value) === 'string' && value === '') ||
               (typeof (value) === 'object' && Object.keys(value).length === 0))
     },
+
+    OpenEditView (target, index = -1, value = {}) {
+      if (this.Navigation.View[target]) {
+        this.$router.push({
+          name: this.Navigation.View[target],
+          params: {
+            ItemIndex: index,
+            ItemValue: value
+          }
+        })
+      }
+    },
+    GoBack () {
+      this.$router.push({ name: 'list' })
+    },
+
+    setValidationStatus (target, value) {
+      console.log(target, value)
+      if (this.Navigation.Varidation[target] !== undefined) {
+        this.ValidationStatus[this.Navigation.Varidation[target]] = value
+      }
+    },
+
     EditListItem (target, index, value) {
       if (this.Navigation.Target[target]) {
         this.ManipulateList(
@@ -175,17 +207,6 @@ export default {
     },
     RemoveListItem (target, index) {
       this.EditListItem(target, index, '')
-    },
-    OpenEditView (target, index = -1, value = {}) {
-      if (this.Navigation.View[target]) {
-        this.$router.push({
-          name: this.Navigation.View[target],
-          params: {
-            ItemIndex: index,
-            ItemValue: value
-          }
-        })
-      }
     },
     ManipulateList (ListObject, index, value) {
       if (Array.isArray(ListObject)) {
@@ -207,27 +228,20 @@ export default {
         }
       }
     },
-    GoBack () {
-      this.$router.push({ name: 'list' })
-    },
+
     RemoveItem () {
-      this.DoRemoveItem() &&
-      this.GoBack()
+      if (this.uid > 0) {
+        this.$store.dispatch('RemoveItemFromDatastore', { SequentialId: this.uid })
+        this.GoBack()
+      }
     },
     CommitItem () {
       this.DoCommitItem() &&
       this.GoBack()
     },
     CommitItemAndRenew () {
-      // this.DoCommitItem()
+      this.DoCommitItem() &&
       this.$router.go({ name: 'edit', params: { uid: 0 } })
-    },
-    DoRemoveItem () {
-      if (this.uid > 0) {
-        this.$store.dispatch('RemoveItemFromDatastore', { SequentialId: this.uid })
-        return true
-      }
-      return false
     },
     DoCommitItem () {
       if (this.Validate) {
@@ -267,7 +281,6 @@ export default {
       }
       return false
     }
-    // end of methods
   }
 }
 </script>

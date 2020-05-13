@@ -242,11 +242,13 @@ export default {
               }
             }
           } else {
-            if (this.Description.Title !== '' && descriptionValue.length > 0) {
-              temporaryItem.Description = descriptionValue
-            } else {
-              // 最終的なvalidation - 登録出来ないパターン
-              return
+            if (this.Description.Title !== '') {
+              if (descriptionValue.length > 0) {
+                temporaryItem.Description = descriptionValue
+              } else {
+                // 最終的なvalidation - 登録出来ないパターン
+                return
+              }
             }
           }
         }

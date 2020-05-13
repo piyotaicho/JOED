@@ -18,6 +18,11 @@ export default {
       default: false
     }
   },
+  watch: {
+    container () {
+      this.Validate()
+    }
+  },
   computed: {
     ItemContainer: {
       get () {
@@ -44,6 +49,9 @@ export default {
     },
     AddNewItem () {
       this.$emit('addnewitem')
+    },
+    Validate () {
+      return true
     }
   }
 }

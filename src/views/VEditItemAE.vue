@@ -557,7 +557,7 @@
             <div>Grade 2</div>
             <div>
               <label>
-                <input type="checkbox" v-model="AE.Course" value="輸血～自己血輸血・術中回収血">
+                <input type="checkbox" v-model="AE.Course" value="自己血輸血・術中回収血">
                 輸血～自己血輸血・術中回収血
               </label>
               <label>
@@ -632,7 +632,7 @@
 </template>
 
 <script>
-import { ZenToHan } from '@/modules/ZenHanChars'
+import { ZenToHanNumbers } from '@/modules/ZenHanChars'
 
 export default {
   props: {
@@ -656,17 +656,6 @@ export default {
         Course: []
       },
       BloodCountCheckbox: false
-    }
-  },
-  created () {
-    if (this.ItemValue) {
-      !!this.ItemValue.Category && (this.Category = this.ItemValue.Category)
-      !!this.ItemValue.Grade && (this.AE.Grade = this.ItemValue.Grade)
-      !!this.ItemValue.Course && Object.assign(this.AE.Course, this.ItemValue.Course)
-      !!this.ItemValue.Title && Object.assign(this.AE.Title, this.ItemValue.Title)
-      !!this.ItemValue.Cause && Object.assign(this.AE.Cause, this.ItemValue.Cause)
-      !!this.ItemValue.Location && Object.assign(this.AE.Location, this.ItemValue.Location)
-      !!this.ItemValue.BloodCount && (this.AE.BloodCount === '不明' ? this.BloodCountCheckbox = true : (this.AE.BloodCount = this.ItemValue.BloodCount))
     }
   },
   computed: {
@@ -697,23 +686,49 @@ export default {
         (this.AE.Title.findIndex((s) => s === '出血') >= 0)
       )
     },
-    Validate () {
-      var ValidateCategory = {}
-      ValidateCategory['出血'] = () =>
-        !!this.AE.BloodCount && !!this.AE.Bloodcount.trim().match(/^(不明|\d+)$/)
-      ValidateCategory['気腹・潅流操作'] = () =>
-        !!this.AE.Title.length
-      ValidateCategory['機器の不具合・破損'] = () =>
-        !!this.AE.Cause.length &&
-        (this.AE.Title.length ? (!!this.AE.Title.length && !!this.AE.Location.length) : true)
-      ValidateCategory['機器の誤操作'] = ValidateCategory['機器の不具合・破損']
-      ValidateCategory['術中使用した薬剤'] = () =>
-        !!this.AE.Cause.length
-      ValidateCategory['体腔内遺残'] = ValidateCategory['術中使用した薬剤']
-      ValidateCategory['術後'] = () =>
-        !!this.AE.Title.length
 
-      return ValidateCategory[this.Category] && !!this.AE.Grade && !!this.AE.Course.length
+    ValidateCategory () {
+      switch (this.Category) {
+        case '出血':
+          return (this.AE.BloodCount.trim === '') ? false
+            : (ZenToHanNumbers(this.AE.BloodCount).match(/^(不明|(\d{2,}|[5-9])\d{2})$/) !== null)
+        case '気腹・潅流操作':
+        case '術後':
+          return !!this.AE.Title.length
+        case '術中使用した薬剤':
+        case '体腔内遺残':
+          return !!this.AE.Cause.length
+        case '機器の不具合・破損':
+        case '機器の誤操作':
+          return !!this.AE.Cause.length &&
+            (this.AE.Title.length ? (!!this.AE.Title.length && !!this.AE.Location.length) : true)
+      }
+      return false
+    },
+    ValidateGrade () {
+      const GradeCourseMapping = [
+        ['経過観察', '周術期管理の延長', '入院期間の延長', '再入院'],
+        ['経過観察', '周術期管理の延長', '入院期間の延長', '再入院', '自己血輸血・術中回収血', '輸血・血液製剤'],
+        ['術中の追加手術～腹腔鏡', '術中の追加手術～子宮鏡', '術中の追加手術～開腹', '術後の再手術～開腹', '術後の再手術～腹腔鏡', '術後の再手術～子宮鏡', 'そのほか再手術'],
+        [],
+        ['合併症管理のためのICU入室'],
+        ['死亡']
+      ]
+
+      if (!!this.AE.Grade && !!this.AE.Course.length) {
+        const grade = ['1', '2', '3a', '3b', '4', '5'].findIndex(item => item === this.AE.Grade)
+        if (this.AE.Course.some(course => GradeCourseMapping[grade].findIndex(item => item === course) !== -1)) {
+          const newmap = []
+          for (let i = 0; i <= grade; i++) {
+            newmap.splice(0, 0, ...GradeCourseMapping[i])
+          }
+          return this.AE.Course.every(course => newmap.findIndex(item => item === course) !== -1)
+        }
+      }
+      return false
+    },
+    Validate () {
+      return this.ValidateCategory && this.ValidateGrade
     }
   },
   methods: {
@@ -741,7 +756,9 @@ export default {
       if (this.Validate) {
         var key
         var filteredItems = { Category: this.Category }
-        this.AE.BloodCount = ZenToHan(this.AE.BloodCount.trim())
+        if (this.AE.BloodCount !== '不明') {
+          this.AE.BloodCount = ZenToHanNumbers(this.AE.BloodCount.trim())
+        }
         for (key in this.AE) {
           if (!!this.AE[key] &&
             (Array.isArray(this.AE[key]) ? this.AE[key].length > 0 : true)) {

@@ -17,6 +17,11 @@ import EditSectionMixins from '@/mixins/EditSectionMixins'
 
 export default {
   name: 'EditSectionDiagnoses',
-  mixins: [EditSectionMixins]
+  mixins: [EditSectionMixins],
+  methods: {
+    Validate () {
+      this.$emit('validate', this.container.length > 0)
+    }
+  }
 }
 </script>
