@@ -691,7 +691,8 @@ export default {
       switch (this.Category) {
         case '出血':
           return (this.AE.BloodCount.trim === '') ? false
-            : (ZenToHanNumbers(this.AE.BloodCount).match(/^(不明|(\d{2,}|[5-9])\d{2})$/) !== null)
+            : (this.AE.BloodCount === '不明' ||
+            ZenToHanNumbers(this.AE.BloodCount).match(/^(\d{2,}|[5-9])\d{2}$/) !== null)
         case '気腹・潅流操作':
         case '術後':
           return !!this.AE.Title.length

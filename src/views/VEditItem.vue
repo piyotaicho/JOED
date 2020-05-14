@@ -41,7 +41,7 @@
 
       <EditSectionAEs
         :container.sync="CaseData.AEs"
-        :optionValue.sync="IsNoAEs"
+        :optionValue.sync="isNoAEs"
         @removeitem="RemoveListItem('AE', $event)"
         @addnewitem="OpenEditView('AE')"
         @validate="setValidationStatus('AE', $event)" />
@@ -144,7 +144,10 @@ export default {
   },
   computed: {
     Validate () {
-      return this.ValidateBasicInformations && this.ValidationStatus.every(item => item)
+      return this.ValidateBasicInformations &&
+        this.ValidationStatus[0] &&
+        this.ValidationStatus[1] &&
+        this.ValidationStatus[2]
     },
     ValidateBasicInformations () {
       return this.CaseData.Age > 0 &&
@@ -154,7 +157,8 @@ export default {
         this.CaseData.Diagnoses.length > 0 &&
         this.CaseData.Procedures.length > 0
     },
-    IsNoAEs: {
+
+    isNoAEs: {
       get () {
         return !this.CaseData.PresentAE
       },
@@ -190,7 +194,7 @@ export default {
     setValidationStatus (target, value) {
       console.log(target, value)
       if (this.Navigation.Varidation[target] !== undefined) {
-        this.ValidationStatus[this.Navigation.Varidation[target]] = value
+        this.ValidationStatus.splice(this.Navigation.Varidation[target], 1, value)
       }
     },
 
@@ -217,7 +221,7 @@ export default {
               ListObject.splice(index, 1)
             } else {
               // 実データが与えられた場合は当該インデックスの内容を置換する
-              ListObject[index] = value
+              ListObject.splice(index, 1, value)
             }
           }
         } else {

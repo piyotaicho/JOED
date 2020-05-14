@@ -19,8 +19,11 @@ export default {
     }
   },
   watch: {
-    container () {
-      this.Validate()
+    container: {
+      handler () {
+        this.Validate()
+      },
+      immediate: true
     }
   },
   computed: {

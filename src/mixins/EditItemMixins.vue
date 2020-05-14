@@ -1,5 +1,5 @@
 <script>
-import DbItems from '@/modules/DbItemHandler'
+// import DbItems from '@/modules/DbItemHandler'
 
 export default {
   props: {
@@ -19,7 +19,7 @@ export default {
       EditableItem: ''
     }
   },
-  mounted () {
+  /* mounted () {
     if (this.ItemValue && Object.keys(this.ItemValue).length > 0) {
       const tree = DbItems.getItemChain(this.ItemValue)
       const enterdItem = tree.pop()
@@ -35,7 +35,7 @@ export default {
         })
       })
     }
-  },
+  }, */
   computed: {
     TrimmedEditableItem () {
       const enteredValue = this.EditableItem.toString().trim()

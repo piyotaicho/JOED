@@ -32,15 +32,10 @@ export default class DbItems {
   }
 
   static getItemChain (hashObject = {}, $propertyName = 'Text') {
-    // 移行措置のためしばらくは旧バージョンデータを扱えるようにする
     if (hashObject.Chain && hashObject[$propertyName]) {
       return [...hashObject.Chain, this.getItemValue(hashObject, $propertyName)]
-    } else {
-      // 旧バージョンデータへの対応のためしばらくしたら以下は削除する
-      const category = Object.keys(hashObject)[0]
-      const target = Object.keys(hashObject[category])[0]
-      return [category, target, this.getItemValue(hashObject)]
     }
+    return undefined
   }
 
   static flattenItemList (itemList = [], FlattenToString = false) {
@@ -52,12 +47,12 @@ export default class DbItems {
           Description: item.Desccription
         })
       } else {
-        if (FlattenToString === false) {
+        if (FlattenToString) {
+          temporaryArray.push(item.Text)
+        } else {
           temporaryArray.push({
             Text: item.Text
           })
-        } else {
-          temporaryArray.push(item.Text)
         }
       }
     }

@@ -44,7 +44,21 @@ export default {
       // 合併症ありなしと合併症入力の有無との整合性確認
       const adequacy = (!this.optionValue && this.container.length > 0) ||
         (this.optionValue && this.container.length === 0)
-      this.$emit('validate', adequacy)
+
+      // 重複確認
+      const flattenContainer = []
+      for (const item of this.container) {
+        if (item.Category === '出血') {
+          flattenContainer.push('出血')
+        } else {
+          flattenContainer.push([item.Category, item.Title, item.Cause].join(':'))
+        }
+      }
+      const isDup = flattenContainer
+        .filter((item, index, self) => self.indexOf(item) !== self.lastIndexOf(item))
+        .length > 0
+
+      this.$emit('validate', adequacy && isDup === false)
     }
   }
 }

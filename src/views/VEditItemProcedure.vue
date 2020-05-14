@@ -121,7 +121,7 @@ export default {
       }
     })
   },
-  mounted () {
+  /* mounted () {
     // mixin で基本的な部分は展開済み, Description/AdditionalProcedureを展開する
     if (this.ItemValue) {
       if (this.ItemValue.AdditionalProcedure) {
@@ -134,7 +134,7 @@ export default {
         Object.assign(this.Description.Value, this.ItemValue.Description)
       }
     }
-  },
+  }, */
   computed: {
     Categories () {
       return ProceduresTree.Categories()
@@ -229,10 +229,17 @@ export default {
         temporaryItem.Text = this.TrimmedEditableItem
 
         if (this.IsItemEdited) {
+          // ユーザ手入力の場合は選択が掛かっていないので最低限の情報のみ
           temporaryItem.Chain = [this.Category]
           temporaryItem.UserTyped = true
         } else {
+          // 選択されたものには適切な付随情報を収納
           temporaryItem.Chain = [this.Category, this.TargetOrgan]
+
+          const dittos = ProcedureTree.getDittos(ProceduresTree.getItemByName(...temporaryItem.Chain, temporaryItem.Text))
+          if (dittos) {
+            temporaryItem.Ditto = Object.assign([], dittos)
+          }
 
           if (this.Description.AdditionalProcedureTitle !== '') {
             if (descriptionValue.length > 0) {
@@ -246,7 +253,6 @@ export default {
               if (descriptionValue.length > 0) {
                 temporaryItem.Description = descriptionValue
               } else {
-                // 最終的なvalidation - 登録出来ないパターン
                 return
               }
             }
