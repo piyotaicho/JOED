@@ -18,8 +18,10 @@
 
 https://p4testsuite.hostingerapp.com/JOEDv5/
 
-- 2020-04-20 とりあえず、症例リストを作れるようになりましたので公開
+- 2020-04-20 とりあえず,症例リストを作れるようになりましたので公開.
 - 2020-05-07 保存データベースの構造を変更したため後方互換が無くなりました,基本的な登録機能は実装できました.(Database-Managerを用意しましたのでデータベースのリセットにご利用ください)
+- 2020-05-13 AE入力のチェックに問題があったので修正,各セクション毎に入力時のエラーチェック実装を開始しました.
+- 2020-05-14 項目の重複入力チェックを円滑にするためデータベース構成を変更.
 
 データはブラウザのストレージに保存されます、そのうちストレージ削除やサンプルデータ読み込みのリンクも作成します。
 
@@ -70,28 +72,29 @@ https://p4testsuite.hostingerapp.com/JOEDv5/
 インポートの際にDiagnosisItemsから検索して適当なChainを割り付ける.
 |名称                        |タイプ  |フォーマット規則|必須項目|エクスポート対象|解説|
 |:--------------------------|:-----:|:--:|:--:|:--:|:--|
-|Text                       |string | |X|X|術式名、術式マスタから引用|
-|Chain                      |array  | | | |選択ツリー[Category, Target]|
+|Text                       |string | |X|X|術式名、術式マスタから引用
+|Chain                      |array  | | | |選択ツリー[Category, Target]
 |Description                |array  | | |x|付随情報
 |AdditionalProcedure        |object | | |x|併施術式 { Text: ..., Description: ...}
+|Ditto                      |array  | | | |重複確認の対象となる術式名
 
 ### オブジェクト:AE
 |名称                        |タイプ  |フォーマット規則|必須項目|エクスポート対象|解説|
 |:--------------------------|:-----:|:--:|:--:|:--:|:--|
-|Category                   |string | |X|X|合併症の発生カテゴリ|
-|Title                      |string | |X|X|合併症の名称|
-|Cause                      |string | | |X|合併症の原因|
-|Location                   |string | | |X|合併症の発生部位|
-|BloodCount                 |integer| | |X|出血の場合の出血量|
-|Grade                      |string |([1245]\|3[ab])|X|X|合併症のグレード|
-|Course                     |array  | |X|X|合併症の転帰|
+|Category                   |string | |X|X|合併症の発生カテゴリ
+|Title                      |string | |X|X|合併症の名称
+|Cause                      |string | | |X|合併症の原因
+|Location                   |string | | |X|合併症の発生部位
+|BloodCount                 |integer| | |X|出血の場合の出血量
+|Grade                      |string |([1245]\|3[ab])|X|X|合併症のグレード
+|Course                     |array  | |X|X|合併症の転帰
 
 ### マスタオブジェクト:InstituteList
 |名称                        |タイプ  |解説
 |:--------------------------|:-----:|:--|
-|Name                       |string |施設名|
-|Id                         |string |施設の登録番号<br/>数字５桁、未登録施設は99999？|
-|Prefecture                 |string |県名|
+|Name                       |string |施設名
+|Id                         |string |施設の登録番号<br/>数字５桁、未登録施設は99999？
+|Prefecture                 |string |県名
 
 ### マスタ:DiagnosisMaster
 |名称                        |タイプ  |解説
@@ -139,11 +142,15 @@ ProcedureMasterから作成される
         'Target': {
             'Procedure', // なにも付随情報が無い場合
             {
-                'Procedure': {
-                    Ditto: [],
-                    AdditionalProcedure: text,
+                {
+                    Text: 'Procedure',
+                    Ditto: [...],
+                    AdditionalProcedure: 'AdditionalProcedure',
                     Description: {
-                        DescriptionTitle: [...Descriptions]
+                        Text: 'Titie',
+                        Values: [...selections]
+                        // selectionsに$Multiを含む場合は複数選択可能
+                        // $で終了する項目を選択した場合はこのエントリ自体が生成されない(=単独作成不可)
                     }
                 }
             }
