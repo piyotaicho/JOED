@@ -1,13 +1,13 @@
 <template>
-  <div id="password-authentication">
-    <div class="title">JOED version 5DEV</div>
+  <div class="app-dialog w600p">
+    <div class="title-section">JOED version 5DEV</div>
 
-    <div class="dialog-row">
+    <div>
       <span>パスワード : </span>
       <input type="password" v-model="PasswordString" id="password-entry-box" :disabled="isPasswordFieldIsDisabled" />
     </div>
 
-    <div class="dialog-row">
+    <div>
         <input type="button" value="ログイン" @click="PerformAuthentication" />
     </div>
   </div>
@@ -44,24 +44,21 @@ export default {
 }
 </script>
 
-<style lang="sass" scoped>
-div#password-authentication
+<style lang="sass">
+div.authentication
   position: relative
-  width: 800px
+  width: 600px
   top: 50%
-  background-color: ivory
-  text-align: center
   margin: auto auto
   padding: 10px
   border: black 1px solid
   border-radius: 5px
-
-div.title
-  margin: 14px
-  text-align: center
-  font-size: 150%
-
-div.dialog-row
-  margin: 14px
-  text-align: center
+  background-color: ivory
+  display: flex
+  flex-direction: column
+  div
+    margin: 14px
+    text-align: center
+  .authentication-title
+    font-size: 1.35rem
 </style>

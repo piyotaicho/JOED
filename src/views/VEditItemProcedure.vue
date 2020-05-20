@@ -121,20 +121,6 @@ export default {
       }
     })
   },
-  /* mounted () {
-    // mixin で基本的な部分は展開済み, Description/AdditionalProcedureを展開する
-    if (this.ItemValue) {
-      if (this.ItemValue.AdditionalProcedure) {
-        const selectedItemObject = ProcedureTree.getItemByName(this.Category, this.TargetOrgan, this.SelectedItem)
-        this.setDataAdditionalProcedure(selectedItemObject)
-        if (this.ItemValue.AdditionalProcedure.Description) {
-          Object.assign(this.Description.Value, this.ItemValue.AdditionalProcedure.Description)
-        }
-      } else if (this.ItemValue.Description) {
-        Object.assign(this.Description.Value, this.ItemValue.Description)
-      }
-    }
-  }, */
   computed: {
     Categories () {
       return ProceduresTree.Categories()

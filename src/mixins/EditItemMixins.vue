@@ -19,23 +19,6 @@ export default {
       EditableItem: ''
     }
   },
-  /* mounted () {
-    if (this.ItemValue && Object.keys(this.ItemValue).length > 0) {
-      const tree = DbItems.getItemChain(this.ItemValue)
-      const enterdItem = tree.pop()
-
-      this.Category = tree[0]
-      this.$nextTick().then(() => {
-        this.TargetOrgan = tree[1]
-        this.$nextTick().then(() => {
-          this.SelectedItem = enterdItem
-          this.$nextTick().then(() => {
-            this.EditableItem = enterdItem
-          })
-        })
-      })
-    }
-  }, */
   computed: {
     TrimmedEditableItem () {
       const enteredValue = this.EditableItem.toString().trim()

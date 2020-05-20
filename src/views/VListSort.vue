@@ -1,5 +1,7 @@
 <template>
-  <div id="sort-overlay">
+  <div>
+    <div id="sort-overlay" @click="closeMenu">
+    </div>
     <div id="sort-menu">
       <div class="menu-title"><span>ソートの設定</span></div>
       <div class="menu-item"><span>[.]</span><span>登録順</span><span>昇順/降順</span></div>
@@ -33,7 +35,7 @@ div#sort-overlay
 div#sort-menu
   z-index: 99
   position: absolute
-  top: 3px
+  top: 32px
   left: 100px
   width: 300px
   min-height: 200px

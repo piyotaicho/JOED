@@ -18,19 +18,22 @@ var DatabaseInstance = new Database({
 
 const store = new Vuex.Store({
   state: {
+    ApplicationVersion: '5.00.0517.beta',
     // データベースの症例部分(SequentialIdをもつ)のキャッシュ
-    // データベースの変更作業が行われる度にロードする。InfinityScrollと連動予定。
+    // 冗長だがデータベースの変更作業が行われる度にロードする。InfinityScrollと連動予定。
     DataStore: [],
     CurrentIndex: -1, // pageficationではないが表示されているデータのインデックス
     Filters: {}, // フィルターの設定
-    Orders: {}, // ソートの設定
+    SortOrders: {
+      SequentialId: 1
+    }, // ソートの設定
     Settings: {} // システム設定
   },
   getters: {
-    GetDatastore (state) {
-      return state.DataStore
+    ApplicationVersion (state) {
+      return state.ApplicationVersion
     },
-    CountDatastore (state) {
+    CountEntireDatastore (state) {
       return state.DataStore.length
     },
     GetUids (state) {
@@ -46,115 +49,185 @@ const store = new Vuex.Store({
         })
         return FilterdItems[0]
       }
+    },
+    GetSystemSetting (state) {
+      return state.Settings
     }
   },
+
   mutations: {
     SetDatastore (state, payload) {
       if (payload) {
         state.DataStore = payload
       }
+    },
+    SetSystemSettings (state, payload) {
+      if (payload) {
+        state.Settings = payload
+      }
     }
   },
+
   actions: {
     // データベースのキャッシュ更新～変更操作のあとは必ず呼び出す
     ReloadDatastore (context) {
       DatabaseInstance.find(
         { SequentialId: { $gt: 0 } }
       )
-        .sort({
-          SequentialId: 1
-        })
+        .sort(context.state.SortOrders)
         .exec(
-          (errstring, documents) => {
-            context.commit('SetDatastore', documents)
+          (error, documents) => {
+            if (!error) {
+              context.commit('SetDatastore', documents)
+            }
           }
         )
     },
-    InsertItemIntoDatastore (context, payload) {
-      payload.SequentialId = '__autoid__'
-      DatabaseInstance.insert(
-        payload,
-        (errorstring) => {
-          if (!errorstring) {
-            DatabaseInstance.findOne(
-              { sequence: 'maindb' },
-              (err, sequencerow) => {
-                var newid = 0
-                if (!err) {
-                  newid = (sequencerow ? sequencerow.number : 0) + 1
 
+    InsertItemIntoDatastore (context, payload) {
+      const ErrorAutonumberFailed = 'データベースエラー AUTO-NUMBERING FAILED'
+
+      return new Promise((resolve, reject) => {
+        DatabaseInstance.count(
+          {
+            InstitutionalPatientId: payload.InstitutionalPatientId,
+            DateOfProcedure: payload.DateOfProcedure
+          },
+          (error, count) => {
+            if (error) reject(error)
+            if (count > 0) reject(new Error('同一日に同一IDの症例は登録できません.'))
+            resolve()
+          }
+        )
+      }).then(() => {
+        return new Promise((resolve, reject) => {
+          payload.SequentialId = '__autoid__'
+          DatabaseInstance.insert(
+            payload,
+            (error) => {
+              if (error) reject(error)
+              DatabaseInstance.findOne(
+                { sequence: 'maindb' },
+                (error, sequencerow) => {
+                  if (error) reject(error)
+                  const newid = (sequencerow ? sequencerow.number : 0) + 1
                   DatabaseInstance.update(
                     { sequence: 'maindb' },
                     { sequence: 'maindb', number: newid },
                     { upsert: true },
-                    () => {
+                    (error) => {
+                      if (error) reject(new Error(ErrorAutonumberFailed))
                       DatabaseInstance.update(
                         { SequentialId: '__autoid__' },
                         { $set: { SequentialId: newid } },
                         NoOptions,
-                        () => {
+                        (error) => {
+                          if (error) reject(new Error(ErrorAutonumberFailed))
                           context.dispatch('ReloadDatastore')
+                          resolve()
                         }
                       )
                     }
                   )
                 }
+              )
+            }
+          )
+        })
+      }).catch(error => {
+        if (error.message === ErrorAutonumberFailed) {
+          DatabaseInstance.remove(
+            { SequentialId: '__autoid__' },
+            { multi: false }
+          )
+        }
+        return Promise.reject(error)
+      })
+    },
+    ReplaceItemInDatastore (context, payload) {
+      return new Promise((resolve, reject) => {
+        if (payload.SequentialId <= 0) reject(new Error('内部IDの指定に問題があります.'))
+        DatabaseInstance.find(
+          {
+            InstitutionalPatientId: payload.InstitutionalPatientId,
+            DateOfProcedure: payload.DateOfProcedure
+          },
+          { SequentialId: 1 },
+          (error, documents) => {
+            if (error) reject(error)
+            for (const document of documents) {
+              if (document.SequentialId !== payload.SequentialId) reject(new Error('同一日に同一IDの症例は登録できません.'))
+            }
+            DatabaseInstance.update(
+              { SequentialId: payload.SequentialId },
+              payload,
+              NoOptions,
+              (error, numupdated) => {
+                if (error) reject(error)
+                context.dispatch('ReloadDatastore')
+                resolve()
               }
             )
           }
-        }
-      )
-    },
-    UpdateItemInDatastore (context, payload) {
-      if (payload.SequentialId > 0) {
-        DatabaseInstance.update(
-          { SequentialId: payload.SequentialId },
-          { $set: payload },
-          NoOptions,
-          (errorObj, numupdated) => {
-            console.log('Update - ', numupdated)
-            if (errorObj) {
-              console.log(errorObj)
-            }
-            context.dispatch('ReloadDatastore')
-          }
         )
-      }
-    },
-    ReplaceItemInDatastore (context, payload) {
-      if (payload.SequentialId > 0) {
-        DatabaseInstance.update(
-          { SequentialId: payload.SequentialId },
-          payload,
-          NoOptions,
-          (errorObj, numupdated) => {
-            console.log('Replace - ', numupdated)
-            if (errorObj) {
-              console.log(errorObj)
-            }
-            context.dispatch('ReloadDatastore')
-          }
-        )
-      }
+      })
     },
     UpsertItemInDatastore (context, payload) {
       if (payload.SequentialId && payload.SequentialId > 0) {
-        context.dispatch('ReplaceItemInDatastore', payload)
+        return context.dispatch('ReplaceItemInDatastore', payload)
       } else {
-        context.dispatch('InsertItemIntoDatastore', payload)
+        return context.dispatch('InsertItemIntoDatastore', payload)
       }
     },
+
     RemoveItemFromDatastore (context, payload) {
-      if (payload.SequentialId > 0) {
-        DatabaseInstance.remove(
-          { SequentialId: payload.SequentialId },
-          NoOptions,
-          () => {
-            context.dispatch('ReloadDatastore')
+      return new Promise((resolve, reject) => {
+        try {
+          if (payload.SequentialId <= 0) throw new Error()
+          DatabaseInstance.remove(
+            { SequentialId: payload.SequentialId },
+            NoOptions,
+            (error) => {
+              if (error) throw error
+              context.dispatch('ReloadDatastore')
+              resolve()
+            }
+          )
+        } catch (error) {
+          reject(error)
+        }
+      })
+    },
+
+    ReloadSettings (context) {
+      DatabaseInstance.findOne(
+        { Settings: { $exist: true } }
+      )
+        .exec(
+          (errstring, documents) => {
+            if (documents.length > 0) {
+              context.commit('SetSystemSettings', documents[0].Settings)
+            }
+          }
+        )
+    },
+    UpdateSettings (context, payload) {
+      if (Object.keys(payload).length > 0) {
+        DatabaseInstance.update(
+          { Settings: { $exist: true } },
+          { Settings: payload },
+          { upsert: true },
+          (errorstring) => {
+            if (errorstring) {
+              console.log('error on update setting', errorstring)
+            } else {
+              context.commit('ReloadSettings')
+            }
           }
         )
       }
     }
+
   }
 })
 

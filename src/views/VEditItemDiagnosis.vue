@@ -2,7 +2,7 @@
     <div class="edititem-overlay">
       <div class="edititem-overlay-content">
         <div class="content-title">
-          <span>実施術式</span>
+          <span>手術診断</span>
         </div>
         <div class="flex-content">
           <div class="w20 selectionbox">

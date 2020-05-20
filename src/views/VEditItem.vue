@@ -1,5 +1,5 @@
 <template>
-  <div class="editview">
+  <div class="app-dialog w800p">
     <div class="edit-top">
       <div class="edit-top-left">
         <InputDateOfProcedure v-model="CaseData.DateOfProcedure" />
@@ -50,7 +50,7 @@
     <!-- コントロールボタン群 -->
     <div class="edit-controls">
       <span @click="GoBack()"> [編集内容を破棄] </span>
-      <span @click="CommitItem()"> [編集内容を保存] <span v-if="Validate">★</span></span>
+      <span @click="CommitItem()"> [編集内容を保存] </span>
       <span v-if="IsEditingExistingItem" @click="RemoveItem"> [このエントリを削除] </span>
       <span @click="CommitItemAndRenew()"> [保存して新規エントリを作成] </span>
     </div>
@@ -143,6 +143,7 @@ export default {
     }
   },
   computed: {
+    /*
     Validate () {
       return this.ValidateBasicInformations &&
         this.ValidationStatus[0] &&
@@ -156,7 +157,7 @@ export default {
         !!this.CaseData.ProcedureTime &&
         this.CaseData.Diagnoses.length > 0 &&
         this.CaseData.Procedures.length > 0
-    },
+    }, */
 
     isNoAEs: {
       get () {
@@ -240,121 +241,120 @@ export default {
       }
     },
     CommitItem () {
-      this.DoCommitItem() &&
-      this.GoBack()
+      this.DoCommitItem()
+        .then(() => this.GoBack())
+        .catch(e => window.alert(e))
     },
     CommitItemAndRenew () {
-      this.DoCommitItem() &&
-      this.$router.go({ name: 'edit', params: { uid: 0 } })
+      this.DoCommitItem().then(() =>
+        this.$router.go({ name: 'edit', params: { uid: 0 } })
+      )
     },
-    DoCommitItem () {
-      if (this.Validate) {
-        var payload = {}
-        Object.assign(payload, this.CaseData)
-        // SequentialIdの設定、0は新規レコード
-        payload.SequentialId = Number(this.uid)
+
+    async DoCommitItem () {
+      const validateBasicInformations =
+          this.CaseData.Age > 0 &&
+          !!this.CaseData.InstitutionalPatientId.trim() &&
+          !!this.CaseData.DateOfProcedure &&
+          !!this.CaseData.ProcedureTime &&
+          this.CaseData.Diagnoses.length > 0 &&
+          this.CaseData.Procedures.length > 0
+
+      const validateSections =
+          this.ValidationStatus[0] &&
+          this.ValidationStatus[1] &&
+          this.ValidationStatus[2]
+
+      try {
+        if (!(validateBasicInformations && validateSections)) throw new Error('情報の入力が不足しています.')
+
+        const validateDiagnosisAndProcedure =
+          this.CaseData.Diagnoses[0].Chain[0] === this.CaseData.Procedures[0].Chain[0] &&
+          this.CaseData.Diagnoses[0].Chain[1] === this.CaseData.Procedures[0].Chain[1]
+        if (!validateDiagnosisAndProcedure) throw new Error('主たる術後診断と主たる実施術式は同一カテゴリである必要があります.')
+
+        const newItemObject = {}
+        Object.assign(newItemObject, this.CaseData)
+
+        newItemObject.SequentialId = Number(this.uid)
 
         // テキストフィールドの整形
-        payload.Name = payload.Name.trim()
+        newItemObject.Name = newItemObject.Name.trim()
+        newItemObject.InstitutionalPatientId = ZenToHan(newItemObject.InstitutionalPatientId.trim()).replace(/[^\d\w-&]/g, '')
 
-        payload.InstitutionalPatientId = ZenToHan(payload.InstitutionalPatientId.trim()).replace(/[^\d\w-&]/g, '')
-
-        if (payload.JSOGId.trim() === '') {
-          delete payload.JSOGId
+        if (newItemObject.JSOGId.trim() === '') {
+          delete newItemObject.JSOGId
         } else {
-          payload.JSOGId = ZenToHan(payload.JSOGId.trim())
+          newItemObject.JSOGId = ZenToHan(newItemObject.JSOGId.trim())
         }
-
-        if (payload.NCDId.trim() === '') {
-          delete payload.NCDId
+        if (newItemObject.NCDId.trim() === '') {
+          delete newItemObject.NCDId
         } else {
-          payload.NCDId = ZenToHan(payload.NCDId.trim())
+          newItemObject.NCDId = ZenToHan(newItemObject.NCDId.trim())
         }
 
         // AEsが空白の際は削除
-        if (payload.AEs.length === 0) {
-          delete payload.AEs
+        if (newItemObject.AEs.length === 0) {
+          delete newItemObject.AEs
         }
 
         // 区分コードの抽出
-        payload.TypeOfProcedure = DbItems.getItemChain(payload.Procedures[0])[0]
+        newItemObject.TypeOfProcedure = DbItems.getItemChain(newItemObject.Procedures[0])[0]
 
-        this.$store.dispatch('UpsertItemInDatastore', payload)
-
-        return true
+        return this.$store.dispatch('UpsertItemInDatastore', newItemObject)
+      } catch (error) {
+        return Promise.reject(error)
       }
-      return false
     }
   }
 }
 </script>
 
 <style lang="sass">
-div.editview
-  position: relative
-  width: 800px
-  top: 50%
-  background-color: ivory
-  Text-align: left
-  margin-left: 48px
-  padding: 14px 20px
-  border: black 1px solid
-  border-radius: 5px
-  div.edit-top
+div.edit-top
+  display: flex
+  flex-direction: row
+  input
+    width: 200px
+    height: 1.5rem
+  input.half
+    width: 100px
+  select
+    width: 206px
+    font-size: 100%
+    height: 2rem
+    padding: 2px
+div.edit-top-left
+  width: 40%
+  div
     display: flex
-    justify-content: space-around
-    /* 左側のペイン */
-    div.edit-top-left
-      width: 320px
-      div
-        display: flex
-        height: 2.4em
-        div
-          display: block
-        div:nth-child(1)
-          width: 100px
-          text-align: right
-          line-height: 100%
-        div:nth-child(2)
-          vertical-align: middle
-          width: 220px
-          padding-left: 20px
-          line-height: 100%
-    /* 右側のペイン */
-    div.edit-top-right
-      width: 400px
-      div
-        display: flex
-        height: 2.4em
-        div
-          display: block
-        div:nth-child(1)
-          width: 180px
-          text-align: right
-        div:nth-child(2)
-          width: 220px
-          padding-left: 20px
-    input
-      width: 200px
-      height: 1.5em
-    input.half
-      width: 100px
-    select
-      width: 200px
-      font-size: 100%
-      height: 2em
-      padding: 0
-      margin-top: auto
-      margin-bottom: auto
+    height: 2.4rem
+    div:nth-child(1)
+      width: 40%
+      justify-content: flex-end
+    div:nth-child(2)
+      padding-left: 2rem
+      width: 60%
+div.edit-top-right
+  width: 60%
+  div
+    display: flex
+    height: 2.4rem
+    div:nth-child(1)
+      width: 40%
+      justify-content: flex-end
+    div:nth-child(2)
+      padding-left: 2rem
+      width: 60%
 
-  /* セクション系ペイン */
-  /* コントロール */
-  div.edit-controls
-    position: relative
-    display: flex
-    justify-content: space-around
-    padding-top: 16px
-    padding-bottom: 8px
+/* セクション系ペイン */
+/* コントロール */
+div.edit-controls
+  position: relative
+  display: flex
+  justify-content: space-around
+  padding-top: 16px
+  padding-bottom: 8px
 span.required:afrer
   content: "+"
 .vacant
