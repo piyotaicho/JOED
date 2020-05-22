@@ -87,7 +87,7 @@ export default {
   },
   methods: {
     CommitChanges () {
-      this.$emit('data-upsert', '手術診断', this.ItemIndex,
+      this.$emit('data-upsert', 'Diagnoses', this.ItemIndex,
         this.IsItemEdited
           ? { Text: this.TrimmedEditableItem, UserTyped: true }
           : { Text: this.TrimmedEditableItem, Chain: [this.Category, this.TargetOrgan] })

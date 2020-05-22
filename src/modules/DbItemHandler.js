@@ -58,4 +58,60 @@ export default class DbItems {
     }
     return temporaryArray
   }
+
+  static _flattenHashItem (HashItemArray = []) {
+    const _extract = (hash) => {
+      if (hash.Description) {
+        return {
+          Text: hash.Text,
+          Description: hash.Description
+        }
+      } else {
+        return {
+          Text: hash.Text
+        }
+      }
+    }
+    const temporaryArray = []
+
+    for (const item of HashItemArray) {
+      temporaryArray.push(_extract(item))
+      if (item.AdditionalProcedure) {
+        temporaryArray.push(_extract(item.AdditionalProcedure))
+      }
+    }
+
+    return temporaryArray
+  }
+
+  static exportCases (CaseArray = [], YearFilter = '', spliceDateOfProcedure = false) {
+    const propsToExport = [
+      'Age',
+      'JSOGId', 'NCDId',
+      'DateOfProcedure',
+      'TypeOfProcedure',
+      'ProcedureTime',
+      'PresentAE'
+    ]
+    return CaseArray
+      .filter(item => item.DateOfProcedure.substr(0, 4) === YearFilter)
+      .map(item => {
+        const temporaryItem = {}
+        temporaryItem.UniqueID = ['99999', YearFilter, item.SequentialId].join('-')
+
+        for (const prop of propsToExport) {
+          if (item[prop] !== undefined) {
+            temporaryItem[prop] = item[prop]
+          }
+        }
+        if (spliceDateOfProcedure) delete temporaryItem.DateOfProcedure
+
+        temporaryItem.Diagnoses = this._flattenHashItem(item.Diagnoses)
+        temporaryItem.Procedures = this._flattenHashItem(item.Procedures)
+        if (item.AEs) {
+          temporaryItem.AEs = Object.assign([], item.AEs)
+        }
+        return temporaryItem
+      })
+  }
 }

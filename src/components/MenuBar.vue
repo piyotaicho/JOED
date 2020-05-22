@@ -1,22 +1,31 @@
 <template>
   <div class="menubar">
     <div>
-      <div><router-link :to="{name: 'sort'}">SORT</router-link></div>
-      <div><router-link :to="{name: 'filter'}">FILTER</router-link></div>
-      <div>SEARCH</div>
-      <div><router-link to="/utilities">キテレツ病院</router-link></div>
+      <div class="menu" @click="MenuSort()">[ソート]</div>
+      <div class="menu" @click="MenuFilter()">[フィルター]</div>
+      <div class="menu">[検索]</div>
+      <div class="menu" @click="Utilities()">[ツール]</div>
     </div>
   </div>
 </template>
 
 <script>
-// import MenuItem from '@/components/MenuItem'
-
 export default {
-  name: 'MenuBar' /* ,
-  components: {
-    MenuItem
-  } */
+  name: 'MenuBar',
+  methods: {
+    MenuSort () {
+      this.$router.push({ name: 'sort' })
+    },
+    MenuFilter () {
+      this.$router.push({ name: 'filter' })
+    },
+    MenuSearch () {
+      // no operation
+    },
+    Utilities () {
+      this.$router.push({ name: 'utilities' })
+    }
+  }
 }
 </script>
 
@@ -36,6 +45,8 @@ div.menubar
     justify-content: space-around
     border: 1px #dbdbdb solid
 
+div.menu:hover
+  background-color: #b9b9b9
 .expanded
   background-color: yellow
 </style>

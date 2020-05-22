@@ -244,7 +244,7 @@ export default {
             }
           }
         }
-        this.$emit('data-upsert', '実施手術', this.ItemIndex, temporaryItem)
+        this.$emit('data-upsert', 'Procedures', this.ItemIndex, temporaryItem)
         this.GoBack()
       }
     }
