@@ -1,21 +1,27 @@
-// global stylesheet(sass) for joed5
+// global stylesheet(sass) for JOED5
+$text-color: #000000
+$warning-color: #ff0000
+$notice-color:  #ff6600
+$system-background: #dddddd
+
 html
   font-family: cross-platform-yu-gothic, sans-serif
   font-weight: 500
-  background-color: #dddddd
+  background-color: $system-background
   font-size: 14px
   letter-spacing: 0.2px
+  color: $text-color
   overflow-y: hidden
   user-select: none
 input
-  font-size: 14px
+  font-size: 1rem
   user-select: text
 option
-  font-size: 14px
+  font-size: 1rem
 select
   -webkit-appearance: menulist-button
 
-// title-font
+// タイトル文字
 .title-section
   font-size: 1.35rem
   font-weight: bold
@@ -41,7 +47,13 @@ select
 .w90
   width: 90%
 
-// ダイアログ形式(AuthとEdit)
+// ダイアログ形式
+.w600p
+  width: 600px
+  margin-left: 148px
+.w800p
+  width: 800px
+  margin-left: 48px
 div.app-dialog
   position: relative
   border: 1px black solid
@@ -51,12 +63,17 @@ div.app-dialog
   padding: 1rem 1.5rem
   display: flex
   flex-direction: column
-.w600p
-  width: 600px
-  margin-left: 148px
-.w800p
-  width: 800px
-  margin-left: 48px
+div.app-dialog-row
+  position: relative
+  border: 1px black solid
+  border-radius: 0.5rem
+  background-color: ivory
+  margin-top: 3rem
+  padding: 1rem 1.5rem
+  display: flex
+  flex-direction: row
+
+
 
 // 規定のボックスデザイン
 // ■　作業中　■
@@ -134,7 +151,6 @@ div.edititem-overlay-content
     div.controls
       display: flex
       height: 2.5em
-      div
 //
 // 編集セクション
 //

@@ -24,6 +24,7 @@ https://p4testsuite.hostingerapp.com/JOEDv5/
 - 2020-05-14 項目の重複入力チェックを円滑にするためデータベース構成を変更.エラーチェックとして重複チェックを実装.
 - 2020-05-18 合併症入力の項目を修正(術中操作による合併症が表示されるように、子宮腟部吻合部漏出→腟断端離開).
 - 2020-05-19 【仕様修正】提出データの構成を修正.
+- 2020-05-21 データチェックのバグ修正、パスワード認証を実装（でも、パスワード設定できないのでまだ動かない）
 
 現時点で作成中のweb版ではデータはブラウザのストレージに保存されます.データベースの削除・修正などは https://p4testsuite.hostingerapp.com/JOEDv5/Database_Manager/ のユーティリティを使用してください.
 
@@ -60,21 +61,20 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |_id                        |integer| | | |データベースエンジンが付与する内部管理id|
 |SequentialId               |integer| |X| |連続番号|
 |UniqueID                   |string |{{InstitutionID}}-{{Year}}-{{SequentialID}}|X|X|登録にあたっての症例番号<br/>（ユーザからは見えないが修正登録の際に問い合わせ番号として使用できるようにする）|
-|ValidationReport           |string | | | |エラーチェックの結果、エラーの内容が入る|
-|Name                       |string | |X|X|患者名|
+|Name                       |string | | | |患者名|
 |Age                        |integer| |X|X|年齢|
 |InstitutionalPatientId     |string | |X| |施設での患者ID|
 |JSOGId                     |string | | |X|日産婦腫瘍登録番号|
 |NCDId                      |string | | |X|NCDのロボット登録患者番号（将来的にこちらからのデータ流し込みにNCDが対応したときに備える）|
-|DateOfProcedure            |string |20(19\|[23][0-9])-(0[1-9]\|1[012])-([0-2][0-9]\|3[01])| |X|手術日<br/>InstitutionalPatientIDとDateOfProcedureでユニークが望ましいが確認のみとする|
+|DateOfProcedure            |string |20(19\|[23][0-9])-(0[1-9]\|1[012])-([0-2][0-9]\|3[01])|X|x|手術日<br/>InstitutionalPatientIDとDateOfProcedureでユニークが望ましいが確認のみとする|
 |ProcedureTime              |string | |X|X|手術時間表記テーブルから引用される|
-|TypeOfProcedure            |string |(腹腔鏡\|腹腔鏡悪性\|ロボット支援下\|ロボット支援下悪性\|子宮鏡\|卵管鏡)| | |主たる術式の種別、Procedures配列の最上位の順位のものが採用される|
+|TypeOfProcedure            |string |(腹腔鏡\|腹腔鏡悪性\|ロボット支援下\|ロボット支援下悪性\|子宮鏡\|卵管鏡)|X|X|主たる術式の種別、Procedures配列の最上位の順位のものが採用される|
 |PresentAE                  |boolean| |X|X|合併症の登録があればtrue =(AE.length>0)|
 |Diagnoses                  |array  | |X|X|診断オブジェクト - Diagnosis|
 |Procedures                 |array  | |X|X|術式オブジェクト - Procedure|
 |AEs                        |array  | | |X|合併症オブジェクト - AE|
-|isError                    |string | | | |データチェックによるエラーの有無|
-|Notification               |string | | | |データチェックによる確認内容（エラーを含む）の内容|
+|isError                    |string | | | |データチェックによるエラーの有無(インポートされたデータ用)|
+|Notification               |string | | | |データチェックによる確認内容（エラーを含む）の内容(インポートされたデータ用)|
 
 ### オブジェクト:Diagnosis
 提出データでは、Textにflattenされる.

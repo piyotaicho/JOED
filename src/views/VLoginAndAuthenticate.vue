@@ -1,14 +1,22 @@
 <template>
-  <div class="app-dialog w600p">
-    <div class="title-section">JOED version 5DEV</div>
-
-    <div>
-      <span>パスワード : </span>
-      <input type="password" v-model="PasswordString" id="password-entry-box" :disabled="isPasswordFieldIsDisabled" />
+  <div class="app-dialog-row w600p">
+    <div class="w30" id="auth-logo">
+      <img src="@/assets/JOED5logo.png" alt="[JOED5]">
     </div>
+    <div class="w70" id="auth">
+      <div class="title-section">JOED version 5DEV</div>
 
-    <div>
-        <input type="button" value="ログイン" @click="PerformAuthentication" />
+      <div>
+        <label>
+          パスワード :
+          <input type="password" v-model="Password" id="password-entry-box" :disabled="AuthenticationFree" />
+        </label>
+        <span v-if="LoginFailed" style="color: var(--warning-color); font-size: 0.8rem;">パスワードが違います.</span>
+      </div>
+
+      <div>
+          <input type="button" style="float: right" value="ログイン" @click="PerformAuthentication" />
+      </div>
     </div>
   </div>
 </template>
@@ -16,49 +24,39 @@
 <script>
 export default {
   name: 'ViewLoginAndAuthenticate',
-  prop: {
-    PasswordRequired: {
-      type: Boolean,
-      default: false
-    }
-  },
   data () {
     return ({
-      PasswordString: ''
+      Password: '',
+      LoginFailed: false,
+      AuthenticationFree: false
     })
   },
-  computed: {
-    isPasswordFieldIsDisabled () {
-      return !this.PasswordRequired
-    }
+  created () {
+    this.$store.dispatch('password/Authenticate', '')
+      .then(() => { this.AuthenticationFree = true })
   },
   methods: {
     PerformAuthentication () {
-      if (this.isPasswordFieldIsDisabled || this.PasswordString === 'passed') {
-        this.$router.push('/list')
-      } else {
-        this.PasswordString = ''
-      }
+      this.$store.dispatch('password/Authenticate', this.Password)
+        .then(() => this.$router.push({ name: 'list' }))
+        .catch(() => { this.LoginFailed = true })
     }
   }
 }
 </script>
 
 <style lang="sass">
-div.authentication
-  position: relative
-  width: 600px
-  top: 50%
-  margin: auto auto
-  padding: 10px
-  border: black 1px solid
-  border-radius: 5px
-  background-color: ivory
+#auth-logo
+  display: flex
+  flex-direction: row
+  justify-content: space-around
+  img
+    width: 100px
+    height: 100px
+    padding: 10px
+#auth
   display: flex
   flex-direction: column
-  div
-    margin: 14px
-    text-align: center
-  .authentication-title
-    font-size: 1.35rem
+  justify-content: space-around
+  margin: 0 3rem
 </style>

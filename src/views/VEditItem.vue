@@ -29,22 +29,22 @@
     <div class="edit-bottom">
       <EditSectionDiagnoses
         :container.sync="CaseData.Diagnoses"
-        @removeitem="RemoveListItem('手術診断', $event)"
-        @addnewitem="OpenEditView('手術診断')"
-        @validate="setValidationStatus('手術診断', $event)" />
+        @addnewitem="OpenEditView('diagnosis')"
+        @removeitem="RemoveListItem('Diagnoses', $event)"
+        @validate="setValidationStatus(0, $event)" />
 
       <EditSectionProcedures
         :container.sync="CaseData.Procedures"
-        @removeitem="RemoveListItem('実施手術', $event)"
-        @addnewitem="OpenEditView('実施手術')"
-        @validate="setValidationStatus('実施手術', $event)" />
+        @addnewitem="OpenEditView('procedure')"
+        @removeitem="RemoveListItem('Procedures', $event)"
+        @validate="setValidationStatus(1, $event)" />
 
       <EditSectionAEs
         :container.sync="CaseData.AEs"
         :optionValue.sync="isNoAEs"
-        @removeitem="RemoveListItem('AE', $event)"
         @addnewitem="OpenEditView('AE')"
-        @validate="setValidationStatus('AE', $event)" />
+        @removeitem="RemoveListItem('AEs', $event)"
+        @validate="setValidationStatus(2, $event)" />
     </div>
 
     <!-- コントロールボタン群 -->
@@ -104,23 +104,6 @@ export default {
         Procedures: [],
         AEs: []
       },
-      Navigation: {
-        View: {
-          手術診断: 'diagnosis',
-          実施手術: 'procedure',
-          AE: 'AE'
-        },
-        Target: {
-          手術診断: 'Diagnoses',
-          実施手術: 'Procedures',
-          AE: 'AEs'
-        },
-        Varidation: {
-          手術診断: 0,
-          実施手術: 1,
-          AE: 2
-        }
-      },
       ValidationStatus: [false, false, false]
     })
   },
@@ -143,22 +126,6 @@ export default {
     }
   },
   computed: {
-    /*
-    Validate () {
-      return this.ValidateBasicInformations &&
-        this.ValidationStatus[0] &&
-        this.ValidationStatus[1] &&
-        this.ValidationStatus[2]
-    },
-    ValidateBasicInformations () {
-      return this.CaseData.Age > 0 &&
-        !!this.CaseData.InstitutionalPatientId.trim() &&
-        !!this.CaseData.DateOfProcedure &&
-        !!this.CaseData.ProcedureTime &&
-        this.CaseData.Diagnoses.length > 0 &&
-        this.CaseData.Procedures.length > 0
-    }, */
-
     isNoAEs: {
       get () {
         return !this.CaseData.PresentAE
@@ -178,36 +145,26 @@ export default {
     },
 
     OpenEditView (target, index = -1, value = {}) {
-      if (this.Navigation.View[target]) {
-        this.$router.push({
-          name: this.Navigation.View[target],
-          params: {
-            ItemIndex: index,
-            ItemValue: value
-          }
-        })
-      }
+      this.$router.push({
+        name: target,
+        params: {
+          ItemIndex: index,
+          ItemValue: value
+        }
+      })
     },
     GoBack () {
       this.$router.push({ name: 'list' })
     },
 
     setValidationStatus (target, value) {
-      console.log(target, value)
-      if (this.Navigation.Varidation[target] !== undefined) {
-        this.ValidationStatus.splice(this.Navigation.Varidation[target], 1, value)
-      }
+      this.ValidationStatus.splice(target, 1, value)
     },
 
     EditListItem (target, index, value) {
-      if (this.Navigation.Target[target]) {
-        this.ManipulateList(
-          this.CaseData[this.Navigation.Target[target]],
-          index, value
-        )
-        if (target === 'AE') {
-          this.CaseData.PresentAE = (this.CaseData.AEs.length > 0)
-        }
+      this.ManipulateList(this.CaseData[target], index, value)
+      if (target === 'AEs') {
+        this.CaseData.PresentAE = (this.CaseData.AEs.length > 0)
       }
     },
     RemoveListItem (target, index) {
@@ -241,37 +198,42 @@ export default {
       }
     },
     CommitItem () {
-      this.DoCommitItem()
+      this.StoreItem()
         .then(() => this.GoBack())
-        .catch(e => window.alert(e))
+        .catch(e => window.alert(e.message))
     },
     CommitItemAndRenew () {
-      this.DoCommitItem().then(() =>
+      this.StoreItem().then(() =>
         this.$router.go({ name: 'edit', params: { uid: 0 } })
       )
     },
 
-    async DoCommitItem () {
-      const validateBasicInformations =
+    async StoreItem () {
+      try {
+        const validateBasicInformations =
           this.CaseData.Age > 0 &&
           !!this.CaseData.InstitutionalPatientId.trim() &&
           !!this.CaseData.DateOfProcedure &&
-          !!this.CaseData.ProcedureTime &&
-          this.CaseData.Diagnoses.length > 0 &&
-          this.CaseData.Procedures.length > 0
+          !!this.CaseData.ProcedureTime
+        if (!validateBasicInformations) throw new Error('基本情報の入力が不足しています.')
 
-      const validateSections =
-          this.ValidationStatus[0] &&
-          this.ValidationStatus[1] &&
-          this.ValidationStatus[2]
+        const Sections = ['手術診断', '実施手術', '合併症']
+        for (const index in Sections) {
+          if (!this.ValidationStatus[index]) throw new Error(Sections[index] + 'の入力を確認して下さい.')
+        }
 
-      try {
-        if (!(validateBasicInformations && validateSections)) throw new Error('情報の入力が不足しています.')
-
+        const CategoryTranslator = {
+          腹腔鏡: '腹腔鏡',
+          ロボット: '腹腔鏡',
+          腹腔鏡悪性: '腹腔鏡悪性',
+          ロボット悪性: '腹腔鏡悪性',
+          子宮鏡: '子宮鏡',
+          卵管鏡: '卵管鏡'
+        }
         const validateDiagnosisAndProcedure =
-          this.CaseData.Diagnoses[0].Chain[0] === this.CaseData.Procedures[0].Chain[0] &&
+          this.CaseData.Diagnoses[0].Chain[0] === CategoryTranslator[this.CaseData.Procedures[0].Chain[0]] &&
           this.CaseData.Diagnoses[0].Chain[1] === this.CaseData.Procedures[0].Chain[1]
-        if (!validateDiagnosisAndProcedure) throw new Error('主たる術後診断と主たる実施術式は同一カテゴリである必要があります.')
+        if (!validateDiagnosisAndProcedure) throw new Error('主たる術後診断と主たる実施術式は同一カテゴリ・同一臓器である必要があります.')
 
         const newItemObject = {}
         Object.assign(newItemObject, this.CaseData)

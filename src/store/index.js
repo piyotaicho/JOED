@@ -1,15 +1,15 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import system from '@/store/modules/system'
+import password from '@/store/modules/passwordauth'
 
 Vue.use(Vuex)
-
-const NoOptions = {}
 
 // ファイルベースのデータベースを作成
 // 実装の際にはインスタンスの置き場所をちゃんと考える
 
-var Database = require('nedb')
-var DatabaseInstance = new Database({
+const Database = require('nedb')
+const DatabaseInstance = new Database({
   // 当面はブラウザのローカルストレージを使用する.
   // electronに実装する際にはユーザデータフォルダに置くようにする
   filename: 'joed.nedb',
@@ -17,6 +17,9 @@ var DatabaseInstance = new Database({
 })
 
 const store = new Vuex.Store({
+  modules: {
+    system, password
+  },
   state: {
     ApplicationVersion: '5.00.0517.beta',
     // データベースの症例部分(SequentialIdをもつ)のキャッシュ
@@ -26,8 +29,7 @@ const store = new Vuex.Store({
     Filters: {}, // フィルターの設定
     SortOrders: {
       SequentialId: 1
-    }, // ソートの設定
-    Settings: {} // システム設定
+    } // ソートの設定
   },
   getters: {
     ApplicationVersion (state) {
@@ -41,6 +43,18 @@ const store = new Vuex.Store({
         item => item.SequentialId
       )
     },
+    GetNextUid (state, getters) {
+      return function (currentUid) {
+        if (currentUid === 0) {
+          return [0, 0]
+        } else {
+          const index = getters.GetUids.findIndex(item => item === currentUid)
+          const prevUid = index === 0 ? 0 : getters.GetUids[index - 1]
+          const nextUid = index === getters.GetUids.length - 1 ? 0 : getters.GetUids[index + 1]
+          return [prevUid, nextUid]
+        }
+      }
+    },
     // SequentialId をもつドキュメントを取得する
     GetItemObject (state) {
       return function (SequentialId) {
@@ -49,22 +63,12 @@ const store = new Vuex.Store({
         })
         return FilterdItems[0]
       }
-    },
-    GetSystemSetting (state) {
-      return state.Settings
     }
   },
 
   mutations: {
     SetDatastore (state, payload) {
-      if (payload) {
-        state.DataStore = payload
-      }
-    },
-    SetSystemSettings (state, payload) {
-      if (payload) {
-        state.Settings = payload
-      }
+      state.DataStore = payload
     }
   },
 
@@ -106,10 +110,12 @@ const store = new Vuex.Store({
             payload,
             (error) => {
               if (error) reject(error)
+
               DatabaseInstance.findOne(
                 { sequence: 'maindb' },
                 (error, sequencerow) => {
                   if (error) reject(error)
+
                   const newid = (sequencerow ? sequencerow.number : 0) + 1
                   DatabaseInstance.update(
                     { sequence: 'maindb' },
@@ -117,12 +123,14 @@ const store = new Vuex.Store({
                     { upsert: true },
                     (error) => {
                       if (error) reject(new Error(ErrorAutonumberFailed))
+
                       DatabaseInstance.update(
                         { SequentialId: '__autoid__' },
                         { $set: { SequentialId: newid } },
-                        NoOptions,
+                        {},
                         (error) => {
                           if (error) reject(new Error(ErrorAutonumberFailed))
+
                           context.dispatch('ReloadDatastore')
                           resolve()
                         }
@@ -161,7 +169,7 @@ const store = new Vuex.Store({
             DatabaseInstance.update(
               { SequentialId: payload.SequentialId },
               payload,
-              NoOptions,
+              {},
               (error, numupdated) => {
                 if (error) reject(error)
                 context.dispatch('ReloadDatastore')
@@ -186,7 +194,7 @@ const store = new Vuex.Store({
           if (payload.SequentialId <= 0) throw new Error()
           DatabaseInstance.remove(
             { SequentialId: payload.SequentialId },
-            NoOptions,
+            {},
             (error) => {
               if (error) throw error
               context.dispatch('ReloadDatastore')
@@ -197,37 +205,7 @@ const store = new Vuex.Store({
           reject(error)
         }
       })
-    },
-
-    ReloadSettings (context) {
-      DatabaseInstance.findOne(
-        { Settings: { $exist: true } }
-      )
-        .exec(
-          (errstring, documents) => {
-            if (documents.length > 0) {
-              context.commit('SetSystemSettings', documents[0].Settings)
-            }
-          }
-        )
-    },
-    UpdateSettings (context, payload) {
-      if (Object.keys(payload).length > 0) {
-        DatabaseInstance.update(
-          { Settings: { $exist: true } },
-          { Settings: payload },
-          { upsert: true },
-          (errorstring) => {
-            if (errorstring) {
-              console.log('error on update setting', errorstring)
-            } else {
-              context.commit('ReloadSettings')
-            }
-          }
-        )
-      }
     }
-
   }
 })
 

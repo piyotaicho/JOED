@@ -75,7 +75,7 @@ export default class ProcedureTree extends SelectionTree {
           {
             Text: '腹腔鏡下単純子宮全摘出術',
             AdditionalProcedure: '腹腔鏡下リンパ節生検・郭清',
-            Ditto: ['腟式子宮全摘出術(LAVH)', '腹腔鏡下単純子宮全摘出術']
+            Ditto: ['腟式子宮全摘出術(LAVH)', '子宮全摘出術(TLH、LH)']
           },
           {
             Text: '腹腔鏡下準広汎子宮全摘出術',

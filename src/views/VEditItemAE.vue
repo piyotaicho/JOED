@@ -10,7 +10,7 @@
             <span>合併症の内容</span>
           </div>
           <div class="w70">
-            <select :value="Category" @change="Category = $event.target.value, OnCategoryChanged">
+            <select :value="Category" @change="Category = $event.target.value, OnCategoryChanged()">
               <option value="出血">総出血量500ml以上</option>
               <option value="術中手術操作">術中手術操作に伴う合併症・偶発症</option>
               <option value="気腹・潅流操作">気腹・潅流操作</option>
@@ -692,54 +692,7 @@ export default {
         (this.AE.Title.findIndex((s) => s === '臓器損傷') >= 0) ||
         (this.AE.Title.findIndex((s) => s === '出血') >= 0)
       )
-    } /*,
-
-    ValidateCategory () {
-      switch (this.Category) {
-        case '出血':
-          return (this.AE.BloodCount.trim === '') ? false
-            : (this.AE.BloodCount === '不明' ||
-            ZenToHanNumbers(this.AE.BloodCount).match(/^(\d{2,}|[5-9])\d{2}$/) !== null)
-        case '気腹・潅流操作':
-        case '術後':
-          return !!this.AE.Title.length
-        case '術中使用した薬剤':
-        case '体腔内遺残':
-          return !!this.AE.Cause.length
-        case '機器の不具合・破損':
-        case '機器の誤操作':
-          return !!this.AE.Cause.length &&
-            (this.AE.Title.length ? (!!this.AE.Title.length && !!this.AE.Location.length) : true)
-        case '術中手術操作':
-          return !!this.AE.Title.length && !!this.AE.Location.length
-      }
-      return false
-    },
-    ValidateGrade () {
-      const GradeCourseMapping = [
-        ['経過観察', '周術期管理の延長', '入院期間の延長', '再入院'],
-        ['経過観察', '周術期管理の延長', '入院期間の延長', '再入院', '自己血輸血・術中回収血', '輸血・血液製剤'],
-        ['術中の追加手術～腹腔鏡', '術中の追加手術～子宮鏡', '術中の追加手術～開腹', '術後の再手術～開腹', '術後の再手術～腹腔鏡', '術後の再手術～子宮鏡', 'そのほか再手術'],
-        [],
-        ['合併症管理のためのICU入室'],
-        ['死亡']
-      ]
-
-      if (!!this.AE.Grade && !!this.AE.Course.length) {
-        const grade = ['1', '2', '3a', '3b', '4', '5'].findIndex(item => item === this.AE.Grade)
-        if (this.AE.Course.some(course => GradeCourseMapping[grade].findIndex(item => item === course) !== -1)) {
-          const newmap = []
-          for (let i = 0; i <= grade; i++) {
-            newmap.splice(0, 0, ...GradeCourseMapping[i])
-          }
-          return this.AE.Course.every(course => newmap.findIndex(item => item === course) !== -1)
-        }
-      }
-      return false
-    },
-    Validate () {
-      return this.ValidateCategory && this.ValidateGrade
-    } */
+    }
   },
   methods: {
     OnCategoryChanged () {
@@ -821,7 +774,7 @@ export default {
           }
         }
 
-        this.$emit('data-upsert', 'AE', this.ItemIndex, filteredItems)
+        this.$emit('data-upsert', 'AEs', this.ItemIndex, filteredItems)
         this.GoBack()
       }
     }
