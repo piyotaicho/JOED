@@ -73,3 +73,39 @@ export default {
   }
 }
 </script>
+
+<style lang="sass">
+div.caseitem
+  position: relative
+  width: 900px
+  height: 60px
+  border: black 1px solid
+  background-color: white
+  margin-left: 39px
+  margin-top: 9px
+  display: flex
+  justify-content: space-between
+  div.caseitem-description
+    width: 700px
+    display: flex
+    flex-direction: column
+    justify-content: space-around
+    div.caseitem-row
+      display: flex
+      flex-direction: row
+      justify-content: space-between
+  div.caseitem-controller
+    width: 80px
+    padding-left: 16px
+    padding-right: 16px
+    display: flex
+    flex-direction: column
+    justify-content: space-around
+    text-align: center
+  .caution-badge
+    border-radius: 10px
+    background-color: red
+    color: white
+    text-align: center
+    font-size: 90%
+</style>

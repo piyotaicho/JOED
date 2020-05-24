@@ -23,7 +23,7 @@
 
 <script>
 export default {
-  name: 'ViewLoginAndAuthenticate',
+  name: 'ViewLogin',
   data () {
     return ({
       Password: '',
@@ -32,6 +32,7 @@ export default {
     })
   },
   created () {
+    // 認証が設定されていない場合は無条件で認証済みとなる仕様を利用してパスワード認証が必要かを確認
     this.$store.dispatch('password/Authenticate', '')
       .then(() => { this.AuthenticationFree = true })
   },

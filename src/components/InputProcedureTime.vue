@@ -22,7 +22,7 @@ export default {
   data () {
     return ({
       ProcedureTimeSelections: [
-        '～  30分まで',
+        '30分まで',
         '30分以上 － 60分まで',
         '60分以上 － 90分まで',
         '90分以上 － 120分まで',

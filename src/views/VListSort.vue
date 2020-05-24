@@ -3,10 +3,19 @@
     <div id="sort-overlay" @click="closeMenu">
     </div>
     <div id="sort-menu">
-      <div class="menu-title"><span>ソートの設定</span></div>
+      <div class="menu-title"><span>ソート</span></div>
       <div class="menu-item"><span>[.]</span><span>登録順</span><span>昇順/降順</span></div>
       <div class="menu-item"><span>[.]</span><span>手術日</span><span>昇順/降順</span></div>
-      <div class="menu-item"><span>[.]</span><span>年齢</span><span>昇順/降順</span></div>
+      <div class="menu-item"><span>[.]</span><span>手術カテゴリ</span><span>昇順/降順</span></div>
+      <div class="menu-item"><span>[.]</span><span>手術時間</span><span>昇順/降順</span></div>
+      <div class="menu-title"><span>フィルタ</span></div>
+      <div class="menu-item"><span>表示カテゴリ</span><span>腹腔鏡</span><span>腹腔鏡悪性</span></div>
+      <div class="menu-item"><span></span><span>ロボット支援下</span><span>ロボット支援下悪性</span></div>
+      <div class="menu-item"><span></span><span>子宮鏡</span></div>
+      <div class="menu-item"><span></span><span>卵管鏡</span></div>
+      <div class="menu-item"><span>表示する手術日</span><span>開始</span><span>終了</span></div>
+      <div class="menu-item"><span>合併症あり のみ</span></div>
+      <div class="menu-item"><span>警告あり のみ</span></div>
       <div><span @click="closeMenu">[閉じる]</span></div>
     </div>
   </div>

@@ -1,4 +1,5 @@
 /* global DatabaseInstance */
+
 const MD5salt = 0x76b3
 
 export default {
@@ -7,8 +8,8 @@ export default {
     Authenticated: false
   },
   mutations: {
-    SetAuthenticatedStatus (state, payload) {
-      state.Authenticated = !!payload
+    SetStatus (state, payload) {
+      state.Authenticated = payload
     }
   },
   getters: {
@@ -17,36 +18,41 @@ export default {
     }
   },
   actions: {
+    // データベースに保存されたパスワードハッシュを用いて認証する.
+    // データベースにパスワードハッシュが保存されていない場合は無条件で認証を完了する.
+    // 認証結果は {Boolean} Authenticated に.
+    //
+    // @param {String} パスワード文字列
     Authenticate (context, payload) {
       const HHX = require('xxhashjs')
 
       return new Promise((resolve, reject) => {
-        DatabaseInstance.findOne(
+        context.rootState.DatabaseInstance.findOne(
           { Password: { $exists: true } },
           (error, document) => {
             if (error) reject(error)
-            if (document === null) resolve()
 
-            const givenHash = HHX.h64(payload, MD5salt).toString(16)
-            if (document.Password === givenHash) {
+            if (document === null || document.Password === HHX.h64(payload, MD5salt).toString(16)) {
               resolve()
             } else {
               reject(new Error('Authentication failed'))
             }
           }
         )
-      }).then(() => {
-        context.commit('SetAuthenticatedStatus', true)
-      }).catch(() => {
-        context.commit('SetAuthenticatedStatus', false)
       })
+        .then(() => context.commit('SetStatus', true))
+        .catch(() => context.commit('SetStatus', false))
     },
+    // パスワードハッシュにパスワードを保存する.
+    // 空白パスワード文字列はパスワードのレコード自体を削除する.
+    //
+    // @param {String} パスワード文字列
     SetPassword (context, payload) {
       const HHX = require('xxhashjs')
 
       return new Promise((resolve, reject) => {
         if (payload === '') {
-          DatabaseInstance.remove(
+          context.rootState.DatabaseInstance.remove(
             { Password: { $exists: true } },
             { multi: false },
             (error) => {
@@ -61,7 +67,7 @@ export default {
             { upsert: true },
             (error, numRows) => {
               if (error) reject(error)
-              if (numRows > 0) console.log('Password updated.')
+              if (numRows > 0) console.log('Password updated.', payload, '->', hashedPassword)
             }
           )
         }

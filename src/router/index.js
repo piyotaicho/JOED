@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
-import ViewLoginAndAuthenticate from '@/views/VLoginAndAuthenticate'
+import ViewLogin from '@/views/VLogin'
 
-import ViewListOfCaseitems from '@/views/VListOfCaseitems'
+import ViewList from '@/views/VList'
 import ViewListSort from '@/views/VListSort'
 import ViewListFilter from '@/views/VListFilter'
 
@@ -22,12 +22,12 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: '/',
-    component: ViewLoginAndAuthenticate
+    component: ViewLogin
   },
   {
     name: 'list',
     path: '/list',
-    component: ViewListOfCaseitems,
+    component: ViewList,
     children: [
       {
         name: 'sort',

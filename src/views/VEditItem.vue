@@ -49,10 +49,12 @@
 
     <!-- コントロールボタン群 -->
     <div class="edit-controls">
-      <span @click="GoBack()"> [編集内容を破棄] </span>
+      <span v-if="IsEditingExistingItem" @click="CancelEditing(-1)">[←] </span>
+      <span @click="CancelEditing()"> [編集内容を破棄] </span>
       <span @click="CommitItem()"> [編集内容を保存] </span>
-      <span v-if="IsEditingExistingItem" @click="RemoveItem"> [このエントリを削除] </span>
+      <span v-if="IsEditingExistingItem" @click="RemoveItem()"> [このエントリを削除] </span>
       <span @click="CommitItemAndRenew()"> [保存して新規エントリを作成] </span>
+      <span v-if="IsEditingExistingItem" @click="CancelEditing(+1)">[→]</span>
     </div>
 
     <!--モーダルダイアログとしてルーティングを使用する-->
@@ -71,6 +73,7 @@ import InputProcedureTime from '@/components/InputProcedureTime'
 import InputDateOfProcedure from '@/components/InputDateOfProcedure'
 import InputTextField from '@/components/InputTextField'
 import { ZenToHan } from '@/modules/ZenHanChars'
+import Popups from '@/modules/Popups'
 
 export default {
   name: 'ViewEditItem',
@@ -104,12 +107,16 @@ export default {
         Procedures: [],
         AEs: []
       },
-      ValidationStatus: [false, false, false]
+      ValidationStatus: [false, false, false],
+      Nexts: [0, 0],
+      Edited: false
     })
   },
+  // DataStoreから既存データの読み込みをする.
+  //
+  // @prop {Number} SequentialId
   created () {
     if (this.uid > 0) {
-      // 既存データの編集なのでデータベースからフィールドをコピーする
       const item = this.$store.getters.GetItemObject(this.uid)
       for (var key in this.CaseData) {
         if (item[key] !== undefined) {
@@ -118,11 +125,25 @@ export default {
             toString.call(item[key]) === '[object Array]'
           ) {
             Object.assign(this.CaseData[key], item[key])
+            this.$nextTick()
           } else {
             this.CaseData[key] = item[key]
           }
         }
       }
+      this.Nexts.splice(0, 2, ...this.$store.getters.GetNextUids(this.uid))
+
+      this.$nextTick(() => {
+        this.Edited = false
+      })
+    }
+  },
+  watch: {
+    CaseData: {
+      handler: function () {
+        this.Edited = true
+      },
+      deep: true
     }
   },
   computed: {
@@ -139,11 +160,6 @@ export default {
     }
   },
   methods: {
-    IsObjectEmpty (value) {
-      return ((typeof (value) === 'string' && value === '') ||
-              (typeof (value) === 'object' && Object.keys(value).length === 0))
-    },
-
     OpenEditView (target, index = -1, value = {}) {
       this.$router.push({
         name: target,
@@ -171,11 +187,17 @@ export default {
       this.EditListItem(target, index, '')
     },
     ManipulateList (ListObject, index, value) {
+      const IsObjectEmpty = value =>
+        (
+          (typeof (value) === 'string' && value === '') ||
+          (typeof (value) === 'object' && Object.keys(value).length === 0)
+        )
+
       if (Array.isArray(ListObject)) {
         if (index >= 0) {
           if (ListObject[index] !== undefined) {
             // 空データが与えられた場合は当該インデックスを削除
-            if (this.IsObjectEmpty(value)) {
+            if (IsObjectEmpty(value)) {
               ListObject.splice(index, 1)
             } else {
               // 実データが与えられた場合は当該インデックスの内容を置換する
@@ -184,13 +206,38 @@ export default {
           }
         } else {
           // インデックスがundefinedもしくは-1の場合は新規項目としてリストに追加する
-          if (!this.IsObjectEmpty(value)) {
+          if (!IsObjectEmpty(value)) {
             ListObject.push(value)
           }
         }
       }
     },
 
+    CancelEditing (offset = 0) {
+      const isEmpty =
+        this.CaseData.DateOfProcedure === '' &&
+        this.CaseData.InstitutionalPatientId.trim() === '' &&
+        this.CaseData.Name.trim() === '' &&
+        this.CaseData.ProcedureTime === '' &&
+        this.CaseData.Age === undefined &&
+        this.CaseData.Diagnoses.length === 0 &&
+        this.CaseData.Procedures.length === 0 &&
+        this.CaseData.AEs.length === 0 &&
+        this.CaseData.PresentAE === true
+
+      if (this.Edited === false || isEmpty || Popups.confirm('編集中の項目がありますがよろしいですか?')) {
+        if (offset === 0) {
+          this.GoBack()
+        } else {
+          if (offset < 0 && this.Nexts[0] !== 0) {
+            this.$router.push({ name: 'edit', params: { uid: this.Nexts[0] } })
+          }
+          if (offset > 0 && this.Nexts[1] !== 0) {
+            this.$router.push({ name: 'edit', params: { uid: this.Nexts[1] } })
+          }
+        }
+      }
+    },
     RemoveItem () {
       if (this.uid > 0) {
         this.$store.dispatch('RemoveItemFromDatastore', { SequentialId: this.uid })
@@ -200,7 +247,7 @@ export default {
     CommitItem () {
       this.StoreItem()
         .then(() => this.GoBack())
-        .catch(e => window.alert(e.message))
+        .catch(e => Popups.alert(e.message))
     },
     CommitItemAndRenew () {
       this.StoreItem().then(() =>

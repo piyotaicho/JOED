@@ -1,11 +1,14 @@
 <template>
   <div id="app">
-    <router-view></router-view>
+    <router-view :key="$route.name + ($route.params.uid || '')"></router-view>
   </div>
 </template>
 
 <script>
 export default {
+  created () {
+    this.$store.commit('onCreated')
+  }
 }
 </script>
 
