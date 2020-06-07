@@ -1,5 +1,7 @@
 /* global DatabaseInstance */
 
+// 保存先は最終的にはデータベースではなく electron.config に逃げる予定
+
 export default {
   namespaced: true,
   state: {

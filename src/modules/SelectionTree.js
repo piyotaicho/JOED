@@ -67,12 +67,14 @@ export default class SelectionTree {
     }
   }
 
-  flatten () {
+  flatten (selectedCategory = '') {
     const temporaryArray = []
     for (const category of Object.getOwnPropertyNames(this)) {
-      for (const target of Object.keys(this[category])) {
-        for (const item of this[category][target]) {
-          temporaryArray.push(SelectionTree.handleTreeItem(item))
+      if (selectedCategory === '' || category === selectedCategory) {
+        for (const target of Object.keys(this[category])) {
+          for (const item of this[category][target]) {
+            temporaryArray.push(SelectionTree.handleTreeItem(item))
+          }
         }
       }
     }

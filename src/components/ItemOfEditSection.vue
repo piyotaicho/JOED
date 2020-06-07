@@ -3,11 +3,12 @@
     <span class="handle">{{Handle}} </span>
     <slot :item="item">
       <span>{{Title}}</span>
-      <span v-if="item.Description">
+      <span v-if="Description !== ''">
         ( {{Description}} )
       </span>
     </slot>
     <span class="remove-button" @click="onClick()"> [REMOVE] </span>
+    <span @click="EnterEditItem()" v-if="RequireEditing"> [EDIT] </span>
   </div>
 </template>
 
@@ -40,11 +41,17 @@ export default {
           : this.item.Description[0]
       }
       return ''
+    },
+    RequireEditing () {
+      return this.item.UserTyped === true
     }
   },
   methods: {
     onClick () {
-      this.$emit('click')
+      this.$emit('remove')
+    },
+    EnterEditItem () {
+      this.$emit('edit')
     }
   }
 }

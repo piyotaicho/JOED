@@ -5,7 +5,6 @@ import ViewLogin from '@/views/VLogin'
 
 import ViewList from '@/views/VList'
 import ViewListSort from '@/views/VListSort'
-import ViewListFilter from '@/views/VListFilter'
 
 import ViewEditItem from '@/views/VEditItem'
 import ViewEditItemDiagnosis from '@/views/VEditItemDiagnosis'
@@ -33,11 +32,6 @@ const routes = [
         name: 'sort',
         path: 'sort',
         component: ViewListSort
-      },
-      {
-        name: 'filter',
-        path: 'filter',
-        component: ViewListFilter
       }
     ]
   },

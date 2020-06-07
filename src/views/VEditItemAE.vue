@@ -13,10 +13,10 @@
             <select :value="Category" @change="Category = $event.target.value, OnCategoryChanged()">
               <option value="出血">総出血量500ml以上</option>
               <option value="術中手術操作">術中手術操作に伴う合併症・偶発症</option>
-              <option value="気腹・潅流操作">気腹・潅流操作</option>
-              <option value="機器の不具合・破損">機器の不具合・破損</option>
-              <option value="機器の誤操作">機器の誤操作</option>
-              <option value="術中使用した薬剤">術中使用した薬剤</option>
+              <option value="気腹・潅流操作">気腹・潅流操作に伴う合併症・偶発症</option>
+              <option value="機器の不具合・破損">機器の不具合・破損に伴う合併症・偶発症</option>
+              <option value="機器の誤操作">機器の誤操作に伴う合併症・偶発症</option>
+              <option value="術中使用した薬剤">術中使用した薬剤に伴う合併症</option>
               <option value="体腔内遺残">体腔内遺残</option>
               <option value="術後">術後合併症</option>
             </select>

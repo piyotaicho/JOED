@@ -1,5 +1,7 @@
 /* global DatabaseInstance */
 
+// 保存先は最終的にはデータベースではなく electron.config に逃げる予定
+
 const MD5salt = 0x76b3
 
 export default {
@@ -31,17 +33,16 @@ export default {
           { Password: { $exists: true } },
           (error, document) => {
             if (error) reject(error)
-
             if (document === null || document.Password === HHX.h64(payload, MD5salt).toString(16)) {
+              context.commit('SetStatus', true)
               resolve()
             } else {
+              context.commit('SetStatus', false)
               reject(new Error('Authentication failed'))
             }
           }
         )
       })
-        .then(() => context.commit('SetStatus', true))
-        .catch(() => context.commit('SetStatus', false))
     },
     // パスワードハッシュにパスワードを保存する.
     // 空白パスワード文字列はパスワードのレコード自体を削除する.

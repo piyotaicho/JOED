@@ -30,12 +30,14 @@
       <EditSectionDiagnoses
         :container.sync="CaseData.Diagnoses"
         @addnewitem="OpenEditView('diagnosis')"
+        @edititem="OpenEditView('diagnosis', $event)"
         @removeitem="RemoveListItem('Diagnoses', $event)"
         @validate="setValidationStatus(0, $event)" />
 
       <EditSectionProcedures
         :container.sync="CaseData.Procedures"
         @addnewitem="OpenEditView('procedure')"
+        @edititem="OpenEditView('diagnosis', $event)"
         @removeitem="RemoveListItem('Procedures', $event)"
         @validate="setValidationStatus(1, $event)" />
 
@@ -49,12 +51,12 @@
 
     <!-- コントロールボタン群 -->
     <div class="edit-controls">
-      <span v-if="IsEditingExistingItem" @click="CancelEditing(-1)">[←] </span>
+      <span v-if="IsEditingExistingItem" id="MovePrev" @click="CancelEditing(-1)">[←] </span>
       <span @click="CancelEditing()"> [編集内容を破棄] </span>
       <span @click="CommitItem()"> [編集内容を保存] </span>
       <span v-if="IsEditingExistingItem" @click="RemoveItem()"> [このエントリを削除] </span>
       <span @click="CommitItemAndRenew()"> [保存して新規エントリを作成] </span>
-      <span v-if="IsEditingExistingItem" @click="CancelEditing(+1)">[→]</span>
+      <span v-if="IsEditingExistingItem" id="MoveNext" @click="CancelEditing(+1)">[→]</span>
     </div>
 
     <!--モーダルダイアログとしてルーティングを使用する-->
@@ -160,7 +162,10 @@ export default {
     }
   },
   methods: {
-    OpenEditView (target, index = -1, value = {}) {
+    OpenEditView (target, params = {}) {
+      const index = params.ItemIndex !== undefined ? params.ItemIndex : -1
+      const value = params.ItemValue || {}
+      console.log('open edit:', target, index, value)
       this.$router.push({
         name: target,
         params: {

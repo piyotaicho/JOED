@@ -7,6 +7,7 @@
       <li><a href="https://cli.vuejs.org/">vue cli 3</a></li>
       <li><a href="https://github.com/louischatriot/nedb">nedb</a></li>
       <li><a href="https://github.com/pierrec/js-xxhash">js-xxhash</a></li>
+      <li><a href="https://github.com/qiao/difflib.js">Difflib.js</a></li>
       <li><a href="https://github.com/SortableJS/Vue.Draggable">vuedraggable</a></li>
       <li><a href="https://github.com/rxon/cross-platform-yu-gothic">cross-platform-yu-gothic</a></li>
     </ul>

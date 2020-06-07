@@ -51,7 +51,7 @@ export default class DiagnosisTree extends SelectionTree {
         ],
         付属器: [
           '境界悪性卵巣腫瘍',
-          '卵巣がん(卵管癌・腹膜癌含む)',
+          '卵巣癌(卵管癌・腹膜癌含む)',
           '予防的内性器摘出術適応',
           '妊孕性温存のための卵巣摘出',
           '転移性卵巣癌',

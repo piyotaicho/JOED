@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <router-view :key="$route.name + ($route.params.uid || '')"></router-view>
+    <router-view :key="routeKey"></router-view>
   </div>
 </template>
 
@@ -8,6 +8,12 @@
 export default {
   created () {
     this.$store.commit('onCreated')
+  },
+  computed: {
+    routeKey () {
+      const path = this.$route.path.split('/')
+      return (path.length > 2 && path[2].match(/^\d+$/)) ? path[1] + '/' + path[2] : (path[1] || '/')
+    }
   }
 }
 </script>

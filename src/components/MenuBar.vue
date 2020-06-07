@@ -1,8 +1,7 @@
 <template>
   <div class="menubar">
     <div>
-      <div class="menu" @click="MenuSort()">[ソート]</div>
-      <div class="menu" @click="MenuFilter()">[フィルター]</div>
+      <div class="menu" @click="MenuSort()">[表示設定]</div>
       <div class="menu">[検索]</div>
       <div class="menu" @click="Utilities()">[ツール]</div>
     </div>

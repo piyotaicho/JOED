@@ -16,7 +16,6 @@
 <script>
 import MenuBar from '@/components/MenuBar'
 import Caseitem from '@/components/Caseitem'
-
 export default {
   name: 'ViewList',
   components: {

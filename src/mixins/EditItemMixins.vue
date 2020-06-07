@@ -1,6 +1,4 @@
 <script>
-// import DbItems from '@/modules/DbItemHandler'
-
 export default {
   props: {
     ItemIndex: {
@@ -21,8 +19,8 @@ export default {
   },
   computed: {
     TrimmedEditableItem () {
-      const enteredValue = this.EditableItem.toString().trim()
-      return enteredValue.replace(/^[\s|\u3000]+$/g, '')
+      const enteredValue = this.EditableItem.toString().replace(/^[\s|\u3000]+$/g, '')
+      return enteredValue
     },
 
     IsReadyToCommit () {
@@ -31,6 +29,10 @@ export default {
 
     IsItemEdited () {
       return this.SelectedItem !== this.EditableItem
+    },
+
+    IsUsertypedItem () {
+      return (this.ItemValue.UserTyped === true)
     }
   },
   methods: {

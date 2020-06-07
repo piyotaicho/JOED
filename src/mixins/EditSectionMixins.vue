@@ -45,13 +45,20 @@ export default {
     }
   },
   methods: {
+    AddNewItem () {
+      this.$emit('addnewitem')
+    },
+    EditItem (index, item) {
+      this.$emit('edititem',
+        {
+          ItemIndex: index,
+          ItemValue: item
+        })
+    },
     RemoveItem (index) {
       if (index >= 0) {
         this.$emit('removeitem', index)
       }
-    },
-    AddNewItem () {
-      this.$emit('addnewitem')
     },
     Validate () {
       return true

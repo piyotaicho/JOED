@@ -22,7 +22,7 @@
             <div><span>[対象臓器]</span></div>
             <select v-model="TargetOrgan"
               size="8"
-              @change="SelectedItem = ''">
+              @change="SetCandidateItemsBySelection()">
               <option v-if="TargetOrgans.length===0" value=""/>
               <option v-for="(item,key,index) in TargetOrgans"
                 :key="index"
@@ -80,9 +80,12 @@
               <span>入力術式 : </span>
             </div>
             <div class="w60">
-              <input type="Text" :disabled="Description.Title" v-model="EditableItem" @keydown.enter="SubmitOnEnterkey"/>
+              <input type="Text"
+                v-model.lazy="EditableItem"
+                :disabled="!UserEditingAllowed"
+                @keydown.enter="SubmitOnEnterkey" />
             </div>
-            <div class="w20"> [SEARCH] </div>
+            <div class="w20" @click="SetCandidateItemsByFreeword()"> [SEARCH] </div>
           </div>
           <div class="controls">
             <div v-if="!disableCancel"><span @click="GoBack"> [編集の取り消し] </span></div>
@@ -96,6 +99,7 @@
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
 import ProcedureTree from '@/modules/ProcedureItemList'
+import { getMatchesInProcedures } from '@/modules/CloseMatches'
 
 const ProceduresTree = new ProcedureTree()
 
@@ -112,6 +116,7 @@ export default {
   },
   data () {
     return ({
+      CandidateItems: [],
       Description: {
         AdditionalProcedureTitle: '',
         Title: '',
@@ -121,6 +126,14 @@ export default {
       }
     })
   },
+  created () {
+    if (this.ItemValue.UserTyped && this.ItemValue.UserTyped === true) {
+      this.Category = this.ItemValue.Chain[0]
+      this.TargetOrgan = this.ItemValue.Chain[1] ? this.ItemValue.Chain[1] : ''
+      this.EditableItem = this.ItemValue.Text
+      this.$nextTick()
+    }
+  },
   computed: {
     Categories () {
       return ProceduresTree.Categories()
@@ -128,9 +141,11 @@ export default {
     TargetOrgans () {
       return ProceduresTree.Targets(this.Category)
     },
-    CandidateItems () {
-      return ProceduresTree.Candidates(this.Category, this.TargetOrgan)
+
+    UserEditingAllowed () {
+      return !!this.Category && !this.SelectedItem
     },
+
     DescriptionValue: {
       set (newvalue) {
         if (typeof newvalue === 'string') {
@@ -148,6 +163,28 @@ export default {
     }
   },
   methods: {
+    SetCandidateItemsBySelection () {
+      this.CandidateItems = ProceduresTree.Candidates(this.Category, this.TargetOrgan)
+      this.SelectedItem = ''
+      this.Description.AdditionalProcedureTitle = ''
+      this.Description.Title = ''
+      this.$nextTick()
+    },
+    SetCandidateItemsByFreeword () {
+      if (this.EditableItem && this.UserEditingAllowed) {
+        const flatten = ProceduresTree.flatten(this.Category)
+        console.log('FLATTEN', flatten)
+        const arr = getMatchesInProcedures(this.EditableItem, flatten)
+        console.log('STEP3', arr)
+
+        this.CandidateItems.splice(0, this.CandidateItems.length, ...arr)
+        this.SelectedItem = ''
+        this.Description.AdditionalProcedureTitle = ''
+        this.Description.Title = ''
+        this.$nextTick()
+      }
+    },
+
     spliceMarker (str) {
       return str[str.length - 1] !== '$' ? str : str.substr(0, str.length - 1)
     },
