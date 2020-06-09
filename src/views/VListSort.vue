@@ -3,19 +3,38 @@
     <div id="sort-overlay" @click="closeMenu">
     </div>
     <div id="sort-menu">
-      <div class="menu-title"><span>ソート</span></div>
-      <div class="menu-item"><span>[.]</span><span>登録順</span><span>昇順/降順</span></div>
-      <div class="menu-item"><span>[.]</span><span>手術日</span><span>昇順/降順</span></div>
-      <div class="menu-item"><span>[.]</span><span>手術カテゴリ</span><span>昇順/降順</span></div>
-      <div class="menu-item"><span>[.]</span><span>手術時間</span><span>昇順/降順</span></div>
-      <div class="menu-title"><span>フィルタ</span></div>
-      <div class="menu-item"><span>表示カテゴリ</span><span>腹腔鏡</span><span>腹腔鏡悪性</span></div>
-      <div class="menu-item"><span></span><span>ロボット支援下</span><span>ロボット支援下悪性</span></div>
-      <div class="menu-item"><span></span><span>子宮鏡</span></div>
-      <div class="menu-item"><span></span><span>卵管鏡</span></div>
-      <div class="menu-item"><span>表示する手術日</span><span>開始</span><span>終了</span></div>
-      <div class="menu-item"><span>合併症あり のみ</span></div>
-      <div class="menu-item"><span>警告あり のみ</span></div>
+      <div class="menu-title">ソート</div>
+      <el-select v-model="SortItem">
+        <el-option value="SequentialId" label="登録順" />
+        <el-option value="DateOfProcedure" label="手術日" />
+        <el-option value="ProcedureTime" label="手術時間" />
+        <el-option value="TypeOfProcedure" label="カテゴリ" />
+      </el-select>
+
+      <el-switch
+        v-model="SortOrder"
+        active-text="昇順"
+        active-value="+1"
+        active-color="#444444"
+        inactive-text="降順"
+        inactive-value="-1"
+        inactive-color="#444444" />
+
+      <div class="menu-title">フィルタ</div>
+      <el-select v-model="FilterItems" multiple clearable placeholder="全て表示する">
+        <el-option-group label="カテゴリ">
+          <el-option :value="{ field: 'TypeOfProcedure', value: '腹腔鏡' }" label="腹腔鏡" />
+          <el-option :value="{ field: 'TypeOfProcedure', value: '腹腔鏡悪性' }" label="腹腔鏡悪性" />
+          <el-option :value="{ field: 'TypeOfProcedure', value: 'ロボット' }" label="ロボット" />
+          <el-option :value="{ field: 'TypeOfProcedure', value: 'ロボット悪性' }" label="ロボット悪性" />
+          <el-option :value="{ field: 'TypeOfProcedure', value: '子宮鏡' }" label="子宮鏡" />
+          <el-option :value="{ field: 'TypeOfProcedure', value: '卵管鏡' }" label="卵管鏡" />
+        </el-option-group>
+        <el-option-group label="情報">
+          <el-option :value="{ field: 'PresentAE', value: true }" label="合併症あり" />
+          <el-option :value="{ field: 'Notification', value: true }" label="警告あり" />
+        </el-option-group>
+      </el-select>
       <div><span @click="closeMenu">[閉じる]</span></div>
     </div>
   </div>
@@ -24,6 +43,13 @@
 <script>
 export default {
   name: 'ViewListSort',
+  data () {
+    return ({
+      SortItem: 'SequentialId',
+      SortOrder: '+1',
+      FilterItems: []
+    })
+  },
   methods: {
     closeMenu () {
       this.$router.push({ name: 'list' })
@@ -46,13 +72,21 @@ div#sort-menu
   position: absolute
   top: 32px
   left: 100px
+  box-sizing: border-box
   width: 300px
   min-height: 200px
   background: #dbdbdb
   opacity: 1
   border: 1px solid black
   border-top-color: #dbdbdb
-  padding: 5px
+  padding: 5px 1rem
   display: flex
   flex-direction: column
+  & > div
+    margin-bottom: 0.35rem
+
+.menu-title
+  font-size: 1.1rem
+  font-weight: 400
+  margin-top: 0.15rem
 </style>

@@ -5,18 +5,17 @@
       <div class="caseitem-row">
         <span class="w20"> {{CaseDate}} </span>
         <span class="w20"> {{CasePersonalInformation.Id}} </span>
-        <span class="w40"> {{CasePersonalInformation.Name}} </span>
+        <span class="w40 truncatable"> {{CasePersonalInformation.Name}} </span>
         <span class="w20"> ( {{CasePersonalInformation.Age}}歳 ) </span>
       </div>
       <div class="caseitem-row">
-        <span class="w40"> {{CaseDiagnosis}} </span>
-        <span class="w40"> {{CaseProcedure}} </span>
+        <span class="w40 truncatable"> {{CaseDiagnosis}} </span>
+        <span class="w40 truncatable"> {{CaseProcedure}} </span>
         <span class="w20" :class="CaseNotification?'caution-badge':''"> {{CaseNotification}} </span>
       </div>
     </div>
     <div class="caseitem-controller">
-      <span @click="MoveToEditView()"> [EDIT] </span>
-      <span> [REMOVE] </span>
+        <i class="el-icon-edit button-font" @click="MoveToEditView()"></i>
     </div>
   </div>
 </template>
@@ -107,5 +106,7 @@ div.caseitem
     background-color: red
     color: white
     text-align: center
-    font-size: 90%
+    font-size: 0.9rem
+  .button-font
+    font-size: 1.4rem
 </style>

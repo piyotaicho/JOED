@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div><span class="required">手術時間</span></div>
-    <div>
+    <div class="label"><span class="required">手術時間</span></div>
+    <div class="field">
       <select v-model="ProcedureTime"
         :class="(!ProcedureTime)?'vacant':''">
         <option value="" disabled style="display:none;">手術所要時間</option>

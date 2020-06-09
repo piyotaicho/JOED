@@ -6,7 +6,9 @@ export default {
   namespaced: true,
   state: {
     InstitutionName: '',
-    InstitutionId: ''
+    InstitutionId: '',
+    EnabledJSOGId: true,
+    EnabledNCDId: true
   },
   getters: {
     GetInstitution (state) {

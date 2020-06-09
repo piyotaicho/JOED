@@ -13,12 +13,18 @@ html
   color: $text-color
   overflow-y: hidden
   user-select: none
+button
+  font-family: inherit
+  font-size: 1rem
 input
+  font-family: inherit
   font-size: 1rem
   user-select: text
 option
+  font-family: inherit
   font-size: 1rem
 select
+  font-family: inherit
   -webkit-appearance: menulist-button
 
 // タイトル文字
@@ -26,6 +32,13 @@ select
   font-size: 1.35rem
   font-weight: bold
   letter-spacing: 0.05rem
+
+// 省略可能span
+.truncatable
+  display: inline-block
+  overflow: hidden
+  white-space: nowrap
+  text-overflow: ellipsis
 
 // ％指定幅のブロック
 .w10
@@ -162,10 +175,10 @@ div.section
   border: 1px solid black
   margin-top: 21px
   padding-bottom: 4px
-  span.section-title
+  .section-title
     margin: 4px
     font-size: 1.15rem
-  span.new-entry-button
+  .new-entry-button
     position: absolute
     right: 4px
     bottom: 4px
@@ -184,18 +197,21 @@ div.section
       margin-right: 48px
       margin-bottom: 2px
       list-style: none
-      span.handle
-        margin-left: 12px
-        margin-right: 18px
-      span.edit-button
+      .handle
+        margin-right: 0.7rem
+      .edit-button
         position: absolute
+        font-size: 1.25rem
+        right: 50px
+        margin-top: auto
+        margin-bottom: auto
+        padding-top: 0.1rem
+      .remove-button
+        position: absolute
+        font-size: 1.25rem
         right: 20px
         margin-top: auto
         margin-bottom: auto
-      span.remove-button
-        position: absolute
-        right: 20px
-        margin-top: auto
-        margin-bottom: auto
+        padding-top: 0.1rem
   div.list-item:first-of-type div.item-description:first-of-type
       border-left: black 2px solid

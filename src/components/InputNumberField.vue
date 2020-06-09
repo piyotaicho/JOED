@@ -1,27 +1,35 @@
 <template>
   <div>
     <div class="label"><span>{{title}}</span></div>
-    <div class="field">
-      <input type="text"
+    <div class="field number">
+      <input type="number"
         v-model="InputText"
         :placeholder="placeholder"
-        :class="RequiredClass"/>
+        :class="RequiredClass"
+        :min="min"
+        :max="max"/>
     </div>
 </div>
 </template>
 
 <script>
 export default {
-  name: 'InputTextField',
+  name: 'InputNumberField',
   props: {
     value: {
-      required: true
+      type: [Number, String]
     },
     title: {
-      default: 'TEXT FIELD'
+      default: 'NUMBER FIELD'
     },
     placeholder: {
       default: ''
+    },
+    min: {
+      type: Number
+    },
+    max: {
+      type: Number
     },
     required: {
       default: false

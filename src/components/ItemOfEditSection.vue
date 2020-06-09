@@ -1,14 +1,14 @@
 <template>
   <div class="item-description">
-    <span class="handle">{{Handle}} </span>
+    <i class="handle el-icon-d-caret" v-if="draggable"></i>
     <slot :item="item">
       <span>{{Title}}</span>
       <span v-if="Description !== ''">
         ( {{Description}} )
       </span>
     </slot>
-    <span class="remove-button" @click="onClick()"> [REMOVE] </span>
-    <span @click="EnterEditItem()" v-if="RequireEditing"> [EDIT] </span>
+    <i class="edit-button el-icon-edit" @click="EnterEditItem()" v-if="RequireEditing" />
+    <i class="remove-button el-icon-delete" @click="onClick()" />
   </div>
 </template>
 
@@ -28,9 +28,6 @@ export default {
     }
   },
   computed: {
-    Handle () {
-      return this.draggable ? '[ = ]' : ' -- '
-    },
     Title () {
       return DbItems.getItemValue(this.item)
     },

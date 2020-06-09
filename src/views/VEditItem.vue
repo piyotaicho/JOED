@@ -14,16 +14,7 @@
           <div></div>
           <div></div>
         </div>
-        <div>
-          <div><span class="required">年齢</span></div>
-          <div>
-            <input type="number"
-              min="1"
-              v-model="CaseData.Age"
-              class="half"
-              :class="(!CaseData.Age)?'vacant':''"/>
-            </div>
-        </div>
+        <InputNumberField title="年齢" :required="true" v-model="CaseData.Age" :min="1" />
       </div>
     </div>
     <div class="edit-bottom">
@@ -50,13 +41,25 @@
     </div>
 
     <!-- コントロールボタン群 -->
+    <el-button icon="el-icon-caret-left" size="medium" circle id="MovePrev" v-if="IsEditingExistingItem" @click="CancelEditing(-1)"></el-button>
+    <el-button icon="el-icon-caret-right" size="medium" circle id="MoveNext" v-if="IsEditingExistingItem" @click="CancelEditing(+1)"></el-button>
+
     <div class="edit-controls">
-      <span v-if="IsEditingExistingItem" id="MovePrev" @click="CancelEditing(-1)">[←] </span>
-      <span @click="CancelEditing()"> [編集内容を破棄] </span>
+      <el-button-group>
+        <el-button type="primary" icon="el-icon-arrow-left" @click="CancelEditing()">編集内容を破棄して戻る</el-button>
+        <el-dropdown split-button type="primary" @click="CommitItem()" @command="CommitItemAndRenew()">
+          編集内容を保存
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="">保存して新規エントリを作成</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </el-button-group>
+      &nbsp;
+      <el-button v-if="IsEditingExistingItem" type="danger" icon="el-icon-delete" @click="RemoveItem()">削除</el-button>
+      <!-- <span @click="CancelEditing()"> [編集内容を破棄] </span>
       <span @click="CommitItem()"> [編集内容を保存] </span>
       <span v-if="IsEditingExistingItem" @click="RemoveItem()"> [このエントリを削除] </span>
-      <span @click="CommitItemAndRenew()"> [保存して新規エントリを作成] </span>
-      <span v-if="IsEditingExistingItem" id="MoveNext" @click="CancelEditing(+1)">[→]</span>
+      <span @click="CommitItemAndRenew()"> [保存して新規エントリを作成] </span> -->
     </div>
 
     <!--モーダルダイアログとしてルーティングを使用する-->
@@ -71,18 +74,20 @@ import DbItems from '@/modules/DbItemHandler'
 import EditSectionDiagnoses from '@/components/EditSectionDiagnoses'
 import EditSectionProcedures from '@/components/EditSectionProcedures'
 import EditSectionAEs from '@/components/EditSectionAEs'
+import InputTextField from '@/components/InputTextField'
+import InputNumberField from '@/components/InputNumberField'
 import InputProcedureTime from '@/components/InputProcedureTime'
 import InputDateOfProcedure from '@/components/InputDateOfProcedure'
-import InputTextField from '@/components/InputTextField'
 import { ZenToHan } from '@/modules/ZenHanChars'
 import Popups from '@/modules/Popups'
 
 export default {
   name: 'ViewEditItem',
   components: {
+    InputTextField,
+    InputNumberField,
     InputProcedureTime,
     InputDateOfProcedure,
-    InputTextField,
     EditSectionDiagnoses,
     EditSectionProcedures,
     EditSectionAEs
@@ -244,7 +249,7 @@ export default {
       }
     },
     RemoveItem () {
-      if (this.uid > 0) {
+      if (this.uid > 0 && Popups.confirm('この症例を削除します.よろしいですか?')) {
         this.$store.dispatch('RemoveItemFromDatastore', { SequentialId: this.uid })
         this.GoBack()
       }
@@ -255,9 +260,9 @@ export default {
         .catch(e => Popups.alert(e.message))
     },
     CommitItemAndRenew () {
-      this.StoreItem().then(() =>
-        this.$router.go({ name: 'edit', params: { uid: 0 } })
-      )
+      this.StoreItem()
+        .then(() => this.$router.push({ name: 'edit', params: { uid: 0 } }))
+        .catch(e => Popups.alert(e.message))
     },
 
     async StoreItem () {
@@ -329,44 +334,54 @@ div.edit-top
   display: flex
   flex-direction: row
   input
-    width: 200px
-    height: 1.5rem
-  input.half
-    width: 100px
+    box-sizing: border-box
+    width: 12rem
+    padding: 2px 5px
+    height: 2rem
+  input[type="number"]
+    width: 6rem
   select
-    width: 206px
+    box-sizing: border-box
+    width: 12rem
     font-size: 100%
     height: 2rem
     padding: 2px
+  & > div
+    display: flex
+    flex-direction: column
+    & > div
+      display: flex
+      flex-direction: row
+      height: 2.4rem
+    .label
+      width: 40%
+      text-align: right
+      padding-top: 0.2rem
+    .field
+      margin-left: 2rem
+      width: 60%
 div.edit-top-left
   width: 40%
-  div
-    display: flex
-    height: 2.4rem
-    div:nth-child(1)
-      width: 40%
-      justify-content: flex-end
-    div:nth-child(2)
-      padding-left: 2rem
-      width: 60%
 div.edit-top-right
   width: 60%
-  div
-    display: flex
-    height: 2.4rem
-    div:nth-child(1)
-      width: 40%
-      justify-content: flex-end
-    div:nth-child(2)
-      padding-left: 2rem
-      width: 60%
 
+div.vdp-datepicker__calendar
+  width: 300px !important
+  z-index: 900
 /* セクション系ペイン */
 /* コントロール */
+#MovePrev
+  position: absolute
+  top: 70px
+  left: 10px
+#MoveNext
+  position: absolute
+  top: 70px
+  right: 10px
+
 div.edit-controls
   position: relative
-  display: flex
-  justify-content: space-around
+  text-align: right
   padding-top: 16px
   padding-bottom: 8px
 span.required:afrer

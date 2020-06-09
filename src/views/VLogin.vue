@@ -9,9 +9,10 @@
       <div>
         <label>
           パスワード :
-          <input type="password" v-model="Password" id="password-entry-box" :disabled="AuthenticationFree" />
+          <el-badge value="パスワードが違います" :hidden="!LoginFailed">
+            <input type="password" v-model="Password" id="password-entry-box" :disabled="AuthenticationFree" />
+          </el-badge>
         </label>
-        <span v-if="LoginFailed" style="color: var(--warning-color); font-size: 0.8rem;">パスワードが違います.</span>
       </div>
 
       <div>
