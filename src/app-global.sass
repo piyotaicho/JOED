@@ -16,16 +16,28 @@ html
 button
   font-family: inherit
   font-size: 1rem
-input
+  height: 2.8rem
+input:text
   font-family: inherit
   font-size: 1rem
   user-select: text
-option
-  font-family: inherit
-  font-size: 1rem
+  height: 1.5rem
+  padding-top: 2px
+  padding-bottom: 2px
+  margin-left: 8px
+  margin-right: 8px
 select
   font-family: inherit
   -webkit-appearance: menulist-button
+  padding-left: 8px
+  padding-right: 8px
+  min-height: 1.5rem
+option
+  font-family: inherit
+  font-size: 1rem
+  height: 1.3rem
+  padding-top: 0.2rem
+  padding-bottom: 0.2rem
 
 // タイトル文字
 .title-section
@@ -124,46 +136,32 @@ div.edititem-overlay-content
   border-radius: 10px
   margin: 120px 18px
   padding: 16px
-  line-height: 1.3em
   input:text
     width: 95%
-    height: 1.5em
-    padding-top: 2px
-    padding-bottom: 2px
-    margin-left: 8px
-    margin-right: 8px
-  div.content-title
-    padding: 8px
-    font-size: 1.15rem
-    font-weight: bold
-    letter-spacing: 2px
-  div.flex-content
+div.content-title
+  padding: 8px
+  font-size: 1.15rem
+  font-weight: bold
+  letter-spacing: 2px
+div.flex-content
+  display: flex
+  flex-direction: row
+  padding-top: 0.2rem
+  padding-bottom: 0.2rem
+div.selectionbox
+  padding: 8px
+  margin: 8px 0.5rem
+  min-height: 2rem
+  select
+    width: 100%
+div.content-bottom
+  padding-left: 8px
+  padding-right: 8px
+  display: flex
+  flex-direction: column
+  div.controls
     display: flex
-    padding-top: 0.2em
-    padding-bottom: 0.2em
-    div.selectionbox
-      padding: 8px
-      margin: 8px 0.5em
-      min-height: 1.8em
-      select
-        font-size: 100%
-        margin-top: 0.5em
-        padding-left: 8px
-        padding-right: 8px
-        width: 100%
-        min-height: 1.5em
-        option
-          height: 1.3em
-          padding-top: 0.2em
-          padding-bottom: 0.2em
-  div.content-bottom
-    padding-left: 8px
-    padding-right: 8px
-    display: flex
-    flex-direction: column
-    div.controls
-      display: flex
-      height: 2.5em
+    height: 2.5em
 //
 // 編集セクション
 //

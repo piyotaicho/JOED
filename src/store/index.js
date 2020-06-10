@@ -17,7 +17,9 @@ const store = new Vuex.Store({
     // 表示されるデータ
     DataStore: [],
     CurrentIndex: -1, // pageficationではないが表示されているデータのインデックス
-    Filters: {}, // フィルターの設定
+    Filters: {
+      SequentialId: { $gt: 0 }
+    }, // フィルターの設定
     SortOrders: {
       SequentialId: 1
     } // ソートの設定
@@ -80,7 +82,22 @@ const store = new Vuex.Store({
     // @param {Object} document
     SetDatastore (state, payload) {
       state.DataStore = payload
+    },
+
+    // SortOrderの設定
+    //
+    // @param {Object} Field: order(-1 or 1)
+    SetSortOrders (state, payload) {
+      state.SortOrders = Object.assign({}, payload)
+    },
+
+    // Filterの設定
+    //
+    // @param {Object} Field: value
+    SetFilters (state, payload) {
+      state.Filters = Object.assign({ SequentialId: { $gt: 0 } }, payload)
     }
+
   },
 
   actions: {
@@ -88,7 +105,7 @@ const store = new Vuex.Store({
     //
     ReloadDatastore (context) {
       context.state.DatabaseInstance.find(
-        { SequentialId: { $gt: 0 } }
+        context.state.Filters // { SequentialId: { $gt: 0 } }
       )
         .sort(context.state.SortOrders)
         .exec(

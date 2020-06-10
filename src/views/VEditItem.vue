@@ -11,34 +11,31 @@
         <InputTextField title="腫瘍登録番号" v-model="CaseData.JSOGId" placeholder="日産婦腫瘍登録番号" />
         <InputTextField title="NCD症例識別コード" v-model="CaseData.NCDId" placeholder="ロボット支援下手術症例コード" />
         <div> <!-- spacer -->
-          <div></div>
-          <div></div>
         </div>
         <InputNumberField title="年齢" :required="true" v-model="CaseData.Age" :min="1" />
       </div>
     </div>
-    <div class="edit-bottom">
-      <EditSectionDiagnoses
-        :container.sync="CaseData.Diagnoses"
-        @addnewitem="OpenEditView('diagnosis')"
-        @edititem="OpenEditView('diagnosis', $event)"
-        @removeitem="RemoveListItem('Diagnoses', $event)"
-        @validate="setValidationStatus(0, $event)" />
 
-      <EditSectionProcedures
-        :container.sync="CaseData.Procedures"
-        @addnewitem="OpenEditView('procedure')"
-        @edititem="OpenEditView('diagnosis', $event)"
-        @removeitem="RemoveListItem('Procedures', $event)"
-        @validate="setValidationStatus(1, $event)" />
+    <EditSectionDiagnoses
+      :container.sync="CaseData.Diagnoses"
+      @addnewitem="OpenEditView('diagnosis')"
+      @edititem="OpenEditView('diagnosis', $event)"
+      @removeitem="RemoveListItem('Diagnoses', $event)"
+      @validate="setValidationStatus(0, $event)" />
 
-      <EditSectionAEs
-        :container.sync="CaseData.AEs"
-        :optionValue.sync="isNoAEs"
-        @addnewitem="OpenEditView('AE')"
-        @removeitem="RemoveListItem('AEs', $event)"
-        @validate="setValidationStatus(2, $event)" />
-    </div>
+    <EditSectionProcedures
+      :container.sync="CaseData.Procedures"
+      @addnewitem="OpenEditView('procedure')"
+      @edititem="OpenEditView('diagnosis', $event)"
+      @removeitem="RemoveListItem('Procedures', $event)"
+      @validate="setValidationStatus(1, $event)" />
+
+    <EditSectionAEs
+      :container.sync="CaseData.AEs"
+      :optionValue.sync="isNoAEs"
+      @addnewitem="OpenEditView('AE')"
+      @removeitem="RemoveListItem('AEs', $event)"
+      @validate="setValidationStatus(2, $event)" />
 
     <!-- コントロールボタン群 -->
     <el-button icon="el-icon-caret-left" size="medium" circle id="MovePrev" v-if="IsEditingExistingItem" @click="CancelEditing(-1)"></el-button>
@@ -56,10 +53,6 @@
       </el-button-group>
       &nbsp;
       <el-button v-if="IsEditingExistingItem" type="danger" icon="el-icon-delete" @click="RemoveItem()">削除</el-button>
-      <!-- <span @click="CancelEditing()"> [編集内容を破棄] </span>
-      <span @click="CommitItem()"> [編集内容を保存] </span>
-      <span v-if="IsEditingExistingItem" @click="RemoveItem()"> [このエントリを削除] </span>
-      <span @click="CommitItemAndRenew()"> [保存して新規エントリを作成] </span> -->
     </div>
 
     <!--モーダルダイアログとしてルーティングを使用する-->
@@ -260,8 +253,10 @@ export default {
         .catch(e => Popups.alert(e.message))
     },
     CommitItemAndRenew () {
+      // 新規(uid = '0')→新規(uid = '0')ではApp.vueにあるRouterKeyが重複する.
+      // uid = '00' も uid > 0 がfalseで新規扱いになるのでそれを利用する.propをstringsで渡すのがミソ.
       this.StoreItem()
-        .then(() => this.$router.push({ name: 'edit', params: { uid: 0 } }))
+        .then(() => this.$router.push({ name: 'edit', params: { uid: (this.uid === '0') ? '00' : '0' } }))
         .catch(e => Popups.alert(e.message))
     },
 
@@ -384,8 +379,7 @@ div.edit-controls
   text-align: right
   padding-top: 16px
   padding-bottom: 8px
-span.required:afrer
-  content: "+"
+
 .vacant
   border: red 1px solid
   padding: 2px

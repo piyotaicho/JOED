@@ -9,12 +9,13 @@
         <el-option value="DateOfProcedure" label="手術日" />
         <el-option value="ProcedureTime" label="手術時間" />
         <el-option value="TypeOfProcedure" label="カテゴリ" />
+        <el-option value="Age" label="年齢" />
       </el-select>
 
       <el-switch
         v-model="SortOrder"
         active-text="昇順"
-        active-value="+1"
+        active-value="1"
         active-color="#444444"
         inactive-text="降順"
         inactive-value="-1"
@@ -35,7 +36,10 @@
           <el-option :value="{ field: 'Notification', value: true }" label="警告あり" />
         </el-option-group>
       </el-select>
-      <div><span @click="closeMenu">[閉じる]</span></div>
+      <div>
+        <el-button type="primary" @click="closeMenu">キャンセル</el-button>
+        <el-button type="primary" @click="Apply">適応</el-button>
+      </div>
     </div>
   </div>
 </template>
@@ -46,11 +50,39 @@ export default {
   data () {
     return ({
       SortItem: 'SequentialId',
-      SortOrder: '+1',
+      SortOrder: '1',
       FilterItems: []
     })
   },
+  computed: {
+    SortOrders () {
+      return { [this.SortItem]: Number(this.SortOrder) }
+    },
+    Filters () {
+      const filterObj = {}
+      for (const item of this.FilterItems) {
+        console.log(item)
+        if (filterObj[item.field] === undefined) {
+          filterObj[item.field] = item.value
+        } else {
+          if (filterObj[item.field].$in) {
+            filterObj[item.field].$in.push(item.value)
+          } else {
+            filterObj[item.field] = { $in: [filterObj[item.field], item.value] }
+          }
+        }
+      }
+      return filterObj
+    }
+  },
   methods: {
+    Apply () {
+      this.$store.commit('SetSortOrders', this.SortOrders)
+      this.$store.commit('SetFilters', this.Filters)
+      this.$store.dispatch('ReloadDatastore')
+
+      this.closeMenu()
+    },
     closeMenu () {
       this.$router.push({ name: 'list' })
     }
