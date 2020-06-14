@@ -24,7 +24,7 @@
         <span class="w20">( Grade : {{slotProps.item.Grade}} )</span>
       </ItemOfSection>
     </div>
-    <span class="new-entry-button" @click="AddNewItem()"></span>
+    <div class="new-entry-button" @click="AddNewItem()"></div>
   </div>
 </template>
 

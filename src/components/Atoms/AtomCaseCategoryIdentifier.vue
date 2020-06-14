@@ -1,10 +1,10 @@
 <template>
-  <div class="casecategoryidentifier" :class="BadgedClass" :style="BoxColor"></div>
+  <div class="casecategory" :class="BadgedClass" :style="BoxColor"></div>
 </template>
 
 <script>
 export default {
-  name: 'AtomCaseCategoryIdentifier',
+  name: 'CaseCategoryIdentifier',
   props: {
     category: {
       type: String,
@@ -37,7 +37,7 @@ export default {
 </script>
 
 <style lang='sass'>
-div.casecategoryidentifier
+div.casecategory
   position: relative
   border: #444444 2px solid
   margin: auto

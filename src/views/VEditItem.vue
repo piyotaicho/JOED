@@ -26,7 +26,7 @@
     <EditSectionProcedures
       :container.sync="CaseData.Procedures"
       @addnewitem="OpenEditView('procedure')"
-      @edititem="OpenEditView('diagnosis', $event)"
+      @edititem="OpenEditView('procedure', $event)"
       @removeitem="RemoveListItem('Procedures', $event)"
       @validate="setValidationStatus(1, $event)" />
 
@@ -164,7 +164,6 @@ export default {
     OpenEditView (target, params = {}) {
       const index = params.ItemIndex !== undefined ? params.ItemIndex : -1
       const value = params.ItemValue || {}
-      console.log('open edit:', target, index, value)
       this.$router.push({
         name: target,
         params: {

@@ -1,6 +1,6 @@
 <template>
   <div class="caseitem" @dblclick="MoveToEditView()">
-    <AtomCaseCategoryIdentifier :category="CaseCategory"></AtomCaseCategoryIdentifier>
+    <CaseCategoryIdentifier :category="CaseCategory"></CaseCategoryIdentifier>
     <div class="caseitem-description">
       <div class="caseitem-row">
         <span class="w20"> {{CaseDate}} </span>
@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import AtomCaseCategoryIdentifier from '@/components/Atoms/AtomCaseCategoryIdentifier'
+import CaseCategoryIdentifier from '@/components/Atoms/AtomCaseCategoryIdentifier'
 import DbItems from '@/modules/DbItemHandler'
 
 export default {
@@ -68,7 +68,7 @@ export default {
     }
   },
   components: {
-    AtomCaseCategoryIdentifier
+    CaseCategoryIdentifier
   }
 }
 </script>

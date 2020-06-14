@@ -4,7 +4,6 @@ import VueRouter from 'vue-router'
 import ViewLogin from '@/views/VLogin'
 
 import ViewList from '@/views/VList'
-import ViewListSort from '@/views/VListSort'
 
 import ViewEditItem from '@/views/VEditItem'
 import ViewEditItemDiagnosis from '@/views/VEditItemDiagnosis'
@@ -26,14 +25,7 @@ const routes = [
   {
     name: 'list',
     path: '/list',
-    component: ViewList,
-    children: [
-      {
-        name: 'sort',
-        path: 'sort',
-        component: ViewListSort
-      }
-    ]
+    component: ViewList
   },
   {
     name: 'edit',

@@ -23,7 +23,7 @@ html
   font-size: 14px
   color: $--color-text-primary
   letter-spacing: 0.2px
-  overflow-y: hidden
+  overflow-y: auto //hidden
   user-select: none
 
 button
@@ -125,6 +125,36 @@ div.app-dialog-row
   display: flex
   flex-direction: row
 
+// カスタムボタン
+
+.new-entry-button
+  position: absolute
+  right: 5px
+  bottom: 5px
+  width: 30px
+  height: 30px
+  border: 2px solid $--color-primary
+  border-radius: 5px
+.new-entry-button::after
+  content: '\e6d9'
+  font-family: 'element-icons'
+  font-size: 25px
+  padding-top: 6px
+  padding-left: 3px
+
+.open-drawer-button
+  position: absolute
+  right: 5px
+  bottom: 5px
+  width: 30px
+  height: 30px
+.open-drawer-button::after
+  content: '\e798'
+  color: $--color-text-regular
+  font-family: 'element-icons'
+  font-size: 25px
+  padding-top: 6px
+  padding-left: 3px
 
 
 // 規定のボックスデザイン
@@ -201,21 +231,6 @@ div.section
   .section-title
     margin: 4px
     font-size: 1.15rem
-  .new-entry-button
-    position: absolute
-    right: 5px
-    bottom: 5px
-    width: 30px
-    height: 30px
-    border: 2px solid $--color-primary
-    border-radius: 5px
-    // background: url('assets/icon-add.png')
-  .new-entry-button::after
-    content: '\e6d9'
-    font-family: 'element-icons'
-    font-size: 25px
-    padding-top: 6px
-    padding-left: 3px
       
   div.list-item
     border: 0

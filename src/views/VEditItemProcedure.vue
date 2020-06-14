@@ -7,7 +7,7 @@
         <!-- 選択ペイン -->
         <div class="flex-content">
           <div class="w20 selectionbox">
-            <div><span>[カテゴリ]</span></div>
+            <div class="subtitle-section">カテゴリ</div>
             <select v-model="Category"
               size="8"
               @change="TargetOrgan = '', SelectedItem = ''">
@@ -19,7 +19,7 @@
             </select>
           </div>
           <div class="w20 selectionbox">
-            <div><span>[対象臓器]</span></div>
+            <div class="subtitle-section">対象臓器</div>
             <select v-model="TargetOrgan"
               size="8"
               @change="SetCandidateItemsBySelection()">
@@ -32,7 +32,7 @@
             </select>
           </div>
           <div class="w60 selectionbox">
-            <div><span>[候補術式]</span></div>
+            <div class="subtitle-section">候補術式</div>
             <select
               size="8"
               :value="SelectedItem"
