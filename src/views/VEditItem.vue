@@ -37,22 +37,23 @@
       @removeitem="RemoveListItem('AEs', $event)"
       @validate="setValidationStatus(2, $event)" />
 
-    <!-- コントロールボタン群 -->
+    <!-- Controles -->
     <el-button icon="el-icon-caret-left" size="medium" circle id="MovePrev" v-if="IsEditingExistingItem" @click="CancelEditing(-1)"></el-button>
     <el-button icon="el-icon-caret-right" size="medium" circle id="MoveNext" v-if="IsEditingExistingItem" @click="CancelEditing(+1)"></el-button>
 
     <div class="edit-controls">
-      <el-button-group>
+      <div>
         <el-button type="primary" icon="el-icon-arrow-left" @click="CancelEditing()">編集内容を破棄して戻る</el-button>
-        <el-dropdown split-button type="primary" @click="CommitItem()" @command="CommitItemAndRenew()">
-          編集内容を保存
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="">保存して新規エントリを作成</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
-      </el-button-group>
-      &nbsp;
-      <el-button v-if="IsEditingExistingItem" type="danger" icon="el-icon-delete" @click="RemoveItem()">削除</el-button>
+      </div>
+      <el-dropdown split-button type="primary" @click="CommitItem()" @command="CommitItemAndRenew()">
+        編集内容を保存
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item command="">保存して新規エントリを作成</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+      <div v-if="IsEditingExistingItem">
+        <el-button type="danger" icon="el-icon-delete" @click="RemoveItem()">削除</el-button>
+      </div>
     </div>
 
     <!--モーダルダイアログとしてルーティングを使用する-->
@@ -119,7 +120,7 @@ export default {
     if (this.uid > 0) {
       const item = this.$store.getters.GetItemObject(this.uid)
       for (var key in this.CaseData) {
-        if (item[key] !== undefined) {
+        if (item !== undefined && item[key] !== undefined) {
           if (
             toString.call(item[key]) === '[object Object]' ||
             toString.call(item[key]) === '[object Array]'
@@ -379,6 +380,11 @@ div.edit-controls
   text-align: right
   padding-top: 16px
   padding-bottom: 8px
+  display: flex
+  flex-direction: row
+  justify-content: flex-end
+  & > div
+    margin-left: 0.2rem
 
 .vacant
   border: red 1px solid

@@ -1,12 +1,12 @@
 <template>
     <div class="edititem-overlay">
       <div class="edititem-overlay-content">
-        <div class="content-title">
+        <div class="title-section">
           <span>手術診断</span>
         </div>
         <div class="flex-content">
           <div class="w20 selectionbox">
-            <div><span>[カテゴリ]</span></div>
+            <div class="subtitle-section">カテゴリ</div>
             <select v-model="Category"
               size="8"
               @change="TargetOrgan = '', SelectedItem = ''">
@@ -18,7 +18,7 @@
             </select>
           </div>
           <div class="w20 selectionbox">
-            <div><span>[対象臓器]</span></div>
+            <div class="subtitle-section">対象臓器</div>
             <select v-model="TargetOrgan"
               size="8"
               @change="SetCandidateItemsBySelection()">
@@ -31,7 +31,7 @@
             </select>
           </div>
           <div class="w60 selectionbox">
-            <div><span>[候補病名]</span></div>
+            <div class="subtitle-section">候補病名</div>
             <select v-model="SelectedItem"
               size="8"
               @change="EditableItem = SelectedItem; ItemEdited = false"
@@ -45,19 +45,19 @@
             </select>
           </div>
         </div>
-        <div class="content-bottom">
-          <div class="controls">
-            <div class="w20">
-              <span>入力病名 : </span>
-            </div>
-            <div class="w60">
-              <input type="Text"
-                v-model.lazy="EditableItem"
-                :disabled="!UserEditingAllowed"
-                @keydown.enter="SubmitOnEnterkey" />
-            </div>
-            <div class="w20" @click="SetCandidateItemsByFreeword()"> [SEARCH] </div>
+        <div class="flex-content">
+          <div class="w20">
+            <span>入力病名 : </span>
           </div>
+          <div class="w60">
+            <input type="text"
+              v-model.lazy="EditableItem"
+              :disabled="!UserEditingAllowed"
+              @keydown.enter="SubmitOnEnterkey" />
+          </div>
+          <div class="w20" @click="SetCandidateItemsByFreeword()"> [SEARCH] </div>
+        </div>
+        <div class="content-bottom">
           <div>
             <span @click="GoBack"> [編集の取り消し] </span>
             <span @click="CommitChanges"> [編集内容の登録] </span>

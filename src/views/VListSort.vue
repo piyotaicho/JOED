@@ -61,7 +61,6 @@ export default {
     Filters () {
       const filterObj = {}
       for (const item of this.FilterItems) {
-        console.log(item)
         if (filterObj[item.field] === undefined) {
           filterObj[item.field] = item.value
         } else {
