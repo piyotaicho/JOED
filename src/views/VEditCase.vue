@@ -1,61 +1,62 @@
 <template>
-  <div class="app-dialog w800p">
-    <div class="edit-top">
-      <div class="edit-top-left">
-        <InputDateOfProcedure v-model="CaseData.DateOfProcedure" />
-        <InputTextField title="患者ID" :required="true" v-model="CaseData.InstitutionalPatientId" placeholder="施設の患者ID"/>
-        <InputTextField title="患者名" v-model="CaseData.Name" />
-        <InputProcedureTime v-model="CaseData.ProcedureTime" />
-      </div>
-      <div class="edit-top-right">
-        <InputTextField title="腫瘍登録番号" v-model="CaseData.JSOGId" placeholder="日産婦腫瘍登録番号" />
-        <InputTextField title="NCD症例識別コード" v-model="CaseData.NCDId" placeholder="ロボット支援下手術症例コード" />
-        <div> <!-- spacer -->
+  <div>
+    <div class="app-dialog w800p">
+      <div class="edit-top">
+        <div class="edit-top-left">
+          <InputDateOfProcedure v-model="CaseData.DateOfProcedure" :required="true"/>
+          <InputTextField title="患者ID" :required="true" v-model="CaseData.InstitutionalPatientId" placeholder="施設の患者ID"/>
+          <InputTextField title="患者名" v-model="CaseData.Name" />
+          <InputProcedureTime v-model="CaseData.ProcedureTime" />
         </div>
-        <InputNumberField title="年齢" :required="true" v-model="CaseData.Age" :min="1" />
+        <div class="edit-top-right">
+          <InputTextField title="腫瘍登録番号" v-model="CaseData.JSOGId" placeholder="日産婦腫瘍登録番号" />
+          <InputTextField title="NCD症例識別コード" v-model="CaseData.NCDId" placeholder="ロボット支援下手術症例コード" />
+          <div> <!-- spacer -->
+          </div>
+          <InputNumberField title="年齢" :required="true" v-model="CaseData.Age" :min="1" />
+        </div>
+      </div>
+
+      <SectionDiagnoses
+        :container.sync="CaseData.Diagnoses"
+        @addnewitem="OpenEditView('diagnosis')"
+        @edititem="OpenEditView('diagnosis', $event)"
+        @removeitem="RemoveListItem('Diagnoses', $event)"
+        @validate="setValidationStatus(0, $event)" />
+
+      <SectionProcedures
+        :container.sync="CaseData.Procedures"
+        @addnewitem="OpenEditView('procedure')"
+        @edititem="OpenEditView('procedure', $event)"
+        @removeitem="RemoveListItem('Procedures', $event)"
+        @validate="setValidationStatus(1, $event)" />
+
+      <SectionAEs
+        :container.sync="CaseData.AEs"
+        :optionValue.sync="isNoAEs"
+        @addnewitem="OpenEditView('AE')"
+        @removeitem="RemoveListItem('AEs', $event)"
+        @validate="setValidationStatus(2, $event)" />
+
+      <!-- Controles -->
+      <el-button icon="el-icon-caret-left" size="medium" circle id="MovePrev" v-if="IsEditingExistingItem" @click="CancelEditing(-1)"></el-button>
+      <el-button icon="el-icon-caret-right" size="medium" circle id="MoveNext" v-if="IsEditingExistingItem" @click="CancelEditing(+1)"></el-button>
+
+      <div class="edit-controls">
+        <div>
+          <el-button type="primary" icon="el-icon-arrow-left" @click="CancelEditing()">編集内容を破棄して戻る</el-button>
+        </div>
+        <el-dropdown split-button type="primary" @click="CommitItem()" @command="CommitItemAndRenew()">
+          編集内容を保存
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="">保存して新規エントリを作成</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+        <div v-if="IsEditingExistingItem">
+          <el-button type="danger" icon="el-icon-delete" @click="RemoveItem()">削除</el-button>
+        </div>
       </div>
     </div>
-
-    <EditSectionDiagnoses
-      :container.sync="CaseData.Diagnoses"
-      @addnewitem="OpenEditView('diagnosis')"
-      @edititem="OpenEditView('diagnosis', $event)"
-      @removeitem="RemoveListItem('Diagnoses', $event)"
-      @validate="setValidationStatus(0, $event)" />
-
-    <EditSectionProcedures
-      :container.sync="CaseData.Procedures"
-      @addnewitem="OpenEditView('procedure')"
-      @edititem="OpenEditView('procedure', $event)"
-      @removeitem="RemoveListItem('Procedures', $event)"
-      @validate="setValidationStatus(1, $event)" />
-
-    <EditSectionAEs
-      :container.sync="CaseData.AEs"
-      :optionValue.sync="isNoAEs"
-      @addnewitem="OpenEditView('AE')"
-      @removeitem="RemoveListItem('AEs', $event)"
-      @validate="setValidationStatus(2, $event)" />
-
-    <!-- Controles -->
-    <el-button icon="el-icon-caret-left" size="medium" circle id="MovePrev" v-if="IsEditingExistingItem" @click="CancelEditing(-1)"></el-button>
-    <el-button icon="el-icon-caret-right" size="medium" circle id="MoveNext" v-if="IsEditingExistingItem" @click="CancelEditing(+1)"></el-button>
-
-    <div class="edit-controls">
-      <div>
-        <el-button type="primary" icon="el-icon-arrow-left" @click="CancelEditing()">編集内容を破棄して戻る</el-button>
-      </div>
-      <el-dropdown split-button type="primary" @click="CommitItem()" @command="CommitItemAndRenew()">
-        編集内容を保存
-        <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item command="">保存して新規エントリを作成</el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
-      <div v-if="IsEditingExistingItem">
-        <el-button type="danger" icon="el-icon-delete" @click="RemoveItem()">削除</el-button>
-      </div>
-    </div>
-
     <!--モーダルダイアログとしてルーティングを使用する-->
     <div>
       <router-view @data-upsert="EditListItem"></router-view>
@@ -65,9 +66,9 @@
 
 <script>
 import DbItems from '@/modules/DbItemHandler'
-import EditSectionDiagnoses from '@/components/EditSectionDiagnoses'
-import EditSectionProcedures from '@/components/EditSectionProcedures'
-import EditSectionAEs from '@/components/EditSectionAEs'
+import SectionDiagnoses from '@/components/SectionDiagnoses'
+import SectionProcedures from '@/components/SectionProcedures'
+import SectionAEs from '@/components/SectionAEs'
 import InputTextField from '@/components/InputTextField'
 import InputNumberField from '@/components/InputNumberField'
 import InputProcedureTime from '@/components/InputProcedureTime'
@@ -76,15 +77,15 @@ import { ZenToHan } from '@/modules/ZenHanChars'
 import Popups from '@/modules/Popups'
 
 export default {
-  name: 'ViewEditItem',
+  name: 'ViewEditCase',
   components: {
     InputTextField,
     InputNumberField,
     InputProcedureTime,
     InputDateOfProcedure,
-    EditSectionDiagnoses,
-    EditSectionProcedures,
-    EditSectionAEs
+    SectionDiagnoses,
+    SectionProcedures,
+    SectionAEs
   },
   props: {
     uid: {
@@ -283,9 +284,8 @@ export default {
           卵管鏡: '卵管鏡'
         }
         const validateDiagnosisAndProcedure =
-          this.CaseData.Diagnoses[0].Chain[0] === CategoryTranslator[this.CaseData.Procedures[0].Chain[0]] &&
-          this.CaseData.Diagnoses[0].Chain[1] === this.CaseData.Procedures[0].Chain[1]
-        if (!validateDiagnosisAndProcedure) throw new Error('主たる術後診断と主たる実施術式は同一カテゴリ・同一臓器である必要があります.')
+          this.CaseData.Diagnoses[0].Chain[0] === CategoryTranslator[this.CaseData.Procedures[0].Chain[0]]
+        if (!validateDiagnosisAndProcedure) throw new Error('主たる術後診断と主たる実施術式は同一カテゴリである必要があります.')
 
         const newItemObject = {}
         Object.assign(newItemObject, this.CaseData)
@@ -326,21 +326,14 @@ export default {
 
 <style lang="sass">
 div.edit-top
+  padding-right: 3rem
   display: flex
   flex-direction: row
-  input
-    box-sizing: border-box
-    width: 12rem
-    padding: 2px 5px
-    height: 2rem
-  input[type="number"]
-    width: 6rem
+  input[type="text"]
+    width: 100%
   select
-    box-sizing: border-box
-    width: 12rem
-    font-size: 100%
+    width: 100%
     height: 2rem
-    padding: 2px
   & > div
     display: flex
     flex-direction: column
@@ -355,6 +348,9 @@ div.edit-top
     .field
       margin-left: 2rem
       width: 60%
+      .number
+        width: 3rem
+
 div.edit-top-left
   width: 40%
 div.edit-top-right
@@ -386,6 +382,6 @@ div.edit-controls
     margin-left: 0.2rem
 
 .vacant
-  border: red 1px solid
+  border-color: red !important
   padding: 2px
 </style>

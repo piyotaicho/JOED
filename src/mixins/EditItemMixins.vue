@@ -14,8 +14,12 @@ export default {
       Category: '',
       TargetOrgan: '',
       SelectedItem: '',
-      EditableItem: ''
+      EditableItem: '',
+      ExpandEditsection: false
     }
+  },
+  mounted () {
+    this.ExpandEditsection = (this.IsUsertypedItem === true)
   },
   computed: {
     TrimmedEditableItem () {
@@ -36,6 +40,9 @@ export default {
     }
   },
   methods: {
+    ToggleEditsection () {
+      this.ExpandEditsection = !this.ExpandEditsection || this.IsUsertypedItem || this.IsItemEdited
+    },
     GoBack () {
       this.$router.go(-1)
     },

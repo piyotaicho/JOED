@@ -1,105 +1,123 @@
 <template>
-    <div class="edititem-overlay">
-      <div class="edititem-overlay-content">
-        <div class="content-title">
-          <span>実施手術</span>
+  <div class="edititem-overlay">
+    <div class="edititem-overlay-content">
+      <div class="flex-content">
+        <div class="w20 selectionbox">
+          <div class="subtitle-section">カテゴリ</div>
+          <select v-model="Category"
+            size="8"
+            @change="TargetOrgan = '', SelectedItem = ''">
+            <option v-for="(item,key,index) in Categories"
+              :key="index"
+              :value="item">
+              {{item}}
+            </option>
+          </select>
         </div>
-        <!-- 選択ペイン -->
-        <div class="flex-content">
-          <div class="w20 selectionbox">
-            <div class="subtitle-section">カテゴリ</div>
-            <select v-model="Category"
-              size="8"
-              @change="TargetOrgan = '', SelectedItem = ''">
-              <option v-for="(item,key,index) in Categories"
-                :key="index"
-                :value="item">
-                {{item}}
-              </option>
-            </select>
-          </div>
-          <div class="w20 selectionbox">
-            <div class="subtitle-section">対象臓器</div>
-            <select v-model="TargetOrgan"
-              size="8"
-              @change="SetCandidateItemsBySelection()">
-              <option v-if="TargetOrgans.length===0" value=""/>
-              <option v-for="(item,key,index) in TargetOrgans"
-                :key="index"
-                :value="item">
-                {{item}}
-              </option>
-            </select>
-          </div>
-          <div class="w60 selectionbox">
-            <div class="subtitle-section">候補術式</div>
-            <select
-              size="8"
-              :value="SelectedItem"
-              @change="OnSelected"
-              @dblclick="CommitChanges()">
-              <option v-if="CandidateItems.length===0" value=""/>
-              <option v-for="(item,key,index) in CandidateItems"
-                :key="index"
-                :value="item">
-                {{item}}
-              </option>
-            </select>
+        <div class="w20 selectionbox">
+          <div class="subtitle-section">対象臓器</div>
+          <select v-model="TargetOrgan"
+            size="8"
+            @change="SetCandidateItemsBySelection()">
+            <option v-if="TargetOrgans.length===0" value=""/>
+            <option v-for="(item,key,index) in TargetOrgans"
+              :key="index"
+              :value="item">
+              {{item}}
+            </option>
+          </select>
+        </div>
+        <div class="w60 selectionbox">
+          <div class="subtitle-section">候補術式</div>
+          <select
+            size="8"
+            :value="SelectedItem"
+            @change="OnSelected"
+            @dblclick="CommitChanges()">
+            <option v-if="CandidateItems.length===0" value=""/>
+            <option v-for="(item,key,index) in CandidateItems"
+              :key="index"
+              :value="item">
+              {{item}}
+            </option>
+          </select>
+        </div>
+      </div>
+      <!-- 追加術式ペイン -->
+      <div class="flex-content" v-if="Description.AdditionalProcedureTitle">
+        <div class="w30"></div>
+        <div class="w30">
+          <div class="subtitle-section">
+            <span>付随する実施手術</span>
           </div>
         </div>
-        <!-- 追加術式ペイン -->
-        <div class="flex-content" v-if="Description.AdditionalProcedureTitle">
-          <div class="w20"></div>
-          <div class="w20"><span>追加術式 : </span></div>
-          <div class="w60"><span>[{{Description.AdditionalProcedureTitle}}]</span></div>
+        <div class="w30">
+          <span>{{Description.AdditionalProcedureTitle}}</span>
         </div>
-        <!-- 追加情報ペイン -->
-        <div class="flex-content" v-if="Description.Title">
-          <div class="w20"></div>
-          <div class="w20 selectionbox"><span>[{{Description.Title}}]</span></div>
-          <div class="w50 selectionbox" v-if="Description.Multi === false">
-            <select v-model="DescriptionValue[0]" @dblclick="CommitChanges()">
-              <option v-for="item of Description.Options"
-                :key="item"
-                :value="item">
-                {{spliceMarker(item)}}
-              </option>
-            </select>
+        <div class="w10"></div>
+      </div>
+      <!-- 追加情報ペイン -->
+      <div class="flex-content" v-if="Description.Title">
+        <div class="w30"></div>
+        <div class="w20 selectionbox">
+          <div class="subtitle-section">
+            <span>{{Description.Title}}</span>
           </div>
-          <div class="w50 selectionbox" v-if="Description.Multi === true">
-            <label v-for="item in Description.Options" :key="item">
-              <input type="checkbox" v-model="DescriptionValue" :value="item" />
+        </div>
+        <div class="w40 selectionbox" v-if="Description.Multi">
+          <label v-for="item in Description.Options" :key="item">
+            <input type="checkbox" v-model="DescriptionValue" :value="item" />
+            {{spliceMarker(item)}}
+            <br/>
+          </label>
+        </div>
+        <div class="w40 selectionbox" v-else>
+          <select v-model="DescriptionValue[0]" @dblclick="CommitChanges()">
+            <option v-for="item of Description.Options"
+              :key="item"
+              :value="item">
               {{spliceMarker(item)}}
-            </label>
+            </option>
+          </select>
+        </div>
+        <div class="w10"></div>
+      </div>
+
+      <div class="flex-content inputbox">
+        <div class="w20"></div>
+        <div class="w20 subtitle-section">
+          <div tabindex="0" @click="ToggleEditsection()">
+            <span>手術入力</span>
+            <i class="el-icon-d-arrow-right" v-show="!ExpandEditsection"/>
           </div>
         </div>
-        <!-- コントロールペイン -->
-        <div class="content-bottom">
-          <div class="controls">
-            <div class="w20">
-              <span>入力術式 : </span>
-            </div>
-            <div class="w60">
-              <input type="Text"
-                v-model.lazy="EditableItem"
-                :disabled="!UserEditingAllowed"
-                @keydown.enter="SubmitOnEnterkey" />
-            </div>
-            <div class="w20" @click="SetCandidateItemsByFreeword()"> [SEARCH] </div>
-          </div>
-          <div class="controls">
-            <div v-if="!disableCancel"><span @click="GoBack"> [編集の取り消し] </span></div>
-            <div><span @click="CommitChanges"> [編集内容の登録] </span></div>
-          </div>
+        <div class="w40" v-show="ExpandEditsection">
+            <input type="text"
+              v-model="EditableItem"
+              :disabled="!UserEditingAllowed"
+              placeholder="カテゴリ選択後に検索可能になります"
+            />
+        </div>
+        <div class="w20" v-show="ExpandEditsection">
+          <el-button type="primary" @click="SetCandidateItemsByFreeword()" icon="el-icon-search">候補を検索</el-button>
+        </div>
+      </div>
+
+      <div class="content-bottom">
+        <div class="controls">
+          <el-button type="primary" @click="GoBack" :disabled="disableCancel">取り消し</el-button>
+          <el-button type="primary" @click="CommitChanges">登録</el-button>
         </div>
       </div>
     </div>
+  </div>
 </template>
 
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
 import ProcedureTree from '@/modules/ProcedureItemList'
 import { getMatchesInProcedures } from '@/modules/CloseMatches'
+import Popups from '@/modules/Popups.js'
 
 const ProceduresTree = new ProcedureTree()
 
@@ -173,9 +191,7 @@ export default {
     SetCandidateItemsByFreeword () {
       if (this.EditableItem && this.UserEditingAllowed) {
         const flatten = ProceduresTree.flatten(this.Category)
-        console.log('FLATTEN', flatten)
         const arr = getMatchesInProcedures(this.EditableItem, flatten)
-        console.log('STEP3', arr)
 
         this.CandidateItems.splice(0, this.CandidateItems.length, ...arr)
         this.SelectedItem = ''
@@ -194,6 +210,10 @@ export default {
       this.SelectedItem = newValue
       this.EditableItem = newValue
 
+      if (!this.TargetOrgan) {
+        const searchByName = ProceduresTree.findItemByName(newValue)
+        this.TargetOrgan = searchByName.Chain[1]
+      }
       const selectedItemObject = ProceduresTree.getItemByName(this.Category, this.TargetOrgan, newValue)
 
       this.setDataAdditionalProcedure(selectedItemObject)
@@ -252,10 +272,18 @@ export default {
         temporaryItem.Text = this.TrimmedEditableItem
 
         if (this.IsItemEdited) {
-          // ユーザ手入力の場合は選択が掛かっていないので最低限の情報のみ
+          this.SetCandidateItemsByFreeword()
+          if (this.CandidateItems.length !== 0 && Popups.confirm('候補術式名があります,選択を優先してください.') === false) return
+          if (Popups.confirm('直接入力した術式の登録は可能な限り控えてください.') === false) return
+
+          // ユーザ手入力の場合は選択が掛かっていないので最低限の情報のみかつフラグを必ず立てる
           temporaryItem.Chain = [this.Category]
           temporaryItem.UserTyped = true
         } else {
+          if (this.TargetOrgan === undefined) {
+            Popups.alert('選択操作でのみ登録が可能です.')
+            return
+          }
           // 選択されたものには適切な付随情報を収納
           temporaryItem.Chain = [this.Category, this.TargetOrgan]
 

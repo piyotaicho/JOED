@@ -2,13 +2,16 @@
   <div class="menu-item">
     <!-- <div class="menu-item-title">ソート</div> -->
     <div class="menu-item-content">
-      <el-select v-model="SortItem">
-        <el-option value="SequentialId" label="登録順" />
-        <el-option value="DateOfProcedure" label="手術日" />
-        <el-option value="ProcedureTime" label="手術時間" />
-        <el-option value="TypeOfProcedure" label="カテゴリ" />
-        <el-option value="Age" label="年齢" />
-      </el-select>
+      <div>
+        <select v-model="SortItem">
+          <option value="SequentialId">登録順</option>
+          <option value="DateOfProcedure">手術日</option>
+          <option value="ProcedureTime">手術時間</option>
+          <option value="TypeOfProcedure">カテゴリ</option>
+          <option value="Age">年齢</option>
+          <option value="InstitutionalPatientId">施設の患者ID</option>
+        </select>
+      </div>
 
       <el-switch
         v-model="SortOrder"
@@ -55,5 +58,13 @@ export default {
 </script>
 
 <style lang="sass">
-
+div.menu-item-content
+  display: flex
+  flex-direction: column
+  & > div
+    height: 2.6rem
+  select
+    width: 80%
+    margin: 0.3rem 0
+    height: 2rem
 </style>

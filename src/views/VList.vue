@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="open-drawer open-drawer-button" @click="OpenDrawer"></div>
+    <div class="open-drawer open-drawer-button" tabindex="0" @click="OpenDrawer"></div>
     <el-drawer
       title="MenuDrawer"
       size="30rem"

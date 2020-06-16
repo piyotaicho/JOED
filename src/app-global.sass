@@ -3,6 +3,7 @@ $text-color: #000000
 $warning-color: #ff0000
 $notice-color:  #ff6600
 $system-background: #dddddd
+$--background-color-list: #FFFFFF
 $--backgrouud-color-dialog: #FFFFF0
 $--background-color-hover: #F5F7FA
 
@@ -23,37 +24,51 @@ html
   font-size: 14px
   color: $--color-text-primary
   letter-spacing: 0.2px
-  overflow-y: auto //hidden
+  overflow-y: auto
   user-select: none
 
 button
   font-family: inherit
   font-size: 1rem
   height: 2.8rem
-input:text
+
+input[type="text"]
   font-family: inherit
   font-size: 1rem
   user-select: text
   box-sizing: border-box
-  padding-top: 2px
-  padding-bottom: 2px
-  margin-left: 8px
-  margin-right: 8px
+  padding: 2px 5px
   height: 2rem
+  border: 1px solid $--border-color-base
+  border-radius: 2px
+input[type="number"]
+  font-family: inherit
+  font-size: 1rem
+  user-select: text
+  box-sizing: border-box
+  padding: 2px 5px
+  height: 2rem
+  border: 1px solid $--border-color-base
+  border-radius: 2px
+
 select
   font-family: inherit
+  font-size: 1rem
   -webkit-appearance: menulist-button
   box-sizing: border-box
-  padding-left: 8px
-  padding-right: 8px
   min-height: 1.5rem
+  border: 1px solid $--border-color-base
+  border-radius: 2px
+  padding: 2px
+
+
 option
   font-family: inherit
   font-size: 1rem
   box-sizing: border-box
   margin-top: 0.2rem
-  padding: 0.3rem 0
-  height: 2rem
+  padding: 0.2rem 0.4rem
+  height: 1.8rem
 option:hover
   background-color: $--background-color-hover
 option:checked
@@ -135,12 +150,18 @@ div.app-dialog-row
   height: 30px
   border: 2px solid $--color-primary
   border-radius: 5px
-.new-entry-button::after
-  content: '\e6d9'
-  font-family: 'element-icons'
-  font-size: 25px
-  padding-top: 6px
-  padding-left: 3px
+  background: $--background-color-list
+  &::after
+    content: '\e6d9'
+    font-family: 'element-icons'
+    color: $--color-primary
+    font-size: 25px
+    padding-top: 6px
+    padding-left: 3px
+  &:hover
+    border-color: $--color-text-regular
+    &::after
+      color: $--color-text-regular
 
 .open-drawer-button
   position: absolute
@@ -148,18 +169,65 @@ div.app-dialog-row
   bottom: 5px
   width: 30px
   height: 30px
-.open-drawer-button::after
-  content: '\e798'
-  color: $--color-text-regular
-  font-family: 'element-icons'
-  font-size: 25px
-  padding-top: 6px
-  padding-left: 3px
+  &::after
+    content: '\e798'
+    color: $--color-primary
+    font-family: 'element-icons'
+    font-size: 25px
+    padding-top: 6px
+    padding-left: 3px
+  &:hover
+    &::after
+      color: $--color-text-regular
 
-
-// 規定のボックスデザイン
-// ■　作業中　■
+// EditSection... の共通スタイル
 //
+// SECTION
+//   list-item
+//     [handle] [item-description]
+div.section
+  position: relative
+  background: white
+  width: 800px
+  min-height: 48px
+  border: 1px solid black
+  margin-top: 21px
+  padding-bottom: 4px
+  .section-title
+    margin: 4px
+    font-size: 1.15rem
+      
+  div.section-item-list
+    border: 0
+    margin: 1px 8px 2px 42px
+    div.section-item
+      position: relative
+      background: #eeeeee
+      border-left: #eeeeee 2px solid
+      line-height: 1.5
+      padding: 0.5em
+      margin-right: 48px
+      margin-bottom: 2px
+      list-style: none
+      .handle
+        margin-right: 0.7rem
+      .edit-button
+        position: absolute
+        font-size: 1.25rem
+        right: 50px
+        margin-top: auto
+        margin-bottom: auto
+        padding-top: 0.1rem
+      .remove-button
+        position: absolute
+        font-size: 1.25rem
+        right: 20px
+        margin-top: auto
+        margin-bottom: auto
+        padding-top: 0.1rem
+  div.section-item-list:first-of-type div.section-item:first-of-type
+      border-left: black 2px solid
+
 // EditItem... の編集ビュー部分での共通スタイル
 // <div class="edititem-overlay">
 //   <div class="edititem-overlay-content">
@@ -204,61 +272,24 @@ div.flex-content
   padding-top: 0.2rem
   padding-bottom: 0.2rem
 div.selectionbox
-  padding: 8px
-  margin: 8px 0.5rem
+  padding: 4px
+  margin: 4px 0.5rem
   min-height: 2rem
+  line-height: 2rem
   select
     width: 100%
+div.inputbox
+  margin: 2px 16px
+  height: 40px
+  flex-direction: row
+  & > div
+    margin: auto 0
+  input
+    width: 95%
 div.content-bottom
-  padding-left: 8px
-  padding-right: 8px
-  display: flex
-  flex-direction: column
   div.controls
-    display: flex
+    padding-left: 8px
+    padding-right: 8px
+    text-align: right
+    margin: 2px 0
     height: 2.5em
-//
-// 編集セクション
-//
-div.section
-  position: relative
-  background: white
-  width: 800px
-  min-height: 48px
-  border: 1px solid black
-  margin-top: 21px
-  padding-bottom: 4px
-  .section-title
-    margin: 4px
-    font-size: 1.15rem
-      
-  div.list-item
-    border: 0
-    margin: 1px 8px 2px 42px
-    div.item-description
-      position: relative
-      background: #eeeeee
-      border-left: #eeeeee 2px solid
-      line-height: 1.5
-      padding: 0.5em
-      margin-right: 48px
-      margin-bottom: 2px
-      list-style: none
-      .handle
-        margin-right: 0.7rem
-      .edit-button
-        position: absolute
-        font-size: 1.25rem
-        right: 50px
-        margin-top: auto
-        margin-bottom: auto
-        padding-top: 0.1rem
-      .remove-button
-        position: absolute
-        font-size: 1.25rem
-        right: 20px
-        margin-top: auto
-        margin-bottom: auto
-        padding-top: 0.1rem
-  div.list-item:first-of-type div.item-description:first-of-type
-      border-left: black 2px solid

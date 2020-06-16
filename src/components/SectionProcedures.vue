@@ -3,14 +3,14 @@
     <div class="section">
       <span class="section-title">実施手術 ： </span>
       <draggable handle=".handle" v-model="ItemContainer">
-        <div class="list-item"
+        <div class="section-item-list"
           v-for="(item, index) in ItemContainer"
           :key="index">
           <ItemOfSection :item="item" @remove="RemoveItem(index)" @edit="EditItem(index, item)"/>
           <ItemOfSection v-if="item.AdditionalProcedure" :item="item.AdditionalProcedure" @click="RemoveItem(index)" />
         </div>
       </draggable>
-      <div class="new-entry-button" @click="AddNewItem()"></div>
+      <div class="new-entry-button" @click="AddNewItem()" tabindex="0"></div>
     </div>
   </div>
 </template>
@@ -19,7 +19,7 @@
 import EditSectionMixins from '@/mixins/EditSectionMixins'
 
 export default {
-  name: 'EditSectionProcedures',
+  name: 'SectionProcedures',
   mixins: [EditSectionMixins],
   computed: {
     isDup () {

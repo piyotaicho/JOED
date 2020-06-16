@@ -1,77 +1,83 @@
 <template>
-    <div class="edititem-overlay">
-      <div class="edititem-overlay-content">
-        <div class="title-section">
-          <span>手術診断</span>
+  <div class="edititem-overlay">
+    <div class="edititem-overlay-content">
+      <div class="flex-content">
+        <div class="w20 selectionbox">
+          <div class="subtitle-section">カテゴリ</div>
+          <select v-model="Category"
+            size="8"
+            @change="TargetOrgan = '', SelectedItem = ''">
+            <option v-for="(item,key,index) in Categories"
+              :key="index"
+              :value="item">
+              {{item}}
+            </option>
+          </select>
         </div>
-        <div class="flex-content">
-          <div class="w20 selectionbox">
-            <div class="subtitle-section">カテゴリ</div>
-            <select v-model="Category"
-              size="8"
-              @change="TargetOrgan = '', SelectedItem = ''">
-              <option v-for="(item,key,index) in Categories"
-                :key="index"
-                :value="item">
-                {{item}}
-              </option>
-            </select>
-          </div>
-          <div class="w20 selectionbox">
-            <div class="subtitle-section">対象臓器</div>
-            <select v-model="TargetOrgan"
-              size="8"
-              @change="SetCandidateItemsBySelection()">
-              <option v-if="TargetOrgans.length===0" value=""/>
-              <option v-for="(item,key,index) in TargetOrgans"
-                :key="index"
-                :value="item">
-                {{item}}
-              </option>
-            </select>
-          </div>
-          <div class="w60 selectionbox">
-            <div class="subtitle-section">候補病名</div>
-            <select v-model="SelectedItem"
-              size="8"
-              @change="EditableItem = SelectedItem; ItemEdited = false"
-              @dblclick="CommitChanges()">
-              <option v-if="CandidateItems.length===0" value=""/>
-              <option v-for="(item,key,index) in CandidateItems"
-                :key="index"
-                :value="item">
-                {{item}}
-              </option>
-            </select>
+        <div class="w20 selectionbox">
+          <div class="subtitle-section">対象臓器</div>
+          <select v-model="TargetOrgan"
+            size="8"
+            @change="SetCandidateItemsBySelection()">
+            <option v-if="TargetOrgans.length === 0" value=""/>
+            <option v-for="(item,key,index) in TargetOrgans"
+              :key="index"
+              :value="item">
+              {{item}}
+            </option>
+          </select>
+        </div>
+        <div class="w60 selectionbox">
+          <div class="subtitle-section">候補病名</div>
+          <select v-model="SelectedItem"
+            size="8"
+            @change="EditableItem = SelectedItem; ItemEdited = false"
+            @dblclick="CommitChanges()">
+            <option v-if="CandidateItems.length === 0" value=""/>
+            <option v-for="(item,key,index) in CandidateItems"
+              :key="index"
+              :value="item">
+              {{item}}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex-content inputbox">
+        <div class="w20"></div>
+        <div class="w20 subtitle-section">
+          <div tabindex="0" @click="ToggleEditsection()">
+            <span>診断入力</span>
+            <i class="el-icon-d-arrow-right" v-show="!ExpandEditsection"/>
           </div>
         </div>
-        <div class="flex-content">
-          <div class="w20">
-            <span>入力病名 : </span>
-          </div>
-          <div class="w60">
+        <div class="w40" v-show="ExpandEditsection">
             <input type="text"
-              v-model.lazy="EditableItem"
+              v-model="EditableItem"
               :disabled="!UserEditingAllowed"
-              @keydown.enter="SubmitOnEnterkey" />
-          </div>
-          <div class="w20" @click="SetCandidateItemsByFreeword()"> [SEARCH] </div>
+              placeholder="カテゴリ選択後に検索可能になります"
+            />
         </div>
-        <div class="content-bottom">
-          <div>
-            <span @click="GoBack"> [編集の取り消し] </span>
-            <span @click="CommitChanges"> [編集内容の登録] </span>
-          </div>
+        <div class="w20" v-show="ExpandEditsection">
+          <el-button type="primary" @click="SetCandidateItemsByFreeword()" icon="el-icon-search">候補を検索</el-button>
+        </div>
+      </div>
+
+      <div class="content-bottom">
+        <div class="controls">
+          <el-button type="primary" @click="GoBack">取り消し</el-button>
+          <el-button type="primary" @click="CommitChanges">登録</el-button>
         </div>
       </div>
     </div>
+  </div>
 </template>
 
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
 import DiagnosisTree from '@/modules/DiagnosisItemList'
 import { getMatchesInDiagnoses } from '@/modules/CloseMatches'
-// import Popups from '@/modules/Popups.js'
+import Popups from '@/modules/Popups.js'
 
 const DiagnosesTree = new DiagnosisTree()
 
@@ -118,17 +124,27 @@ export default {
       }
     },
     CommitChanges () {
-      this.$emit('data-upsert', 'Diagnoses', this.ItemIndex,
-        this.IsItemEdited
-          ? {
+      const temporaryItem = {}
+      if (this.IsItemEdited) {
+        this.SetCandidateItemsByFreeword()
+        if (this.CandidateItems.length !== 0 && Popups.confirm('候補診断名があります,選択を優先してください.') === false) return
+        if (Popups.confirm('直接入力した診断名の登録は可能な限り控えてください.') === false) return
+        Object.assign(temporaryItem,
+          {
             Text: this.TrimmedEditableItem,
-            Chain: [this.Category], //, (this.TargetOrgan || '')],
+            Chain: [this.Category],
             UserTyped: true
           }
-          : {
+        )
+      } else {
+        Object.assign(temporaryItem,
+          {
             Text: this.EditableItem,
             Chain: [this.Category, this.TargetOrgan]
-          })
+          }
+        )
+      }
+      this.$emit('data-upsert', 'Diagnoses', this.ItemIndex, temporaryItem)
       this.GoBack()
     }
   }

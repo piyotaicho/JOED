@@ -1,5 +1,5 @@
 <template>
-  <div class="item-description">
+  <div class="section-item">
     <i class="handle el-icon-d-caret" v-if="draggable"></i>
     <slot :item="item">
       <span>{{Title}}</span>

@@ -7,6 +7,7 @@
       placeholder="クリックでカレンダー"
       :typeable="true"
       format="yyyy-MM-dd"
+      :input-class="RequiredClass"
       :language="DatepickerTranslation" >
     </Datepicker>
   </div>
@@ -18,7 +19,10 @@ import { ja } from 'vuejs-datepicker/dist/locale'
 
 export default {
   name: 'InputDateOfProcedure',
-  props: ['value'],
+  props: {
+    value: {},
+    required: { default: false }
+  },
   components: {
     Datepicker
   },
@@ -38,6 +42,9 @@ export default {
           ('0' + dateobj.getDate()).slice(-2)
         this.$emit('input', datestr)
       }
+    },
+    RequiredClass () {
+      return (this.required === true && this.value === '') ? 'vacant' : ''
     }
   }
 }

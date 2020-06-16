@@ -8,8 +8,8 @@
       </label>
     </span>
     <!-- Quick hack for designs -->
-    <div class="list-item" style="display: none;"><div class="item-description"></div></div>
-    <div class="list-item"
+    <div class="section-item-list" style="display: none;"><div class="item-description"></div></div>
+    <div class="section-item-list"
       v-for="(item, index) in ItemContainer"
       :key="index">
       <ItemOfSection :item="item" @remove="RemoveItem(index)" :draggable="false" #default="slotProps">
@@ -24,7 +24,7 @@
         <span class="w20">( Grade : {{slotProps.item.Grade}} )</span>
       </ItemOfSection>
     </div>
-    <div class="new-entry-button" @click="AddNewItem()"></div>
+    <div class="new-entry-button" @click="AddNewItem()" tabindex="0"></div>
   </div>
 </template>
 
@@ -32,7 +32,7 @@
 import EditSectionMixins from '@/mixins/EditSectionMixins'
 
 export default {
-  name: 'EditSectionAEs',
+  name: 'SectionAEs',
   mixins: [EditSectionMixins],
   watch: {
     optionValue () {

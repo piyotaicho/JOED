@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div class="drawer-content">
+    <div class="drawer-alignright"><i class="el-icon-close" @click="CloseDrawer"></i></div>
     <el-collapse accordion @change="AccordionChanged" :value="1">
       <el-collapse-item title="表示の順番" :name="1">
         <SortMenu></SortMenu>
@@ -13,7 +14,6 @@
       <el-collapse-item title="ユーティリティ" :name="99">
       </el-collapse-item>
     </el-collapse>
-    <el-button @click="CloseDrawer">[閉じる]</el-button>
   </div>
 </template>
 
@@ -40,5 +40,12 @@ export default {
 </script>
 
 <style lang="sass">
-
+.el-collapse-item__header
+  padding: 0 0 0 2rem
+  font-size: 1.2rem !important
+.el-collapse-item__content
+  padding: 0 2rem
+  font-size: 1rem !important
+.drawer-alignright
+  text-align: right
 </style>

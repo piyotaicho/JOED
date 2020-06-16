@@ -5,7 +5,7 @@ import ViewLogin from '@/views/VLogin'
 
 import ViewList from '@/views/VList'
 
-import ViewEditItem from '@/views/VEditItem'
+import ViewEditCase from '@/views/VEditCase'
 import ViewEditItemDiagnosis from '@/views/VEditItemDiagnosis'
 import ViewEditItemProcedure from '@/views/VEditItemProcedure'
 import ViewEditItemAE from '@/views/VEditItemAE'
@@ -30,7 +30,7 @@ const routes = [
   {
     name: 'edit',
     path: '/edit/:uid',
-    component: ViewEditItem,
+    component: ViewEditCase,
     props: true,
     children: [
       {

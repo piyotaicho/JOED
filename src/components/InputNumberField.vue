@@ -2,12 +2,15 @@
   <div>
     <div class="label"><span>{{title}}</span></div>
     <div class="field number">
-      <input type="number"
+      <el-input-number
         v-model="InputText"
+        controls-position="right"
+        size="mini"
         :placeholder="placeholder"
-        :class="RequiredClass"
         :min="min"
-        :max="max"/>
+        :max="max"
+        @change="HandleRequired()"
+        />
     </div>
 </div>
 </template>
@@ -35,15 +38,28 @@ export default {
       default: false
     }
   },
+  mounted () {
+    this.HandleRequired()
+  },
   computed: {
-    RequiredClass () {
-      return (this.required === true && this.value === '') ? 'vacant' : ''
-    },
     InputText: {
       get () { return this.value },
       set (newvalue) {
         this.$emit('input', newvalue)
       }
+    }
+  },
+  methods: {
+    HandleRequired () {
+      if (this.required === false) return
+
+      const inputElement = this.$el.getElementsByClassName('el-input__inner')[0]
+      if (this.value === undefined) {
+        inputElement.classList.add('vacant')
+      } else {
+        inputElement.classList.remove('vacant')
+      }
+      this.$nextTick()
     }
   }
 }
