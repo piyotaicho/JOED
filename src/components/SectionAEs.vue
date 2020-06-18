@@ -19,7 +19,8 @@
             ? (slotProps.item.BloodCount === '不明'
               ? '出血量不明'
               : slotProps.item.BloodCount + 'ml')
-            : slotProps.item.Title[0] }}
+            : ((slotProps.item.Title&&slotProps.item.Title[0])
+              ||(slotProps.item.Cause&&slotProps.item.Cause[0])) }}
         </span>
         <span class="w20">( Grade : {{slotProps.item.Grade}} )</span>
       </ItemOfSection>
@@ -48,11 +49,13 @@ export default {
       // 重複確認
       const flattenContainer = []
       for (const item of this.container) {
-        if (item.Category === '出血') {
+        /* if (item.Category === '出血') {
           flattenContainer.push('出血')
-        } else {
-          flattenContainer.push([item.Category, item.Title, item.Cause].join(':'))
-        }
+        } else { */
+        const temporaryTitle = Object.assign([], ...(item.Title || []))
+        const temporaryCause = Object.assign([], ...(item.Cause || []))
+        flattenContainer.push([item.Category, ...temporaryTitle, ...temporaryCause].join(':'))
+        // }
       }
       const isDup = flattenContainer
         .filter((item, index, self) => self.indexOf(item) !== self.lastIndexOf(item))
