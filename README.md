@@ -56,10 +56,12 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |:--------------------------|:-----:|:------------:|:----:|:------------:|:--|
 |InstitutionName            |string | |X|X|施設名テーブルから引用される|
 |InstitutionID              |string | [0-9]{5} |X|X|施設名テーブルから引用される、未登録施設は学会に申請して番号交付を受ける|
+|JSOGoncologyboardID        |string | | |X|日産婦の腫瘍登録施設番号
 |ApplicationVersion         |string | |X|X|提出データ作成時のソフトウエアのバージョン|
-|CreateDate                 |string | |X|X|提出データ作成日時|
-|Year                       |string |20(19\|[23][0-9]) |X|X|提出データの年次|
+|Timestump                  |integer | |X|X|提出データ作成日時のUNIX timestump|
+|Year                       |string |(20(19\|[23][0-9])|ALL) |X|X|提出データの年次|
 |NumberOfCases              |integer| |X|X|Casesの数（サードパーティーからの書き出しに対するエラーチェック用）|
+|MD5                        |string | |X|X|症例データ部分だけのMD5チェックサム|
 
 ### 症例データベースオブジェクト:Case
 |名称                        | タイプ |フォーマット規則|必須項目|エクスポート対象|解説|

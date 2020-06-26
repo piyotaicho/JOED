@@ -44,7 +44,7 @@
 
       <div class="edit-controls">
         <div>
-          <el-button type="primary" icon="el-icon-arrow-left" @click="CancelEditing()">編集内容を破棄して戻る</el-button>
+          <el-button type="primary" icon="el-icon-arrow-left" @click="CancelEditing()">戻る</el-button>
         </div>
         <el-dropdown split-button type="primary" @click="CommitCase()" @command="CommitCaseAndGo">
           編集内容を保存
