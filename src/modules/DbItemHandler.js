@@ -113,7 +113,7 @@ export default class DbItems {
     const temporaryItem = {}
     const propsToExport = [
       'Age', 'JSOGId', 'NCDId',
-      'DateOfProcedure', 'DateOfProcedure', 'ProcedureTime', 'PresentAE',
+      'DateOfProcedure', 'DateOfProcedure', 'ProcedureTime', 'PresentAE', 'TypeOfProcedure',
       'Imported'
     ]
     if (params.exportAllfields) {
