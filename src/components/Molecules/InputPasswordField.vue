@@ -6,6 +6,7 @@
         v-model="InputText"
         :placeholder="placeholder"
         :class="RequiredClass"
+        @keyup.13="$emit('enter')"
         :disabled="disabled"/>
     </div>
 </div>

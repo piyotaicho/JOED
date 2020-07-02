@@ -52,10 +52,22 @@ export default class SelectionTree {
       this[category][target].findIndex(item => SelectionTree.handleTreeItem(item) === name))
   }
 
-  static handleTreeItem (item, attribute = 'Text') {
+  static handleTreeItem (item, attribute = 'Text', year = '') {
     if (typeof item === 'object') {
       if (attribute === 'key') {
         return Object.keys(item)[0]
+      }
+      if (year !== '') {
+        if (item.VaildTo) {
+          if (year > item.VaildTo) {
+            return undefined
+          }
+        }
+        if (item.VaildFrom) {
+          if (year < item.ValidFrom) {
+            return undefined
+          }
+        }
       }
       return item[attribute]
     } else {
