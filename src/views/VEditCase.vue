@@ -9,8 +9,8 @@
           <InputProcedureTime v-model="CaseData.ProcedureTime" />
         </div>
         <div class="edit-top-right">
-          <InputTextField title="腫瘍登録番号" v-model="CaseData.JSOGId" placeholder="日産婦腫瘍登録番号" />
-          <InputTextField title="NCD症例識別コード" v-model="CaseData.NCDId" placeholder="ロボット支援下手術症例コード" />
+          <InputTextField title="腫瘍登録番号" v-model="CaseData.JSOGId" placeholder="腫瘍登録患者No." />
+          <InputTextField title="NCD症例識別コード" v-model="CaseData.NCDId" placeholder="NCD症例識別コード" />
           <div> <!-- spacer -->
           </div>
           <InputNumberField title="年齢" :required="true" v-model="CaseData.Age" :min="1" />
@@ -167,11 +167,14 @@ export default {
     OpenEditView (target, params = {}) {
       const index = params.ItemIndex !== undefined ? params.ItemIndex : -1
       const value = params.ItemValue || {}
+      const editingYear = this.CaseData.DateOfProcedure.substr(0, 4)
+      console.log('editingYear is', editingYear)
       this.$router.push({
         name: target,
         params: {
           ItemIndex: index,
-          ItemValue: value
+          ItemValue: value,
+          year: editingYear
         }
       })
     },
