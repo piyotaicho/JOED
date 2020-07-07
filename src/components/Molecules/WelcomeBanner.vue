@@ -1,5 +1,5 @@
 <template>
-  <div id="welcome-banner" @click="Close">
+  <div id="welcome-banner">
     <div id="welcome-banner-title">JOED5へようこそ</div>
     <div id="welcome-banner-text">
       症例合併症登録にご協力頂きありがとうございます。<br/>
@@ -8,19 +8,38 @@
       <br />
       お問い合わせは学会の症例登録ページからおねがいいたします.<br />
     </div>
+
+    <div id="welcome-banner-control">
+      <label>
+        <input type="checkbox" v-model="ShowWelcomeMessage">
+        次回起動時もこのメッセージを表示する
+      </label>
+    </div>
     <div id="welcome-banner-footer">
       日本産科婦人科内視鏡学会 調査普及委員会
     </div>
-    <div id="welcome-banner-closebutton">&#xe6db;</div>
+    <div id="welcome-banner-closebutton" @click="Close">&#xe6db;</div>
   </div>
 </template>
 
 <script>
 export default {
   name: 'WelcomeBanner',
+  computed: {
+    ShowWelcomeMessage: {
+      get () {
+        return this.$store.getters['system/ShowWelcomeMessage']
+      },
+      set (newvalue) {
+        console.log(newvalue)
+        this.$store.dispatch('system/SetShowWelcomeMessage', newvalue)
+      }
+    }
+  },
   methods: {
     Close () {
       this.$store.commit('HideWelcome')
+      this.$store.dispatch('system/SavePreferences')
     }
   }
 }
@@ -53,6 +72,14 @@ export default {
   text-align: left
   color: #121212 // $--color-text-primary
 
+#welcome-banner-control
+  padding-top: 2rem
+  font-size: 1rem
+  line-height: 3rem
+  letter-spacing: 0.2px
+  text-align: center
+  color: #121212 // $--color-text-primary
+
 #welcome-banner-footer
   padding-top: 1.4rem
   font-size: 0.95rem
@@ -67,7 +94,7 @@ export default {
   width: 1rem
   height: 1rem
   font-family: 'element-icons'
-  font-size: 0.7rem
+  font-size: 1.2rem
 
 .welcome-banner-elementIcon
   font-family: 'element-icons'
