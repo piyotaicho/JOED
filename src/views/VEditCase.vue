@@ -299,6 +299,9 @@ export default {
       // 連番 (0 = 新規ドキュメントで連番付与される)
       newDocument.SequentialId = Number(this.uid)
 
+      // 警告の削除
+      delete newDocument.Notification
+
       // テキストフィールドの整形(trimと半角英数に置換)
       newDocument.Name = newDocument.Name.trim()
       newDocument.InstitutionalPatientId = ZenToHan(newDocument.InstitutionalPatientId.trim()).replace(/[^\d\w-&]/g, '')
