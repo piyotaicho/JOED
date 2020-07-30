@@ -63,7 +63,11 @@ export async function ValidateCase (item = {}) {
           })
         ])
           .then(results => {
-            const warningMessage = results.filter(value => value).map(item => item.message).join('\n')
+            const warningMessage = results
+              .filter(value => value)
+              .map(item => item.message)
+              .join('\n')
+
             if (warningMessage) {
               reject(warningMessage)
             } else {
