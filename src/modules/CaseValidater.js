@@ -28,6 +28,9 @@ export async function ValidateCase (item = {}) {
       return ValidateAdditionalInformations(item)
     })
     .then(_ => {
+      return CheckSections(item)
+    })
+    .then(_ => {
       return ValidateCategoryMatch(item)
     })
     .then(_ => {
@@ -98,15 +101,15 @@ export async function CheckBasicInformations (item) {
 //
 export async function ValidateAdditionalInformations (item) {
   return new Promise((resolve, reject) => {
-    const errorString = []
+    const errorStrings = []
     if (item.JSOGId && item.JSOGId.match(JSOGboardCaseNoFormat) === null) {
-      errorString.push('日産婦腫瘍登録の患者No.の様式が不正です.')
+      errorStrings.push('日産婦腫瘍登録の患者No.の様式が不正です.')
     }
     if (item.NCDId && item.NCDId.match(NCDIdFormat) === null) {
-      errorString.push('NCD症例識別コードが不正です.')
+      errorStrings.push('NCD症例識別コードが不正です.')
     }
-    if (errorString.length > 0) {
-      reject(new Error(errorString.join('\n')))
+    if (errorStrings.length > 0) {
+      reject(new Error(errorStrings.join('\n')))
     }
     resolve()
   })
