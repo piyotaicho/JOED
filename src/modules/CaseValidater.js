@@ -1,8 +1,11 @@
 import DaignosisTree from '@/modules/DiagnosisItemList'
 import ProcedureTree from '@/modules/ProcedureItemList'
+// import { resolve, reject } from 'core-js/fn/promise'
 
 // 2020年時点の日産腫瘍登録患者No.表記
 const JSOGboardCaseNoFormat = /^(CC|EM|US|UAS|OV|VU|TS)20\d{2}-\d+$/ig
+// NCDの症例識別コード
+const NCDIdFormat = /\d{18}-\d{2}-\d{2}-\d{2}/g
 // カテゴリチェックのための正規化テーブル
 export const CategoryTranslation = {
   腹腔鏡: '腹腔鏡',
@@ -24,7 +27,7 @@ export async function ValidateCase (item = {}) {
       return CheckBasicInformations(item)
     })
     .then(_ => {
-      Year = item.DateOfProcedure
+      Year = item.DateOfProcedure.substr(0, 4)
 
       return ValidateAdditionalInformations(item)
     })
@@ -32,20 +35,43 @@ export async function ValidateCase (item = {}) {
       return ValidateCategoryMatch(item)
     })
     .then(_ => {
-      return CheckDupsInDiagnoses(item)
-    })
-    .then(_ => {
       return new Promise((resolve, reject) => {
+        // ES2020が使えるようになったらPromise.allSettledへ置き換える
         Promise.all([
-          Promise(resolve => {
+          new Promise(resolve => {
             CheckDupsInDiagnoses(item)
               .then(_ => resolve())
               .catch(e => resolve(e))
           }),
-          Promise(resolve => {
+          new Promise(resolve => {
             ValidateDiagnoses(item, Year)
+              .then(_ => resolve())
+              .catch(e => resolve(e))
+          }),
+          new Promise(resolve => {
+            CheckDupsInProcedures(item)
+              .then(_ => resolve())
+              .catch(e => resolve(e))
+          }),
+          new Promise(resolve => {
+            ValidateProcedures(item, Year)
+              .then(_ => resolve())
+              .catch(e => resolve(e))
+          }),
+          new Promise(resolve => {
+            ValidateAEs(item)
+              .then(_ => resolve())
+              .catch(e => resolve(e))
           })
         ])
+          .then(results => {
+            const warningMessage = results.filter(value => value).map(item => item.message).join('\n')
+            if (warningMessage) {
+              reject(warningMessage)
+            } else {
+              resolve()
+            }
+          })
       })
     })
 }
@@ -73,9 +99,9 @@ export async function ValidateAdditionalInformations (item) {
   return new Promise((resolve, reject) => {
     const errorString = []
     if (item.JSOGId && item.JSOGId.match(JSOGboardCaseNoFormat) === null) {
-      errorString.push('日産婦腫瘍登録の患者No.が不正です.')
+      errorString.push('日産婦腫瘍登録の患者No.の様式が不正です.')
     }
-    if (item.NCDId && item.NCDId.match(/\d{18}-\d{2}-\d{2}-\d{2}/g) === null) {
+    if (item.NCDId && item.NCDId.match(NCDIdFormat) === null) {
       errorString.push('NCD症例識別コードが不正です.')
     }
     if (errorString.length > 0) {
@@ -144,7 +170,6 @@ export async function CheckDupsInDiagnoses (item) {
 //
 export async function ValidateDiagnoses (item, year) {
   const tree = new DaignosisTree()
-
   return new Promise((resolve, reject) => {
     const promiseArray = [new Promise(resolve => {
       CheckDupsInDiagnoses(item)
@@ -243,7 +268,7 @@ export async function ValidateAEs (item) {
         resolve('合併症の登録内容に重複があります.')
       }),
       new Promise((resolve) => {
-        /* CheckSecktionsで同一の整合性確認がなされているのでここでは省略する
+        /* CheckSectionsで同一の整合性確認がなされているのでここでは省略する
         if (item.PresentAE === true && (!item.AEs || item.AEs.length === 0)) {
           resolve('合併症の項目が入力されていません.')
         }
