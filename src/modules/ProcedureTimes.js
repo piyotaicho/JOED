@@ -6,7 +6,7 @@ export default function ProcedureTimeSelections (value = undefined) {
   ]
 
   if (value !== undefined) {
-    if (value < breaks[0]) return breaks[0] + '分まで'
+    if (value < breaks[0]) return breaks[0] + '分未満'
     for (let i = 0; i < breaks.length - 1; i++) {
       if (value >= breaks[i] && value < breaks[i + 1]) return breaks[i] + '分以上 － ' + breaks[i + 1] + '分まで'
     }
@@ -14,7 +14,7 @@ export default function ProcedureTimeSelections (value = undefined) {
     return breaks[breaks.length - 1] + '分以上'
   } else {
     const temporaryArray = []
-    temporaryArray.push(breaks[0] + '分まで')
+    temporaryArray.push(breaks[0] + '分未満')
     for (let i = 0; i < breaks.length - 1; i++) {
       temporaryArray.push(breaks[i] + '分以上 － ' + breaks[i + 1] + '分まで')
     }
