@@ -179,7 +179,7 @@ export default {
     //  項目の重複(ditto含む)
     CheckConsistency () {
       // マーキングを含む作業にはSequentialIdではなく、indexされている_idを使用する.
-      async function CheckConsistencies (documentids, numberOfpool = 10) {
+      function CheckConsistencies (documentids, numberOfpool = 10) {
         const idPool = Object.assign([], documentids)
         const sources = idPool.splice(0, numberOfpool)
 
@@ -225,6 +225,18 @@ export default {
         })
       }
 
+      function SetNotificationField (documents) {
+        const details = documents.pop()
+        if (details) {
+          DatabaseInstance.update(
+            { _id: details._id },
+            { $set: { Notification: details.message } },
+            {},
+            _ => SetNotificationField(documents)
+          )
+        }
+      }
+
       const DatabaseInstance = this.$store.state.DatabaseInstance
       const selector = {
         SequentialId: { $gt: 0 }
@@ -255,28 +267,13 @@ export default {
         })
         .then(ErrorsOfDocument => {
           return new Promise((resolve, reject) => {
-            if (ErrorsOfDocument.length > 0) {
-              try {
-                for (const errordetail of ErrorsOfDocument) {
-                  console.log('Handling error', errordetail)
-                  DatabaseInstance.update(
-                    { _id: errordetail._id },
-                    { $set: { Notification: errordetail.message } },
-                    {},
-                    error => {
-                      if (error) throw new Error('データベースエラー')
-                    }
-                  )
-                }
-              } catch (error) {
-                console.log(error)
-              }
-
-              console.log(ErrorsOfDocument)
+            const errorcount = ErrorsOfDocument.length
+            if (errorcount > 0) {
+              SetNotificationField(ErrorsOfDocument)
               reject(
                 new Error(
                   'データ検証で' +
-                  ErrorsOfDocument.length +
+                  errorcount +
                   '件のエラーが確認されました.\n該当するデータの修正を御願いします.'
                 )
               )
