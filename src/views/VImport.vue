@@ -40,14 +40,13 @@
 <script>
 import {} from '@/modules/CaseValidater'
 
-
 export default {
   name: 'ViewImport',
   data () {
     return ({
       InFile: undefined,
       ReadyToRegister: false,
-      QueryDocument: undefined,
+      QueryDocument: undefined
     })
   },
   methods: {
