@@ -1,57 +1,56 @@
 <template>
   <div class="flex-content">
     <div class="w20 selectionbox">
-      <div class="subtitle-section">{{Pane1Title}}</div>
-      <select ref="SelectPane1" size="8"
+      <SelectPane
+        ref="Pane1"
+        :size="Lines"
+        :title="Pane1Title"
         v-model="Pane1Selection"
-        @change="Pane1Changed()">
-        <option v-if="Pane1Items.length===0" disabled :value="null"/>
-        <option v-for="(item,key,index) in Pane1Items"
-          :key="index"
-          :value="item">
-          {{item}}
-        </option>
-      </select>
+        :items="Pane1Items"
+        @change="Pane1Changed()"
+        >
+      </SelectPane>
     </div>
     <div class="w20 selectionbox">
-      <div class="subtitle-section">{{Pane2Title}}</div>
-      <select ref="SelectPane2" size="8"
+      <SelectPane
+        ref="Pane2"
+        :size="Lines"
+        :title="Pane2Title"
         v-model="Pane2Selection"
-        @change="Pane2Changed()">
-        <option v-if="Pane2Items.length===0" disabled :value="null"/>
-        <option v-for="(item,key,index) in Pane2Items"
-          :key="index"
-          :value="item">
-          {{item}}
-        </option>
-      </select>
+        :items="Pane2Items"
+        @change="Pane2Changed()"
+        >
+      </SelectPane>
     </div>
     <div class="w60 selectionbox">
-      <div class="subtitle-section">{{Pane3Title}}</div>
-      <select ref="SelectPane3" :size="Lines"
+      <SelectPane
+        ref="Pane3"
+        :size="Lines"
+        :title="Pane3Title"
         v-model="Pane3Selection"
+        :items="Pane3Items"
         @change="Pane3Changed()"
-        @dblclick="Pane3DblClick()">
-        <option v-if="Pane3Items.length===0" disabled :value="null"/>
-        <option v-for="(item,key,index) in Pane3Items"
-          :key="index"
-          :value="item">
-          {{item}}
-        </option>
-      </select>
+        @dblclick="Pane3DblClick()"
+        >
+      </SelectPane>
     </div>
   </div>
 </template>
 
 <script>
+import SelectPane from '@/components/Molecules/SelectPane'
+
 export default {
   name: 'ThreePaneSelections',
+  components: {
+    SelectPane
+  },
   props: {
     Lines: {
       type: [Number, String],
       default: 8
     },
-    // Pane[1-3]のプロパティにはv-bind.syncを使用する
+    // Pane[1-3]のプロパティには親でv-bind.syncを使用する
     Pane1: {
       type: String,
       default: undefined,
@@ -123,12 +122,12 @@ export default {
   },
   methods: {
     Pane1Changed (value) {
-      this.$refs.SelectPane2.selectedIndex = -1
-      this.$refs.SelectPane3.selectedIndex = -1
+      this.$refs.Pane2.Clear()
+      this.$refs.Pane3.Clear()
       this.$emit('Pane1Change', value)
     },
     Pane2Changed (value) {
-      this.$refs.SelectPane3.selectedIndex = -1
+      this.$refs.Pane3.Clear()
       this.$emit('Pane2Change', value)
     },
     Pane3Changed (value) {
