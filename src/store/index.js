@@ -12,10 +12,17 @@ const store = new Vuex.Store({
     system, password
   },
   state: {
-    ApplicationVersion: '5.00.0728.prealpha.vueserve',
+    ApplicationVersion: '5.00.0929.vueserve',
+    LoadAtOnce: 100,
+    // serve版で使用されるデータベースインスタンス - electronでは消滅するため必ずactionを経由する必要あり
     DatabaseInstance: undefined,
-    // 表示されるデータのキャッシュ
-    DataStore: [],
+    Uids: {
+      List: [], // 表示対象となるuidの全リスト
+      RangeFrom: -1, // ロードされているuidの最初のインデックス
+      RangeTo: -1 // ロードされているuidの最期のインデックス
+    },
+    DataStore: [], // インメモリのデータベースレプリケーション
+    // 以下データベースリストのクエリの待避
     Filter: {
       SequentialId: { $gt: 0 }
     },
@@ -187,25 +194,134 @@ const store = new Vuex.Store({
   },
 
   actions: {
+    // データベース操作 - 速やかにIPCへ移行できるようにすべてasyncでラップしてある.
+    // Insert document
+    // @Param {Object} Document
+    dbInsert (context, payload) {
+      return new Promise((resolve, reject) => {
+        context.state.DatabaseInstance
+          .insert(payload.Document, (error, newdocument) => {
+            if (error) {
+              reject(error)
+            } else {
+              resolve(newdocument)
+            }
+          })
+      })
+    },
+    // Find documents
+    // @Param {Object} Query, Projection, Sort,
+    // @Param {Number} Skip, Limit
+    dbFind (context, payload) {
+      return new Promise((resolve, reject) => {
+        const query = payload.Query ? payload.Query : {}
+        const projection = payload.Projection ? payload.Projection : {}
+        const sort = payload.Sort ? payload.Sort : {}
+        const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
+        const limit = payload.Limit ? Number.parseInt(payload.Limit) : 0
+
+        context.state.DatabaseInstance
+          .find(query)
+          .projection(projection)
+          .sort(sort)
+          .skip(skip)
+          .limit(limit)
+          .exec((error, founddocuments) => {
+            if (error) {
+              reject(error)
+            } else {
+              resolve(founddocuments)
+            }
+          })
+      })
+    },
+    // Find a first document
+    // @Param {Object} Query, Projection, Sort,
+    // @Param {Number} Skip
+    dbFindOne (context, payload) {
+      return new Promise((resolve, reject) => {
+        const query = payload.Query ? payload.Query : {}
+        const projection = payload.Projection ? payload.Projection : {}
+        const sort = payload.Sort ? payload.Sort : {}
+        const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
+
+        context.state.DatabaseInstance
+          .findOne(query)
+          .projection(projection)
+          .sort(sort)
+          .skip(skip)
+          .exec((error, founddocument) => {
+            if (error) {
+              reject(error)
+            } else {
+              resolve(founddocument)
+            }
+          })
+      })
+    },
+    // Count matched documents
+    // @Param {Object} Query
+    dbCount (context, payload) {
+      return new Promise((resolve, reject) => {
+        const query = payload.Query ? payload.Query : {}
+        context.state.DatabaseInstance
+          .count(query, (error, count) => {
+            if (error) {
+              reject(error)
+            } else {
+              resolve(count)
+            }
+          })
+      })
+    },
+    // Update documents
+    // @Param {Object} Query, Update, Options
+    dbUpdate (context, payload) {
+      return new Promise((resolve, reject) => {
+        const query = payload.Query ? payload.Query : {}
+        const update = payload.Update ? payload.Update : {}
+        const options = payload.Options ? payload.Options : {}
+        context.stage.DatabaseInstance
+          .update(query, update, options, (error, numrows) => {
+            if (error) {
+              reject(error)
+            } else {
+              resolve(numrows)
+            }
+          })
+      })
+    },
+    // Remove documents
+    // @Param {Object} Query, Options
+    dbRemove (context, payload) {
+      return new Promise((resolve, reject) => {
+        const query = payload.Query ? payload.Query : {}
+        const options = payload.Options ? payload.Options : {}
+        context.stage.DatabaseInstance
+          .remove(query, options, (error, numrows) => {
+            if (error) {
+              reject(error)
+            } else {
+              resolve(numrows)
+            }
+          })
+      })
+    },
     // DataStoreの更新. データベースの操作後は必ず実行する.
     //
     // @Param {Object} Filter: {field: condition,...}, Sort: {field: order,...}
     ReloadDatastore (context, payload = {}) {
-      return new Promise((resolve, reject) => {
-        const Filter = { SequentialId: { $gt: 0 } }
-        const Sort = {}
-        if (payload.Filter !== undefined) {
-          Object.assign(Filter, payload.Filter)
-        } else {
-          Object.assign(Filter, context.state.Filter)
-        }
+      const Query = { SequentialId: { $gt: 0 } }
+      const Sort = {}
+      Object.assign(Query, payload.Filter ? payload.Filter : context.state.Filter)
+      Object.assign(Sort, payload.Sort ? payload.Sort : context.state.Sort)
 
-        if (payload.Sort !== undefined) {
-          Object.assign(Sort, payload.Sort)
-        } else {
-          Object.assign(Sort, context.state.Sort)
-        }
-
+      return context.dispatch('dbFind', { Query: Query, Sort: Sort })
+        .then(documents => {
+          context.commit('SetDatastore', documents)
+        })
+        .catch(error => error)
+        /*
         context.state.DatabaseInstance.find(Filter)
           .sort(Sort)
           .exec(
@@ -218,7 +334,7 @@ const store = new Vuex.Store({
               }
             }
           )
-      })
+        */
     },
 
     // 症例データの新規登録. 同一日時に同一IDの症例は登録出来ない.
