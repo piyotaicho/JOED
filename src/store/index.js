@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import * as NedbAccess from '@/modules/serve/NedbAccess'
 import system from '@/store/modules/system'
 import password from '@/store/modules/passwordauth'
 
@@ -88,15 +89,17 @@ const store = new Vuex.Store({
     // DatabaseInstanceを設定する.
     // App.vue の onCreated からのみ呼ばれる.
     //
-    initDatabase (state, payload) {
-      // electronに実装する際にはユーザデータフォルダに置くようにする
-      // 当面はブラウザのローカルストレージを使用する.
-      const filename = 'joed.nedb'
-
-      state.DatabaseInstance = new Database({
-        filename: filename,
-        autoload: true
-      })
+    initDatabase (state) {
+      // electronでの実装ではmain processで既にデータベースインスタンスが作成されているので
+      // ここではなにもせず DatabaseInstanceはundefined
+      state.DatabaseInstance = NedbAccess.CreateInstance(
+        // vue-cliではブラウザのローカルストレージを使用したデータベースを作成
+        {
+          filename: 'joed.nedb',
+          autoload: true
+        },
+        Database
+      )
     },
     // DataStoreに表示するドキュメントを保存する.
     //
@@ -194,118 +197,38 @@ const store = new Vuex.Store({
   },
 
   actions: {
-    // データベース操作 - 速やかにIPCへ移行できるようにすべてasyncでラップしてある.
+    // データベース操作 - moduleのフォルダで実行環境を分離する作戦
     // Insert document
     // @Param {Object} Document
     dbInsert (context, payload) {
-      return new Promise((resolve, reject) => {
-        context.state.DatabaseInstance
-          .insert(payload.Document, (error, newdocument) => {
-            if (error) {
-              reject(error)
-            } else {
-              resolve(newdocument)
-            }
-          })
-      })
+      return NedbAccess.Insert(payload, context.state.DatabaseInstance)
     },
     // Find documents
     // @Param {Object} Query, Projection, Sort,
     // @Param {Number} Skip, Limit
     dbFind (context, payload) {
-      return new Promise((resolve, reject) => {
-        const query = payload.Query ? payload.Query : {}
-        const projection = payload.Projection ? payload.Projection : {}
-        const sort = payload.Sort ? payload.Sort : {}
-        const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
-        const limit = payload.Limit ? Number.parseInt(payload.Limit) : 0
-
-        context.state.DatabaseInstance
-          .find(query)
-          .projection(projection)
-          .sort(sort)
-          .skip(skip)
-          .limit(limit)
-          .exec((error, founddocuments) => {
-            if (error) {
-              reject(error)
-            } else {
-              resolve(founddocuments)
-            }
-          })
-      })
+      return NedbAccess.Find(payload, context.state.DatabaseInstance)
     },
     // Find a first document
     // @Param {Object} Query, Projection, Sort,
     // @Param {Number} Skip
     dbFindOne (context, payload) {
-      return new Promise((resolve, reject) => {
-        const query = payload.Query ? payload.Query : {}
-        const projection = payload.Projection ? payload.Projection : {}
-        const sort = payload.Sort ? payload.Sort : {}
-        const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
-
-        context.state.DatabaseInstance
-          .findOne(query)
-          .projection(projection)
-          .sort(sort)
-          .skip(skip)
-          .exec((error, founddocument) => {
-            if (error) {
-              reject(error)
-            } else {
-              resolve(founddocument)
-            }
-          })
-      })
+      return NedbAccess.FindOne(payload, context.state.DatabaseInstance)
     },
     // Count matched documents
     // @Param {Object} Query
     dbCount (context, payload) {
-      return new Promise((resolve, reject) => {
-        const query = payload.Query ? payload.Query : {}
-        context.state.DatabaseInstance
-          .count(query, (error, count) => {
-            if (error) {
-              reject(error)
-            } else {
-              resolve(count)
-            }
-          })
-      })
+      return NedbAccess.Count(payload, context.state.DatabaseInstance)
     },
     // Update documents
     // @Param {Object} Query, Update, Options
     dbUpdate (context, payload) {
-      return new Promise((resolve, reject) => {
-        const query = payload.Query ? payload.Query : {}
-        const update = payload.Update ? payload.Update : {}
-        const options = payload.Options ? payload.Options : {}
-        context.stage.DatabaseInstance
-          .update(query, update, options, (error, numrows) => {
-            if (error) {
-              reject(error)
-            } else {
-              resolve(numrows)
-            }
-          })
-      })
+      return NedbAccess.Update(payload, context.state.DatabaseInstance)
     },
     // Remove documents
     // @Param {Object} Query, Options
     dbRemove (context, payload) {
-      return new Promise((resolve, reject) => {
-        const query = payload.Query ? payload.Query : {}
-        const options = payload.Options ? payload.Options : {}
-        context.stage.DatabaseInstance
-          .remove(query, options, (error, numrows) => {
-            if (error) {
-              reject(error)
-            } else {
-              resolve(numrows)
-            }
-          })
-      })
+      return NedbAccess.Remove(payload, context.state.DatabaseInstance)
     },
     // DataStoreの更新. データベースの操作後は必ず実行する.
     //
@@ -321,89 +244,74 @@ const store = new Vuex.Store({
           context.commit('SetDatastore', documents)
         })
         .catch(error => error)
-        /*
-        context.state.DatabaseInstance.find(Filter)
-          .sort(Sort)
-          .exec(
-            (error, documents) => {
-              if (!error) {
-                context.commit('SetDatastore', documents)
-                resolve()
-              } else {
-                reject(error)
-              }
-            }
-          )
-        */
     },
 
     // 症例データの新規登録. 同一日時に同一IDの症例は登録出来ない.
     //
     // @param {Object} オブジェクトCase
-    InsertItemIntoDatastore (context, payload) {
-      const DatabaseInstance = context.state.DatabaseInstance
-      const ErrorAutonumberFailed = 'データベースエラー AUTO-NUMBERING FAILED'
+    InsertItem (context, payload) {
+      // const DatabaseInstance = context.state.DatabaseInstance
+      const ErrorAutonumberFailed = 'データベースエラーです. AUTO-NUMBERING FAILED'
 
       return new Promise((resolve, reject) => {
-        DatabaseInstance.count(
-          {
+        context.dispatch('dbCount', {
+          Query: {
             InstitutionalPatientId: payload.InstitutionalPatientId,
             DateOfProcedure: payload.DateOfProcedure
-          },
-          (error, count) => {
-            if (error) reject(error)
-            if (count > 0) reject(new Error('同一日に同一IDの症例は登録できません.'))
-            resolve()
           }
-        )
+        }).then(count => {
+          if (count > 0) reject(new Error('同一日に同一IDの症例は登録できません.'))
+          resolve()
+        },
+        error => reject(error))
       }).then(() => {
-        return new Promise((resolve, reject) => {
-          payload.SequentialId = '__autoid__'
-          DatabaseInstance.insert(
-            payload,
-            (error) => {
-              if (error) reject(error)
+        payload.SequentialId = '__autoid__'
+        return context.dispatch('dbInsert', {
+          Document: payload
+        }).then(_ => {
+          return new Promise((resolve, reject) => {
+            let newid = 0
+            // 連番付与
+            context.dispatch('dbFindOne', {
+              Query: { sequence: 'maindb' }
+            }).then(sequencerow => {
+              newid = (sequencerow ? sequencerow.number : 0) + 1
 
-              DatabaseInstance.findOne(
-                { sequence: 'maindb' },
-                (error, sequencerow) => {
-                  if (error) reject(error)
-
-                  const newid = (sequencerow ? sequencerow.number : 0) + 1
-                  DatabaseInstance.update(
-                    { sequence: 'maindb' },
-                    { sequence: 'maindb', number: newid },
-                    { upsert: true },
-                    (error) => {
-                      if (error) reject(new Error(ErrorAutonumberFailed))
-
-                      DatabaseInstance.update(
-                        { SequentialId: '__autoid__' },
-                        { $set: { SequentialId: newid } },
-                        {},
-                        (error) => {
-                          if (error) reject(new Error(ErrorAutonumberFailed))
-
-                          context.dispatch('ReloadDatastore')
-                          resolve()
-                        }
-                      )
-                    }
-                  )
-                }
-              )
-            }
-          )
+              context.dispatch('dbUpdate', {
+                Query: { sequence: 'maindb' },
+                Update: { sequence: 'maindb', number: newid },
+                Options: { upsert: true }
+              }).then(
+                _ => resolve(newid)
+              ).catch(_ => reject(new Error(ErrorAutonumberFailed)))
+            }).catch(_ => reject(new Error(ErrorAutonumberFailed)))
+          }).then(newid => {
+            // 登録
+            context.dispatch('dbUpdate', {
+              Query: { SequentialId: '__autoid__' },
+              Update: { $set: { SequentialId: newid } },
+              Options: {}
+            }).then(_ => {
+              context.dispatch('ReloadDatastore')
+              Promise.resolve()
+            }).catch(error => Promise.reject(error))
+          }).catch(error => {
+            // 連番付与登録に失敗した場合仮登録の部分は削除-rollback
+            context.dispatch('dbRemove', {
+              Query: {
+                SequentialId: '__autoid__'
+              },
+              Options: {
+                multi: true
+              }
+            }).then((_, __) => {
+              Promise.reject(error)
+            })
+          })
+        }).catch(_ => {
+          // Insertに失敗
+          return Promise.reject(new Error('データベースエラーです.'))
         })
-      }).catch(error => {
-        // 連番付与が失敗した場合は症例データ登録を rollback.
-        if (error.message === ErrorAutonumberFailed) {
-          DatabaseInstance.remove(
-            { SequentialId: '__autoid__' },
-            { multi: false }
-          )
-        }
-        return Promise.reject(error)
       })
     },
 
@@ -411,66 +319,54 @@ const store = new Vuex.Store({
     // 同一日時に同一IDの症例は登録出来ない.
     //
     // @param {Object} オブジェクトCase
-    ReplaceItemInDatastore (context, payload) {
-      const DatabaseInstance = context.state.DatabaseInstance
+    ReplaceItem (context, payload) {
       return new Promise((resolve, reject) => {
         if (payload.SequentialId <= 0) reject(new Error('内部IDの指定に問題があります.'))
-        DatabaseInstance.find(
-          {
+        context.dispatch('dbFind', {
+          Query: {
             InstitutionalPatientId: payload.InstitutionalPatientId,
             DateOfProcedure: payload.DateOfProcedure
           },
-          { SequentialId: 1 },
-          (error, documents) => {
-            if (error) reject(error)
-            for (const document of documents) {
-              if (document.SequentialId !== payload.SequentialId) reject(new Error('同一日に同一IDの症例は登録できません.'))
-            }
-            DatabaseInstance.update(
-              { SequentialId: payload.SequentialId },
-              payload,
-              {},
-              (error, numupdated) => {
-                if (error) reject(error)
-                context.dispatch('ReloadDatastore')
-                resolve()
-              }
-            )
+          Projection: { SequentialId: 1 }
+        }).then(documents => {
+          for (const document of documents) {
+            if (document.SequentialId !== payload.SequentialId) reject(new Error('同一日に同一IDの症例は登録できません.'))
           }
-        )
+          context.dispatch('dbUpdate', {
+            Query: { SequentialId: payload.SequentialId },
+            Update: payload,
+            Options: {}
+          }).then(_ => {
+            context.dispatch('ReloadDatastore')
+            resolve()
+          })
+        }).catch(error => reject(error))
       })
     },
 
     // 症例データの登録. SequentialIdで、新規(===0)・更新(>0)を区別する.
     //
     // @param {Object} オブジェクトCase
-    UpsertItemInDatastore (context, payload) {
+    UpsertItem (context, payload) {
       if (payload.SequentialId && payload.SequentialId > 0) {
-        return context.dispatch('ReplaceItemInDatastore', payload)
+        return context.dispatch('ReplaceItem', payload)
       } else {
-        return context.dispatch('InsertItemIntoDatastore', payload)
+        return context.dispatch('InsertItem', payload)
       }
     },
 
     // 症例データの削除.
     //
     // @param {Object} オブジェクトCase (検索に用いるのは SequentialId のみ)
-    RemoveItemFromDatastore (context, payload) {
+    RemoveItem (context, payload) {
       return new Promise((resolve, reject) => {
-        try {
-          if (payload.SequentialId <= 0) throw new Error()
-          context.state.DatabaseInstance.remove(
-            { SequentialId: payload.SequentialId },
-            {},
-            (error) => {
-              if (error) throw error
-              context.dispatch('ReloadDatastore')
-              resolve()
-            }
-          )
-        } catch (error) {
-          reject(error)
-        }
+        if (payload.SequentialId <= 0) reject(new Error())
+        context.dispatch('dbRemove', {
+          Query: { SequentialId: payload.SequentialId }
+        }).then(_ => {
+          context.dispatch('ReloadDatastore')
+          resolve()
+        }).catch(error => reject(error))
       })
     },
 
