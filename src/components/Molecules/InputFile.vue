@@ -1,7 +1,7 @@
 <template>
   <div style="display: inline-block;">
     <input type="file" ref="inputfile" style="display: none;" :accept="AcceptFileTypes" @change="SelectionMade" />
-    <el-button type="primary" @click="OpenFileDialog">{{ButtonText}}</el-button>
+    <el-button type="primary" @click="OpenFileDialog" :disabled="disabled">{{ButtonText}}</el-button>
   </div>
 </template>
 
@@ -14,6 +14,10 @@ export default {
     },
     AcceptFileTypes: {
       default: ''
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     }
   },
   methods: {

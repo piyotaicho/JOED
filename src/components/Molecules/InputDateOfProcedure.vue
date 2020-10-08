@@ -8,7 +8,9 @@
       :typeable="true"
       format="yyyy-MM-dd"
       :input-class="RequiredClass"
-      :language="DatepickerTranslation" >
+      :language="DatepickerTranslation"
+      :disabled="disabled"
+      >
     </Datepicker>
   </div>
 </template>
@@ -22,6 +24,10 @@ export default {
   props: {
     value: {},
     required: {
+      default: false
+    },
+    disabled: {
+      type: Boolean,
       default: false
     }
   },
