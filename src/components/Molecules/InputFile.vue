@@ -37,7 +37,6 @@ export default {
           from: readencoding === 'UNICODE' ? 'UTF8' : readencoding,
           type: 'string'
         })
-        console.log(unicodetext)
         self.$emit('change', unicodetext)
       }
       reader.readAsArrayBuffer(files[0])
