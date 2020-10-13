@@ -39,8 +39,8 @@
       />
 
       <!-- Controles -->
-      <el-button icon="el-icon-caret-left" size="medium" circle id="MovePrev" v-if="IsEditingExistingItem" :disabled="Processing || !Nexts[0]" @click="CancelEditing(-1)"></el-button>
-      <el-button icon="el-icon-caret-right" size="medium" circle id="MoveNext" v-if="IsEditingExistingItem" :disabled="Processing || !Nexts[1]" @click="CancelEditing(+1)"></el-button>
+      <el-button icon="el-icon-caret-left" size="medium" circle id="MovePrev" v-if="IsEditingExistingItem" :disabled="Processing || !PrevUid" @click="CancelEditing(-1)"></el-button>
+      <el-button icon="el-icon-caret-right" size="medium" circle id="MoveNext" v-if="IsEditingExistingItem" :disabled="Processing || !NextUid" @click="CancelEditing(+1)"></el-button>
 
       <div class="edit-controls">
         <div class="edit-controls-left">
@@ -54,8 +54,8 @@
             <el-dropdown split-button type="primary" @click="CommitCase()" @command="CommitCaseAndGo">
               編集内容を保存<i class="el-icon-loading" v-if="Processing"/>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="prev" v-if="IsEditingExistingItem && Nexts[0]">保存して前へ</el-dropdown-item>
-                <el-dropdown-item command="next" v-if="IsEditingExistingItem && Nexts[1]">保存して次へ</el-dropdown-item>
+                <el-dropdown-item command="next" v-if="IsEditingExistingItem && NextUid">保存して次へ</el-dropdown-item>
+                <el-dropdown-item command="prev" v-if="IsEditingExistingItem && PrevUid">保存して前へ</el-dropdown-item>
                 <el-dropdown-item command="new">保存して新規作成</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -128,7 +128,8 @@ export default {
         AEs: [],
         Notification: ''
       },
-      Nexts: [0, 0],
+      PrevUid: 0,
+      NextUid: 0,
       Edited: false,
       Processing: true
     })
@@ -155,7 +156,8 @@ export default {
               }
             }
           }
-          this.Nexts.splice(0, 2, ...this.$store.getters.NextUids(this.uid))
+          this.PrevUid = this.$store.getters.NextUids(this.uid).Prev
+          this.NextUid = this.$store.getters.NextUids(this.uid).Next
 
           this.$nextTick(_ => {
             this.Processing = false
@@ -263,11 +265,11 @@ export default {
         if (offset === 0) {
           this.GoBackToList(this.uid)
         } else {
-          if (offset < 0 && this.Nexts[0] !== 0) {
-            this.$router.push({ name: 'edit', params: { uid: this.Nexts[0] } })
+          if (offset < 0 && this.PrevUid !== 0) {
+            this.$router.push({ name: 'edit', params: { uid: this.PrevUid } })
           }
-          if (offset > 0 && this.Nexts[1] !== 0) {
-            this.$router.push({ name: 'edit', params: { uid: this.Nexts[1] } })
+          if (offset > 0 && this.NextUid !== 0) {
+            this.$router.push({ name: 'edit', params: { uid: this.NextUid } })
           }
         }
       }
@@ -290,6 +292,7 @@ export default {
       if (this.Processing) {
         return
       }
+      // HACK:
       // 新規(uid = '0')→新規(uid = '0')ではApp.vueで定義したRouterKeyが重複するための quick hack.
       // uid = '00' も uid > 0 がfalseで新規扱いになるのでそれを利用する.
       this.StoreCase()
@@ -299,10 +302,10 @@ export default {
               this.$router.push({ name: 'edit', params: { uid: (this.uid === '0') ? '00' : '0' } })
               break
             case 'prev':
-              if (this.Nexts[0] !== 0) this.$router.push({ name: 'edit', params: { uid: this.Nexts[0] } })
+              if (this.PrevUid !== 0) this.$router.push({ name: 'edit', params: { uid: this.PrevUid } })
               break
             case 'next':
-              if (this.Nexts[1] !== 0) this.$router.push({ name: 'edit', params: { uid: this.Nexts[1] } })
+              if (this.NextUid !== 0) this.$router.push({ name: 'edit', params: { uid: this.NextUid } })
               break
             default:
               this.GoBackToList(this.uid)
