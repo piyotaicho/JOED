@@ -180,10 +180,11 @@ export default {
       function CheckConsistencies (documentids) {
         const ErrorsOfDocument = []
 
-        return this.$store
-          .dispatch('dbFind', {
+        return this.$store.dispatch('dbFind',
+          {
             Query: { DocumentId: { $in: [...documentids] } }
-          }).then(documents =>
+          })
+          .then(documents =>
             documents.forEach(item => ValidateCase(item)
               .catch(error => {
                 ErrorsOfDocument.push({
@@ -193,7 +194,8 @@ export default {
                 Promise.resolve()
               })
             )
-          ).then(_ => Promise.resolve(ErrorsOfDocument))
+          )
+          .then(_ => Promise.resolve(ErrorsOfDocument))
       }
 
       function SetNotificationField (documents) {
