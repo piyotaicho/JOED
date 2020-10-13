@@ -9,7 +9,7 @@ export function ZenToHan (str = '') {
 
   stringargument = stringargument
     .replace(/[ーｰ～]/g, '-')
-    .replace(/[！-～]/g, c => UnicodeToASCII(c)) // String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+    .replace(/[！-～]/g, c => UnicodeToASCII(c))
 
   return stringargument
 }
@@ -19,7 +19,16 @@ export function ZenToHanNumbers (str = '') {
 
   stringargument = stringargument
     .replace(/[^0-9０-９]/g, '')
-    .replace(/[０-９]/g, c => UnicodeToASCII(c)) // String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+    .replace(/[０-９]/g, c => UnicodeToASCII(c))
+
+  return stringargument
+}
+
+export function ZenToHanBraces (str = '') {
+  let stringargument = str.toString()
+
+  stringargument = stringargument
+    .replace(/[（）]/g, c => UnicodeToASCII(c))
 
   return stringargument
 }

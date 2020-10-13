@@ -287,6 +287,11 @@ export default class ProcedureTree extends SelectionTree {
         ],
         その他: [
           '腹腔鏡下病変生検・審査腹腔鏡',
+          // 2020 新規
+          {
+            Text: '再発病巣の摘出術',
+            VaildFrom: '2020'
+          },
           '治療のために開腹手術へ移行(合併症を除く)',
           // 2020 削除
           {

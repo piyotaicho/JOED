@@ -38,6 +38,7 @@ https://p4testsuite.hostingerapp.com/JOEDv5/
 - 2020-07-30 検索が可能, まだ検索の終了は表示設定. システム共通のデータチェックを実装, データベースへの書き戻しが未実装なのでエラーの内容はコンソールのメッセージを参照. 症例の編集にこれを書き戻すか検討.
 - 2020-08-02 検証でドキュメント数が増えると不都合が生じるのでPromise.allを10件ずつ実施するように変更. エラーの書き戻し, 表示設定でエラーありドキュメントを表示, 症例編集でエラーの表示を可能に.
 - 2020-08-15 mergeファイルのインポートを実装. 文字コードはshift-jis, utf8いずれも受け入れ可能. Editの3ペイン表示をモジュール化.
+- 2020-10-13 データベース様式, マスタなどを最終版へ. 以降はelectronでの動作となるためwebでの利用は不可能となります.
 
 現時点で作成中のweb版ではデータはブラウザのストレージに保存されます.データベースの削除・修正などは https://p4testsuite.hostingerapp.com/JOEDv5/Database_Manager/ のユーティリティを使用してください.
 
@@ -74,11 +75,11 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |名称                        | タイプ |フォーマット規則|必須項目|エクスポート対象|解説|
 |:--------------------------|:-----:|:--:|:--:|:--:|:--|
 |_id                        |integer| | | |データベースエンジンが付与する内部管理id|
-|SequentialId               |integer| |X| |連続番号|
+|DocumentId                 |integer| |X| |連続番号|
 |UniqueID                   |string |{{InstitutionID}}-{{Year}}-{{SequentialID}}|X|X|登録にあたっての症例番号<br/>（ユーザからは見えないが修正登録の際に問い合わせ番号として使用できるようにする）|
 |Name                       |string | | | |患者名|
 |Age                        |integer| |X|X|年齢|
-|InstitutionalPatientId     |string | |X| |施設での患者ID|
+|PatientId                  |string | |X| |施設での患者ID|
 |JSOGId                     |string | | |X|日産婦腫瘍登録番号|
 |NCDId                      |string |\d{18}-\d{2}-\d{2}-\d{2}| |X|NCD症例識別コード～ロボット登録にけるNCD側の患者番号（将来的にこちらからのデータ流し込みにNCDが対応したときに備える）|
 |DateOfProcedure            |string |20(19\|[23][0-9])-(0[1-9]\|1[012])-([0-2][0-9]\|3[01])|X|x|手術日<br/>InstitutionalPatientIDとDateOfProcedureでユニークが望ましいが確認のみとする|
@@ -109,7 +110,7 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |Text                       |string | |X|X|術式名、術式マスタから引用
 |Chain                      |array  | | | |選択ツリー[Category, Target]
 |Description                |array  | | |x|付随情報
-|AdditionalProcedure        |string | | |x|併施術式名 これがあるときはDescription は併施術式のための情報となる
+|AdditionalProcedure        |object | | |x|併施術式 - これも同じ構造を取る
 |Ditto                      |array  | | | |重複確認の対象となる術式名
 |UserTyped                  |boolean| | |X|手入力情報|
 
