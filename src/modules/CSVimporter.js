@@ -1,4 +1,5 @@
 import ProcedureTimeSelections from '@/modules/ProcedureTimes'
+import { ZenToHan } from '@/modules/ZenHanChars'
 
 // eslint-disable-next-line no-unused-vars
 const RecordError = new Error('レコードの様式が不適合です.')
@@ -51,7 +52,7 @@ export function phraseTitledCSV (loadeddocument) {
   return doc.slice(1).map(line => {
     const record = {}
     for (const index in line) {
-      record[header[index]] = line[index]
+      record[header[index]] = ZenToHan(line[index])
     }
     return record
   })
