@@ -200,9 +200,11 @@ export default class ProcedureTree extends SelectionTree {
               Values: ['なし(センチネル生検なし)$', 'なし(センチネル生検あり)', 'PLN', 'PLN+PAN', 'PAN']
             }
           },
-          '治療のために開腹手術へ移行(合併症を除く)',
-          'SecondLookOperation',
-          '術後合併症の修復術',
+          // 2020 削除
+          {
+            Text: 'SecondLookOperation',
+            VaildTo: '2019'
+          },
           {
             Text: '他の悪性疾患の予防的切除術',
             Description: {
@@ -214,7 +216,16 @@ export default class ProcedureTree extends SelectionTree {
           {
             Text: '婦人科以外の悪性疾患による子宮全摘出術',
             VaildFrom: '2020'
-          }
+          },
+          // 2020 新規
+          {
+            Text: '再発病巣の摘出術',
+            VaildFrom: '2020'
+          },
+          // 2020 新規
+          '腹腔鏡下病変生検・審査腹腔鏡',
+          '治療のために開腹手術へ移行(合併症を除く)',
+          '術後合併症の修復術'
         ],
         付属器: [
           '腹腔鏡下病変生検・審査腹腔鏡',
@@ -232,9 +243,12 @@ export default class ProcedureTree extends SelectionTree {
               Values: ['なし(センチネル生検なし)$', 'なし(センチネル生検あり)', 'PLN', 'PLN+PAN', 'PAN']
             }
           },
+          // 2020 削除
+          {
+            Text: 'SecondLookOperation',
+            VaildTo: '2019'
+          },
           '治療のために開腹手術へ移行(合併症を除く)',
-          'SecondLookOperation',
-          '術後合併症の修復術',
           {
             Text: '他の悪性疾患の予防的切除術',
             Description: {
@@ -263,12 +277,22 @@ export default class ProcedureTree extends SelectionTree {
               Text: '大網切除・生検',
               Values: ['あり', 'なし']
             }
-          }
+          },
+          // 2020 新規
+          {
+            Text: '再発病巣の摘出術',
+            VaildFrom: '2020'
+          },
+          '術後合併症の修復術'
         ],
         その他: [
           '腹腔鏡下病変生検・審査腹腔鏡',
           '治療のために開腹手術へ移行(合併症を除く)',
-          'SecondLookOperation',
+          // 2020 削除
+          {
+            Text: 'SecondLookOperation',
+            VaildTo: '2019'
+          },
           '術後合併症の修復術'
         ]
       },
@@ -313,7 +337,11 @@ export default class ProcedureTree extends SelectionTree {
             }
           },
           '治療のために開腹手術へ移行(合併症を除く)',
-          'SecondLookOperation',
+          // 2020 削除
+          {
+            Text: 'SecondLookOperation',
+            VaildTo: '2019'
+          },
           '術後合併症の修復術',
           // 2020 新規
           {
@@ -331,6 +359,7 @@ export default class ProcedureTree extends SelectionTree {
           '子宮形成術',
           '子宮内膜焼灼術',
           '胎盤ポリープ・胎盤違残摘出術',
+          // 2020 新規
           {
             Text: '帝王切開瘢痕症候群創部切除術',
             VaildFrom: '2020'
@@ -343,10 +372,12 @@ export default class ProcedureTree extends SelectionTree {
       },
       卵管鏡: {
         卵管: [
+          // 2020 表記変更 腹腔鏡併用は付随情報へ
           {
             Text: '卵管鏡下卵管形成術(単独)',
             VaildTo: '2019'
           },
+          // 2020 表記変更 腹腔鏡併用は付随情報へ
           {
             Text: '卵管鏡下卵管形成術(腹腔鏡併用)',
             VaildTo: '2019'

@@ -177,13 +177,17 @@ export default {
     //  必須項目の有無
     //  項目の重複(ditto含む)
     CheckConsistency () {
+      const self = this
+
       function CheckConsistencies (documentids) {
         const ErrorsOfDocument = []
+        const Ids = [...documentids]
 
-        return this.$store
-          .dispatch('dbFind', {
-            Query: { DocumentId: { $in: [...documentids] } }
-          }).then(documents =>
+        return self.$store.dispatch('dbFind',
+          {
+            Query: { DocumentId: { $in: Ids } }
+          })
+          .then(documents =>
             documents.forEach(item => ValidateCase(item)
               .catch(error => {
                 ErrorsOfDocument.push({
@@ -193,13 +197,14 @@ export default {
                 Promise.resolve()
               })
             )
-          ).then(_ => Promise.resolve(ErrorsOfDocument))
+          )
+          .then(_ => Promise.resolve(ErrorsOfDocument))
       }
 
       function SetNotificationField (documents) {
         const details = documents.pop()
         if (details) {
-          return this.$store.dispatch('dbUpdate', {
+          return self.$store.dispatch('dbUpdate', {
             Query: { DocumentId: details.DocumentId },
             Update: { $set: { Notification: details.Message } }
           })
