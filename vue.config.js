@@ -18,6 +18,8 @@ module.exports = {
   },
   pluginOptions: {
     electronBuilder: {
+      productName: 'JOED',
+      copyright: 'Copyright (C) 2020 @piyotaicho, JSGOE',
       // preload: 'src/electron-builder-preload.js',
       nodeIntegration: true // ,
       // nodeModulesPath: ['./node_modules']

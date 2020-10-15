@@ -1,3 +1,4 @@
+/* global __static */
 'use strict'
 
 // eslint-disable-next-line no-unused-vars
@@ -5,6 +6,7 @@ import { app, protocol, BrowserWindow, Menu, ipcMain, dialog, shell } from 'elec
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
+const path = require('path')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -33,12 +35,19 @@ function createWindow () {
     width: 960,
     minWidth: 960,
     maxWidth: 960,
-    height: 800,
+    height: 700,
+    center: true,
+    title: 'JOED',
+    icon: path.join(__static, 'icon.png'),
+    backgroundColor: '#dddddd',
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
-      spellcheck: false
+      spellcheck: false,
+      enableWebSQL: false,
+      webgl: false,
+      devTools: isDevelopment
     }
   })
 
@@ -108,7 +117,6 @@ ipcMain.on('messagebox', (event, payload) => {
 const DB = require('nedb')
 
 function createDatabaseInstance () {
-  const path = require('path')
   const fs = require('fs')
 
   const DBfilename = path.join(app.getPath('userData'), 'joed.nedb')
