@@ -210,6 +210,7 @@ export default {
     async CheckConsistency () {
       const self = this
 
+      /*
       // eslint-disable-next-line no-unused-vars
       async function CheckConsistencies (documentids) {
         const ErrorsOfDocument = []
@@ -228,7 +229,6 @@ export default {
         }
         return ErrorsOfDocument
 
-        /*
         return self.$store.dispatch('dbFind',
           {
             Query: { DocumentId: { $in: Ids } }
@@ -245,7 +245,6 @@ export default {
             )
           )
           .then(_ => Promise.resolve(ErrorsOfDocument))
-        */
       }
 
       // eslint-disable-next-line no-unused-vars
@@ -259,6 +258,7 @@ export default {
           SetNotificationField(documents)
         }
       }
+      */
 
       // 選択クエリ
       const query = {
@@ -269,7 +269,6 @@ export default {
         query.DateOfProcedure = { $regex: reg }
       }
 
-      // let ProgressStep = 1
       this.ProgressStepThree = 0
 
       const documentids = (await this.$store.dispatch('dbFind',
@@ -304,7 +303,6 @@ export default {
       this.ProgressStepThree = 100
 
       if (DocumentErrors > 0) {
-        // await SetNotificationField(DocumentErrors)
         throw new Error(
           'データ検証で' + DocumentErrors + '件のエラーが確認されました.\n' +
           '該当するデータの修正を御願いします.'
