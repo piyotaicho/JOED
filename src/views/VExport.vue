@@ -18,8 +18,8 @@
       <div class="export-progression" v-if="ProcessStep !== undefined">
         <el-steps :active="ProcessStep" process-status="warning" finish-status="success" direction="vertical" space="42px">
           <el-step title="システム設定" />
-          <el-step title="要修正データの修正を確認" />
-          <el-step title="妥当性の検証">
+          <el-step title="読み込み症例の確認を検証" />
+          <el-step title="登録内容の妥当性の検証">
             <template #description>
               <el-progress :percentage="ProgressStepThree"></el-progress>
             </template>
@@ -80,7 +80,7 @@ export default {
     })
   },
   methods: {
-    StartProcessing () {
+    async StartProcessing () {
       this.Processing = true
       this.ProgressStepFour = 0
       this.ReadyForExport = false
@@ -88,6 +88,33 @@ export default {
 
       this.ProcessStep = 0
 
+      try {
+        await this.CheckSystem()
+
+        this.ProcessStep++
+        await this.CheckImported()
+
+        this.ProcessStep++
+        await this.CheckConsistency()
+
+        this.ProcessStep++
+        const ExportItems = await this.CreateExportData()
+
+        this.ProcessStep++
+        const ExportCounts = await this.CreateHeader(ExportItems)
+
+        this.ProcessStep = 6
+        if (ExportCounts > 0) {
+          this.ReadyForExport = true
+        }
+      } catch (error) {
+        this.ReadyForExport = false
+        Popups.alert(error.message)
+      } finally {
+        this.Processing = false
+      }
+
+      /*
       // transitionの時間だけちょっと待つ（正直無駄）
       new Promise((resolve) => setTimeout(resolve, 500))
         .then(_ => {
@@ -121,6 +148,7 @@ export default {
           this.Processing = false
           Popups.alert(error.message)
         })
+      */
     },
 
     Download () {
@@ -136,8 +164,11 @@ export default {
 
     // Step 1 - 施設名とIDが設定されているかを確認
     //
-    CheckSystem () {
-      return new Promise((resolve) => { resolve() })
+    async CheckSystem () {
+      if (!this.$store.getters['system/InstitutionID']) {
+        throw new Error('施設情報が未設定です.')
+      }
+      /* return new Promise((resolve) => { resolve() })
         .then(_ => {
           return new Promise((resolve, reject) => {
             const InstitutionID = this.$store.getters['system/InstitutionID']
@@ -150,39 +181,53 @@ export default {
             resolve(InstitutionID)
           })
         })
+      */
     },
 
     // Step 2 - インポートデータがすべて確認されているかを確認
     //
     // インポートデータ( Imported )で特になんの問題も無くインポートできたもの以外には Notification がある
-    CheckImported () {
+    async CheckImported () {
       const query = {
         DocumentId: { $gt: 0 },
-        Imported: { $exists: true },
-        Notification: { $exists: true }
+        Imported: { $exists: true }
       }
       if (this.ExportYear !== '') {
         const reg = new RegExp('^' + this.ExportYear + '-')
         query.DateOfProcedure = { $regex: reg }
       }
 
-      return this.$store.dispatch('dbCount', { Query: query })
-        .then(count => {
-          if (count > 0) { return Promise.reject(new Error('未確認のデータがあります.')) }
-        })
+      const count = await this.$store.dispatch('dbCount', { Query: query })
+      if (count > 0) {
+        throw new Error('未確認の読み込み症例があります.\n確認を御願いします.')
+      }
     },
     // Step 3 - データの妥当性検証
     //
     // 基本的に入力時に検証されているので大丈夫だと思うが：
     //  必須項目の有無
     //  項目の重複(ditto含む)
-    CheckConsistency () {
+    async CheckConsistency () {
       const self = this
 
-      function CheckConsistencies (documentids) {
+      async function CheckConsistencies (documentids) {
         const ErrorsOfDocument = []
-        const Ids = [...documentids]
 
+        for (const uid of documentids) {
+          const doc = await self.$store.dispatch('dbFindOne',
+            {
+              Query: { DocumentId: uid }
+            })
+          await ValidateCase(doc)
+            .catch(error => ErrorsOfDocument.push(
+              {
+                DocumentId: doc.DocumentId,
+                Message: error
+              }))
+        }
+        return ErrorsOfDocument
+
+        /*
         return self.$store.dispatch('dbFind',
           {
             Query: { DocumentId: { $in: Ids } }
@@ -199,18 +244,17 @@ export default {
             )
           )
           .then(_ => Promise.resolve(ErrorsOfDocument))
+        */
       }
 
-      function SetNotificationField (documents) {
+      async function SetNotificationField (documents) {
         const details = documents.pop()
         if (details) {
-          return self.$store.dispatch('dbUpdate', {
+          await self.$store.dispatch('dbUpdate', {
             Query: { DocumentId: details.DocumentId },
             Update: { $set: { Notification: details.Message } }
           })
-            .then(_ => SetNotificationField(documents))
-        } else {
-          return Promise.resolve()
+          SetNotificationField(documents)
         }
       }
 
@@ -226,6 +270,24 @@ export default {
       // let ProgressStep = 1
       this.ProgressStepThree = 0
 
+      const documentids = (await this.$store.dispatch('dbFind',
+        {
+          Query: query,
+          Projection: { DocumentId: 1, _id: 0 }
+        }))
+        .map(item => item.DocumentId)
+      if (documentids.length === 0) throw new Error('エクスポートの対象がありません.')
+
+      const DocumentErrors = await CheckConsistencies(documentids)
+      if (DocumentErrors.length > 0) {
+        await SetNotificationField(DocumentErrors)
+        throw new Error(
+          'データ検証で' + DocumentErrors.length + '件のエラーが確認されました.\n' +
+          '該当するデータの修正を御願いします.'
+        )
+      }
+
+      /*
       return this.$store.dispatch('dbFind',
         {
           Query: query,
@@ -260,12 +322,44 @@ export default {
             }
           })
         })
+      */
     },
     // Step 4 - データの整形
     //
-    CreateExportData () {
+    async CreateExportData () {
       this.ProgressStepFour = 0
 
+      const ExportItems = []
+      const query = {
+        DocumentId: { $gt: 0 }
+      }
+      if (this.ExportYear !== '') {
+        const reg = new RegExp('^' + this.ExportYear + '-')
+        query.DateOfProcedure = { $regex: reg }
+      }
+
+      const documents = await this.$store.dispatch('dbFind', {
+        Query: query,
+        Sort: { DocumentId: 1 }
+      })
+
+      for (const index in documents) {
+        const item = documents[index]
+        this.ProgressStepFour = parseInt(index * 100.0 / documents.length)
+
+        ExportItems.push(
+          DbItems.exportCase(item, this.$store.getters['system/InstitutionID'],
+            {
+              spliceDateOfProcedure: !this.ExportDateOfProcedure
+            }
+          )
+        )
+      }
+      this.ProgressStepFour = 100
+
+      return ExportItems
+
+      /*
       return new Promise((resolve) => { resolve() })
         .then(_ => {
           const query = {
@@ -301,33 +395,34 @@ export default {
             resolve(temporaryExportItems)
           })
         })
+      */
     },
+
     // Step 5 - データヘッダの作成
     //
-    CreateHeader (exportItem) {
-      return new Promise((resolve) => {
-        const length = exportItem.length
+    async CreateHeader (exportItem) {
+      const length = exportItem.length
 
-        if (length > 0) {
-          const HHX = require('xxhashjs')
-          const TimeStamp = Date.now()
+      if (length > 0) {
+        const HHX = require('xxhashjs')
+        const TimeStamp = Date.now()
 
-          const OutputString = JSON.stringify(exportItem, ' ', 2)
-          const Checksum = HHX.h64(OutputString, TimeStamp).toString(16)
+        const OutputString = JSON.stringify(exportItem, ' ', 2)
+        const Checksum = HHX.h64(OutputString, TimeStamp).toString(16)
 
-          exportItem.splice(0, 0, {
-            InstitutionName: this.$store.getters['system/InstitutionName'],
-            InstitutionID: this.$store.getters['system/InstitutionID'],
-            JSOGoncologyboardID: this.$store.getters['system/JSOGInstitutionID'],
-            TimeStamp: TimeStamp,
-            Year: this.ExportYear || 'ALL',
-            NumberOfCases: exportItem.length,
-            MD5: Checksum
-          })
-        }
-        this.OutputString = JSON.stringify(exportItem, ' ', 2)
-        resolve(length)
-      })
+        exportItem.splice(0, 0, {
+          InstitutionName: this.$store.getters['system/InstitutionName'],
+          InstitutionID: this.$store.getters['system/InstitutionID'],
+          JSOGoncologyboardID: this.$store.getters['system/JSOGInstitutionID'],
+          TimeStamp: TimeStamp,
+          Year: this.ExportYear || 'ALL',
+          NumberOfCases: exportItem.length,
+          MD5: Checksum
+        })
+      }
+      this.OutputString = JSON.stringify(exportItem, ' ', 2)
+
+      return length
     }
   }
 }
