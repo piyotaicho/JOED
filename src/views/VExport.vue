@@ -55,7 +55,7 @@ import InputSwitchField from '@/components/Molecules/InputSwitchField'
 import SelectYear from '@/components/Molecules/SelectYear'
 import TheWrapper from '@/components/Atoms/AtomTheWrapper'
 import DbItems from '@/modules/DbItemHandler'
-import Popups from '@/modules/serve/Popups'
+import Popups from 'depmodules/Popups'
 import { ValidateCase } from '@/modules/CaseValidater'
 
 export default {
@@ -229,14 +229,16 @@ export default {
       return this.$store.dispatch('dbFind',
         {
           Query: query,
-          Projection: { DocumentId: 1 }
+          Projection: { DocumentId: 1, _id: 0 }
         })
         .then(documents => {
-          if (documents.length === 0) {
-            Promise.reject(new Error('エクスポートの対象がありません.'))
-          } else {
-            Promise.resolve(documents.map(item => item.DocumentId))
-          }
+          return new Promise((resolve, reject) => {
+            if (documents.length === 0) {
+              reject(new Error('エクスポートの対象がありません.'))
+            } else {
+              resolve(documents.map(item => { console.log(item); return item.DocumentId }))
+            }
+          })
         })
         .then(documentids => {
           return CheckConsistencies(documentids)

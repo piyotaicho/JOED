@@ -86,7 +86,7 @@ import InputDateOfProcedure from '@/components/Molecules/InputDateOfProcedure'
 import TheWrapper from '@/components/Atoms/AtomTheWrapper'
 
 import { ZenToHan } from '@/modules/ZenHanChars'
-import Popups from '@/modules/serve/Popups'
+import Popups from 'depmodules/Popups'
 import {
   CheckBasicInformations, ValidateAdditionalInformations,
   CheckSections, ValidateCategoryMatch,

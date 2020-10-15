@@ -35,7 +35,7 @@
 <script>
 import InputPasswordField from '@/components/Molecules/InputPasswordField'
 import InputSwitchField from '@/components/Molecules/InputSwitchField'
-import Popups from '@/modules/serve/Popups'
+import Popups from 'depmodules/Popups'
 
 export default {
   name: 'SettingOfAuthentication',
@@ -67,7 +67,7 @@ export default {
             }
 
             this.$store.dispatch('password/SetPassword', newPassword).then(() => {
-              Popups.alert('認証設定が変更されました.')
+              Popups.information('認証設定が変更されました.')
             })
           })
           .catch(() => Popups.alert('パスワードが違うので設定変更できません.'))
@@ -82,7 +82,7 @@ export default {
           }
 
           this.$store.dispatch('password/SetPassword', newPassword).then(() => {
-            Popups.alert('認証設定が変更されました.')
+            Popups.information('認証設定が変更されました.')
           })
         }
       }

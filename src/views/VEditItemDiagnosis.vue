@@ -50,7 +50,7 @@
 import EditItemMixins from '@/mixins/EditItemMixins'
 import DiagnosisTree from '@/modules/DiagnosisItemList'
 import { getMatchesInDiagnoses } from '@/modules/CloseMatches'
-import Popups from '@/modules/serve/Popups'
+import Popups from 'depmodules/Popups'
 import ThreePaneSelections from '@/components/Molecules/3PaneSelections'
 
 const DiagnosesTree = new DiagnosisTree()

@@ -1,20 +1,30 @@
-import { dialog } from 'electron'
+// electron用のダイアログ
+import { ipcRenderer } from 'electron'
 
 export default class Popups {
-  // electronとwebでの違いを吸収するダイアログのラッパー
   static alert (message) {
-    dialog.showMessageBoxSync(null,
+    ipcRenderer.sendSync('messagebox',
       {
+        type: 'warning',
+        buttons: ['OK'],
+        message: message
+      })
+  }
+
+  static information (message) {
+    ipcRenderer.sendSync('messagebox',
+      {
+        type: 'info',
         buttons: ['OK'],
         message: message
       })
   }
 
   static confirm (message) {
-    return dialog.showMessageBoxSync(null,
+    return ipcRenderer.sendSync('messagebox',
       {
-        type: 'question',
-        buttons: ['キャンセル', 'OK'],
+        type: 'none',
+        buttons: ['Cancel', 'OK'],
         cancelId: 0,
         message: message
       }) !== 0

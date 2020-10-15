@@ -26,7 +26,7 @@
 
 <script>
 import CategoryIdentifier from '@/components/Atoms/AtomCaseCategoryIdentifier'
-import Popups from '@/modules/serve/Popups'
+import Popups from 'depmodules/Popups'
 import DbItems from '@/modules/DbItemHandler'
 
 export default {

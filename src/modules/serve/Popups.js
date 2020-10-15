@@ -4,6 +4,10 @@ export default class Popups {
     window.alert(message)
   }
 
+  static information (message) {
+    window.alert(message)
+  }
+
   static confirm (message) {
     return window.confirm(message)
   }

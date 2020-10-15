@@ -92,7 +92,7 @@
 import EditItemMixins from '@/mixins/EditItemMixins'
 import ProcedureTree from '@/modules/ProcedureItemList'
 import { getMatchesInProcedures } from '@/modules/CloseMatches'
-import Popups from '@/modules/serve/Popups'
+import Popups from 'depmodules/Popups'
 import ThreePaneSelections from '@/components/Molecules/3PaneSelections'
 
 const ProceduresTree = new ProcedureTree()
@@ -264,7 +264,7 @@ export default {
             return
           }
           if (!this.TargetOrgan) {
-            Popups.alert('選択でのみ登録が可能です.')
+            Popups.alert('候補の選択のみが可能です.')
             return
           }
           // 選択されたものには適切な付随情報を収納

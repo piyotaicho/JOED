@@ -52,7 +52,7 @@
 
 <script>
 import InputTextField from '@/components/Molecules/InputTextField'
-import Popups from '@/modules/serve/Popups'
+import Popups from 'depmodules/Popups'
 
 export default {
   name: 'SettingOfInstutute',

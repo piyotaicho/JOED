@@ -10,7 +10,7 @@
         <label>
           パスワード :
           <el-badge value="パスワードが違います" :hidden="!LoginFailed">
-            <input type="password" v-model="Password" id="password-entry-box" @keyup.13="PerformAuthentication" :disabled="AuthenticationFree" />
+            <input type="password" v-model="Password" id="password-entry-box" @keyup.13="PerformAuthentication" :disabled="StateLess" />
           </el-badge>
         </label>
       </div>
@@ -29,13 +29,13 @@ export default {
     return ({
       Password: '',
       LoginFailed: false,
-      AuthenticationFree: false
+      StateLess: false
     })
   },
   created () {
     // 認証が設定の有無を確認
     this.$store.dispatch('password/Authenticate', { PasswordString: '' })
-      .then(() => { this.AuthenticationFree = !this.$store.getters['password/isPasswordRequired'] })
+      .then(() => { this.StateLess = !this.$store.getters['password/isPasswordRequired'] })
   },
   methods: {
     PerformAuthentication () {

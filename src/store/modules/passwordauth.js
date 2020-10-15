@@ -9,10 +9,10 @@ export default {
     PasswordRequired: true
   },
   mutations: {
-    SetStatus (state, payload) {
+    AuthenticationStatus (state, payload) {
       state.Authenticated = payload
     },
-    SetCurrentPasswordRequirement (state, payload) {
+    PasswordRequirement (state, payload) {
       state.PasswordRequired = payload
     }
   },
@@ -33,34 +33,33 @@ export default {
     Authenticate (context, payload) {
       const HHX = require('xxhashjs')
 
-      return new Promise((resolve, reject) => {
-        context.rootState.DatabaseInstance.findOne(
-          { Password: { $exists: true } },
-          (error, document) => {
-            if (error) reject(error)
-            // パスワード設定無し
-            if (document === null) {
-              if (!payload.SuppressStateChange) {
-                context.commit('SetCurrentPasswordRequirement', false)
-                context.commit('SetStatus', true)
-              }
-              resolve()
-            }
-
-            if (document !== null && document.Password === HHX.h64(payload.PasswordString, MD5salt).toString(16)) {
-              if (!payload.SuppressStateChange) {
-                context.commit('SetStatus', true)
-              }
-              resolve()
+      return context.dispatch('dbFindOne',
+        {
+          Query: { Password: { $exists: true } }
+        },
+        { root: true }
+      )
+        .then(passworddocument => {
+          // パスワード設定無し
+          if (passworddocument === null) {
+            if (!payload.SuppressStateChange) {
+              context.commit('PasswordRequirement', false)
+              context.commit('AuthenticationStatus', true)
             } else {
-              if (!payload.SuppressStateChange) {
-                context.commit('SetStatus', false)
+              if (passworddocument.Password === HHX.h64(payload.PasswordString, MD5salt).toString(16)) {
+                if (!payload.SuppressStateChange) {
+                  context.commit('AuthenticationStatus', true)
+                }
+              } else {
+                console.log('Authentication failed.')
+                if (!payload.SuppressStateChange) {
+                  context.commit('AuthenticationStatus', false)
+                }
+                return Promise.reject(new Error('Authentication failed'))
               }
-              reject(new Error('Authentication failed'))
             }
           }
-        )
-      })
+        })
     },
     // パスワードハッシュにパスワードを保存する.
     // 空白パスワード文字列はパスワードのレコード自体を削除する.
@@ -69,29 +68,24 @@ export default {
     SetPassword (context, payload) {
       const HHX = require('xxhashjs')
 
-      return new Promise((resolve, reject) => {
-        if (payload === '') {
-          context.rootState.DatabaseInstance.remove(
-            { Password: { $exists: true } },
-            { multi: false },
-            (error) => {
-              if (error) reject(error)
-              context.commit('SetCurrentPasswordRequirement', false)
-            }
-          )
-        } else {
-          const hashedPassword = HHX.h64(payload, MD5salt).toString(16)
-          context.rootState.DatabaseInstance.update(
-            { Password: { $exists: true } },
-            { Password: hashedPassword },
-            { upsert: true },
-            (error) => {
-              if (error) reject(error)
-            }
-          )
-        }
-        resolve()
-      })
+      if (payload === '') {
+        return context.dispatch('dbRemove',
+          {
+            Query: { Password: { $exists: true } },
+            Options: { multi: false }
+          },
+          { root: true })
+          .then(_ => context.commit('PasswordRequirement', false))
+      } else {
+        const hashedPassword = HHX.h64(payload, MD5salt).toString(16)
+        return context.dispatch('dbUpdate',
+          {
+            Query: { Password: { $exists: true } },
+            Update: { Password: hashedPassword },
+            Options: { upsert: true }
+          },
+          { root: true })
+      }
     }
   }
 }
