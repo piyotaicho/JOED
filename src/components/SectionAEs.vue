@@ -2,10 +2,7 @@
   <div class="section">
     <span class="section-title">合併症 ： </span>
     <span>
-      <label>
-        <input type="checkbox" v-model="ItemOption">
-        合併症なし
-      </label>
+      <LabeledCheckbox v-model="ItemOption">合併症なし</LabeledCheckbox>
     </span>
     <!-- Quick hack for designs -->
     <div class="section-item-list" style="display: none;"><div class="item-description"></div></div>
@@ -36,13 +33,14 @@
 
 <script>
 import EditSectionMixins from '@/mixins/EditSectionMixins'
+import LabeledCheckbox from '@/components/Atoms/AtomLabeledCheckbox'
 import DescriptionOfAE from '@/components/Molecules/DescriptionOfAE'
 
 export default {
   name: 'SectionAEs',
   mixins: [EditSectionMixins],
   components: {
-    DescriptionOfAE
+    LabeledCheckbox, DescriptionOfAE
   }
 }
 </script>
