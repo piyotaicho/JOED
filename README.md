@@ -76,7 +76,6 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |:--------------------------|:-----:|:--:|:--:|:--:|:--|
 |_id                        |integer| | | |データベースエンジンが付与する内部管理id|
 |DocumentId                 |integer| |X| |連続番号|
-|UniqueID                   |string |{{InstitutionID}}-{{Year}}-{{SequentialID}}|X|X|登録にあたっての症例番号<br/>（ユーザからは見えないが修正登録の際に問い合わせ番号として使用できるようにする）|
 |Name                       |string | | | |患者名|
 |Age                        |integer| |X|X|年齢|
 |PatientId                  |string | |X| |施設での患者ID|
@@ -168,7 +167,7 @@ DiagnosisMasterから作成される
 |Ditto                      |array  |同時に入力できない同一手技に相当する手技名|
 |AdditionalProcedure        |string |同時に展開を行う関連術式<br/>基本的には同一の選択チェーン内にある|
 |DescriptionTitle           |string |補助情報の見出し|
-|Descriptions               |array  |補助情報の候補<br/>$Multiをメンバにもつ場合複数の内容を保持できる|
+|Descriptions               |array  |補助情報の候補<br/>$MULTI$をメンバにもつ場合複数の内容を保持できる|
 
 ### オブジェクト:DiagnosisItems
 ProcedureMasterから作成される
@@ -185,7 +184,7 @@ ProcedureMasterから作成される
                     Description: {
                         Text: 'Titie',
                         Values: [...selections]
-                        // selectionsに$Multiを含む場合は複数選択可能
+                        // selectionsに$MULTI$を含む場合は複数選択可能
                         // $で終了する項目を選択した場合はこのエントリ自体が生成されない(=単独作成不可)
                     }
                 }
