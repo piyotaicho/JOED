@@ -4,57 +4,42 @@
       <ThreePaneSelections
         Pane3Title="候補術式"
         :Pane1.sync="Category" :Pane1Items="Categories"
-        @Pane1Change="CategoryIsChanged()"
+        @pane1change="CategoryIsChanged()"
         :Pane2.sync="TargetOrgan" :Pane2Items="TargetOrgans"
-        @Pane2Change="SetCandidateItemsBySelection()"
+        @pane2change="SetCandidateItemsBySelection()"
         :Pane3.sync="SelectedItem" :Pane3Items="CandidateItems"
-        @Pane3Change="OnCandidateSelected()"
-        @Pane3DblClick="CommitChanges()"
+        @pane3change="OnCandidateSelected()"
+        @pane3dblclick="CommitChanges()"
         :disabled="disabled"
       >
       </ThreePaneSelections>
 
-      <!-- 追加術式ペイン -->
-      <div class="flex-content" v-if="Description.AdditionalProcedureTitle">
-        <div class="w30"></div>
-        <div class="w30">
-          <div class="subtitle-section">
-            <span>付随する実施手術</span>
-          </div>
-        </div>
-        <div class="w30">
-          <span>{{Description.AdditionalProcedureTitle}}</span>
-        </div>
-        <div class="w10"></div>
-      </div>
+      <!-- 追加情報セクション -->
+      <DescriptionSection
+        v-model="Description"
+        v-if="Description.Title"
+      />
 
-      <!-- 追加情報ペイン -->
-      <div class="flex-content" v-if="Description.Title">
-        <div class="w30"></div>
-        <div class="w20 selectionbox">
-          <div class="subtitle-section">
-            <span>{{Description.Title}}</span>
+      <!-- 追加術式セクション -->
+      <template v-if="AdditionalProcedure.Title">
+        <div class="flex-content">
+          <div class="w30"></div>
+          <div class="w30">
+            <div class="subtitle-section">
+              <span>付随する実施手術</span>
+            </div>
           </div>
+          <div class="w30">
+            <span>{{AdditionalProcedure.Title}}</span>
+          </div>
+          <div class="w10"></div>
         </div>
-        <div class="w40 selectionbox" v-if="Description.Multi">
-          <label v-for="item in Description.Options" :key="item">
-            <input type="checkbox" v-model="DescriptionValue" :value="item" :disabled="disabled"/>
-            {{spliceMarker(item)}}
-            <br/>
-          </label>
-        </div>
-        <div class="w40 selectionbox" v-else>
-          <select v-model="DescriptionValue[0]" @dblclick="CommitChanges()" :disabled="disabled">
-            <option v-for="item of Description.Options"
-              :key="item"
-              :value="item">
-              {{spliceMarker(item)}}
-            </option>
-          </select>
-        </div>
-        <div class="w10"></div>
-      </div>
+        <DescriptionSection
+          v-model="AdditionalProcedure.Description"
+        />
+      </template>
 
+      <!-- 自由入力・検索セクション -->
       <div class="flex-content inputbox">
         <div class="w20"></div>
         <div class="w20 subtitle-section">
@@ -78,6 +63,7 @@
         </div>
       </div>
 
+      <!-- コントロール -->
       <div class="content-bottom">
         <div class="controls">
           <el-button type="primary" @click="GoBack" :disabled="disabled || disableCancel">取り消し</el-button>
@@ -93,7 +79,9 @@ import EditItemMixins from '@/mixins/EditItemMixins'
 import ProcedureTree from '@/modules/ProcedureItemList'
 import { getMatchesInProcedures } from '@/modules/CloseMatches'
 import Popups from 'depmodules/Popups'
+
 import ThreePaneSelections from '@/components/Molecules/3PaneSelections'
+import DescriptionSection from '@/components/Molecules/DescriptionSection'
 
 const ProceduresTree = new ProcedureTree()
 
@@ -102,7 +90,10 @@ export default {
   mixins: [
     EditItemMixins
   ],
-  components: { ThreePaneSelections },
+  components: {
+    ThreePaneSelections,
+    DescriptionSection
+  },
   props: {
     disableCancel: {
       type: Boolean,
@@ -117,7 +108,6 @@ export default {
     return ({
       CandidateItems: [],
       Description: {
-        AdditionalProcedureTitle: '',
         Title: '',
         Options: [],
         Multi: false,
@@ -148,30 +138,14 @@ export default {
     },
     TargetOrgans () {
       return ProceduresTree.Targets(this.Category)
-    },
-    DescriptionValue: {
-      set (newvalue) {
-        if (typeof newvalue === 'string') {
-          this.Description.Value.splice(0)
-          if (newvalue !== undefined) {
-            this.Description.Value.push(newvalue)
-          }
-        } else {
-          this.Description.Value = newvalue
-        }
-      },
-      get () {
-        return this.Description.Value
-      }
     }
   },
   methods: {
     SetCandidateItemsBySelection () {
       this.CandidateItems = ProceduresTree.Candidates(this.Category, this.TargetOrgan, this.year)
       this.SelectedItem = ''
-      this.Description.AdditionalProcedureTitle = ''
-      this.Description.Title = ''
-      this.$nextTick()
+      this.$set(this.Description, 'Title', '')
+      this.$set(this.AdditionalProcedure, 'Title', '')
     },
     SetCandidateItemsByFreeword () {
       if (this.EditableItem && this.UserEditingAllowed) {
@@ -179,10 +153,10 @@ export default {
         const arr = getMatchesInProcedures(this.EditableItem, flatten)
 
         this.CandidateItems.splice(0, this.CandidateItems.length, ...arr)
+
         this.SelectedItem = ''
-        this.Description.AdditionalProcedureTitle = ''
-        this.Description.Title = ''
-        this.$nextTick()
+        this.$set(this.Description, 'Title', '')
+        this.$set(this.AdditionalProcedure, 'Title', '')
       }
     },
 
@@ -194,60 +168,61 @@ export default {
         const searchByName = ProceduresTree.findItemByName(newValue, this.year)
         this.TargetOrgan = searchByName.Chain[1]
       }
-      const selectedItemObject = ProceduresTree.getItemByName(this.Category, this.TargetOrgan, newValue, this.year)
+      const selectedItem = ProceduresTree.getItemByName(this.Category, this.TargetOrgan, newValue, this.year)
 
-      this.setDataAdditionalProcedure(selectedItemObject)
+      this.setDescriptionSection(selectedItem)
+      this.setAdditionalProcedureSection(selectedItem)
     },
 
-    setDataAdditionalProcedure (item) {
+    setAdditionalProcedureSection (item) {
       const additionalProcedure = ProcedureTree.getAdditioninalProcedure(item)
       if (additionalProcedure) {
-        this.Description.AdditionalProcedureTitle = additionalProcedure
+        this.$set(this.AdditionalProcedure, 'Title', additionalProcedure)
 
         const additionalItem = ProceduresTree.getItemByName(this.Category, this.TargetOrgan, additionalProcedure, this.year)
-        this.setDataDescription(additionalItem)
+        // this.setDescriptionSection(additionalItem)
+        this.$set(this.AdditionalProcedure.Description, 'Title', ProcedureTree.getDescriptionTitle(additionalItem))
+        this.$set(this.AdditionalProcedure.Description, 'Multi', ProcedureTree.isDescriptionMultiple(additionalItem))
+        const options = ProcedureTree.getDescriptionValue(additionalItem)
+        if (options && options.length > 0) {
+          this.AdditionalProcedure.Description.Options.splice(0, this.AdditionalProcedure.Description.Options.length, ...options)
+        } else {
+          this.AdditionalProcedure.Description.Options.splice(0)
+        }
       } else {
-        this.Description.AdditionalProcedureTitle = ''
-        this.setDataDescription(item)
+        this.$set(this.AdditionalProcedure, 'Title', '')
       }
     },
 
-    setDataDescription (item) {
-      const setDescriptionProperties = (Title, Multi, Options) => {
-        this.Description.Title = Title
-        this.$nextTick().then(() => {
-          this.Description.Multi = Multi
-          this.$nextTick().then(() => {
-            if (Options.length === 0) {
-              this.Description.Options.splice(0)
-            } else {
-              this.Description.Options = Options
-            }
-          })
-        })
-      }
-
-      const descriptionTitle = ProcedureTree.getDescriptionTitle(item)
+    setDescriptionSection (item) {
       this.Description.Value.splice(0)
 
-      if (descriptionTitle) {
-        setDescriptionProperties(
-          descriptionTitle,
-          ProcedureTree.isDescriptionMultiple(item),
-          ProcedureTree.getDescriptionValue(item)
-        )
+      const title = ProcedureTree.getDescriptionTitle(item)
+      if (title) {
+        this.$set(this.Description, 'Title', title)
+        this.$set(this.Description, 'Multi', ProcedureTree.isDescriptionMultiple(item))
+
+        const options = ProcedureTree.getDescriptionValue(item)
+        if (options && options.length > 0) {
+          this.Description.Options.splice(0, this.Description.Options.length, ...options)
+        } else {
+          this.Description.Options.splice(0)
+        }
       } else {
-        setDescriptionProperties('', false, [])
+        this.$set(this.Description, 'Title', '')
       }
     },
 
     CommitChanges () {
-      if (this.Category !== '' &&
+      if (
+        this.Category !== '' &&
         this.TrimmedEditableItem !== '' &&
-        (this.Description.Title === '' || (this.Description.Title !== '' && this.Description.Value.length > 0))
+        (
+          this.Description.Title === '' ||
+          (this.Description.Title !== '' && this.Description.Value.length > 0)
+        )
       ) {
         const temporaryItem = {}
-        const descriptionValue = this.Description.Value.filter(item => item[item.length - 1] !== '$')
 
         temporaryItem.Text = this.TrimmedEditableItem
 
@@ -275,19 +250,26 @@ export default {
             temporaryItem.Ditto = Object.assign([], dittos)
           }
 
-          if (this.Description.AdditionalProcedureTitle !== '') {
-            if (descriptionValue.length > 0) {
-              temporaryItem.AdditionalProcedure = {
-                Text: this.Description.AdditionalProcedureTitle,
-                Description: descriptionValue
-              }
+          if (this.Description.Title !== '') {
+            const description = this.Description.Value.filter(item => item[item.length - 1] !== '$')
+            if (description.length === 0) {
+              return
+            } else {
+              temporaryItem.Description = description
             }
-          } else {
-            if (this.Description.Title !== '') {
-              if (descriptionValue.length > 0) {
-                temporaryItem.Description = descriptionValue
-              } else {
-                return
+          }
+
+          if (this.AdditionalProcedure.Title !== '') {
+            const description = this.AdditionalProcedure.Description.Value
+            if (description.length === 0) {
+              return
+            } else {
+              const filtered = description.filter(item => item[item.length - 1] !== '$')
+              if (filtered.length > 0) {
+                temporaryItem.AdditionalProcedure = {
+                  Text: this.AdditionalProcedure.Title,
+                  Description: description
+                }
               }
             }
           }
