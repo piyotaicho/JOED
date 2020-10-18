@@ -11,9 +11,9 @@
       </div>
 
       <div id="welcome-banner-control">
-        <el-checkbox v-model="ShowWelcomeMessage">
+        <LabeledCheckbox v-model="ShowWelcomeMessage">
           次回起動時もこのメッセージを表示する
-        </el-checkbox>
+        </LabeledCheckbox>
       </div>
       <div id="welcome-banner-footer">
         日本産科婦人科内視鏡学会 調査普及委員会
@@ -24,8 +24,13 @@
 </template>
 
 <script>
+import LabeledCheckbox from '@/components/Atoms/AtomLabeledCheckbox'
+
 export default {
   name: 'WelcomeBanner',
+  components: {
+    LabeledCheckbox
+  },
   mounted () {
     window.addEventListener('keyup', this.KeyUpEventHandler)
   },

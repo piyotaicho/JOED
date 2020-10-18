@@ -572,38 +572,50 @@
 
           <div v-show="ShowByGrading(3)">
             <el-divider class="AE" content-position="left">Grade 3相当</el-divider>
+            <div><span>術中の追加手術</span></div>
             <div>
               <label>
+                <input type="checkbox" v-model="AE.Course" value="術中の追加手術～開腹">
+                開腹
+              </label>
+              <label>
                 <input type="checkbox" v-model="AE.Course" value="術中の追加手術～腹腔鏡">
-                術中の追加手術～腹腔鏡
+                腹腔鏡
               </label>
               <label>
                 <input type="checkbox" v-model="AE.Course" value="術中の追加手術～子宮鏡">
-                術中の追加手術～子宮鏡
+                子宮鏡
               </label>
               <label>
-                <input type="checkbox" v-model="AE.Course" value="術中の追加手術～開腹">
-                術中の追加手術～開腹
+                <input type="checkbox" v-model="AE.Course" value="術中の追加手術～経腟">
+                経腟
+              </label>
+              <label>
+                <input type="checkbox" v-model="AE.Course" value="術中の追加手術～その他">
+                その他
               </label>
             </div>
+            <div><span>術後の再手術</span></div>
             <div>
               <label>
                 <input type="checkbox" v-model="AE.Course" value="術後の再手術～開腹">
-                術後の再手術～開腹
+                開腹
               </label>
               <label>
                 <input type="checkbox" v-model="AE.Course" value="術後の再手術～腹腔鏡">
-                術後の再手術～腹腔鏡
+                腹腔鏡
               </label>
               <label>
                 <input type="checkbox" v-model="AE.Course" value="術後の再手術～子宮鏡">
-                術後の再手術～子宮鏡
+                子宮鏡
               </label>
-            </div>
-            <div>
               <label>
-                <input type="checkbox" v-model="AE.Course" value="そのほか再手術">
-                そのほか術後のIVRを含む再手術
+                <input type="checkbox" v-model="AE.Course" value="術後の再手術～経腟">
+                経腟
+              </label>
+              <label>
+                <input type="checkbox" v-model="AE.Course" value="術後の再手術～その他">
+                その他,術後のIVRを含む再手術・追加処置
               </label>
             </div>
           </div>
