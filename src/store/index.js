@@ -20,7 +20,8 @@ const store = new Vuex.Store({
     DatabaseInstance: undefined,
     DocumentIds: {
       List: [], // queryされたuidの全リスト
-      Range: 0 // 表示対象のuidの数
+      Range: 0, // 表示対象のuidの数
+      Identifier: 0 // 表示クエリ変更のシリアル値
     },
     DataStore: [], // インメモリのデータベースレプリケーション
     // 以下データベースリストのクエリの待避
@@ -49,10 +50,15 @@ const store = new Vuex.Store({
     PagedUids (state) {
       return state.DocumentIds.List.slice(0, state.DocumentIds.Range)
     },
-    // 現在表示されているドキュメントの DocumentId を配列で返す.
+    // 現在表示されているドキュメントの数
     //
     PagedUidsRange (state) {
       return state.DocumentIds.Range
+    },
+    // 現在表示対象のドキュメントリストのシリアル値
+    //
+    DisplayIdentifier (state) {
+      return state.DocumentIds.Identifier
     },
     // 現在queryで設定されているドキュメントの数を返す.
     //
@@ -118,6 +124,7 @@ const store = new Vuex.Store({
     // @param {Object} DocumentIds
     SetDocumentIds (state, payload) {
       state.DocumentIds.List.splice(0, state.DocumentIds.List.length, ...payload.DocumentIds)
+      state.DocumentIds.Identifier++
     },
     // DataStoreにデータベースをキャッシュする.
     //

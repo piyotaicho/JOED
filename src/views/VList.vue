@@ -16,7 +16,7 @@
 
     <div class="itemlist">
       <Caseitem v-for="uid in Uids" :key="uid" :uid="uid" />
-      <InfiniteLoading @infinite="HandleInfinite" ref="infiniteloading">
+      <InfiniteLoading @infinite="HandleInfinite" :identifier="DisplayIdentifier" ref="infiniteloading">
         <span slot="no-more"></span>
         <span slot="no-results"></span>
       </InfiniteLoading>
@@ -61,6 +61,9 @@ export default {
     },
     ShowWelcomeBanner () {
       return this.$store.state.ShowWelcomeBanner
+    },
+    DisplayIdentifier () {
+      return this.$store.getters.DisplayIdentifier
     }
   },
   methods: {
@@ -82,7 +85,7 @@ export default {
       }
     },
     FilterChanged () {
-      this.$refs.infiniteloading.$emit('$InfiniteLoading:reset')
+      // nop this.$refs.infiniteloading.$emit('$InfiniteLoading:reset')
     }
   }
 }
