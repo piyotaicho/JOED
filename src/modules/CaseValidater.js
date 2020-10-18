@@ -40,21 +40,25 @@ export async function ValidateCase (item = {}) {
       return new Promise((resolve, reject) => {
         // ES2020が使えるようになったらPromise.allSettledへ置き換える
         Promise.all([
+          /*
           new Promise(resolve => {
             CheckDupsInDiagnoses(item)
               .then(_ => resolve())
               .catch(e => resolve(e))
           }),
+          */
           new Promise(resolve => {
             ValidateDiagnoses(item, Year)
               .then(_ => resolve())
               .catch(e => resolve(e))
           }),
+          /*
           new Promise(resolve => {
             CheckDupsInProcedures(item)
               .then(_ => resolve())
               .catch(e => resolve(e))
           }),
+          */
           new Promise(resolve => {
             ValidateProcedures(item, Year)
               .then(_ => resolve())
@@ -73,7 +77,7 @@ export async function ValidateCase (item = {}) {
               .join('\n')
 
             if (warningMessage) {
-              reject(warningMessage)
+              reject(new Error(warningMessage))
             } else {
               resolve()
             }
@@ -135,8 +139,7 @@ export async function CheckSections (item) {
       .then(
         (resolvevalues) => {
           const errors = resolvevalues.filter(item => item)
-          const realerrors = errors.filter(item => item)
-          if (realerrors.length > 0) {
+          if (errors.length > 0) {
             reject(new Error(errors.join('\n')))
           }
           resolve()
@@ -237,16 +240,18 @@ export async function ValidateProcedures (item, year) {
         .catch(error => resolve(error.message))
     })]
     for (const procedure of item.Procedures) {
-      promiseArray.push(new Promise(resolve => {
-        if (procedure.UserTyped === true) {
-          resolve()
-        }
-        const treeList = tree.flatten(procedure.Chain[0], year)
-        if (treeList.indexOf(procedure.Text) >= 0) {
-          resolve()
-        }
-        resolve(procedure.Text + ' が術式マスタにありません.再入力をお願いします.')
-      }))
+      promiseArray.push(
+        new Promise(resolve => {
+          if (procedure.UserTyped === true) {
+            resolve()
+          }
+          const treeList = tree.flatten(procedure.Chain[0], year)
+          if (treeList.indexOf(procedure.Text) >= 0) {
+            resolve()
+          }
+          resolve(procedure.Text + ' が術式マスタにありません.再入力をお願いします.')
+        })
+      )
     }
     Promise
       .all(promiseArray)
@@ -254,8 +259,9 @@ export async function ValidateProcedures (item, year) {
         const realerrors = errors.filter(item => item)
         if (realerrors.length > 0) {
           reject(new Error(realerrors.join('\n')))
+        } else {
+          resolve()
         }
-        resolve()
       })
   })
 }

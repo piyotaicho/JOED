@@ -7,7 +7,7 @@
           v-for="(item, index) in ItemContainer"
           :key="index">
           <ItemOfSection :item="item" @remove="RemoveItem(index)" @edit="EditItem(index, item)"/>
-          <ItemOfSection v-if="item.AdditionalProcedure" :item="item.AdditionalProcedure" @click="RemoveItem(index)" />
+          <ItemOfSection :item="item.AdditionalProcedure" @click="RemoveItem(index)" v-if="item.AdditionalProcedure"/>
         </div>
       </draggable>
       <NewEntryButton @click="AddNewItem()" tabindex="0" />

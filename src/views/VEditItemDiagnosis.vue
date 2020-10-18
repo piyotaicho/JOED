@@ -4,12 +4,12 @@
       <ThreePaneSelections
         Pane3Title="候補病名"
         :Pane1.sync="Category" :Pane1Items="Categories"
-        @Pane1Change="CategoryIsChanged()"
+        @pane1change="CategoryIsChanged()"
         :Pane2.sync="TargetOrgan" :Pane2Items="TargetOrgans"
-        @Pane2Change="SetCandidateItemsBySelection()"
+        @pane2change="SetCandidateItemsBySelection()"
         :Pane3.sync="SelectedItem" :Pane3Items="CandidateItems"
-        @Pane3Change="OnCandidateSelected()"
-        @Pane3DblClick="CommitChanges()"
+        @pane3change="OnCandidateSelected()"
+        @pane3dblclick="CommitChanges()"
       >
       </ThreePaneSelections>
 
@@ -51,6 +51,7 @@ import EditItemMixins from '@/mixins/EditItemMixins'
 import DiagnosisTree from '@/modules/DiagnosisItemList'
 import { getMatchesInDiagnoses } from '@/modules/CloseMatches'
 import Popups from 'depmodules/Popups'
+
 import ThreePaneSelections from '@/components/Molecules/3PaneSelections'
 
 const DiagnosesTree = new DiagnosisTree()

@@ -5,9 +5,8 @@
       ref="SelectPane" :size="lines"
       v-model="PaneValue"
       @change="Change()"
-      @dblckick="DblClick()"
-      :disabled="disabled"
-      >
+      @dblclick="DblClick()"
+      :disabled="disabled">
       <option v-if="items.length===0" disabled :value="null"/>
       <option v-for="(item,key,index) in items"
         :key="index"
@@ -62,8 +61,8 @@ export default {
     Change (value) {
       this.$emit('change', value)
     },
-    DblCkick (value) {
-      this.$emit('dblckick', value)
+    DblClick (value) {
+      this.$emit('dblclick', value)
     },
     Clear () {
       this.$refs.SelectPane.selectIndex = -1

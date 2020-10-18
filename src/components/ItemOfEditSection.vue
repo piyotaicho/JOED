@@ -7,8 +7,8 @@
         ( {{Description}} )
       </span>
     </slot>
-    <i class="edit-button el-icon-edit" @click="EditThisItem" v-if="RequireEditing" />
-    <i class="remove-button el-icon-delete" @click="RemoveThisItem" />
+    <i class="edit-button el-icon-edit" @click="EditItem" v-if="RequireEditing" />
+    <i class="remove-button el-icon-delete" @click="RemoveItem" />
   </div>
 </template>
 
@@ -33,9 +33,9 @@ export default {
     },
     Description () {
       if (this.item.Description) {
-        return (this.item.Description.length > 1)
-          ? [...this.item.Description].join(', ')
-          : this.item.Description[0]
+        return (Array.isArray(this.item.Description) && this.item.Description.length > 1)
+          ? this.item.Description.map(item => item.replace(/[[\]]/g, '')).join(', ')
+          : this.item.Description[0].replace(/[[\]]/g, '')
       }
       return ''
     },
@@ -44,10 +44,10 @@ export default {
     }
   },
   methods: {
-    RemoveThisItem () {
+    RemoveItem () {
       this.$emit('remove')
     },
-    EditThisItem () {
+    EditItem () {
       this.$emit('edit')
     }
   }

@@ -87,11 +87,7 @@ import TheWrapper from '@/components/Atoms/AtomTheWrapper'
 
 import { ZenToHan } from '@/modules/ZenHanChars'
 import Popups from 'depmodules/Popups'
-import {
-  CheckBasicInformations, ValidateAdditionalInformations,
-  CheckSections, ValidateCategoryMatch,
-  CheckDupsInDiagnoses, CheckDupsInProcedures, ValidateAEs
-} from '@/modules/CaseValidater'
+import { ValidateCase } from '@/modules/CaseValidater'
 
 export default {
   name: 'ViewEditCase',
@@ -350,57 +346,15 @@ export default {
       // 区分コードの抽出
       newDocument.TypeOfProcedure = newDocument.Procedures[0] && newDocument.Procedures[0].Chain[0]
 
-      return new Promise((resolve, reject) => {
-        Promise.all([
-          new Promise(resolve => {
-            CheckBasicInformations(newDocument)
-              .then(_ => resolve())
-              .catch(error => resolve(error.message))
-          }),
-          new Promise(resolve => {
-            ValidateAdditionalInformations(newDocument)
-              .then(_ => resolve())
-              .catch(error => resolve(error.message))
-          }),
-          new Promise(resolve => {
-            CheckSections(newDocument)
-              .then(_ => ValidateCategoryMatch(newDocument))
-              .then(_ => resolve())
-              .catch(error => resolve(error.message))
-          }),
-          new Promise(resolve => {
-            CheckDupsInDiagnoses(newDocument)
-              .then(_ => resolve())
-              .catch(error => resolve(error.message))
-          }),
-          new Promise(resolve => {
-            CheckDupsInProcedures(newDocument)
-              .then(_ => resolve())
-              .catch(error => resolve(error.message))
-          }),
-          new Promise(resolve => {
-            ValidateAEs(newDocument)
-              .then(_ => resolve())
-              .catch(error => resolve(error.message))
-          })
-        ])
-          .then(errors => {
-            if (errors.filter(item => item).length > 0) {
-              this.Processing = false
-              reject(new Error(errors.filter(item => item).join('\n')))
-            } else {
-              this.$store.dispatch('UpsertDocument', newDocument)
-                .then(_ => {
-                  this.Processing = false
-                  resolve()
-                })
-                .catch(dberror => {
-                  this.Processing = false
-                  reject(dberror)
-                })
-            }
-          })
-      })
+      try {
+        await ValidateCase(newDocument)
+        await this.$store.dispatch('UpsertDocument', newDocument)
+      } catch (error) {
+        console.log(error)
+        throw error
+      } finally {
+        this.Processing = false
+      }
     }
   }
 }

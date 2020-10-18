@@ -79,6 +79,19 @@ export default {
       OutputString: ''
     })
   },
+  computed: {
+    Query () {
+      const query = {
+        DocumentId: { $gt: 0 },
+        Imported: { $exists: true }
+      }
+      if (this.ExportYear !== '') {
+        const reg = new RegExp('^' + this.ExportYear + '-')
+        query.DateOfProcedure = { $regex: reg }
+      }
+      return query
+    }
+  },
   methods: {
     async StartProcessing () {
       this.Processing = true
@@ -168,36 +181,16 @@ export default {
       if (!this.$store.getters['system/InstitutionID']) {
         throw new Error('施設情報が未設定です.')
       }
-      /* return new Promise((resolve) => { resolve() })
-        .then(_ => {
-          return new Promise((resolve, reject) => {
-            const InstitutionID = this.$store.getters['system/InstitutionID']
-            resolve(InstitutionID)
-          })
-        })
-        .then(InstitutionID => {
-          return new Promise((resolve, reject) => {
-            if (InstitutionID === '') { reject(new Error('施設情報が未設定です.')) }
-            resolve(InstitutionID)
-          })
-        })
-      */
+      if (!this.$store.getters['system/InstitutionID']) {
+        //
+      }
     },
 
     // Step 2 - インポートデータがすべて確認されているかを確認
     //
     // インポートデータ( Imported )で特になんの問題も無くインポートできたもの以外には Notification がある
     async CheckImported () {
-      const query = {
-        DocumentId: { $gt: 0 },
-        Imported: { $exists: true }
-      }
-      if (this.ExportYear !== '') {
-        const reg = new RegExp('^' + this.ExportYear + '-')
-        query.DateOfProcedure = { $regex: reg }
-      }
-
-      const count = await this.$store.dispatch('dbCount', { Query: query })
+      const count = await this.$store.dispatch('dbCount', { Query: this.Query })
       if (count > 0) {
         throw new Error('未確認の読み込み症例があります.\n確認を御願いします.')
       }
@@ -208,58 +201,6 @@ export default {
     //  必須項目の有無
     //  項目の重複(ditto含む)
     async CheckConsistency () {
-      const self = this
-
-      /*
-      // eslint-disable-next-line no-unused-vars
-      async function CheckConsistencies (documentids) {
-        const ErrorsOfDocument = []
-
-        for (const uid of documentids) {
-          const doc = await self.$store.dispatch('dbFindOne',
-            {
-              Query: { DocumentId: uid }
-            })
-          await ValidateCase(doc)
-            .catch(error => ErrorsOfDocument.push(
-              {
-                DocumentId: doc.DocumentId,
-                Message: error
-              }))
-        }
-        return ErrorsOfDocument
-
-        return self.$store.dispatch('dbFind',
-          {
-            Query: { DocumentId: { $in: Ids } }
-          })
-          .then(documents =>
-            documents.forEach(item => ValidateCase(item)
-              .catch(error => {
-                ErrorsOfDocument.push({
-                  DocumentId: item.DocumentId,
-                  Message: error
-                })
-                Promise.resolve()
-              })
-            )
-          )
-          .then(_ => Promise.resolve(ErrorsOfDocument))
-      }
-
-      // eslint-disable-next-line no-unused-vars
-      async function SetNotificationField (documents) {
-        const details = documents.pop()
-        if (details) {
-          await self.$store.dispatch('dbUpdate', {
-            Query: { DocumentId: details.DocumentId },
-            Update: { $set: { Notification: details.Message } }
-          })
-          SetNotificationField(documents)
-        }
-      }
-      */
-
       // 選択クエリ
       const query = {
         DocumentId: { $gt: 0 }
@@ -273,13 +214,12 @@ export default {
 
       const documentids = (await this.$store.dispatch('dbFind',
         {
-          Query: query,
+          Query: this.Query,
           Projection: { DocumentId: 1, _id: 0 }
         }))
         .map(item => item.DocumentId)
       if (documentids.length === 0) throw new Error('エクスポートの対象がありません.')
 
-      // const DocumentErrors = await CheckConsistencies(documentids)
       let DocumentErrors = 0
 
       for (const index in documentids) {
@@ -308,44 +248,8 @@ export default {
           '該当するデータの修正を御願いします.'
         )
       }
-
-      /*
-      return this.$store.dispatch('dbFind',
-        {
-          Query: query,
-          Projection: { DocumentId: 1, _id: 0 }
-        })
-        .then(documents => {
-          return new Promise((resolve, reject) => {
-            if (documents.length === 0) {
-              reject(new Error('エクスポートの対象がありません.'))
-            } else {
-              resolve(documents.map(item => { console.log(item); return item.DocumentId }))
-            }
-          })
-        })
-        .then(documentids => {
-          return CheckConsistencies(documentids)
-        })
-        .then(ErrorsOfDocument => {
-          return new Promise((resolve, reject) => {
-            const errorcount = ErrorsOfDocument.length
-            if (errorcount > 0) {
-              return SetNotificationField(ErrorsOfDocument)
-                .then(_ => reject(
-                  new Error(
-                    'データ検証で' +
-                    errorcount +
-                    '件のエラーが確認されました.\n該当するデータの修正を御願いします.'
-                  )
-                ))
-            } else {
-              return resolve()
-            }
-          })
-        })
-      */
     },
+
     // Step 4 - データの整形
     //
     async CreateExportData () {
@@ -379,44 +283,6 @@ export default {
       this.ProgressStepFour = 100
 
       return ExportItems
-
-      /*
-      return new Promise((resolve) => { resolve() })
-        .then(_ => {
-          const query = {
-            DocumentId: { $gt: 0 }
-          }
-          if (this.ExportYear !== '') {
-            const reg = new RegExp('^' + this.ExportYear + '-')
-            query.DateOfProcedure = { $regex: reg }
-          }
-          return this.$store.dispatch('dbFind', {
-            Query: query,
-            Sort: { DocumentId: 1 }
-          })
-        })
-        .then(documents => {
-          const temporaryExportItems = []
-          const InstituteId = this.$store.getters['system/InstitutionID']
-
-          return new Promise((resolve, reject) => {
-            for (const index in documents) {
-              const item = documents[index]
-              this.ProgressStepFour = parseInt(index * 100.0 / documents.length)
-
-              temporaryExportItems.push(
-                DbItems.exportCase(item, InstituteId,
-                  {
-                    spliceDateOfProcedure: !this.ExportDateOfProcedure
-                  }
-                )
-              )
-            }
-            this.ProgressStepFour = 100
-            resolve(temporaryExportItems)
-          })
-        })
-      */
     },
 
     // Step 5 - データヘッダの作成

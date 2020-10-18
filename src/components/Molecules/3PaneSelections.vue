@@ -70,7 +70,7 @@ export default {
     },
     Pane2: {
       type: String,
-      default: undefined,
+      default: '',
       required: true
     },
     Pane2Title: {
@@ -84,7 +84,7 @@ export default {
     },
     Pane3: {
       type: String,
-      default: undefined,
+      default: '',
       required: true
     },
     Pane3Title: {
@@ -131,17 +131,17 @@ export default {
     Pane1Changed (value) {
       this.$refs.Pane2.Clear()
       this.$refs.Pane3.Clear()
-      this.$emit('Pane1Change', value)
+      this.$emit('pane1change', value)
     },
     Pane2Changed (value) {
       this.$refs.Pane3.Clear()
-      this.$emit('Pane2Change', value)
+      this.$emit('pane2change', value)
     },
     Pane3Changed (value) {
-      this.$emit('Pane3Change', value)
+      this.$emit('pane3change', value)
     },
     Pane3DblClick (value) {
-      this.$emit('Pane3DblClick', value)
+      this.$emit('pane3dblclick', value)
     },
     ClearPane2 () {
       this.$refs.Pane3.Clear()
