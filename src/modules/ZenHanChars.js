@@ -24,15 +24,6 @@ export function ZenToHanNumbers (str = '') {
   return stringargument
 }
 
-export function ZenToHanBraces (str = '') {
-  let stringargument = str.toString()
-
-  stringargument = stringargument
-    .replace(/[（）]/g, c => UnicodeToASCII(c))
-
-  return stringargument
-}
-
 export function FormatDate (givenDateStr = '') {
   const returnDateStr = givenDateStr.replace(/\s/g, '')
     .replace(/^(20[0-9][0-9])[/-](0[1-9]|1[0-2])[/-](0[1-9]|[12][0-9]|3[0-1])$/, '$1-$2-$3')

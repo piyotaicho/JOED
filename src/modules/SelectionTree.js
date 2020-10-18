@@ -22,7 +22,7 @@ export default class SelectionTree {
         *** ProcedureItem ***
         Ditto: [同時入力できない同一手技]
         AdditionalProcedure: '同時展開される手技' // 原則的に同一カテゴリ・対象
-        Description: { 補助情報のタイトル: [...候補] } //候補に $Multi があるときは複数選択 $で終わる候補は選択しても登録されない（主たる術式の場合は選択不可）
+        Description: { 補助情報のタイトル: [...候補] } //候補に $MULTI$ があるときは複数選択 $で終わる候補は選択しても登録されない（主たる術式の場合は選択不可）
 
         *** DiagnosisItem ***
         Procedure: '強制展開される手技' // 同一カテゴリ・対象であることが必須
