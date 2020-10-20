@@ -1,34 +1,41 @@
 <template>
   <div class="drawer-content">
-    <div class="drawer-alignright"><i class="el-icon-close" @click="CloseDrawer"></i></div>
+    <!-- <div class="drawer-alignright"><i class="el-icon-close" @click="CloseDrawer"></i></div> -->
+    <Dashboard @close="CloseDrawer"></Dashboard>
     <el-collapse accordion @change="AccordionChanged" :value="1">
       <el-collapse-item title="表示の設定" :name="1">
-        <DisplaySettingMenu @commit="SetViewSettings"></DisplaySettingMenu>
+        <DisplaySetting @commit="SetViewSettings"></DisplaySetting>
       </el-collapse-item>
       <el-collapse-item title="検索" :name="10">
-        <SearchMenu @commit="SetViewSettings"></SearchMenu>
+        <Search @commit="SetViewSettings"></Search>
       </el-collapse-item>
-      <el-collapse-item title="ユーティリティ" :name="99">
+      <el-collapse-item title="データの処理" :name="90">
+      </el-collapse-item>
+      <el-collapse-item title="環境設定" :name="91">
       </el-collapse-item>
     </el-collapse>
   </div>
 </template>
 
 <script>
-import DisplaySettingMenu from '@/components/DisplaySettingMenu'
-import SearchMenu from '@/components/SearchMenu'
+import Dashboard from '@/components/Dashboard'
+import DisplaySetting from '@/components/DisplaySetting'
+import Search from '@/components/Search'
 
 export default {
   name: 'Drawer',
   components: {
-    DisplaySettingMenu, SearchMenu
+    Dashboard, DisplaySetting, Search
   },
   methods: {
     CloseDrawer () {
       this.$emit('close')
     },
     AccordionChanged (itemname) {
-      if (itemname === 99) {
+      if (itemname === 90) {
+        this.$router.push({ name: 'settings' })
+      }
+      if (itemname === 91) {
         this.$router.push({ name: 'settings' })
       }
     },
@@ -61,7 +68,7 @@ export default {
 // override element's styles
 .el-collapse-item__header
   padding: 0 0 0 2rem
-  font-size: 1.2rem !important
+  font-size: 1.15rem !important
 .el-collapse-item__content
   padding: 0 2rem
   font-size: 1rem !important
@@ -70,6 +77,9 @@ export default {
   font-size: 1.2rem
   padding-right: 0.5rem
   text-align: right
+
+div.menu-item
+  font-size: 1rem
 
 div.menu-item-content
   & > div
@@ -91,7 +101,7 @@ div.menu-item-bottom
   text-align: right
 
 #display-item-selection
-  height: 12rem
+  height: 11rem
   overflow-y: scroll
   border: 2px solid var(--border-color-base)
 </style>

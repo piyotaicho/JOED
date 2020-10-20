@@ -73,7 +73,7 @@ export default {
     const self = this
 
     this.$store.dispatch('system/LoadPreferences').then(_ => {
-      const settings = self.$store.getters['system/GetInstitutionInformation']
+      const settings = self.$store.getters['system/InstituteInformation']
       self.InstitutionName = settings.InstitutionName
       self.InstitutionID = settings.InstitutionID
       self.JSOGoncologyboardID = settings.JSOGoncologyboardID

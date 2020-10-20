@@ -1,5 +1,6 @@
 <template>
-  <div id="welcome-banner">
+  <div>
+    <TheWrapper alpha="60">
     <div id="welcome-banner-dialog">
       <div id="welcome-banner-title">JOED5へようこそ</div>
       <div id="welcome-banner-text">
@@ -18,18 +19,21 @@
       <div id="welcome-banner-footer">
         日本産科婦人科内視鏡学会 調査普及委員会
       </div>
-      <div id="welcome-banner-closebutton" @click="Close">&#xe6db;</div>
+      <CloseButton @close="Close" />
     </div>
+    </TheWrapper>
   </div>
 </template>
 
 <script>
-import LabeledCheckbox from '@/components/Atoms/AtomLabeledCheckbox'
+import CloseButton from '@/components/Atoms/CloseButton'
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
+import TheWrapper from '@/components/Atoms/TheWrapper'
 
 export default {
   name: 'WelcomeBanner',
   components: {
-    LabeledCheckbox
+    CloseButton, LabeledCheckbox, TheWrapper
   },
   mounted () {
     window.addEventListener('keyup', this.KeyUpEventHandler)
@@ -59,15 +63,6 @@ export default {
 }
 </script>
 <style lang="sass">
-#welcome-banner
-  position: absolute
-  top: 0px
-  left: 0px
-  right: 0px
-  bottom: 0px
-  z-index: 9998
-  background: rgba(0,0,0,0.46)
-
 #welcome-banner-dialog
   position: absolute
   width: 600px
@@ -109,17 +104,6 @@ export default {
   text-align: right
   padding-right: 1.2rem
   color: #252525 // $--color-text-regular
-
-#welcome-banner-closebutton
-  position: absolute
-  right: 1rem
-  top: 1rem
-  width: 1rem
-  height: 1rem
-  font-family: 'element-icons'
-  font-size: 1.2rem
-  &:hover
-    font-weight: bold
 
 .welcome-banner-elementIcon
   font-family: 'element-icons'

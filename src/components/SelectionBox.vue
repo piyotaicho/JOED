@@ -1,7 +1,7 @@
 <template>
   <div class="selectionbox">
     <div class="subtitle-section">{{title}}</div>
-    <select v-model="value" :size="size" :multi="multi" @event="EventHandler">
+    <select v-model="ComponentValue" :size="size" :multi="multi" @event="EventHandler">
       <slot name="options"></slot>
     </select>
   </div>

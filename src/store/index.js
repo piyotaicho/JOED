@@ -13,17 +13,16 @@ const store = new Vuex.Store({
     system, password
   },
   state: {
-    ApplicationVersion: '5.00.0929.vueserve',
-    LoadAtOnce: 25,
-    // serve版で使用されるデータベースインスタンス - 必ずactionを経由して利用
-    // electron版では使用しないのでコメントアウト
-    DatabaseInstance: undefined,
+    DatabaseInstance: undefined, // 直接参照禁止, electron版では使用されないが開発互換のため残す
     DocumentIds: {
       List: [], // queryされたuidの全リスト
+      TotalCount: 0, // 全登録数
       Range: 0, // 表示対象のuidの数
       Identifier: 0 // 表示クエリ変更のシリアル値
     },
+    LoadAtOnce: 20, // 一度にロードするデータの数
     DataStore: [], // インメモリのデータベースレプリケーション
+
     // 以下データベースリストのクエリの待避
     Filter: {
       DocumentId: { $gt: 0 }
@@ -34,12 +33,11 @@ const store = new Vuex.Store({
     // Listの表示状態の待避
     ShowWelcomeBanner: true,
     defaultViewSettings: { Sort: { Item: 'DocumentId', Order: -1 }, Filter: [] },
-    preservedViewSettings: { Sort: { Item: 'DocumentId', Order: -1 }, Filter: [] }
+    preservedViewSettings: { Sort: { Item: 'DocumentId', Order: -1 }, Filter: [] },
+    ViewSettings: { Sort: { Item: 'DocumentId', Order: -1 }, Filter: [] },
+    Search: { Filter: [] }
   },
   getters: {
-    ApplicationVersion (state) {
-      return state.ApplicationVersion
-    },
     // 現在queryで設定されているドキュメントの DocumentId を配列で返す.
     //
     Uids (state) {
@@ -99,7 +97,49 @@ const store = new Vuex.Store({
     //
     //
     ViewSettings (state) {
-      return state.preservedViewSettings
+      return state.ViewSettings
+    },
+    // 現在のView設定からのクエリを作成する
+    //
+    //
+    ViewQuery (state) {
+      const query = {}
+      const sort = {}
+
+      for (const filteritem of state.ViewSettings) {
+        const key = filteritem.Field
+        const querystring = filteritem.Value
+
+        if (query[key] === undefined) {
+          query[key] = querystring
+        } else {
+          if (query[key].$in) {
+            query[key].$in.push(querystring)
+          } else {
+            query[key] = { $in: [query[key], querystring] }
+          }
+        }
+      }
+
+      if (!query.DocumentId) {
+        query.DocumentId = { $gt: 0 }
+      }
+
+      if (query.DateOfProcedure) {
+        let regexStr = ''
+        if (query.DateOfProcedure.$in) {
+          regexStr = query.DateOfProcedure.$in.join('|')
+        } else {
+          regexStr = query.DateOfProcedure
+        }
+        regexStr = '^(' + regexStr + ')-'
+        query.DateOfProcedure = { $regex: new RegExp(regexStr) }
+      }
+
+      return {
+        Query: query,
+        Sort: sort
+      }
     }
   },
 
@@ -212,11 +252,11 @@ const store = new Vuex.Store({
       function preserveSetting (source) {
         if (!preserve) return
 
-        state.preservedViewSettings.Sort.Item = source.Sort.Item
-        state.preservedViewSettings.Sort.Order = source.Sort.Order
-        state.preservedViewSettings.Filter
+        state.ViewSettings.Sort.Item = source.Sort.Item
+        state.ViewSettings.Sort.Order = source.Sort.Order
+        state.ViewSettings.Filter
           .splice(
-            0, state.preservedViewSettings.Filter.length,
+            0, state.ViewSettings.Filter.length,
             ...source.Filter
           )
       }

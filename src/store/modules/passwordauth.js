@@ -1,6 +1,6 @@
 // 保存先は最終的にはデータベースではなく electron.config に逃げる予定
 
-const MD5salt = 0x76b3
+const MD5salt = process.env.VUE_APP_MD5SALT
 
 export default {
   namespaced: true,
@@ -39,14 +39,14 @@ export default {
         },
         { root: true }
       )
-        .then(passworddocument => {
+        .then(hashedpassword => {
           // パスワード設定無し
-          if (passworddocument === null) {
+          if (hashedpassword === '') {
             if (!payload.SuppressStateChange) {
               context.commit('PasswordRequirement', false)
               context.commit('AuthenticationStatus', true)
             } else {
-              if (passworddocument.Password === HHX.h64(payload.PasswordString, MD5salt).toString(16)) {
+              if (hashedpassword === HHX.h64(payload.PasswordString, MD5salt).toString(16)) {
                 if (!payload.SuppressStateChange) {
                   context.commit('AuthenticationStatus', true)
                 }
