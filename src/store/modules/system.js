@@ -1,4 +1,5 @@
 // 保存先は最終的にはデータベースではなく electron.config に逃げる予定
+import { LoadConfig, SaveConfig } from 'depmodules/config'
 
 export default {
   namespaced: true,
@@ -18,7 +19,7 @@ export default {
     EnabledNCDId: true
   },
   getters: {
-    GetInstitutionInformation (state) {
+    InstituteInformation (state) {
       return {
         InstitutionName: state.InstitutionName,
         InstitutionID: state.InstitutionID,
@@ -58,10 +59,13 @@ export default {
   },
   actions: {
     LoadPreferences (context) {
+      /*
       return context.dispatch('dbFindOne', {
         Query: { Settings: { $exists: true } }
       },
       { root: true })
+      */
+      return LoadConfig(context)
         .then(settings => {
           if (settings !== null) {
             context.commit('SetPreferences', settings.Settings)
@@ -74,12 +78,15 @@ export default {
         temporaryState[key] = context.state[key]
       }
 
+      /*
       return context.dispatch('dbUpdate', {
         Query: { Settings: { $exists: true } },
         Update: { Settings: temporaryState },
         Options: { upsert: true }
       },
       { root: true })
+      */
+      return SaveConfig(temporaryState, context)
     },
     SetShowWelcomeMessage (context, value) {
       context.commit('SetPreferences', { ShowWelcomeMessage: value })
