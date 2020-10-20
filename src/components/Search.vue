@@ -146,7 +146,7 @@ const SearchSetting = {
     regexp: false,
     multiple: true,
     createquery: (query) => {
-      const queryRegex = new RegExp(/^20[0-9]{2}-(0[1-9]|[23][0-9]|4[0-7])\d{3}-([0-9]+)$/g)
+      const queryRegex = new RegExp(/^20[0-9]{2}-(0[1-9]|[1-3][0-9]|4[0-7])\d{3}-([0-9]+)$/g)
       let queries = query.split(/[\s,，]+/)
 
       queries = queries
@@ -163,7 +163,7 @@ const SearchSetting = {
 }
 
 export default {
-  name: 'SearchMenu',
+  name: 'Search',
   components: {
     InputSwitchField
   },
