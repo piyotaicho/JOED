@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import DbItems from '@/modules/DbItemHandler'
+import CaseDocumentHandler from '@/modules/DbItemHandler'
 
 export default {
   name: 'ItemOfSection',
@@ -29,7 +29,7 @@ export default {
   },
   computed: {
     Title () {
-      return DbItems.getItemValue(this.item)
+      return CaseDocumentHandler.ItemValue(this.item)
     },
     Description () {
       if (this.item.Description) {

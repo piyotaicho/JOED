@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-export default class DbItems {
+export default class CaseDocumentHandler {
   // データベースの項目
   // Diagnoses - Array - String/Hash
   // Procedures - Array - Hash
@@ -16,13 +16,13 @@ export default class DbItems {
 
   // 項目に登録された内容を取得する
 
-  static getItemValue (hashObject = {}, $propertyName = 'Text', $depthcount = 3) {
+  static ItemValue (hashObject = {}, $propertyName = 'Text', $depthcount = 3) {
     if (hashObject[$propertyName]) {
       return hashObject[$propertyName]
     } else {
       if (--$depthcount) {
         for (const key in hashObject) {
-          const value = this.getItemValue(hashObject[key], $propertyName, $depthcount)
+          const value = this.ItemValue(hashObject[key], $propertyName, $depthcount)
           if (value) {
             return value
           }
@@ -34,9 +34,9 @@ export default class DbItems {
 
   // Chain[0], Chain[1], TEXT の配列を取得する
 
-  static getItemChain (hashObject = {}, $propertyName = 'Text') {
+  static ItemChain (hashObject = {}, $propertyName = 'Text') {
     if (hashObject.Chain && hashObject[$propertyName]) {
-      return [...hashObject.Chain, this.getItemValue(hashObject, $propertyName)]
+      return [...hashObject.Chain, this.ItemValue(hashObject, $propertyName)]
     }
     return undefined
   }

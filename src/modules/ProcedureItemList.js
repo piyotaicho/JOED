@@ -8,7 +8,7 @@ import SelectionTree from '@/modules/SelectionTree'
 // $ で終わる文字列が選択された場合はその術式は無効となる(単独選択の場合エラーで登録出来ない)
 // [] で囲まれた文字列は選択肢には表示されず、データの可読性を目的に保持される
 
-export default class ProcedureTree extends SelectionTree {
+export default class ProcedureMaster extends SelectionTree {
   constructor () {
     super({
       腹腔鏡: {
@@ -463,7 +463,7 @@ export default class ProcedureTree extends SelectionTree {
     '2020')
   }
 
-  // ProcedureTreeのstaticメソッド
+  // ProcedureMasterのstaticメソッド
   // itemは術式への参照
   // - handleTreeItemはSelectionTreeからの継承
 

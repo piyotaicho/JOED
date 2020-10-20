@@ -27,8 +27,8 @@
 </template>
 
 <script>
-import DrawerButton from '@/components/Atoms/AtomDrawerButton.vue'
-import NewEntryButton from '@/components/Atoms/AtomNewEntryButton'
+import DrawerButton from '@/components/Atoms/DrawerButton.vue'
+import NewEntryButton from '@/components/Atoms/NewEntryButton'
 import Caseitem from '@/components/Caseitem'
 import Drawer from '@/components/Drawer'
 import WelcomeBanner from '@/components/Molecules/WelcomeBanner'

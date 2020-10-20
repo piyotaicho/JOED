@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-unused-vars
 import SelectionTree from '@/modules/SelectionTree'
 
-export default class DiagnosisTree extends SelectionTree {
+export default class DiagnosisMaster extends SelectionTree {
   constructor () {
     super({
       腹腔鏡: {
@@ -39,7 +39,7 @@ export default class DiagnosisTree extends SelectionTree {
           },
           // 2020 新規
           {
-            Text: '子宮内膜増殖症,異型増殖症',
+            Text: '子宮内膜増殖症・異型増殖症',
             VaildFrom: '2020'
           },
           // 2020 新規
@@ -307,13 +307,13 @@ export default class DiagnosisTree extends SelectionTree {
         子宮: [
           '子宮内膜ポリープ',
           '粘膜下子宮筋腫',
-          // 2020 表記変更 子宮体部前癌病変 -> 子宮内膜増殖症,異型増殖症
+          // 2020 表記変更 子宮体部前癌病変 -> 子宮内膜増殖症・異型増殖症
           {
             Text: '子宮体部前癌病変',
             VaildTo: '2019'
           },
           {
-            Text: '子宮内膜増殖症,異型増殖症',
+            Text: '子宮内膜増殖症・異型増殖症',
             VaildFrom: '2020'
           },
           // 2020 新規
@@ -350,7 +350,7 @@ export default class DiagnosisTree extends SelectionTree {
         ]
       }
     },
-    // デフォルト参照されるマスター年次設定
+    // マスターのシリアル
     '2020')
   }
 }

@@ -33,7 +33,7 @@
 
 <script>
 import EditSectionMixins from '@/mixins/EditSectionMixins'
-import LabeledCheckbox from '@/components/Atoms/AtomLabeledCheckbox'
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import DescriptionOfAE from '@/components/Molecules/DescriptionOfAE'
 
 export default {

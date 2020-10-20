@@ -76,14 +76,14 @@
 
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
-import ProcedureTree from '@/modules/ProcedureItemList'
+import ProcedureMaster from '@/modules/ProcedureItemList'
 import { getMatchesInProcedures } from '@/modules/CloseMatches'
 import Popups from 'depmodules/Popups'
 
 import ThreePaneSelections from '@/components/Molecules/3PaneSelections'
 import DescriptionSection from '@/components/Molecules/DescriptionSection'
 
-const ProceduresTree = new ProcedureTree()
+const ProceduresTree = new ProcedureMaster()
 
 export default {
   name: 'ViewEditItemProcedure',
@@ -175,15 +175,15 @@ export default {
     },
 
     setAdditionalProcedureSection (item) {
-      const additionalProcedure = ProcedureTree.getAdditioninalProcedure(item)
+      const additionalProcedure = ProcedureMaster.getAdditioninalProcedure(item)
       if (additionalProcedure) {
         this.$set(this.AdditionalProcedure, 'Title', additionalProcedure)
 
         const additionalItem = ProceduresTree.getItemByName(this.Category, this.TargetOrgan, additionalProcedure, this.year)
         // this.setDescriptionSection(additionalItem)
-        this.$set(this.AdditionalProcedure.Description, 'Title', ProcedureTree.getDescriptionTitle(additionalItem))
-        this.$set(this.AdditionalProcedure.Description, 'Multi', ProcedureTree.isDescriptionMultiple(additionalItem))
-        const options = ProcedureTree.getDescriptionValue(additionalItem)
+        this.$set(this.AdditionalProcedure.Description, 'Title', ProcedureMaster.getDescriptionTitle(additionalItem))
+        this.$set(this.AdditionalProcedure.Description, 'Multi', ProcedureMaster.isDescriptionMultiple(additionalItem))
+        const options = ProcedureMaster.getDescriptionValue(additionalItem)
         if (options && options.length > 0) {
           this.AdditionalProcedure.Description.Options.splice(0, this.AdditionalProcedure.Description.Options.length, ...options)
         } else {
@@ -197,12 +197,12 @@ export default {
     setDescriptionSection (item) {
       this.Description.Value.splice(0)
 
-      const title = ProcedureTree.getDescriptionTitle(item)
+      const title = ProcedureMaster.getDescriptionTitle(item)
       if (title) {
         this.$set(this.Description, 'Title', title)
-        this.$set(this.Description, 'Multi', ProcedureTree.isDescriptionMultiple(item))
+        this.$set(this.Description, 'Multi', ProcedureMaster.isDescriptionMultiple(item))
 
-        const options = ProcedureTree.getDescriptionValue(item)
+        const options = ProcedureMaster.getDescriptionValue(item)
         if (options && options.length > 0) {
           this.Description.Options.splice(0, this.Description.Options.length, ...options)
         } else {
@@ -245,7 +245,7 @@ export default {
           // 選択されたものには適切な付随情報を収納
           temporaryItem.Chain = [this.Category, this.TargetOrgan]
 
-          const dittos = ProcedureTree.getDittos(ProceduresTree.getItemByName(...temporaryItem.Chain, temporaryItem.Text, this.year))
+          const dittos = ProcedureMaster.getDittos(ProceduresTree.getItemByName(...temporaryItem.Chain, temporaryItem.Text, this.year))
           if (dittos) {
             temporaryItem.Ditto = Object.assign([], dittos)
           }

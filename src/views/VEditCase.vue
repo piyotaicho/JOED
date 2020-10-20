@@ -54,8 +54,8 @@
             <el-dropdown split-button type="primary" @click="CommitCase()" @command="CommitCaseAndGo">
               編集内容を保存<i class="el-icon-loading" v-if="Processing"/>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="next" v-if="IsEditingExistingItem && NextUid">保存して次へ</el-dropdown-item>
-                <el-dropdown-item command="prev" v-if="IsEditingExistingItem && PrevUid">保存して前へ</el-dropdown-item>
+                <el-dropdown-item command="next" v-if="IsEditingExistingItem" :disabled="!NextUid">保存して次へ</el-dropdown-item>
+                <el-dropdown-item command="prev" v-if="IsEditingExistingItem" :disabled="!PrevUid">保存して前へ</el-dropdown-item>
                 <el-dropdown-item command="new">保存して新規作成</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -75,7 +75,6 @@
 </template>
 
 <script>
-// import DbItems from '@/modules/DbItemHandler'
 import SectionDiagnoses from '@/components/SectionDiagnoses'
 import SectionProcedures from '@/components/SectionProcedures'
 import SectionAEs from '@/components/SectionAEs'
@@ -83,7 +82,7 @@ import InputTextField from '@/components/Molecules/InputTextField'
 import InputNumberField from '@/components/Molecules/InputNumberField'
 import InputProcedureTime from '@/components/Molecules/InputProcedureTime'
 import InputDateOfProcedure from '@/components/Molecules/InputDateOfProcedure'
-import TheWrapper from '@/components/Atoms/AtomTheWrapper'
+import TheWrapper from '@/components/Atoms/TheWrapper'
 
 import { ZenToHan } from '@/modules/ZenHanChars'
 import Popups from 'depmodules/Popups'

@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import LabeledCheckbox from '@/components/Atoms/AtomLabeledCheckbox'
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 
 export default {
   name: 'DescriptionSection',
@@ -56,12 +56,14 @@ export default {
         return this.Container.Value ? this.Container.Value : []
       },
       set (value) {
-        const description = {
+        const description = Object.assign({}, this.Container)
+        /*
           Title: this.Container.Title,
           Options: this.Container.Options,
           Multi: this.Container.Multi,
           Value: []
         }
+        */
         if (value === undefined || typeof value === 'string') {
           if (value) {
             description.Value = [value]

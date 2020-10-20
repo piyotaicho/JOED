@@ -53,8 +53,8 @@
 <script>
 import InputSwitchField from '@/components/Molecules/InputSwitchField'
 import SelectYear from '@/components/Molecules/SelectYear'
-import TheWrapper from '@/components/Atoms/AtomTheWrapper'
-import DbItems from '@/modules/DbItemHandler'
+import TheWrapper from '@/components/Atoms/TheWrapper'
+import CaseDocumentHandler from '@/modules/DbItemHandler'
 import Popups from 'depmodules/Popups'
 import { ValidateCase } from '@/modules/CaseValidater'
 
@@ -273,7 +273,7 @@ export default {
         this.ProgressStepFour = parseInt(index * 100.0 / documents.length)
 
         ExportItems.push(
-          DbItems.exportCase(documents[index], this.$store.getters['system/InstitutionID'],
+          CaseDocumentHandler.exportCase(documents[index], this.$store.getters['system/InstitutionID'],
             {
               spliceDateOfProcedure: !this.ExportDateOfProcedure
             }

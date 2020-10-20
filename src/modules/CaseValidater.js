@@ -1,5 +1,5 @@
 import DaignosisTree from '@/modules/DiagnosisItemList'
-import ProcedureTree from '@/modules/ProcedureItemList'
+import ProcedureMaster from '@/modules/ProcedureItemList'
 
 // 2020年時点の日産腫瘍登録患者No.表記
 const JSOGboardCaseNoFormat = /^(CC|EM|US|UAS|OV|VU|TS)20\d{2}-\d+$/ig
@@ -231,7 +231,7 @@ export async function CheckDupsInProcedures (item) {
 // 実施手術名の重複確認と年次ツリーとの整合性検証
 //
 export async function ValidateProcedures (item, year) {
-  const tree = new ProcedureTree()
+  const tree = new ProcedureMaster()
 
   return new Promise((resolve, reject) => {
     const promiseArray = [new Promise(resolve => {

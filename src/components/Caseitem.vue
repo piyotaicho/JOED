@@ -25,9 +25,9 @@
 </template>
 
 <script>
-import CategoryIdentifier from '@/components/Atoms/AtomCaseCategoryIdentifier'
+import CategoryIdentifier from '@/components/Atoms/CaseCategoryIdentifier'
 import Popups from 'depmodules/Popups'
-import DbItems from '@/modules/DbItemHandler'
+import CaseDocumentHandler from '@/modules/DbItemHandler'
 
 export default {
   name: 'Caseitem',
@@ -78,10 +78,10 @@ export default {
         }
     },
     Diagnosis () {
-      return this.Loading ? '' : DbItems.getItemValue(this.ItemDocument.Diagnoses[0])
+      return this.Loading ? '' : CaseDocumentHandler.ItemValue(this.ItemDocument.Diagnoses[0])
     },
     Procedure () {
-      return this.Loading ? '' : DbItems.getItemValue(this.ItemDocument.Procedures[0])
+      return this.Loading ? '' : CaseDocumentHandler.ItemValue(this.ItemDocument.Procedures[0])
     },
     PresentAE () {
       return !this.Loading && this.ItemDocument.PresentAE

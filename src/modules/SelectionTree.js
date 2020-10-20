@@ -4,7 +4,7 @@ export default class SelectionTree {
 
   constructor (initialTree = {}, YearOfMasterDataset = '0000') {
     Object.assign(this, initialTree)
-    this.#YearOfThisTree = YearOfMasterDataset
+    this.#YearOfThisTree = YearOfMasterDataset.substr(0, 4)
   }
 
   /*

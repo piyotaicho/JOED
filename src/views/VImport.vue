@@ -44,7 +44,7 @@
 
 <script>
 import InputFile from '@/components/Molecules/InputFile'
-import TheWrapper from '@/components/Atoms/AtomTheWrapper'
+import TheWrapper from '@/components/Atoms/TheWrapper'
 import { phraseTitledCSV, CreateDocument } from '@/modules/CSVimporter'
 import Popups from 'depmodules/Popups'
 
