@@ -265,3 +265,17 @@ ipcMain.handle('Remove', (_, payload) => {
       })
   })
 })
+
+// Config
+
+const ConfigStore = require('electron-store')
+
+app.configstore = new ConfigStore()
+
+ipcMain.handle('LoadConfig', (_, payload) =>
+  app.configstore.get(payload.key, payload.DefaultConfig)
+)
+
+ipcMain.handle('SaveConfig', (_, payload) =>
+  app.configstore.set(payload.key, payload.Config)
+)
