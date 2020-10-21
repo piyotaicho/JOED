@@ -63,6 +63,11 @@ const store = new Vuex.Store({
     NumberOfCases (state) {
       return state.DocumentIds.List.length
     },
+    // 現在queryで設定されているドキュメントの数を返す.
+    //
+    TotalNumberOfCases (state) {
+      return state.DocumentIds.TotalCount
+    },
     // 指定された DocumentId の前後の DocumentId を返す.
     // 存在しないものは 0.
     //
@@ -185,6 +190,12 @@ const store = new Vuex.Store({
       if (foundIndex !== -1) {
         state.DataStore.splice(foundIndex, 1)
       }
+    },
+    // 総症例数
+    //
+    // @Param {Number}
+    SetTotalDocumentCount (state, payload) {
+      state.DocumentIds.TotalCount = payload
     },
     // 表示対象数をクリア
     //
@@ -342,6 +353,9 @@ const store = new Vuex.Store({
             }
           )
           context.commit('ClearDocumentListRange')
+        })
+        .then(async function () {
+          context.commit('SetTotalDocumentCount', await context.dispatch('dbCount', { Query: { DocumentId: { $gt: 0 } } }))
         })
         .catch(error => error)
     },

@@ -26,8 +26,7 @@ export default {
   },
   data () {
     return ({
-      MasterYear: '0000',
-      TotalCount: 0
+      MasterYear: '0000'
     })
   },
   computed: {
@@ -36,6 +35,9 @@ export default {
     },
     ViewCount () {
       return this.$store.getters.NumberOfCases
+    },
+    TotalCount () {
+      return this.$store.getters.TotalNumberOfCases
     }
   },
   methods: {
