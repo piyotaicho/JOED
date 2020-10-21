@@ -31,7 +31,7 @@
         <div>カテゴリー</div>
         <div>
           <template v-for="(value, category) in Categories">
-            <LabeledCheckbox :key="category" v-model="FilterItems" :value="category">{{category}}</LabeledCheckbox>
+            <LabeledCheckbox :key="category" v-model="FilterItems" :value="category"></LabeledCheckbox>
           </template>
         </div>
       </div>
@@ -40,7 +40,7 @@
         <div>年次</div>
         <div>
           <template v-for="(value, year) in Years">
-            <LabeledCheckbox v-model="FilterItems" :key="year" :value="year">{{year}}</LabeledCheckbox>
+            <LabeledCheckbox v-model="FilterItems" :key="year" :value="year"></LabeledCheckbox>
           </template>
         </div>
       </div>
@@ -49,7 +49,7 @@
         <div>情報</div>
         <div>
           <template v-for="(value, condition) in Conditions">
-            <LabeledCheckbox :key="condition" v-model="FilterItems" :value="condition">{{condition}}</LabeledCheckbox>
+            <LabeledCheckbox :key="condition" v-model="FilterItems" :value="condition"></LabeledCheckbox>
           </template>
         </div>
       </div>
@@ -88,7 +88,7 @@ export default {
     })
   },
   created () {
-    // 選択肢オブジェクトの初期化
+    // 選択肢項目オブジェクトの初期化
     Object.keys(CategoryTranslation).forEach(categorylabel => {
       this.$set(this.Categories, categorylabel, { Field: 'TypeOfProcedure', Value: categorylabel })
     })
@@ -97,7 +97,7 @@ export default {
         this.$set(this.Years, year + '年', { Field: 'DateOfProcedure', Value: year })
       })
     })
-    // 現在の表示をロード
+    // 現在の表示をインポート
     const view = this.$store.getters.ViewSettings
     if (view.Sort) {
       this.$set(this.Sort, 'Item', view.Sort.Item)

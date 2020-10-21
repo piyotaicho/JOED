@@ -3,10 +3,7 @@
     <template v-if="value !== undefined">
       <input type="checkbox" v-model="CheckboxValue" :disabled="disabled" :value="value">
     </template>
-    <template v-else>
-      <input type="checkbox" v-model="CheckboxValue" :disabled="disabled" :value="LabelValue()">
-    </template>
-      <slot></slot>
+      <slot>{{typeof(value)==='boolean'?'':value}}</slot>
   </label>
 </template>
 
@@ -20,15 +17,12 @@ export default {
   props: {
     container: {},
     value: {
-      default: undefined
+      default: true
     },
     disabled: {
       type: Boolean,
       default: false
     }
-  },
-  mounted () {
-    this.$nextTick(_ => this.$refs.labelContent)
   },
   computed: {
     CheckboxValue: {
@@ -38,11 +32,6 @@ export default {
       set (value) {
         this.$emit('changed', value)
       }
-    }
-  },
-  methods: {
-    LabelValue () {
-      return this.$refs.labelContent && this.$refs.labelContent.textContent.trim()
     }
   }
 }
