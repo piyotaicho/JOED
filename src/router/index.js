@@ -60,11 +60,6 @@ const routes = [
     component: ViewUtilites,
     children: [
       {
-        name: 'settings',
-        path: 'settings',
-        component: ViewSettings
-      },
-      {
         name: 'export',
         path: 'export',
         component: ViewExport
@@ -80,6 +75,11 @@ const routes = [
         component: ViewAbout
       }
     ]
+  },
+  {
+    name: 'settings',
+    path: '/settings',
+    component: ViewSettings
   }
 ]
 

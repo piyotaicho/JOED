@@ -17,17 +17,22 @@ export default {
   data () {
     return ({
       Tabs: {
-        設定: 'settings',
         データ出力: 'export',
         データ読み込み: 'import',
         JOED5について: 'about'
       },
-      SelectedTab: 'settings'
+      SelectedTabName: 'export'
     })
   },
-  watch: {
-    SelectedTab (newvalue) {
-      this.$router.push({ name: newvalue })
+  computed: {
+    SelectedTab: {
+      get () {
+        return this.SelectedTabName
+      },
+      set (value) {
+        this.SelectedTabName = value
+        this.$router.push({ name: value })
+      }
     }
   },
   methods: {

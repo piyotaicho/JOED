@@ -1,13 +1,16 @@
 <template>
   <div>
-    <el-tabs>
-      <el-tab-pane label="施設情報の設定">
+    <el-tabs v-model="SelectedTab" @tab-click="TabClick">
+      <el-tab-pane name="goback">
+        <span slot="label"><i class="el-icon-d-arrow-left" /> 戻る</span>
+      </el-tab-pane>
+      <el-tab-pane label="施設情報の設定" name="institute">
         <SettingOfInstutute></SettingOfInstutute>
       </el-tab-pane>
-      <el-tab-pane label="パスワード認証の設定">
+      <el-tab-pane label="パスワード認証の設定" name="authentication">
         <SettingOfAuthentication></SettingOfAuthentication>
       </el-tab-pane>
-      <el-tab-pane label="表示の設定">
+      <el-tab-pane label="表示の設定" name="view">
         <SettingOfView></SettingOfView>
       </el-tab-pane>
     </el-tabs>
@@ -26,7 +29,16 @@ export default {
   },
   data () {
     return ({
+      SelectedTab: 'institute'
     })
+  },
+  methods: {
+    TabClick (tab, event) {
+      // 左端のタブは戻る
+      if (tab.index === '0') {
+        this.$router.push({ name: 'list' })
+      }
+    }
   }
 }
 </script>

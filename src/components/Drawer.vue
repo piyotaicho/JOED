@@ -33,7 +33,7 @@ export default {
     },
     AccordionChanged (itemname) {
       if (itemname === 90) {
-        this.$router.push({ name: 'settings' })
+        this.$router.push({ name: 'export' })
       }
       if (itemname === 91) {
         this.$router.push({ name: 'settings' })
