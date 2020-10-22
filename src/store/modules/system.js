@@ -49,7 +49,7 @@ export default {
     }
   },
   mutations: {
-    SetPreferences (state, payloads) {
+    SetPreferences (state, payloads = {}) {
       for (const key of Object.keys(payloads)) {
         if (state[key] !== undefined) {
           state[key] = payloads[key]
