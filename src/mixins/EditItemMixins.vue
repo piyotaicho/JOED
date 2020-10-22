@@ -52,7 +52,7 @@ export default {
       this.ExpandEditsection = !this.ExpandEditsection || (this.ItemValue.UserTyped === true) || this.IsItemEdited
     },
     GoBack () {
-      this.$router.go(-1)
+      this.$router.replace('./')
     },
 
     CategoryIsChanged () {

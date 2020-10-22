@@ -740,7 +740,7 @@ export default {
       }
     },
     GoBack () {
-      this.$router.go(-1)
+      this.$router.replace('./')
     },
     CommitChanges () {
       const validateCatogory = () => {

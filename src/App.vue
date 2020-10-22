@@ -11,7 +11,28 @@ export default {
     this.$store.dispatch('ReloadDocumentList')
     this.$store.dispatch('system/LoadPreferences')
 
-    // this.$router.push('/') // comment out in Electron environment
+    // electron環境下でのメインプロセスからのメッセージ(メニュー操作)を処理
+    try {
+      if (process.env.VUE_APP_MODE === 'electron') {
+        const { ipcRenderer } = require('electron')
+
+        ipcRenderer.on('RendererRoute', (event, payload) => {
+          if (payload) {
+            const routename = payload.Name
+            if (this.$route.name === 'list') {
+              // 基本的にメニュー操作は症例リストでのみ有効
+              if (routename === 'new') {
+                this.$router.push({ name: 'new', params: { uid: 0 } })
+              } else {
+                this.$router.push({ name: routename })
+              }
+            }
+          }
+        })
+      }
+    } catch (error) {
+      console.log(error)
+    }
   },
   computed: {
     routeKey () {

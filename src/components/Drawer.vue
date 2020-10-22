@@ -9,10 +9,12 @@
       <el-collapse-item title="検索" :name="10">
         <Search @commit="SetViewSettings"></Search>
       </el-collapse-item>
-      <el-collapse-item title="データの処理" :name="90">
-      </el-collapse-item>
-      <el-collapse-item title="環境設定" :name="91">
-      </el-collapse-item>
+      <template v-if="WebApp">
+        <el-collapse-item title="データの処理" :name="90">
+        </el-collapse-item>
+        <el-collapse-item title="環境設定" :name="91">
+        </el-collapse-item>
+      </template>
     </el-collapse>
   </div>
 </template>
@@ -26,6 +28,11 @@ export default {
   name: 'Drawer',
   components: {
     Dashboard, DisplaySetting, Search
+  },
+  computed: {
+    WebApp () {
+      return process.env.VUE_APP_MODE !== 'electron'
+    }
   },
   methods: {
     CloseDrawer () {

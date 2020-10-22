@@ -106,6 +106,63 @@ if (isDevelopment) {
   }
 }
 
+// アプリケーションメニュー
+//
+//
+function RendererRoute (routename, targetwindow) {
+  targetwindow.webContents.send('RendererRoute', { Name: routename })
+}
+
+const MenuTemplate = [
+  {
+    label: 'ファイル',
+    submenu: [
+      { label: '新規症例の登録', accelerator: 'CmdORCtrl+N', click: (item, focusedWindow) => RendererRoute('new', focusedWindow) },
+      { type: 'separator' },
+      { label: 'データの読み込み', click: (item, focusedWindow) => RendererRoute('import', focusedWindow) },
+      { label: 'データの書き出し', click: (item, focusedWindow) => RendererRoute('export', focusedWindow) },
+      ...(process.platform === 'darwin'
+        ? [{ type: 'separator' }]
+        : [
+          { type: 'separator' },
+          { label: '設定', accelerator: 'CmdORCtrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+          { type: 'separator' }
+        ]),
+      {
+        label: process.platform === 'darwin' ? 'ウインドウを閉じる' : '終了',
+        accelerator: process.platform === 'darwin' ? 'Cmd+W' : 'Alt+F4',
+        role: process.platform === 'darwin' ? 'close' : 'quit'
+      }
+    ]
+  },
+  {
+    label: 'ヘルプ',
+    submenu: [
+      { label: app.getName() + 'について', role: 'about' }
+    ]
+  }
+]
+
+if (process.platform === 'darwin') {
+  MenuTemplate.unshift({
+    submenu: [
+      // アプリケーションメニュー
+      { label: app.getName() + 'について', role: 'about' },
+      { type: 'separator' },
+      { label: '設定', accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+      { type: 'separator' },
+      { label: 'サービス', role: 'services', submenu: [] },
+      { type: 'separator' },
+      { label: app.getName() + 'を隠す', accelerator: 'Command+H', role: 'hide' },
+      { label: '他を隠す', accelerator: 'Command+Alt+H', role: 'hideothers' },
+      { label: '全てを表示', role: 'unhide' },
+      { type: 'separator' },
+      { label: '終了', accelerator: 'Command+Q', role: 'quit' }
+    ]
+  })
+}
+
+Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate))
 // IPCハンドリング
 //
 // UI
@@ -266,16 +323,16 @@ ipcMain.handle('Remove', (_, payload) => {
   })
 })
 
-// Config
+// データベースというかローカルjsonとしての Config
 
 const ConfigStore = require('electron-store')
 
 app.configstore = new ConfigStore()
 
 ipcMain.handle('LoadConfig', (_, payload) =>
-  app.configstore.get(payload.key, payload.DefaultConfig)
+  app.configstore.get(payload.Key, payload.DefaultConfig)
 )
 
 ipcMain.handle('SaveConfig', (_, payload) =>
-  app.configstore.set(payload.key, payload.Config)
+  app.configstore.set(payload.Key, payload.Config)
 )
