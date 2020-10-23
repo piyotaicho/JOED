@@ -66,6 +66,10 @@ function createWindow () {
   win.on('closed', () => {
     win = null
   })
+
+  win.on('app-command', (_event, command) => {
+    console.log('catch app-command ', command)
+  })
 }
 
 app.on('window-all-closed', () => {
@@ -106,8 +110,8 @@ if (isDevelopment) {
   }
 }
 
-// アプリケーションメニュー
 //
+// アプリケーションメニュー
 //
 function RendererRoute (routename, targetwindow) {
   targetwindow.webContents.send('RendererRoute', { Name: routename })
@@ -163,14 +167,25 @@ if (process.platform === 'darwin') {
 }
 
 Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate))
-// IPCハンドリング
-//
-// UI
-ipcMain.on('messagebox', (event, payload) => {
-  event.returnValue = dialog.showMessageBoxSync(win, payload)
+
+app.setAboutPanelOptions({
+  applicationName: app.getName(),
+  applicationVersion: process.env.VUE_APP_VERSION,
+  copyright: 'Copyright 2020 JSGOE',
+  credits: '@piyotaicho https://github.com/piyotaicho/JOED/',
+  iconPath: '../public/icon.png'
 })
 
-// データベース
+//
+// IPCハンドリング
+//
+
+// UI
+ipcMain.on('messagebox', (event, payload) => {
+  event.returnValue = dialog.showMessageBoxSync(win, Object.assign({ noLink: true }, payload))
+})
+
+// nedb データベースAPIラッパー
 const DB = require('nedb')
 
 function createDatabaseInstance () {
@@ -218,7 +233,6 @@ function createDatabaseInstance () {
 
 app.DatabaseInstance = createDatabaseInstance()
 
-// Rendererからのipcの取り扱い
 ipcMain.handle('Insert', (_, payload) => {
   return new Promise((resolve, reject) => {
     app.DatabaseInstance
