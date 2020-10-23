@@ -1,19 +1,34 @@
 <template>
   <div>
     <h2>ABOUT JOED5</h2>
-    <hr/>
-    <span>JOED5は以下のオープンソースコンポーネントを用いて作成されています.</span>
+    <hr />
+    <ul>
+      <li><ExtLink url="https://github.com/piyotaicho/JOED/">JOED5</ExtLink> : {{ApplicationVersion}}</li>
+      <template v-if="LibraryVersions.electron">
+        <li>Electron : {{LibraryVersions.electron}}</li>
+        <li>Chrome : {{LibraryVersions.chrome}}</li>
+        <li>node : {{LibraryVersions.node}}</li>
+        <li>V8 : {{LibraryVersions.V8}}</li>
+      </template>
+    </ul>
+    <hr />
+    <span>JOED5は以下のオープンソースコンポーネント及びその下位コンポーネントを用いて作成されています.</span>
     <ul>
       <li v-for="(item, index) of List" :key="index">
-        {{item.name}} (<a target="_blank" rel="noopener noreferrer" :href="item.href">{{item.href}}</a>) - License : {{item.license}}
+        {{item.name}} (<ExtLink :url="item.href" />) - License : {{item.license}}
       </li>
     </ul>
   </div>
 </template>
 
 <script>
+import ExtLink from '@/components/Atoms/ExtLink'
+
 export default {
-  name: 'ViewAbout',
+  name: 'About',
+  components: {
+    ExtLink
+  },
   data () {
     return ({
       List: [
@@ -33,6 +48,23 @@ export default {
         { name: 'encoding.js', href: 'https://github.com/polygonplanet/encoding.js', license: 'MIT' }
       ]
     })
+  },
+  created () {
+    if (process.env.VUE_APP_MODE === 'electron') {
+      this.List.push(...[
+        { name: 'electron', href: 'https://www.electronjs.org/', license: 'MIT' },
+        { name: 'electron builder', href: 'https://www.electron.build/', license: 'MIT' },
+        { name: 'electron store', href: 'https://github.com/sindresorhus/electron-store', license: 'MIT' }
+      ])
+    }
+  },
+  computed: {
+    ApplicationVersion () {
+      return process.env.VUE_APP_VERSION || '5.DEVELOPMENT'
+    },
+    LibraryVersions () {
+      return process.versions || { electron: 'undefined', node: 'undefined', V8: 'undefined', chrome: 'undefined' }
+    }
   }
 }
 </script>
