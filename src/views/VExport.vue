@@ -3,19 +3,28 @@
     <div class="title-section">データの出力</div>
     <div class="label"><span>出力する年次</span></div>
     <div class="field">
-      <SelectYear v-model="ExportYear"></SelectYear>
+      <SelectYear v-model="ExportYear" :accept-all="false"></SelectYear>
     </div>
+
+    <div class="utilitypanel">
+    <InputSwitchField
+      v-model="AllFields"
+      title="出力するデータ"
+      :options="{学会提出データ用: false, 全フィールドのデータ: true}" />
 
     <InputSwitchField
       v-model="ExportDateOfProcedure"
+      :disabled="ExportAllFields"
       title="手術実施日の出力"
       :options="{しない: false, する: true}" />
+    </div>
+
     <div>
-      <el-button type="primary" @click="StartProcessing()">出力データの作成</el-button>
+      <el-button type="primary" @click="StartProcessing()" :disabled="ExportYear==''">出力データの作成</el-button>
     </div>
 
     <el-collapse-transition>
-      <div class="export-progression" v-if="ProcessStep !== undefined">
+      <div class="progression" v-if="ProcessStep !== undefined">
         <el-steps :active="ProcessStep" process-status="warning" finish-status="success" direction="vertical" space="42px">
           <el-step title="システム設定の確認" />
           <el-step title="読み込み症例の確認を検証" />
@@ -67,6 +76,7 @@ export default {
     return ({
       ExportYear: '',
       ExportDateOfProcedure: true,
+      ExportAllFields: false,
       Selector: {},
 
       Processing: false,
@@ -80,6 +90,18 @@ export default {
     })
   },
   computed: {
+    AllFields: {
+      get () {
+        return this.ExportAllFields
+      },
+      set (newvalue) {
+        if (newvalue && Popups.confirm('不用意に全てのフィールドのデータを出力するのは,個人情報保護の観点からお薦め出来ません.\nそれでも出力しますか?')) {
+          this.ExportAllFields = true
+        } else {
+          this.ExportAllFields = false
+        }
+      }
+    },
     Query () {
       const query = {
         DocumentId: { $gt: 0 }
@@ -107,13 +129,13 @@ export default {
         await this.CheckImported()
 
         this.ProcessStep++
-        await this.CheckConsistency()
+        const documentids = await this.CheckConsistency()
 
         this.ProcessStep++
-        const ExportItems = await this.CreateExportData()
+        const exportitems = await this.CreateExportData(documentids)
 
         this.ProcessStep++
-        const ExportCounts = await this.CreateHeader(ExportItems)
+        const ExportCounts = await this.CreateHeader(exportitems)
 
         this.ProcessStep = 6
         if (ExportCounts > 0) {
@@ -128,14 +150,21 @@ export default {
     },
 
     Download () {
-      // ブラウザの機能でダウンロードさせる.
-      const temporaryElementA = document.createElement('A')
-      temporaryElementA.href = URL.createObjectURL(new Blob([this.OutputString]), { type: 'application/json' })
-      temporaryElementA.download = 'joed-export-data.json'
-      temporaryElementA.style.display = 'none'
-      document.body.appendChild(temporaryElementA)
-      temporaryElementA.click()
-      document.body.removeChild(temporaryElementA)
+      if (!this.ExportAllFields ||
+        (
+          Popups.confirm('ファイルへの保存が指示されました, 作成されたデータには個人情報が含まれている可能性があります.\n処理を続行しますか?') &&
+          Popups.confirm('出力されたファイルの取り扱いは厳重行ってください.')
+        )
+      ) {
+        // ブラウザの機能でダウンロードさせる.
+        const temporaryElementA = document.createElement('A')
+        temporaryElementA.href = URL.createObjectURL(new Blob([this.OutputString]), { type: 'application/json' })
+        temporaryElementA.download = 'joed-export-data.json'
+        temporaryElementA.style.display = 'none'
+        document.body.appendChild(temporaryElementA)
+        temporaryElementA.click()
+        document.body.removeChild(temporaryElementA)
+      }
     },
 
     // Step 1 - 施設名とIDが設定されているかを確認
@@ -173,7 +202,7 @@ export default {
         )
       })
       if (count > 0) {
-        throw new Error('未確認の読み込み症例があります.\n確認を御願いします.')
+        throw new Error('未確認の読み込み症例が ' + count + ' 症例あります.\n確認を御願いします.')
       }
     },
     // Step 3 - データの妥当性検証
@@ -182,23 +211,16 @@ export default {
     //  必須項目の有無
     //  項目の重複(ditto含む)
     async CheckConsistency () {
-      // 選択クエリ
-      const query = {
-        DocumentId: { $gt: 0 }
-      }
-      if (this.ExportYear !== '') {
-        const reg = new RegExp('^' + this.ExportYear + '-')
-        query.DateOfProcedure = { $regex: reg }
-      }
-
       this.ProgressStepThree = 0
 
-      const documentids = await this.$store.dispatch('dbFind',
-        {
-          Query: this.Query,
-          Projection: { DocumentId: 1, _id: 0 }
-        })
-        .map(item => item.DocumentId)
+      const documentids = (
+        await this.$store.dispatch('dbFind',
+          {
+            Query: this.Query,
+            Projection: { DocumentId: 1, _id: 0 }
+          }) ||
+        []
+      ).map(item => item.DocumentId)
       if (documentids.length === 0) throw new Error('エクスポートの対象がありません.')
 
       let DocumentErrors = 0
@@ -212,7 +234,7 @@ export default {
                 Query: { DocumentId: documentids[index] }
               })
           )
-        } catch(error) {
+        } catch (error) {
           this.$store.dispatch('dbUpdate',
             {
               Query: { DocumentId: documentids[index] },
@@ -229,32 +251,54 @@ export default {
           '該当するデータの修正を御願いします.'
         )
       }
+
+      return documentids
     },
 
     // Step 4 - データの整形
     //
-    async CreateExportData () {
+    async CreateExportData (documentids) {
       this.ProgressStepFour = 0
 
       const ExportItems = []
-      const query = {
-        DocumentId: { $gt: 0 }
-      }
-      if (this.ExportYear !== '') {
-        const reg = new RegExp('^' + this.ExportYear + '-')
-        query.DateOfProcedure = { $regex: reg }
-      }
 
-      const documents = await this.$store.dispatch('dbFind', {
-        Query: query,
-        Sort: { DocumentId: 1 }
-      })
+      let serial = (
+        await this.$store.dispatch('dbFindOne',
+          {
+            Query: Object.assign(
+              {
+                UniqueID: { $exists: true }
+              },
+              this.Query),
+            Sort: { UniqueID: -1, _id: 0 }
+          }
+        ) || { UniqueID: 0 })
+        .UniqueID
 
-      for (const index in documents) {
-        this.ProgressStepFour = parseInt(index * 100.0 / documents.length)
+      for (const index in documentids) {
+        this.ProgressStepFour = parseInt(index * 100.0 / documentids.length)
+        const exportdocument = await this.$store.dispatch('dbFindOne',
+          { Query: { DocumentId: documentids[index] } }
+        )
+
+        if (!exportdocument.UniqueID) {
+          ++serial
+          exportdocument.UniqueID = [
+            this.$store.getters['system/InstitutionID'],
+            this.Year,
+            serial
+          ].join('-')
+
+          await this.$store.dispatch('dbUpdate',
+            {
+              Query: { DocumentId: documentids[index] },
+              Update: { $set: { UniqueID: exportdocument.UniqueID } }
+            })
+        }
 
         ExportItems.push(
-          CaseDocumentHandler.exportCase(documents[index], this.$store.getters['system/InstitutionID'],
+          CaseDocumentHandler.exportCase(
+            exportdocument,
             {
               spliceDateOfProcedure: !this.ExportDateOfProcedure
             }
@@ -262,7 +306,6 @@ export default {
         )
       }
       this.ProgressStepFour = 100
-
       return ExportItems
     },
 
@@ -297,6 +340,20 @@ export default {
 </script>
 
 <style lang="sass">
+div.utilitypanel
+  display: flex
+  flex-direction: column
+  margin-bottom: 1rem
+  div
+    display: flex
+    flex-direction: row
+    margin: 0.4rem 0
+    div.label
+      margin-top: 0.7rem
+      width: 20%
+      font-weight: bold
+    div.field
+
 div#preview
   position: relative
   height: 80vh
