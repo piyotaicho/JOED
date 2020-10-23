@@ -17,7 +17,7 @@
     <el-collapse-transition>
       <div class="export-progression" v-if="ProcessStep !== undefined">
         <el-steps :active="ProcessStep" process-status="warning" finish-status="success" direction="vertical" space="42px">
-          <el-step title="システム設定" />
+          <el-step title="システム設定の確認" />
           <el-step title="読み込み症例の確認を検証" />
           <el-step title="登録内容の妥当性の検証">
             <template #description>
@@ -82,8 +82,7 @@ export default {
   computed: {
     Query () {
       const query = {
-        DocumentId: { $gt: 0 },
-        Imported: { $exists: true }
+        DocumentId: { $gt: 0 }
       }
       if (this.ExportYear !== '') {
         const reg = new RegExp('^' + this.ExportYear + '-')
@@ -126,49 +125,13 @@ export default {
       } finally {
         this.Processing = false
       }
-
-      /*
-      // transitionの時間だけちょっと待つ（正直無駄）
-      new Promise((resolve) => setTimeout(resolve, 500))
-        .then(_ => {
-          return this.CheckSystem()
-        })
-        .then(_ => {
-          this.ProcessStep++
-          return this.CheckImported()
-        })
-        .then(_ => {
-          this.ProcessStep++
-          return this.CheckConsistency()
-        })
-        .then(_ => {
-          this.ProcessStep++
-          return this.CreateExportData()
-        })
-        .then(exportItems => {
-          this.ProcessStep++
-          return this.CreateHeader(exportItems)
-        })
-        .then(count => {
-          this.ProcessStep = 6
-          if (count > 0) {
-            this.ReadyForExport = true
-          }
-          this.Processing = false
-        })
-        .catch(error => {
-          this.ReadyForExport = false
-          this.Processing = false
-          Popups.alert(error.message)
-        })
-      */
     },
 
     Download () {
-      // ブラウザの機能でダウンロードさせる. electronでは要検討かもしれない.
+      // ブラウザの機能でダウンロードさせる.
       const temporaryElementA = document.createElement('A')
       temporaryElementA.href = URL.createObjectURL(new Blob([this.OutputString]), { type: 'application/json' })
-      temporaryElementA.download = 'joed-data.json'
+      temporaryElementA.download = 'joed-export-data.json'
       temporaryElementA.style.display = 'none'
       document.body.appendChild(temporaryElementA)
       temporaryElementA.click()
@@ -181,8 +144,19 @@ export default {
       if (!this.$store.getters['system/InstitutionID']) {
         throw new Error('施設情報が未設定です.')
       }
-      if (!this.$store.getters['system/InstitutionID']) {
-        //
+
+      const countJSOGId = await this.$store.dispatch('dbCount', {
+        Query: Object.assign(
+          {
+            JSOGId: { $exists: true }
+          },
+          this.Query
+        )
+      })
+      if (countJSOGId > 0) {
+        if (!this.$store.getters['sysyem/JSOGInstitutionID']) {
+          throw new Error('日本産科婦人科学会腫瘍登録施設番号が未設定です.')
+        }
       }
     },
 
@@ -190,7 +164,14 @@ export default {
     //
     // インポートデータ( Imported )で特になんの問題も無くインポートできたもの以外には Notification がある
     async CheckImported () {
-      const count = await this.$store.dispatch('dbCount', { Query: this.Query })
+      const count = await this.$store.dispatch('dbCount', {
+        Query: Object.assign(
+          {
+            Imported: { $exists: true }
+          },
+          this.Query
+        )
+      })
       if (count > 0) {
         throw new Error('未確認の読み込み症例があります.\n確認を御願いします.')
       }
@@ -212,11 +193,11 @@ export default {
 
       this.ProgressStepThree = 0
 
-      const documentids = (await this.$store.dispatch('dbFind',
+      const documentids = await this.$store.dispatch('dbFind',
         {
           Query: this.Query,
           Projection: { DocumentId: 1, _id: 0 }
-        }))
+        })
         .map(item => item.DocumentId)
       if (documentids.length === 0) throw new Error('エクスポートの対象がありません.')
 
@@ -224,21 +205,21 @@ export default {
 
       for (const index in documentids) {
         this.ProgressStepThree = parseInt(index * 100.0 / documentids.length)
-
-        await ValidateCase(
-          await self.$store.dispatch('dbFindOne',
-            {
-              Query: { DocumentId: documentids[index] }
-            })
-        )
-          .catch(error => {
-            self.$store.dispatch('dbUpdate',
+        try {
+          await ValidateCase(
+            await this.$store.dispatch('dbFindOne',
               {
-                Query: { DocumentId: documentids[index] },
-                Update: { $set: { Notification: error } }
+                Query: { DocumentId: documentids[index] }
               })
-            DocumentErrors++
-          })
+          )
+        } catch(error) {
+          this.$store.dispatch('dbUpdate',
+            {
+              Query: { DocumentId: documentids[index] },
+              Update: { $set: { Notification: error } }
+            })
+          DocumentErrors++
+        }
       }
       this.ProgressStepThree = 100
 
