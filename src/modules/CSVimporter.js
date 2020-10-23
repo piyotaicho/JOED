@@ -139,9 +139,9 @@ function DiagnosesAndProceduresPrimary (Record, CaseData) {
   // 主たる診断・術式を設定
   // JOEDの不明な仕様で、空の腹腔鏡術後診断にはなぜか空白がはいるためtrimする
   if (Record['腹腔鏡術後診断'].trim()) {
-    const typeofselection = Record['良性悪性_病名'] === '良性' ? '' : '悪性'
+    const typeofselection =
     CaseData.Diagnoses.push(handleUserTyped(
-      '腹腔鏡' + typeofselection,
+      Record['良性悪性_病名'] === '良性' ? '腹腔鏡' : '腹腔鏡悪性',
       Record['腹腔鏡術後診断'], Record['腹腔鏡術後診断その他'])
     )
 
@@ -153,13 +153,21 @@ function DiagnosesAndProceduresPrimary (Record, CaseData) {
       )
     )
   }
-  if (Record['子宮鏡術後診断']) {
-    CaseData.Diagnoses.push(handleUserTyped('子宮鏡', Record['子宮鏡術後診断'], Record['子宮鏡術後診断その他']))
-    CaseData.Procedures.push(handleUserTyped('子宮鏡', Record['子宮鏡施行手術'], Record['子宮鏡施行手術その他']))
+  if (Record['子宮鏡術後診断'].trim()) {
+    CaseData.Diagnoses.push(handleUserTyped(
+      '子宮鏡', Record['子宮鏡術後診断'], Record['子宮鏡術後診断その他']
+    ))
+    CaseData.Procedures.push(handleUserTyped(
+      '子宮鏡', Record['子宮鏡施行手術'], Record['子宮鏡施行手術その他']
+    ))
   }
-  if (Record['卵管鏡術後診断']) {
-    CaseData.Diagnoses.push(handleUserTyped('卵管鏡', Record['卵管鏡術後診断'], Record['卵管鏡術後診断その他']))
-    CaseData.Procedures.push(handleUserTyped('卵管鏡', Record['卵管鏡施行手術'], Record['卵管鏡施行手術その他']))
+  if (Record['卵管鏡術後診断'].trim()) {
+    CaseData.Diagnoses.push(handleUserTyped(
+      '卵管鏡', Record['卵管鏡術後診断'], Record['卵管鏡術後診断その他']
+    ))
+    CaseData.Procedures.push(handleUserTyped(
+      '卵管鏡', Record['卵管鏡施行手術'], Record['卵管鏡施行手術その他']
+    ))
   }
 
   // 主たる術式からカテゴリを設定
@@ -172,49 +180,44 @@ function DiagnosesAndProceduresPrimary (Record, CaseData) {
 
 function DiagnosesAndProceduresSecondary (Record, CaseData) {
   // 併施手術を設定
-  if (Record['腹腔鏡併施手術_術後診断1']) {
-    const typeofselection = Record['併施手術1_良性悪性_病名'] === '良性' ? '' : '悪性'
+  if (Record['腹腔鏡併施手術_術後診断1'].trim()) {
     if (Record['腹腔鏡併施手術_術後診断1'] !== Record['腹腔鏡術後診断'] || Record['腹腔鏡併施手術_術後診断1'] === 'その他') {
       CaseData.Diagnoses.push(handleUserTyped(
-        '腹腔鏡' + typeofselection,
-        Record['腹腔鏡併施手術_術後診断1'], Record['腹腔鏡併施手術_術後診断1その他'])
-      )
+        Record['併施手術1_良性悪性_病名'] === '良性' ? '腹腔鏡' : '腹腔鏡悪性',
+        Record['腹腔鏡併施手術_術後診断1'], Record['腹腔鏡併施手術_術後診断1その他']
+      ))
     }
   }
-  if (Record['腹腔鏡併施手術_施行手術1']) {
-    const typeofselection = Record['併施手術1_良性悪性_術式'] === '良性' ? '' : '悪性'
-    CaseData.Procedures.push(
-      laparoProcedure(
-        Record['腹腔鏡併施手術_施行手術1'], Record['腹腔鏡併施手術_施行手術1その他'],
-        typeofselection,
-        Record['併施手術1_リンパ節郭清'], Record['併施手術1_大網生検']
-      )
+  if (Record['腹腔鏡併施手術_施行手術1'].trim()) {
+    const item = laparoProcedure(
+      Record['腹腔鏡併施手術_施行手術1'], Record['腹腔鏡併施手術_施行手術1その他'],
+      Record['併施手術1_良性悪性_術式'] === '良性' ? '' : '悪性',
+      Record['併施手術1_リンパ節郭清'], Record['併施手術1_大網生検']
     )
+    if (item) CaseData.Procedures.push(item)
   }
-  if (Record['腹腔鏡併施手術_術後診断2']) {
-    const typeofselection = Record['併施手術2_良性悪性_病名'] === '良性' ? '' : '悪性'
+  if (Record['腹腔鏡併施手術_術後診断2'].trim()) {
     if (Record['腹腔鏡併施手術_術後診断2'] !== Record['腹腔鏡術後診断'] || Record['腹腔鏡併施手術_術後診断2'] === 'その他') {
       CaseData.Diagnoses.push(handleUserTyped(
-        '腹腔鏡' + typeofselection,
-        Record['腹腔鏡併施手術_術後診断2'], Record['腹腔鏡併施手術_術後診断2その他'])
-      )
+        Record['併施手術2_良性悪性_病名'] === '良性' ? '腹腔鏡' : '腹腔鏡悪性',
+        Record['腹腔鏡併施手術_術後診断2'], Record['腹腔鏡併施手術_術後診断2その他']
+      ))
     }
   }
-  if (Record['腹腔鏡併施手術_施行手術2']) {
-    const typeofselection = Record['併施手術2_良性悪性_術式'] === '良性' ? '' : '悪性'
-    CaseData.Procedures.push(
-      laparoProcedure(
-        Record['腹腔鏡併施手術_施行手術2'], Record['腹腔鏡併施手術_施行手術2その他'],
-        typeofselection,
-        Record['併施手術2_リンパ節郭清'], Record['併施手術2_大網生検']
-      )
+  if (Record['腹腔鏡併施手術_施行手術2'].trim()) {
+    const item = laparoProcedure(
+      Record['腹腔鏡併施手術_施行手術2'], Record['腹腔鏡併施手術_施行手術2その他'],
+      Record['併施手術2_良性悪性_術式'] === '良性' ? '' : '悪性',
+      Record['併施手術2_リンパ節郭清'], Record['併施手術2_大網生検']
     )
+    if (item) CaseData.Procedures.push(item)
   }
-  if (Record['子宮鏡併施手術_術後診断']) {
+  if (Record['子宮鏡併施手術_術後診断'].trim()) {
     if (Record['子宮鏡併施手術_術後診断'] !== Record['子宮鏡術後診断'] || Record['子宮鏡併施手術_術後診断'] === 'その他') {
-      CaseData.Diagnoses.push(handleUserTyped('子宮鏡', Record['子宮鏡併施手術_術後診断'], Record['子宮鏡併施手術_術後診断その他']))
+      CaseData.Diagnoses.push(handleUserTyped(
+        '子宮鏡', Record['子宮鏡併施手術_術後診断'], Record['子宮鏡併施手術_術後診断その他']
+      ))
     }
-    CaseData.Procedures.push(handleUserTyped('子宮鏡', Record['子宮鏡併施手術_施行手術'], Record['子宮鏡併施手術_施行手術その他']))
   }
 }
 
@@ -249,10 +252,14 @@ function laparoProcedure (procedure = '', typedprocedure = '', typeofselection =
   const translation = {
     lymph: {
       'なし（SN生検－）': 'なし(センチネル生検なし)$',
+      'なし(SN生検-)': 'なし(センチネル生検なし)$', // 半角ダッシュ
+      'なし(SN生検ｰ)': 'なし(センチネル生検なし)$', // 半確長音
       'なし（SN生検＋）': 'なし(センチネル生検あり)',
+      'なし(SN生検+)': 'なし(センチネル生検あり)',
       PLN: 'PLN',
       PAN: 'PAN',
-      'PLN＋PAN': 'PLN+PAN'
+      'PLN＋PAN': 'PLN+PAN',
+      'PLN+PAN': 'PLN+PAN'
     },
     omentum: {
       大網生検あり: '[大網切除・生検]あり',
@@ -260,28 +267,30 @@ function laparoProcedure (procedure = '', typedprocedure = '', typeofselection =
     }
   }
 
-  const temporaryObject = {}
   if (procedure.trim()) {
+    const temporaryObject = {}
     temporaryObject.Chain = [category + typeofselection.trim()]
-  }
-  if (procedure.trim() === 'その他') {
-    temporaryObject.Text = typedprocedure.trim()
-    temporaryObject.UserTyped = true
-  } else {
-    temporaryObject.Text = CharacterReplacer(procedure.trim())
-    if (lymphadnectomy) {
-      if (translation.lymph[lymphadnectomy.trim()] && translation.lymph[lymphadnectomy.trim()].substr(-1, 1) !== '$') {
-        temporaryObject.AdditionalProcedure = {
-          Text: category === 'ロボット' ? 'ロボット支援下リンパ節生検・郭清' : '腹腔鏡下リンパ節生検・郭清',
-          Description: [translation.lymph[lymphadnectomy.trim()]]
+    if (procedure.trim() === 'その他') {
+      temporaryObject.Text = typedprocedure.trim()
+      temporaryObject.UserTyped = true
+    } else {
+      temporaryObject.Text = CharacterReplacer(procedure.trim())
+      if (lymphadnectomy) {
+        if (translation.lymph[lymphadnectomy.trim()] && translation.lymph[lymphadnectomy.trim()].substr(-1, 1) !== '$') {
+          temporaryObject.AdditionalProcedure = {
+            Text: category === 'ロボット' ? 'ロボット支援下リンパ節生検・郭清' : '腹腔鏡下リンパ節生検・郭清',
+            Description: [translation.lymph[lymphadnectomy.trim()]]
+          }
         }
       }
+      if (omentectomy.trim() && translation.omentum[omentectomy.trim()]) {
+        temporaryObject.Description = translation.omentum[omentectomy.trim()]
+      }
     }
-    if (omentectomy.trim() && translation.omentum[omentectomy.trim()]) {
-      temporaryObject.Description = translation.omentum[omentectomy.trim()]
-    }
+    return temporaryObject
+  } else {
+    return undefined
   }
-  return temporaryObject
 }
 
 function handleUserTyped (category, item, typeditem) {
