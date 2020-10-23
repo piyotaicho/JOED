@@ -1,3 +1,5 @@
+export const LastUpdate = '2020-10-23'
+
 export const ListOfInstitutions = [
   // リストは2019年登録に基づく
   { name: 'JA北海道厚生連 札幌厚生病院', ID: '01101' },

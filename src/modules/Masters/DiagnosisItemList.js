@@ -1,5 +1,6 @@
-// eslint-disable-next-line no-unused-vars
 import SelectionTree from '@/modules/SelectionTree'
+
+export const LastUpdate = '2020-10-23'
 
 export default class DiagnosisMaster extends SelectionTree {
   constructor () {

@@ -1,6 +1,6 @@
-// eslint-disable-next-line no-unused-vars
 import SelectionTree from '@/modules/SelectionTree'
 
+export const LastUpdate = '2020-10-23'
 // Description の Values: [] のフォーマット
 //
 // 要素に '$MULTI$' を含むとDescriptionは複数保持可能となる
