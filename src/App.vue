@@ -8,8 +8,8 @@
 export default {
   created () {
     this.$store.commit('initDatabase')
-    this.$store.dispatch('ReloadDocumentList')
     this.$store.dispatch('system/LoadPreferences')
+    this.$store.dispatch('ReloadDocumentList')
 
     // electron環境下でのメインプロセスからのメッセージ(メニュー操作)を処理
     try {
@@ -19,13 +19,21 @@ export default {
         ipcRenderer.on('RendererRoute', (event, payload) => {
           if (payload) {
             const routename = payload.Name
-            if (this.$route.name === 'list') {
-              // 基本的にメニュー操作は症例リストでのみ有効
-              if (routename === 'new') {
-                this.$router.push({ name: 'new', params: { uid: 0 } })
-              } else {
-                this.$router.push({ name: routename })
-              }
+            switch (this.$route.name) {
+              case 'list':
+                if (routename === 'new') {
+                  this.$router.push({ name: 'edit', params: { uid: 0 } })
+                } else {
+                  this.$router.push({ name: routename })
+                }
+                break
+              case 'export':
+              case 'import':
+              case 'settings':
+                if (routename !== 'new') {
+                  this.$router.push({ name: routename })
+                }
+                break
             }
           }
         })
@@ -38,7 +46,7 @@ export default {
     routeKey () {
       // 同一uidからのroutingに対するquick-hack どんな環境でも動作する
       const path = this.$route.path.split('/')
-      return (path.length > 2 && path[2].match(/^\d+$/))
+      return (path.length > 2 && /^\d+$/.test(path[2]))
         ? path[1] + '/' + path[2]
         : (path[1] || '/')
     }
