@@ -328,7 +328,7 @@ export default class DiagnosisMaster extends SelectionTree {
           '子宮奇形',
           'アッシャーマン症候群',
           '異所性妊娠',
-          '胎盤ポリープ・胎盤違残',
+          '胎盤ポリープ・胎盤遺残',
           // 2020 表記変更 帝王切開瘢痕部症候群 -> 帝王切開瘢痕症候群
           {
             Text: '帝王切開瘢痕部症候群',

@@ -424,7 +424,7 @@ export default class ProcedureMaster extends SelectionTree {
           '子宮鏡下子宮中隔切除術',
           '子宮形成術',
           '子宮内膜焼灼術',
-          '胎盤ポリープ・胎盤違残摘出術',
+          '胎盤ポリープ・胎盤遺残摘出術',
           // 2020 新規
           {
             Text: '帝王切開瘢痕症候群創部切除術',
