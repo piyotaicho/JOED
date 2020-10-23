@@ -1,4 +1,4 @@
-// 保存先は最終的にはデータベースではなく electron.config に逃げる予定
+import { LoadPassword, SavePassword } from 'depmodules/config'
 
 const MD5salt = process.env.VUE_APP_MD5SALT
 
@@ -30,42 +30,38 @@ export default {
     // 認証結果は {Boolean} Authenticated に.
     //
     // @param {String} パスワード文字列
-    Authenticate (context, payload) {
+    async Authenticate (context, payload) {
       const HHX = require('xxhashjs')
+      const hashedpassword = await LoadPassword(context)
 
-      return context.dispatch('dbFindOne',
-        {
-          Query: { Password: { $exists: true } }
-        },
-        { root: true }
-      )
-        .then(hashedpassword => {
-          // パスワード設定無し
-          if (hashedpassword === '') {
-            if (!payload.SuppressStateChange) {
-              context.commit('PasswordRequirement', false)
-              context.commit('AuthenticationStatus', true)
-            } else {
-              if (hashedpassword === HHX.h64(payload.PasswordString, MD5salt).toString(16)) {
-                if (!payload.SuppressStateChange) {
-                  context.commit('AuthenticationStatus', true)
-                }
-              } else {
-                console.log('Authentication failed.')
-                if (!payload.SuppressStateChange) {
-                  context.commit('AuthenticationStatus', false)
-                }
-                return Promise.reject(new Error('Authentication failed'))
-              }
-            }
+      if (hashedpassword === '') {
+        if (!payload.SuppressStateChange) {
+          context.commit('PasswordRequirement', false)
+          context.commit('AuthenticationStatus', true)
+        }
+      } else {
+        if (!payload.SuppressStateChange) {
+          context.commit('PasswordRequirement', true)
+        }
+        if (hashedpassword === HHX.h64(payload.PasswordString, MD5salt).toString(16)) {
+          if (!payload.SuppressStateChange) {
+            context.commit('AuthenticationStatus', true)
           }
-        })
+        } else {
+          if (!payload.SuppressStateChange) {
+            context.commit('AuthenticationStatus', false)
+          }
+          throw new Error('Authentication failed')
+        }
+      }
     },
     // パスワードハッシュにパスワードを保存する.
     // 空白パスワード文字列はパスワードのレコード自体を削除する.
     //
     // @param {String} パスワード文字列
     SetPassword (context, payload) {
+      SavePassword(payload, context)
+      /*
       const HHX = require('xxhashjs')
 
       if (payload === '') {
@@ -86,6 +82,7 @@ export default {
           },
           { root: true })
       }
+      */
     }
   }
 }

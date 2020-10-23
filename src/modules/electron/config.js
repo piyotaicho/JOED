@@ -11,7 +11,7 @@ export async function SaveConfig (payload) {
 }
 
 export async function LoadPassword () {
-  return await ipcLoadConfig('Password', { Password: '' })
+  return (await ipcLoadConfig('Password', { Password: '' })).Password
 }
 
 export async function SavePassword (payload) {

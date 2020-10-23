@@ -11,28 +11,32 @@ import ViewEditItemProcedure from '@/views/VEditItemProcedure'
 import ViewEditItemAE from '@/views/VEditItemAE'
 
 import ViewUtilites from '@/views/VUtilities'
-import ViewAbout from '@/views/VAbout'
+// import ViewAbout from '@/views/VAbout'
 import ViewSettings from '@/views/VSettings'
 import ViewExport from '@/views/VExport'
 import ViewImport from '@/views/VImport'
+import Store from '@/store/index'
 
 Vue.use(VueRouter)
 
 const routes = [
   {
+    name: 'login',
     path: '/',
     component: ViewLogin
   },
   {
     name: 'list',
     path: '/list',
-    component: ViewList
+    component: ViewList,
+    meta: { requireLogin: true }
   },
   {
     name: 'edit',
     path: '/edit/:uid',
     component: ViewEditCase,
     props: true,
+    meta: { requireLogin: true },
     children: [
       {
         name: 'diagnosis',
@@ -58,6 +62,7 @@ const routes = [
     name: 'utilities',
     path: '/utilities',
     component: ViewUtilites,
+    meta: { requireLogin: true },
     children: [
       {
         name: 'export',
@@ -68,23 +73,32 @@ const routes = [
         name: 'import',
         path: 'import',
         component: ViewImport
-      },
-      {
-        name: 'about',
-        path: 'about',
-        component: ViewAbout
       }
     ]
   },
   {
     name: 'settings',
     path: '/settings',
-    component: ViewSettings
+    component: ViewSettings,
+    meta: { requireLogin: true }
   }
 ]
 
 const router = new VueRouter({
+  mode: 'hash',
   routes
+})
+
+router.beforeEach((to, from, next) => {
+  if (to.path !== '/') {
+    if (Store.getters['password/isAuthenticated']) {
+      next()
+    } else {
+      next('/')
+    }
+  } else {
+    next()
+  }
 })
 
 export default router

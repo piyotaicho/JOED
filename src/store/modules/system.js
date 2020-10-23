@@ -19,6 +19,12 @@ export default {
     EnabledNCDId: true
   },
   getters: {
+    ApplicationName () {
+      return 'JOED5'
+    },
+    ApplicationVersion () {
+      return process.env.VUE_APP_VERSION
+    },
     InstituteInformation (state) {
       return {
         InstitutionName: state.InstitutionName,

@@ -22,7 +22,7 @@ export async function LoadPassword (storecontext) {
       Query: { Password: { $exists: true } }
     },
     { root: true }
-  ).then(passworddocument => passworddocument === null ? '' : passworddocument)
+  ).then(passworddocument => passworddocument === null ? '' : passworddocument.Password)
 }
 
 export async function SavePassword (payload, storecontext) {

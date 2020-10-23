@@ -4,7 +4,7 @@
       <img src="@/assets/JOED5logo.png" alt="[JOED5]">
     </div>
     <div class="w70" id="auth">
-      <div class="title-section">JOED version 5DEV</div>
+      <div class="title-section">{{Title}}</div>
 
       <div>
         <label>
@@ -28,14 +28,21 @@ export default {
   data () {
     return ({
       Password: '',
-      LoginFailed: false,
-      StateLess: false
+      LoginFailed: false
+      // StateLess: false
     })
   },
   created () {
     // 認証が設定の有無を確認
-    this.$store.dispatch('password/Authenticate', { PasswordString: '' })
-      .then(() => { this.StateLess = !this.$store.getters['password/isPasswordRequired'] })
+    this.$store.dispatch('password/Authenticate', { PasswordString: '' }).catch(_ => {})
+  },
+  computed: {
+    Title () {
+      return this.$store.getters['system/ApplicationName'] +
+        ' version ' +
+        this.$store.getters['system/ApplicationVersion']
+    },
+    StateLess () { return !this.$store.getters['password/isPasswordRequired'] }
   },
   methods: {
     PerformAuthentication () {
