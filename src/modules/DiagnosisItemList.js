@@ -277,7 +277,7 @@ export default class DiagnosisMaster extends SelectionTree {
         その他: [
           // 2020 削除
           {
-            Text: '上記以外の悪性腫瘍',
+            Text: '上記以外の悪性疾患',
             VaildTo: '2019'
           },
           // 2020 新規
@@ -343,7 +343,7 @@ export default class DiagnosisMaster extends SelectionTree {
       },
       卵管鏡: {
         卵管: [
-          '卵管閉鎖',
+          '卵管閉塞',
           '卵管狭窄',
           '機能性不妊',
           '卵管留水(血)症'

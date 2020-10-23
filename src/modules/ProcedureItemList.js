@@ -217,7 +217,7 @@ export default class ProcedureMaster extends SelectionTree {
           },
           // 2020 削除
           {
-            Text: 'SecondLookOperation',
+            Text: 'Second Look Operation',
             VaildTo: '2019'
           },
           {
@@ -284,7 +284,7 @@ export default class ProcedureMaster extends SelectionTree {
           },
           // 2020 削除
           {
-            Text: 'SecondLookOperation',
+            Text: 'Second Look Operation',
             VaildTo: '2019'
           },
           // 2020 新規
@@ -356,7 +356,7 @@ export default class ProcedureMaster extends SelectionTree {
           '治療のために開腹手術へ移行(合併症を除く)',
           // 2020 削除
           {
-            Text: 'SecondLookOperation',
+            Text: 'Second Look Operation',
             VaildTo: '2019'
           },
           '術後合併症の修復術'
@@ -405,7 +405,7 @@ export default class ProcedureMaster extends SelectionTree {
           '治療のために開腹手術へ移行(合併症を除く)',
           // 2020 削除
           {
-            Text: 'SecondLookOperation',
+            Text: 'Second Look Operation',
             VaildTo: '2019'
           },
           '術後合併症の修復術',
