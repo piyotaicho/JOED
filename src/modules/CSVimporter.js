@@ -1,9 +1,7 @@
 import ProcedureTimeSelections from '@/modules/ProcedureTimes'
 
-// eslint-disable-next-line no-unused-vars
 const RecordError = new Error('レコードの様式が不適合です.')
 
-// eslint-disable-next-line no-unused-vars
 function phraseCSV (loadeddocument) {
   const rows = []
 
@@ -42,7 +40,6 @@ function phraseCSV (loadeddocument) {
   return (rows)
 }
 
-// eslint-disable-next-line no-unused-vars
 export function phraseTitledCSV (loadeddocument) {
   const doc = phraseCSV(loadeddocument)
 
@@ -57,24 +54,18 @@ export function phraseTitledCSV (loadeddocument) {
   })
 }
 
-// eslint-disable-next-line no-unused-vars
 export function CreateDocument (record) {
   const CaseData = {
     Imported: true,
     Notification: 'インポートされたデータです.編集画面で確認後に再保存が必要です.\n'
   }
 
-  try {
-    DateOfProcedure(record, CaseData)
-    BasicInformation(record, CaseData)
-    ProcedureTime(record, CaseData)
-    DiagnosesAndProceduresPrimary(record, CaseData)
-    DiagnosesAndProceduresSecondary(record, CaseData)
-    AEs(record, CaseData)
-  } catch (errors) {
-    console.log(errors)
-    return undefined
-  }
+  DateOfProcedure(record, CaseData)
+  BasicInformation(record, CaseData)
+  ProcedureTime(record, CaseData)
+  DiagnosesAndProceduresPrimary(record, CaseData)
+  DiagnosesAndProceduresSecondary(record, CaseData)
+  AEs(record, CaseData)
 
   return CaseData
 }
@@ -96,7 +87,7 @@ function DateOfProcedure (Record, CaseData) {
     CaseData.DateOfProcedure = Record['手術年'] + '-01-01'
     return
   }
-  throw RecordError
+  throw new Error('手術日もしくは手術年がありません.')
 }
 
 function BasicInformation (Record, CaseData) {
@@ -105,7 +96,17 @@ function BasicInformation (Record, CaseData) {
   if (Record['年齢']) { CaseData.Age = Record['年齢'] }
   if (Record['症例別腫瘍登録番号']) { CaseData.JSOGId = Record['症例別腫瘍登録番号'] }
 
-  // 患者IDを設定
+  // UniqueIDを設定
+  if (Record['内部ID']) {
+    const internalid = Record['内部ID'].split('_')
+    CaseData.UniqueID = [
+      internalid[0], // 施設番号
+      CaseData.DateOfProcedure.substr(0, 4),
+      internalid[1] // 連番
+    ].join('-')
+  }
+
+  // 患者IDを設定もしくは生成
   if (Record.ID) {
     CaseData.PatientId = Record.ID
     return
@@ -114,7 +115,7 @@ function BasicInformation (Record, CaseData) {
     CaseData.PatientId = CaseData.DateOfProcedure.substr(0, 4) + Record['内部ID'].substr(5)
     return
   }
-  throw RecordError
+  CaseData.PatientId = 'I-' + Number(new Date()).toString()
 }
 
 function ProcedureTime (Record, CaseData) {
@@ -129,17 +130,27 @@ function ProcedureTime (Record, CaseData) {
       return
     }
   }
-  throw RecordError
+  throw new Error('手術時間の様式が不正です.')
 }
 
 function DiagnosesAndProceduresPrimary (Record, CaseData) {
   CaseData.Diagnoses = []
   CaseData.Procedures = []
 
+  if ([
+    Record['腹腔鏡術後診断'].trim(),
+    Record['子宮鏡術後診断'].trim(),
+    Record['卵管鏡術後診断'].trim()
+  ].filter(item => item).length !== 1) throw RecordError
+  if ([
+    Record['腹腔鏡施行手術'],
+    Record['子宮鏡施行手術'],
+    Record['卵管鏡施行手術']
+  ].filter(item => item).length !== 1) throw RecordError
+
   // 主たる診断・術式を設定
   // JOEDの不明な仕様で、空の腹腔鏡術後診断にはなぜか空白がはいるためtrimする
   if (Record['腹腔鏡術後診断'].trim()) {
-    const typeofselection =
     CaseData.Diagnoses.push(handleUserTyped(
       Record['良性悪性_病名'] === '良性' ? '腹腔鏡' : '腹腔鏡悪性',
       Record['腹腔鏡術後診断'], Record['腹腔鏡術後診断その他'])
@@ -148,7 +159,7 @@ function DiagnosesAndProceduresPrimary (Record, CaseData) {
     CaseData.Procedures.push(
       laparoProcedure(
         Record['腹腔鏡施行手術'], Record['腹腔鏡施行手術その他'],
-        typeofselection,
+        Record['良性悪性_病名'] === '良性' ? '' : '悪性',
         Record['リンパ節郭清'], Record['大網生検']
       )
     )
@@ -269,17 +280,18 @@ function laparoProcedure (procedure = '', typedprocedure = '', typeofselection =
 
   if (procedure.trim()) {
     const temporaryObject = {}
-    temporaryObject.Chain = [category + typeofselection.trim()]
+    temporaryObject.Chain = [category + typeofselection]
     if (procedure.trim() === 'その他') {
       temporaryObject.Text = typedprocedure.trim()
       temporaryObject.UserTyped = true
     } else {
       temporaryObject.Text = CharacterReplacer(procedure.trim())
-      if (lymphadnectomy) {
-        if (translation.lymph[lymphadnectomy.trim()] && translation.lymph[lymphadnectomy.trim()].substr(-1, 1) !== '$') {
+      const translatedlymph = translation.lymph[lymphadnectomy.trim()]
+      if (lymphadnectomy.trim()) {
+        if (translatedlymph && translatedlymph.substr(-1, 1) !== '$') {
           temporaryObject.AdditionalProcedure = {
             Text: category === 'ロボット' ? 'ロボット支援下リンパ節生検・郭清' : '腹腔鏡下リンパ節生検・郭清',
-            Description: [translation.lymph[lymphadnectomy.trim()]]
+            Description: [translatedlymph]
           }
         }
       }

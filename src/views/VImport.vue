@@ -16,12 +16,12 @@
     </div>
 
     <el-collapse-transition>
-      <div class="export-progression" v-show="ProcessStep">
+      <div class="progression" v-show="ProcessStep">
         <el-steps :active="ProcessStep" process-status="warning" finish-status="success" direction="vertical" space="42px">
           <el-step title="入力ファイルのフォーマット検証とフィールドの割り当て">
             <template #description>
               <span>ファイル中に{{InFile.length}}件のデータがあります.<br/></span>
-              <span v-if="FileIsLabeled">指定のファイルは提出用データです.患者IDは登録番号から自動生成されます.</span>
+              <span v-if="DeIdentified">指定のファイルは提出用データです.患者IDは登録番号から自動生成されます.</span>
             </template>
           </el-step>
           <el-step title="レコードの検証">
@@ -31,7 +31,7 @@
           </el-step>
           <el-step title="登録" v-show="ProcessStep === 3">
             <template #description>
-              <el-progress :percentage="ImportPercentage"></el-progress>
+              <el-progress :percentage="ImportProgress"></el-progress>
             </template>
           </el-step>
         </el-steps>
@@ -55,25 +55,31 @@ export default {
     return ({
       Processing: false,
       ProcessStep: 0,
-      ImportPercentage: 0,
+      ImportProgress: 0,
       InFile: [],
-      FileIsLabeled: false,
+      DeIdentified: false,
       ReadyToRegister: false,
       QueryDocuments: []
     })
   },
   methods: {
+    ResetState () {
+      this.Processing = false
+      this.ProcessStep = 0
+      this.ReadyToRegister = false
+      this.InFile.splice(0)
+      this.QueryDocuments.splice(0)
+    },
     LoadFile (eventvalue) {
       const records = phraseTitledCSV(eventvalue)
       this.InFile.splice(0)
       if ((Array.isArray(records) && records.length > 0) &&
         (records[0]['内部ID'] && records[0]['手術時間'])) {
-        // 一応適正なドキュメントとして扱う
-        this.FileIsLabeled = !records[0].ID
+        this.DeIdentified = !records[0].ID
         Object.assign(this.InFile, records)
       } else {
-        Popups.alert('指定されたファイルは適切な JOED ver 4 の mergeファイルではありません.')
-        this.ReadyToRegister = false
+        Popups.alert('指定されたファイルは 症例登録システムJOE-D version 4 から適切に出力されたmergeファイル(.mer)ではありません.')
+        this.ResetState()
       }
       this.ProcessStep = 0
     },
@@ -82,35 +88,46 @@ export default {
       try {
         this.ProcessStep = 1
         for (const record of this.InFile) {
-          // console.log(record)
-          const createddocument = CreateDocument(record)
-          if (createddocument) {
+          try {
+            const createddocument = CreateDocument(record)
             this.QueryDocuments.push(createddocument)
-          } else {
-            Popups.alert('指定されたファイル中に不適切なレコードがあります.')
+          } catch (error) {
+            if (!Popups.confirm('指定されたファイル中に不適切なレコードがあります.\n残りの処理を続行しますか?')) {
+              throw new Error('不適切なレコード\n', JSON.stringify(record))
+            }
           }
         }
-
         this.ProcessStep = 2
         this.ReadyToRegister = true
       } catch (error) {
         console.log(error)
+        this.ResetState()
       }
     },
     async CommitImported () {
       this.ProcessStep = 3
-      this.ImportPercentage = 0
+      this.ImportProgress = 0
       this.Processing = true
-      let processedDocuments = 0
+      let count = 0
+      const errors = []
+
       for (const newdocument of this.QueryDocuments) {
-        try {
-          await this.$store.dispatch('UpsertDocument', newdocument)
-          this.ImportPercentage = Math.round(++processedDocuments * 100 / this.QueryDocuments.length)
-        } catch (error) {
-          Popups.alert(error)
-        }
+        await this.$store.dispatch('UpsertDocument', newdocument)
+          .then(_ => { this.ImportProgress = Math.round(++count * 100 / this.QueryDocuments.length) })
+          .catch(error => errors.push(error.Message || error + '\n' + JSON.stringify(newdocument)))
       }
-      this.Processing = false
+
+      let message = count + ' 例を登録しました.'
+      if (errors.length > 0) {
+        console.log(errors)
+        message += '\n' + errors.length + ' 件の登録に失敗しました.(重複登録の可能性があります.)'
+        Popups.alert(message)
+      } else {
+        Popups.information(message)
+      }
+
+      // ステータスをリセットする
+      this.ResetState()
     }
   }
 }

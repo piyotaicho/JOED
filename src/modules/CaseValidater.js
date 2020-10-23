@@ -1,11 +1,20 @@
-import DaignosisTree from '@/modules/DiagnosisItemList'
-import ProcedureMaster from '@/modules/ProcedureItemList'
+import DaignosisMaster from '@/modules/Masters/DiagnosisItemList'
+import ProcedureMaster from '@/modules/Masters/ProcedureItemList'
+
+// 日付の表記
+export const DateFormat = /^20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/g
+
+// 施設番号の表記
+export const InstituteIDFormat = /^(0[1-9]|[1-3]\d|4[0-7])\d{3}$/g
+
+// UniqueIDの表記
+export const UniqueIDFormat = /^(0[1-9]|[1-3]\d|4[0-7])\d{3}-20\d{2}-[0-9]\d*/g
 
 // 2020年時点の日産腫瘍登録患者No.表記
-const JSOGboardCaseNoFormat = /^(CC|EM|US|UAS|OV|VU|TS)20\d{2}-\d+$/ig
+export const JSOGboardCaseNoFormat = /^(CC|EM|US|UAS|OV|VU|TS)20\d{2}-\d+$/ig
 
 // NCDの症例識別コード
-const NCDIdFormat = /\d{18}-\d{2}-\d{2}-\d{2}/g
+export const NCDIdFormat = /\d{18}-\d{2}-\d{2}-\d{2}/g
 
 // カテゴリチェック(診断のカテゴリに集約する)のテーブル
 export const CategoryTranslation = {
@@ -90,10 +99,11 @@ export async function ValidateCase (item = {}) {
 //
 export async function CheckBasicInformations (item) {
   return new Promise((resolve, reject) => {
-    if (item.Age > 0 && item.Age < 130 &&
+    if (
       item.PatientId &&
-      item.DateOfProcedure.match(/^20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/) &&
-      item.ProcedureTime
+      item.DateOfProcedure.match(DateFormat) &&
+      item.ProcedureTime &&
+      (!item.Age || (item.Age > 0 && item.Age < 130))
     ) {
       resolve()
     } else {
@@ -177,7 +187,7 @@ export async function CheckDupsInDiagnoses (item) {
 // 術後診断の重複確認と年次ツリーとの整合性検証
 //
 export async function ValidateDiagnoses (item, year) {
-  const tree = new DaignosisTree()
+  const tree = new DaignosisMaster()
   return new Promise((resolve, reject) => {
     const promiseArray = [new Promise(resolve => {
       CheckDupsInDiagnoses(item)
