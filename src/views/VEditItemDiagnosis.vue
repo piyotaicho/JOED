@@ -48,7 +48,7 @@
 
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
-import DiagnosisMaster from '@/modules/DiagnosisItemList'
+import DiagnosisMaster from '@/modules/Masters/DiagnosisItemList'
 import { getMatchesInDiagnoses } from '@/modules/CloseMatches'
 import Popups from 'depmodules/Popups'
 

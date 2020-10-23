@@ -13,6 +13,9 @@
       <el-tab-pane label="表示の設定" name="view">
         <SettingOfView></SettingOfView>
       </el-tab-pane>
+      <el-tab-pane label="ライセンス表記" name="about">
+        <About></About>
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -21,11 +24,12 @@
 import SettingOfInstutute from '@/components/SettingOfInstitute'
 import SettingOfAuthentication from '@/components/SettingOfAuthentication'
 import SettingOfView from '@/components/SettingOfView'
+import About from '@/components/About'
 
 export default {
   name: 'ViewSettings',
   components: {
-    SettingOfInstutute, SettingOfAuthentication, SettingOfView
+    SettingOfInstutute, SettingOfAuthentication, SettingOfView, About
   },
   data () {
     return ({

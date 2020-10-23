@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 export default class CaseDocumentHandler {
   // データベースの項目
   // Diagnoses - Array - String/Hash
@@ -96,7 +95,6 @@ export default class CaseDocumentHandler {
   // @Param Object
   static exportCase (
     item = {},
-    InstituteId = '99999',
     params = {
       spliceDateOfProcedure: false,
       exportAllfields: false
@@ -104,25 +102,20 @@ export default class CaseDocumentHandler {
   ) {
     const temporaryItem = {}
     const propsToExport = [
+      'UniqueID',
       'Age', 'JSOGId', 'NCDId',
       'ProcedureTime', 'PresentAE', 'TypeOfProcedure',
       'Imported'
     ]
 
     if (!params.spliceDateOfProcedure) {
-      propsToExport.splice(3, 0, 'DateOfProcedure')
+      propsToExport.splice(4, 0, 'DateOfProcedure')
     }
 
     if (params.exportAllfields) {
-      propsToExport.splice(3, 0, 'PatientId', 'Name')
+      propsToExport.splice(4, 0, 'PatientId', 'Name')
       params.spliceDateOfProcedure = false
     }
-
-    temporaryItem.UniqueID = [
-      InstituteId,
-      item.DateOfProcedure.substring(0, 4),
-      item.DocumentId
-    ].join('-')
 
     for (const prop of propsToExport) {
       if (item[prop] !== undefined) {

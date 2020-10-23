@@ -2,7 +2,7 @@
   <div>
     <select v-model="SelectedValue">
       <option v-for="(value, name) of Selections" :key="value" :value="name">{{name}}年 ({{value}}件)</option>
-      <option value="">すべて</option>
+      <option value="" v-if="acceptAll">すべて</option>
     </select>
   </div>
 </template>
@@ -15,7 +15,8 @@ export default {
     event: 'update'
   },
   props: {
-    value: { required: true }
+    value: { required: true },
+    acceptAll: { type: Boolean, default: true }
   },
   data () {
     return ({

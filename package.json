@@ -4,11 +4,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "serve": "vue-cli-service serve --modern",
+    "build": "vue-cli-service build --modern",
     "lint": "vue-cli-service lint",
-    "electron:build": "vue-cli-service electron:build --mode electron",
-    "electron:serve": "vue-cli-service electron:serve --mode electron",
+    "electron:build": "vue-cli-service electron:build --modern --mode electron",
+    "electron:serve": "vue-cli-service electron:serve --modern --mode electron",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"
   },

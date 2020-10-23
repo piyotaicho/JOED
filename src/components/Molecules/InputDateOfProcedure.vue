@@ -43,12 +43,14 @@ export default {
     DateOfProcedure: {
       get () { return this.value },
       set (newvalue) {
-        // Datepickerから渡されるnewvalueはISO datestrなので整形が必要
-        const dateobj = new Date(newvalue)
-        const datestr = dateobj.getFullYear() + '-' +
-          ('0' + (dateobj.getMonth() + 1)).slice(-2) + '-' +
-          ('0' + dateobj.getDate()).slice(-2)
-        this.$emit('input', datestr)
+        if (newvalue) {
+          // Datepickerから渡されるnewvalueはISO datestrなので整形が必要
+          const dateobj = new Date(newvalue)
+          const datestr = dateobj.getFullYear() + '-' +
+            ('0' + (dateobj.getMonth() + 1)).slice(-2) + '-' +
+            ('0' + dateobj.getDate()).slice(-2)
+          this.$emit('input', datestr)
+        }
       }
     },
     RequiredClass () {

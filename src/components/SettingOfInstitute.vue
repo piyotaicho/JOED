@@ -15,13 +15,12 @@
       <el-button type="primary" @click="ListInstitutes" :disabled="InstitutionName === '' || InstitutionID !== ''">施設名から検索</el-button>
     </div>
     <el-collapse-transition>
-      <div v-if="InstituteListView">
+      <div v-if="ShowList">
         <el-table
           :data="InstituteList"
           @row-click="SetInstituteProperties"
           height="300"
           style="width: 80%; border-radius: 5px;"
-          v-loading="InstituteListLoading"
           >
           <el-table-column
             label="所在"
@@ -45,7 +44,7 @@
       title="日産婦の腫瘍登録施設番号"
       placeholder="設定なし" />
     <div>
-      <el-button type="primary" @click="CommitSettings" :disabled="!Validation">上記設定を保存</el-button>
+      <el-button type="primary" @click="CommitSettings" :disabled="!ReadyToCommit">上記設定を保存</el-button>
     </div>
   </div>
 </template>
@@ -53,6 +52,8 @@
 <script>
 import InputTextField from '@/components/Molecules/InputTextField'
 import Popups from 'depmodules/Popups'
+import { ListOfInstitutions, ListOfPrefectures } from '@/modules/Masters/InstituteList'
+import { InstituteIDFormat } from '@/modules/CaseValidater'
 
 export default {
   name: 'SettingOfInstutute',
@@ -65,71 +66,74 @@ export default {
       InstitutionID: '',
       JSOGoncologyboardID: '',
       InstituteList: [],
-      InstituteListView: false,
-      InstituteListLoading: true
+      ShowList: false,
+      Preserve: ''
     })
   },
   created () {
-    const self = this
-
-    this.$store.dispatch('system/LoadPreferences').then(_ => {
-      const settings = self.$store.getters['system/InstituteInformation']
-      self.InstitutionName = settings.InstitutionName
-      self.InstitutionID = settings.InstitutionID
-      self.JSOGoncologyboardID = settings.JSOGoncologyboardID
-    })
-  },
-  watch: {
-    InstituteList: { handler: _ => {}, deep: true }
+    this.$store.dispatch('system/LoadPreferences')
+      .then(_ => {
+        const settings = this.$store.getters['system/InstituteInformation']
+        this.InstitutionName = settings.InstitutionName
+        this.InstitutionID = settings.InstitutionID
+        this.JSOGoncologyboardID = settings.JSOGoncologyboardID
+      })
+      .then(_ => {
+        this.Preserve = JSON.stringify(
+          [
+            this.InstitutionName,
+            this.InstitutionID,
+            this.JSOGoncologyboardID
+          ])
+      })
   },
   computed: {
-    Validation () {
-      return this.InstitutionName.trim() !== '' && this.InstitutionID.match(/[0-9]{5}/) !== null
+    ReadyToCommit () {
+      return this.InstitutionName.trim() !== '' &&
+        this.InstitutionID.trim() !== '' &&
+        this.Preserve !== JSON.stringify(
+          [
+            this.InstitutionName,
+            this.InstitutionID,
+            this.JSOGoncologyboardID
+          ])
     }
   },
   methods: {
     ListInstitutes () {
       this.InstituteList.splice(0)
+      this.ShowList = true
 
       if (this.InstitutionName.trim() === '') return
 
-      const [, search, , , pref] = /([^@＠]+)(([@＠](.+))|)/.exec(this.InstitutionName.trim())
+      // @県名 でもリストできる.
+      const [, search, , , pref] = /^([^@＠]*)(([@＠](.+))|)/.exec(this.InstitutionName.trim())
 
-      if (search === '') return
+      if (search === '' && pref === '') return
 
-      this.InstituteListView = true
-      this.InstituteListLoading = true
-
-      import('@/modules/InstituteList').then((list) => {
-        let prefecturesMatch = ''
-        if (pref) {
-          const matched = []
-          for (const index in list.ListOfPrefectures) {
-            if (list.ListOfPrefectures[index].match(pref)) {
-              matched.push(('0' + (Number(index) + 1).toString(10)).slice(-2))
-            }
-          }
-          if (matched.length > 0) {
-            prefecturesMatch = '^(' + matched.join('|') + ')'
-          }
+      let prefecturesMatch = ''
+      if (pref) {
+        const matched = ListOfPrefectures
+          .map((item, index) => item.match('^' + pref)
+            ? ('0' + (Number(index) + 1).toString(10)).slice(-2)
+            : undefined
+          )
+          .filter(item => item)
+        if (matched.length > 0) {
+          prefecturesMatch = '^(' + matched.join('|') + ')'
         }
+      }
 
-        const filterdItems = list.ListOfInstitutions.filter(item => {
-          if (!prefecturesMatch || item.ID.match(prefecturesMatch)) {
-            return !!item.name.match(search)
-          }
-          return false
+      const filteredlist = ListOfInstitutions
+        .filter(item =>
+          (!prefecturesMatch || item.ID.match(prefecturesMatch)) && !!item.name.match(search)
+        )
+        .map(item => {
+          item.Prefecture = ListOfPrefectures[Number(item.ID.substr(0, 2)) - 1]
+          return item
         })
 
-        if (filterdItems.length > 0) {
-          this.InstituteList.splice(0, 0, ...filterdItems.map(item => {
-            item.Prefecture = list.ListOfPrefectures[Number(item.ID.substr(0, 2)) - 1]
-            return item
-          }))
-        }
-
-        this.InstituteListLoading = false
-      })
+      this.InstituteList.splice(0, 0, ...filteredlist)
     },
 
     SetInstituteProperties (instituteProperties) {
@@ -139,18 +143,19 @@ export default {
       this.InstituteListView = false
     },
 
-    CommitSettings () {
+    async CommitSettings () {
       if (this.InstitutionName !== '' && this.InstitutionID !== '') {
-        if (this.InstitutionID.match(/^\d{5}$/g) !== null) {
+        if (this.InstitutionID.match(InstituteIDFormat) !== null) {
           this.$store.commit('system/SetPreferences',
             {
               InstitutionName: this.InstitutionName,
               InstitutionID: this.InstitutionID,
               JSOGoncologyboardID: this.JSOGoncologyboardID
             })
-          this.$store.dispatch('system/SavePreferences')
+          await this.$store.dispatch('system/SavePreferences')
+          Popups.information('設定を保存しました.')
         } else {
-          Popups.alert('施設IDは5桁の数字です.')
+          Popups.alert('施設IDを確認してください.')
         }
       }
     }

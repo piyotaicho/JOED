@@ -10,7 +10,7 @@
             <option value="Name">患者名</option>
             <option value="Procedures">手術診断</option>
             <option value="Diagnoses">実施手術</option>
-            <option value="UID">問い合わせ番号</option>
+            <option value="QID">問い合わせ番号</option>
           </select>
         </div>
       </div>
@@ -36,6 +36,7 @@
 
 <script>
 import InputSwitchField from '@/components/Molecules/InputSwitchField'
+import { UniqueIDFormat } from '@/modules/CaseValidater'
 
 const SearchSetting = {
   Id: {
@@ -116,10 +117,10 @@ const SearchSetting = {
           $where: function () {
             return this.Procedures
               .filter(
-                item => item.Text.match(queryRegex) !== null ||
+                item => queryRegex.test(item.Text) ||
                 (
                   item.AdditionalProcedure &&
-                  item.AdditionalProcedure.Text.match(queryRegex) !== null
+                  query.RegEx(item.AdditionalProcedure.Text)
                 )
               )
               .length > 0
@@ -142,19 +143,15 @@ const SearchSetting = {
       }
     }
   },
-  UID: {
+  QID: {
     regexp: false,
     multiple: true,
     createquery: (query) => {
-      const queryRegex = new RegExp(/^20[0-9]{2}-(0[1-9]|[1-3][0-9]|4[0-7])\d{3}-([0-9]+)$/g)
-      let queries = query.split(/[\s,，]+/)
-
-      queries = queries
-        .filter(query => query.match(queryRegex) !== null)
-        .map(value => Number(value.replace(queryRegex, '$2')))
+      const queryRegex = new RegExp(UniqueIDFormat)
+      const queries = query.split(/[\s,，]+/).filter(query => queryRegex.test(query))
 
       if (queries.length > 0) {
-        return { DocumentId: { $in: [...queries] } }
+        return { UniqueID: { $in: [...queries] } }
       } else {
         return null
       }

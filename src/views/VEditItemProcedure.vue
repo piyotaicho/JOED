@@ -76,7 +76,7 @@
 
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
-import ProcedureMaster from '@/modules/ProcedureItemList'
+import ProcedureMaster from '@/modules/Masters/ProcedureItemList'
 import { getMatchesInProcedures } from '@/modules/CloseMatches'
 import Popups from 'depmodules/Popups'
 

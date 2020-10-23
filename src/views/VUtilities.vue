@@ -18,11 +18,13 @@ export default {
     return ({
       Tabs: {
         データ出力: 'export',
-        データ読み込み: 'import',
-        JOED5について: 'about'
+        データ読み込み: 'import'
       },
-      SelectedTabName: 'export'
+      SelectedTabName: ''
     })
+  },
+  created () {
+    this.SelectedTabName = this.$route.name
   },
   computed: {
     SelectedTab: {
@@ -31,7 +33,7 @@ export default {
       },
       set (value) {
         this.SelectedTabName = value
-        this.$router.push({ name: value })
+        this.$router.push({ name: value }).catch(_ => {})
       }
     }
   },
