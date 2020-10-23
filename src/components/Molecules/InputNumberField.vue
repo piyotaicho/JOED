@@ -55,7 +55,7 @@ export default {
       }
     },
     AdditionalClass () {
-      return !this.value ? 'vacant' : ''
+      return (!this.value && this.required) ? 'vacant' : ''
     }
   },
   methods: {

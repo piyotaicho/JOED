@@ -13,7 +13,7 @@
           <InputTextField title="NCD症例識別コード" v-model="CaseData.NCDId" placeholder="NCD症例識別コード"/>
           <div> <!-- spacer -->
           </div>
-          <InputNumberField title="年齢" :required="true" v-model="CaseData.Age" :min="1" :max="120"/>
+          <InputNumberField title="年齢" v-model="CaseData.Age" :min="1" :max="120"/>
         </div>
       </div>
 
@@ -103,12 +103,14 @@ export default {
   props: {
     uid: {
       type: [Number, String],
-      required: true
+      required: true,
+      default: 0
     }
   },
   data () {
     return ({
       CaseData: {
+        UniqueID: undefined,
         Name: '',
         Age: undefined,
         PatientId: '',
@@ -125,14 +127,14 @@ export default {
       },
       PrevUid: 0,
       NextUid: 0,
-      Edited: false,
-      Processing: true
+      Processing: true,
+      Preserve: ''
     })
   },
   // DataStoreから既存データの読み込みをする.
   //
   // @prop {uid} DocumentId
-  mounted () {
+  created () {
     if (Number(this.uid) > 0) {
       this.$store.dispatch('FetchDocument', { DocumentId: this.uid })
         .then(_ => {
@@ -151,24 +153,15 @@ export default {
               }
             }
           }
+          this.Preserve = JSON.stringify(this.CaseData)
+
+          this.Processing = false
           this.PrevUid = this.$store.getters.NextUids(this.uid).Prev
           this.NextUid = this.$store.getters.NextUids(this.uid).Next
-
-          this.$nextTick(_ => {
-            this.Processing = false
-            this.Edited = false
-          })
         })
     } else {
       this.Processing = false
-    }
-  },
-  watch: {
-    CaseData: {
-      handler: function () {
-        this.Edited = true
-      },
-      deep: true
+      this.Preserve = JSON.stringify(this.CaseData)
     }
   },
   computed: {
@@ -182,6 +175,9 @@ export default {
     },
     IsEditingExistingItem () {
       return (this.uid > 0)
+    },
+    Edited () {
+      return this.Preserve !== JSON.stringify(this.CaseData)
     }
   },
   methods: {
@@ -243,20 +239,8 @@ export default {
         }
       }
     },
-
     CancelEditing (offset = 0) {
-      const isEmpty =
-        this.CaseData.DateOfProcedure === '' &&
-        this.CaseData.PatientId.trim() === '' &&
-        this.CaseData.Name.trim() === '' &&
-        this.CaseData.ProcedureTime === '' &&
-        this.CaseData.Age === undefined &&
-        this.CaseData.Diagnoses.length === 0 &&
-        this.CaseData.Procedures.length === 0 &&
-        this.CaseData.AEs.length === 0 &&
-        this.CaseData.PresentAE === true
-
-      if (this.Edited === false || isEmpty || Popups.confirm('編集中の項目がありますがよろしいですか?')) {
+      if (this.Edited === false || Popups.confirm('編集中の項目がありますがよろしいですか?')) {
         if (offset === 0) {
           this.GoBackToList(this.uid)
         } else {
@@ -348,9 +332,6 @@ export default {
       try {
         await ValidateCase(newDocument)
         await this.$store.dispatch('UpsertDocument', newDocument)
-      } catch (error) {
-        console.log(error)
-        throw error
       } finally {
         this.Processing = false
       }
