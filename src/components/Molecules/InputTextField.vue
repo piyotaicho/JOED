@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="label"><span>{{title}}</span></div>
+    <div class="label"><slot name="title"><span>{{title}}</span></slot></div>
     <div class="field">
       <input type="text"
         v-model="InputText"
