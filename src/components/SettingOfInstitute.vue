@@ -1,18 +1,37 @@
 <template>
-  <div class="setting-section">
-    <div class="title-section">施設の設定</div>
-    <InputTextField
-      v-model="InstitutionName"
-      title="施設名"
-      placeholder=" 未設定 "
-      :required="true" />
-    <InputTextField
-      v-model="InstitutionID"
-      title="施設ID"
-      placeholder=" 未設定 "
-      :required="true" />
-    <div>
-      <el-button type="primary" @click="ListInstitutes" :disabled="InstitutionName === '' || InstitutionID !== ''">施設名から検索</el-button>
+  <div class="utility">
+    <!-- <div class="title-section">施設の設定</div> -->
+    <div class="utility-switches">
+      <InputTextField
+        v-model="InstitutionName"
+        title="施設名称"
+        placeholder=" 未設定 "
+        :required="true" />
+
+      <InputTextField
+        v-model="InstitutionID"
+        title="施設番号"
+        placeholder=" 未設定 "
+        :required="true">
+        <template #title>
+          施設番号
+          <el-tooltip placement="bottom-start">
+            <template #content><div>施設名称の一部や、＠に続いて都道府県名で検索してリストから選択が可能です.</div></template>
+            <i class="el-icon-question" style="padding-top: 0.36rem; margin-left: 0.6rem;"/>
+          </el-tooltip>
+        </template>
+      </InputTextField>
+
+      <div>
+        <div class="label"></div>
+        <div class="field">
+          <el-button type="primary"
+            @click="ListInstitutes"
+            :disabled="InstitutionName === '' || InstitutionID !== ''">
+            施設番号を施設名から検索
+          </el-button>
+        </div>
+      </div>
     </div>
     <el-collapse-transition>
       <div v-if="ShowList">
@@ -39,10 +58,13 @@
         </el-table>
       </div>
     </el-collapse-transition>
-    <InputTextField
-      v-model="JSOGoncologyboardID"
-      title="日産婦の腫瘍登録施設番号"
-      placeholder="設定なし" />
+
+    <div class="utility-switches">
+      <InputTextField
+        v-model="JSOGoncologyboardID"
+        title="腫瘍登録施設番号"
+        placeholder="日産婦の腫瘍登録施設番号" />
+    </div>
     <div>
       <el-button type="primary" @click="CommitSettings" :disabled="!ReadyToCommit">上記設定を保存</el-button>
     </div>
@@ -154,6 +176,12 @@ export default {
             })
           await this.$store.dispatch('system/SavePreferences')
           Popups.information('設定を保存しました.')
+          this.Preserve = JSON.stringify(
+            [
+              this.InstitutionName,
+              this.InstitutionID,
+              this.JSOGoncologyboardID
+            ])
         } else {
           Popups.alert('施設IDを確認してください.')
         }

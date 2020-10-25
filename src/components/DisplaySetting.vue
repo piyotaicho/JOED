@@ -97,13 +97,30 @@ export default {
         this.$set(this.Years, year + '年', { Field: 'DateOfProcedure', Value: year })
       })
     })
-    // 現在の表示をインポート
-    const view = this.$store.getters.ViewSettings
-    if (view.Sort) {
-      this.$set(this.Sort, 'Item', view.Sort.Item)
-      this.$set(this.Sort, 'Order', view.Sort.Order)
+    this.ImportSettings()
+  },
+  computed: {
+    isFilterItemsEmpty: {
+      get () {
+        return this.FilterItems.length === 0
+      },
+      set (newvalue) {
+        if (newvalue) {
+          this.FilterItems.splice(0)
+        }
+      }
     }
-    if (view.Filter) {
+  },
+  methods: {
+    ImportSettings () {
+      // 現在の表示をインポート
+      const view = this.$store.getters.ViewSettings
+
+      if (Object.entries(view.Sort).length > 0) {
+        this.$set(this.Sort, 'Item', Object.entries(view.Sort)[0][0])
+        this.$set(this.Sort, 'Order', Object.entries(view.Sort)[0][1])
+      }
+
       const viewfilters = view.Filter.map(filter => {
         switch (filter.Field) {
           case 'TypeOfProcedure':
@@ -120,33 +137,21 @@ export default {
         }
       }).filter(item => item)
       this.FilterItems.splice(0, this.FilterItems.length, ...viewfilters)
-    }
-  },
-  computed: {
-    isFilterItemsEmpty: {
-      get () {
-        return this.FilterItems.length === 0
-      },
-      set (newvalue) {
-        if (newvalue) {
-          this.FilterItems.splice(0)
-        }
-      }
-    }
-  },
-  methods: {
+    },
     Apply () {
-      const FilterObjects = []
-      this.FilterItems.forEach(filter => {
-        const filterobj = this.Categories[filter] || this.Years[filter] || this.Conditions[filter]
-        if (filterobj) {
-          FilterObjects.push(filterobj)
-        }
-      })
-      this.$emit('commit', { Sort: this.Sort, Filter: FilterObjects })
+      const FilterObjects = this.FilterItems
+        .map(filter => this.Categories[filter] || this.Years[filter] || this.Conditions[filter])
+        .filter(filter => filter)
+
+      this.$store.commit('SetFilter', FilterObjects)
+      this.$store.commit('SetSort', { [this.Sort.Item]: this.Sort.Order })
+      this.$emit('changed')
     },
     Revert () {
-      this.$emit('commit')
+      this.$store.commit('SetFilter', [])
+      this.$store.commit('SetSort', {})
+      this.$emit('changed')
+      this.ImportSettings()
     }
   }
 }

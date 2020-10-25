@@ -15,13 +15,13 @@ export default class CaseDocumentHandler {
 
   // 項目に登録された内容を取得する
 
-  static ItemValue (hashObject = {}, $propertyName = 'Text', $depthcount = 3) {
-    if (hashObject[$propertyName]) {
-      return hashObject[$propertyName]
+  static ItemValue (item = {}, $propertyName = 'Text', $depthcount = 3) {
+    if (item[$propertyName]) {
+      return item[$propertyName]
     } else {
       if (--$depthcount) {
-        for (const key in hashObject) {
-          const value = this.ItemValue(hashObject[key], $propertyName, $depthcount)
+        for (const key in item) {
+          const value = this.ItemValue(item[key], $propertyName, $depthcount)
           if (value) {
             return value
           }
@@ -33,14 +33,14 @@ export default class CaseDocumentHandler {
 
   // Chain[0], Chain[1], TEXT の配列を取得する
 
-  static ItemChain (hashObject = {}, $propertyName = 'Text') {
-    if (hashObject.Chain && hashObject[$propertyName]) {
-      return [...hashObject.Chain, this.ItemValue(hashObject, $propertyName)]
+  static ItemChain (item = {}, $propertyName = 'Text') {
+    if (item.Chain && item[$propertyName]) {
+      return [...item.Chain, this.ItemValue(item, $propertyName)]
     }
     return undefined
   }
 
-  static flattenItemList (itemList = [], FlattenToString = false) {
+  static FlattenItemList (itemList = [], $flattenToString = false) {
     const temporaryArray = []
     for (const item in itemList) {
       if (item.Description) {
@@ -49,7 +49,7 @@ export default class CaseDocumentHandler {
           Description: item.Desccription
         })
       } else {
-        if (FlattenToString) {
+        if ($flattenToString) {
           temporaryArray.push(item.Text)
         } else {
           temporaryArray.push({
@@ -61,22 +61,21 @@ export default class CaseDocumentHandler {
     return temporaryArray
   }
 
-  static _flattenHashItem (HashItemArray = []) {
-    const _extract = (hash) => {
-      if (hash.Description) {
-        return {
-          Text: hash.Text,
-          Description: hash.Description
+  static $flattenItem (itemList = []) {
+    function _extract (item) {
+      return (item.Description)
+        ? {
+          Text: item.Text,
+          Description: item.Description
         }
-      } else {
-        return {
-          Text: hash.Text
+        : {
+          Text: item.Text
         }
-      }
     }
+
     const temporaryArray = []
 
-    for (const item of HashItemArray) {
+    for (const item of itemList) {
       temporaryArray.push(_extract(item))
       if (item.AdditionalProcedure) {
         temporaryArray.push(_extract(item.AdditionalProcedure))
@@ -93,7 +92,7 @@ export default class CaseDocumentHandler {
   // @Param Object
   // @Param String
   // @Param Object
-  static exportCase (
+  static ExportCase (
     item = {},
     params = {
       spliceDateOfProcedure: false,
@@ -103,18 +102,19 @@ export default class CaseDocumentHandler {
     const temporaryItem = {}
     const propsToExport = [
       'UniqueID',
-      'Age', 'JSOGId', 'NCDId',
-      'ProcedureTime', 'PresentAE', 'TypeOfProcedure',
-      'Imported'
+      'JSOGId', 'NCDId',
+      'DateOfProcedure', 'ProcedureTime', 'TypeOfProcedure',
+      'PresentAE', 'Imported'
     ]
 
-    if (!params.spliceDateOfProcedure) {
-      propsToExport.splice(4, 0, 'DateOfProcedure')
+    if (params.exportAllfields) {
+      propsToExport.splice(propsToExport.indexOf('DateOfProcedure'), 0,
+        'PatientId', 'Name', 'Age')
+      params.spliceDateOfProcedure = false
     }
 
-    if (params.exportAllfields) {
-      propsToExport.splice(4, 0, 'PatientId', 'Name')
-      params.spliceDateOfProcedure = false
+    if (params.spliceDateOfProcedure) {
+      propsToExport.splice(propsToExport.indexOf('DateOfProcedure'), 1)
     }
 
     for (const prop of propsToExport) {
@@ -123,8 +123,8 @@ export default class CaseDocumentHandler {
       }
     }
 
-    temporaryItem.Diagnoses = this._flattenHashItem(item.Diagnoses)
-    temporaryItem.Procedures = this._flattenHashItem(item.Procedures)
+    temporaryItem.Diagnoses = this.$flattenItem(item.Diagnoses)
+    temporaryItem.Procedures = this.$flattenItem(item.Procedures)
     if (item.AEs) {
       temporaryItem.AEs = Object.assign([], item.AEs)
     }

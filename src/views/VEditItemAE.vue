@@ -6,9 +6,9 @@
           <span>合併症の内容</span>
         </div>
         <div class="w80">
-          <!-- <select :value="Category" @change="Category = $event.target.value, OnCategoryChanged()"> -->
-          <select v-model="Category" @change="OnCategoryChanged()">
-            <option :value="undefined" disabled style="display:none;">クリックしてリストから選択</option>
+          <!-- <select :value="Category" @change="Category = $event.target.value, CategoryChanged()"> -->
+          <select v-model="Category" @change="CategoryChanged()">
+            <option value="" disabled style="display:none;">リストから選択</option>
             <option value="出血">総出血量500ml以上</option>
             <option value="術中手術操作">術中手術操作に伴う合併症・偶発症</option>
             <option value="気腹・潅流操作">気腹・潅流操作に伴う合併症・偶発症</option>
@@ -20,7 +20,7 @@
           </select>
         </div>
       </div>
-      <div class="flex-content" v-show="ShowPerfusionRelated">
+      <div class="flex-content" v-show="showPerfusionRelated">
         <div class="w20 subtitle-section">
           <span>発生した合併症</span>
         </div>
@@ -67,7 +67,7 @@
           </div>
         </div>
       </div>
-      <div class="flex-content" v-show="ShowInjuriesCause">
+      <div class="flex-content" v-show="showInjuriesCause">
         <div class="w20 subtitle-section">
           <span>関連する機器</span>
         </div>
@@ -158,7 +158,7 @@
           </div>
         </div>
       </div>
-      <div class="flex-content" v-show="ShowInjuriesTitle">
+      <div class="flex-content" v-show="showInjuriesTitle">
         <div class="w20 subtitle-section">
           <span>発生した合併症</span>
         </div>
@@ -175,7 +175,7 @@
           </div>
         </div>
       </div>
-      <div class="flex-content" v-show="ShowDrugRelated">
+      <div class="flex-content" v-show="showDrugRelated">
         <div class="w20 subtitle-section">
           <span>関連する薬剤</span>
         </div>
@@ -204,7 +204,7 @@
           </div>
         </div>
       </div>
-      <div class="flex-content" v-show="ShowDrugRelated">
+      <div class="flex-content" v-show="showDrugRelated">
         <div class="w20 subtitle-section">
           <span>発生した合併症</span>
         </div>
@@ -227,7 +227,7 @@
           </label>
         </div>
       </div>
-      <div class="flex-content" v-show="ShowRemnunts">
+      <div class="flex-content" v-show="showRemnunts">
         <div class="w20 subtitle-section">
           <span>遺残したもの</span>
         </div>
@@ -264,7 +264,7 @@
           </div>
         </div>
       </div>
-      <div class="flex-content" v-show="ShowPostoperative">
+      <div class="flex-content" v-show="showPostoperative">
         <div class="w20 subtitle-section">
           <span>合併症の内容</span>
         </div>
@@ -405,7 +405,7 @@
           </div>
         </div>
       </div>
-      <div class="flex-content" v-show="ShowLocations">
+      <div class="flex-content" v-show="showLocations">
         <div class="w20 subtitle-section">
           <span>発生部位</span>
         </div>
@@ -494,19 +494,19 @@
           </div>
         </div>
       </div>
-      <div class="flex-content" v-show="ShowBleedings">
+      <div class="flex-content" v-show="showBleedings">
         <div class="w20 subtitle-section">
           <span>出血量</span>
         </div>
         <div class="w80">
           <div>
-            <input type="text" v-model="AE.BloodCount" :disabled="BloodCountCheckbox" placeholder="出血量を入力してください"/> ml
+            <input type="text" v-model="AE.BloodCount" :disabled="unknownBloodCounts" placeholder="出血量を入力してください"/> ml
           </div>
           <div>
             <label>
               <input type="checkbox"
-                :value="BloodCountCheckbox"
-                @change="OnUnknownBleedingCheck($event)"/>
+                :value="unknownBloodCounts"
+                @change="UnknownBleedCountsChanged($event)"/>
               出血量不明
             </label>
           </div>
@@ -518,7 +518,7 @@
         </div>
         <div class="w80">
           <select v-model="AE.Grade">
-            <option :value="undefined" disabled style="display:none;">クリックしてリストから選択</option>
+            <option value="" disabled style="display:none;">リストから選択</option>
             <option value="1">Grade 1: 正常な術後経過からの逸脱</option>
             <option value="2">Grade 2: 中等症 &nbsp; 輸血および中心静脈栄養を要する場合を含む</option>
             <option value="3a">Grade 3a: 全身麻酔を要さない治療介入を要する</option>
@@ -533,9 +533,9 @@
           <span>転帰</span>
         </div>
         <div class="w80">
-          <div v-show="ShowByGrading(0)"><i class="el-icon-more" style="transform: rotate(90deg)"></i></div>
-          <div v-show="ShowByGrading(1)">
-            <el-divider class="AE" content-position="left">Grade 1-2相当</el-divider>
+          <div v-show="showByGrading(0)"><i class="el-icon-more" style="transform: rotate(90deg)"></i></div>
+          <div ref="grade1" v-show="showByGrading(1)">
+            <el-divider class="AE" content-position="left">Grade 1～2</el-divider>
             <div>
               <label>
                 <input type="checkbox" v-model="AE.Course" value="経過観察">
@@ -556,8 +556,8 @@
             </div>
           </div>
 
-          <div v-show="ShowByGrading(2)">
-            <el-divider class="AE" content-position="left">Grade 2相当</el-divider>
+          <div ref="grade2" v-show="showByGrading(2)">
+            <el-divider class="AE" content-position="left">Grade 2</el-divider>
             <div>
               <label>
                 <input type="checkbox" v-model="AE.Course" value="自己血輸血・術中回収血">
@@ -570,8 +570,8 @@
             </div>
           </div>
 
-          <div v-show="ShowByGrading(3)">
-            <el-divider class="AE" content-position="left">Grade 3相当</el-divider>
+          <div ref="grade3" v-show="showByGrading(3)">
+            <el-divider class="AE" content-position="left">Grade 3</el-divider>
             <div><span>術中の追加手術</span></div>
             <div>
               <label>
@@ -620,7 +620,7 @@
             </div>
           </div>
 
-          <div v-show="ShowByGrading(4)">
+          <div ref="grade4" v-show="showByGrading(4)">
             <el-divider class="AE" content-position="left">Grade 4</el-divider>
             <div>
               <label>
@@ -630,7 +630,7 @@
             </div>
           </div>
 
-          <div v-show="ShowByGrading(5)">
+          <div ref="grade5" v-show="showByGrading(5)">
             <el-divider class="AE" content-position="left">Grade 5</el-divider>
             <div>
               <label>
@@ -677,63 +677,63 @@ export default {
         Grade: '',
         Course: []
       },
-      BloodCountCheckbox: false
+      unknownBloodCounts: false
     }
   },
   computed: {
-    ShowBleedings () {
+    showBleedings () {
       return (this.Category === '出血')
     },
-    ShowPerfusionRelated () {
+    showPerfusionRelated () {
       return (this.Category === '気腹・潅流操作')
     },
-    ShowInjuriesCause () {
+    showInjuriesCause () {
       return (
         (this.Category === '機器の不具合・破損') ||
         (this.Category === '機器の誤操作')
       )
     },
-    ShowInjuriesTitle () {
+    showInjuriesTitle () {
       return (
         (this.Category === '術中手術操作') ||
         (this.Category === '機器の不具合・破損') ||
         (this.Category === '機器の誤操作')
       )
     },
-    ShowDrugRelated () {
+    showDrugRelated () {
       return (this.Category === '術中使用した薬剤')
     },
-    ShowRemnunts () {
+    showRemnunts () {
       return (this.Category === '体腔内遺残')
     },
-    ShowPostoperative () {
+    showPostoperative () {
       return (this.Category === '術後')
     },
-    ShowLocations () {
+    showLocations () {
       return (
         (this.AE.Title.findIndex((s) => s === '臓器損傷') >= 0) ||
         (this.AE.Title.findIndex((s) => s === '出血') >= 0)
       )
     },
-    ShowByGrading () {
+    showByGrading () {
       return value => {
         return this.AE.Grade ? Number(this.AE.Grade[0]) >= (value || undefined) : !value
       }
     }
   },
   methods: {
-    OnCategoryChanged () {
+    CategoryChanged () {
       this.AE.Title.splice(0)
       this.AE.Cause.splice(0)
       this.AE.Location.splice(0)
       this.AE.BloodCount = ''
     },
-    OnUnknownBleedingCheck (event) {
+    UnknownBleedCountsChanged (event) {
       if (event.target.checked) {
-        this.BloodCountCheckbox = true
+        this.unknownBloodCounts = true
         this.AE.BloodCount = '不明'
       } else {
-        this.BloodCountCheckbox = false
+        this.unknownBloodCounts = false
         if (this.AE.BloodCount === '不明') {
           this.AE.BloodCount = ''
         }
@@ -743,57 +743,47 @@ export default {
       this.$router.replace('./')
     },
     CommitChanges () {
-      const validateCatogory = () => {
+      const $validateCatogory = () => {
         switch (this.Category) {
           case '出血':
             return (this.AE.BloodCount.trim === '') ? false
               : (this.AE.BloodCount === '不明' ||
-              ZenToHanNumbers(this.AE.BloodCount).match(/^(\d{2,}|[5-9])\d{2}$/) !== null)
+              ZenToHanNumbers(this.AE.BloodCount).test(/^(\d{2,}|[5-9])\d{2}$/))
           case '気腹・潅流操作':
           case '術後':
-            return !!this.AE.Title.length
+            return this.AE.Title.length
           case '術中使用した薬剤':
           case '体腔内遺残':
-            return !!this.AE.Cause.length
+            return this.AE.Cause.length
           case '機器の不具合・破損':
           case '機器の誤操作':
-            return !!this.AE.Cause.length &&
-              (this.AE.Title.length ? (!!this.AE.Title.length && !!this.AE.Location.length) : true)
+            return this.AE.Cause.length &&
+              (this.AE.Title.length ? (this.AE.Title.length && this.AE.Location.length) : true)
           case '術中手術操作':
-            return !!this.AE.Title.length && !!this.AE.Location.length
+            return this.AE.Title.length && this.AE.Location.length
         }
         return false
       }
 
-      const validateGrade = () => {
-        const GradeCourseMapping = [
-          ['経過観察', '周術期管理の延長', '入院期間の延長', '再入院'],
-          ['経過観察', '周術期管理の延長', '入院期間の延長', '再入院', '自己血輸血・術中回収血', '輸血・血液製剤'],
-          ['術中の追加手術～腹腔鏡', '術中の追加手術～子宮鏡', '術中の追加手術～開腹', '術後の再手術～開腹', '術後の再手術～腹腔鏡', '術後の再手術～子宮鏡', 'そのほか再手術'],
-          ['術中の追加手術～腹腔鏡', '術中の追加手術～子宮鏡', '術中の追加手術～開腹', '術後の再手術～開腹', '術後の再手術～腹腔鏡', '術後の再手術～子宮鏡', 'そのほか再手術'],
-          ['合併症管理のためのICU入室'],
-          ['死亡']
-        ]
+      const $validateGrade = () => {
+        if (this.AE.Grade && this.AE.Course.length > 0) {
+          // 合併症は構造が複雑でマスタ化が困難なのでドキュメントの内容からチェック用マスタを生成する
+          const worstcourses = []
+          this.$refs['grade' + this.AE.Grade.substr(0, 1)].getElementsByTagName('INPUT').forEach(element => worstcourses.push(element.value))
 
-        if (!!this.AE.Grade && !!this.AE.Course.length) {
-          const grade = ['1', '2', '3a', '3b', '4', '5'].findIndex(item => item === this.AE.Grade)
-          if (this.AE.Course.some(course => GradeCourseMapping[grade].findIndex(item => item === course) !== -1)) {
-            const newmap = []
-            for (let i = 0; i <= grade; i++) {
-              newmap.splice(0, 0, ...GradeCourseMapping[i])
-            }
-            return this.AE.Course.every(course => newmap.findIndex(item => item === course) !== -1)
+          for (const course of this.AE.Course) {
+            if (worstcourses.indexOf(course) !== -1) return true
           }
         }
         return false
       }
 
-      if (!validateCatogory()) {
+      if (!$validateCatogory()) {
         Popups.alert('合併症の内容登録に不足があります.')
         return
       }
 
-      if (!validateGrade()) {
+      if (!$validateGrade()) {
         Popups.alert('合併症の程度(グレード)と転帰の内容に不整合があります.')
         return
       }
@@ -803,7 +793,7 @@ export default {
         this.AE.BloodCount = ZenToHanNumbers(this.AE.BloodCount.trim())
       }
       for (const key in this.AE) {
-        if (!!this.AE[key] &&
+        if (this.AE[key] &&
           (Array.isArray(this.AE[key]) ? this.AE[key].length > 0 : true)) {
           filteredItems[key] = this.AE[key]
         }

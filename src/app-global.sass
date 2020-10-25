@@ -173,8 +173,8 @@ div.section
     margin: 1px 8px 2px 42px
     div.section-item
       position: relative
-      background: var(--color-text-placeholder)
-      border-left: var(--color-text-placeholder) 2px solid
+      background: $--color-text-placeholder
+      border-left: $--color-text-placeholder 2px solid
       line-height: 1.5
       padding: 0.5em
       margin-right: 48px
@@ -256,5 +256,34 @@ div.content-bottom
     height: 2.5em
 
 // その他
-div.progression
+div.progress-views
+  margin: 1.5rem 0.7rem
   width: 45rem
+
+div.utility
+  width: 900px
+  padding: 0 3rem
+
+div.utility-switches
+  display: flex
+  flex-direction: column
+  margin-bottom: 1rem
+  div
+    display: flex
+    flex-direction: row
+    margin: 0.4rem 0
+    div.label
+      padding-top: 0.25rem
+      width: 20%
+      font-size: 1.1rem
+      font-weight: bold
+      color: $--color-text-regular
+    div.field
+      width: 80%
+      font-size: 0.5rem
+      color: $--color-text-primary
+  &.wide-label
+    div div.label
+      width: 50%
+    div div.field
+      width: 50%

@@ -19,58 +19,75 @@
 
       <SectionDiagnoses
         :container.sync="CaseData.Diagnoses"
-        @addnewitem="OpenEditView('diagnosis')"
-        @edititem="OpenEditView('diagnosis', $event)"
+        @addnewitem="EditSection('diagnosis')"
+        @edititem="EditSection('diagnosis', $event)"
         @removeitem="RemoveListItem('Diagnoses', $event)"
       />
 
       <SectionProcedures
         :container.sync="CaseData.Procedures"
-        @addnewitem="OpenEditView('procedure')"
-        @edititem="OpenEditView('procedure', $event)"
+        @addnewitem="EditSection('procedure')"
+        @edititem="EditSection('procedure', $event)"
         @removeitem="RemoveListItem('Procedures', $event)"
       />
 
       <SectionAEs
         :container.sync="CaseData.AEs"
         :optionValue.sync="isNoAEs"
-        @addnewitem="OpenEditView('AE')"
+        @addnewitem="EditSection('AE')"
         @removeitem="RemoveListItem('AEs', $event)"
       />
 
       <!-- Controles -->
-      <el-button icon="el-icon-caret-left" size="medium" circle id="MovePrev" v-if="IsEditingExistingItem" :disabled="Processing || !PrevUid" @click="CancelEditing(-1)"></el-button>
-      <el-button icon="el-icon-caret-right" size="medium" circle id="MoveNext" v-if="IsEditingExistingItem" :disabled="Processing || !NextUid" @click="CancelEditing(+1)"></el-button>
+      <el-button icon="el-icon-caret-left" size="medium" circle id="MovePrev"
+        v-if="isEditingExistingItem"
+        :disabled="!prevUid"
+        @click.exact="CancelEditing(-1)"
+        @click.ctrl.shift="CommitCaseAndGo('prev')" />
+      <el-button icon="el-icon-caret-right" size="medium" circle id="MoveNext"
+        v-if="isEditingExistingItem"
+        :disabled="!nextUid"
+        @click.exact="CancelEditing(+1)"
+        @click.ctrl.shift="CommitCaseAndGo('next')" />
 
       <div class="edit-controls">
         <div class="edit-controls-left">
-          <el-button type="warning" icon="el-icon-warning" @click="ShowNotification" v-if="CaseData.Notification">入力内容の確認が必要です.</el-button>
+          <el-button type="warning" icon="el-icon-warning" @click="ShowNotification"
+            v-if="CaseData.Notification">
+            入力内容の確認が必要です.
+          </el-button>
         </div>
         <div class="edit-controls-right">
           <div>
             <el-button type="primary" icon="el-icon-arrow-left" @click="CancelEditing()">戻る</el-button>
           </div>
           <div>
-            <el-dropdown split-button type="primary" @click="CommitCase()" @command="CommitCaseAndGo">
-              編集内容を保存<i class="el-icon-loading" v-if="Processing"/>
+            <el-dropdown split-button type="primary" @click="CommitCaseAndGo()" @command="CommitCaseAndGo">
+              編集内容を保存<i class="el-icon-loading" v-if="processing"/>
+
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="next" v-if="IsEditingExistingItem" :disabled="!NextUid">保存して次へ</el-dropdown-item>
-                <el-dropdown-item command="prev" v-if="IsEditingExistingItem" :disabled="!PrevUid">保存して前へ</el-dropdown-item>
+                <template v-if="isEditingExistingItem">
+                  <el-dropdown-item command="next" :disabled="!nextUid">保存して次へ</el-dropdown-item>
+                  <el-dropdown-item command="prev" :disabled="!prevUid">保存して前へ</el-dropdown-item>
+                </template>
                 <el-dropdown-item command="new">保存して新規作成</el-dropdown-item>
               </el-dropdown-menu>
+
             </el-dropdown>
           </div>
-          <div v-if="IsEditingExistingItem">
+          <div v-if="isEditingExistingItem">
             <el-button type="danger" icon="el-icon-delete" @click="RemoveCase()">削除</el-button>
           </div>
         </div>
       </div>
     </div>
-    <!--モーダルダイアログとしてルーティングを使用する-->
+
+    <!-- ダイアログとしてルーティングを使用 -->
     <div>
       <router-view @data-upsert="EditListItem"></router-view>
     </div>
-    <TheWrapper v-if="Processing"/>
+
+    <TheWrapper v-if="processing"/>
   </div>
 </template>
 
@@ -125,9 +142,9 @@ export default {
         AEs: [],
         Notification: ''
       },
-      PrevUid: 0,
-      NextUid: 0,
-      Processing: true,
+      prevUid: 0,
+      nextUid: 0,
+      processing: true,
       Preserve: ''
     })
   },
@@ -155,12 +172,12 @@ export default {
           }
           this.Preserve = JSON.stringify(this.CaseData)
 
-          this.Processing = false
-          this.PrevUid = this.$store.getters.NextUids(this.uid).Prev
-          this.NextUid = this.$store.getters.NextUids(this.uid).Next
+          this.processing = false
+          this.prevUid = this.$store.getters.NextUids(this.uid).Prev
+          this.nextUid = this.$store.getters.NextUids(this.uid).Next
         })
     } else {
-      this.Processing = false
+      this.processing = false
       this.Preserve = JSON.stringify(this.CaseData)
     }
   },
@@ -173,15 +190,28 @@ export default {
         this.CaseData.PresentAE = !newvalue
       }
     },
-    IsEditingExistingItem () {
+    isEditingExistingItem () {
       return (this.uid > 0)
-    },
-    Edited () {
-      return this.Preserve !== JSON.stringify(this.CaseData)
     }
   },
   methods: {
-    OpenEditView (target, params = {}) {
+    BackToList (uid = Number(this.uid)) {
+      if (uid === 0) {
+        this.$router.push({ name: 'list' })
+      } else {
+        this.$router.push({ name: 'list', hash: ('#case-' + uid) })
+      }
+    },
+    GoAnotherEdit (uid) {
+      if (uid > 0) {
+        this.$router.push({ name: 'edit', params: { uid: uid } })
+      }
+      if (uid === 0) {
+        this.$router.push({ name: 'edit', params: { uid: (this.uid === '0') ? '00' : '0' } })
+      }
+    },
+
+    EditSection (target, params = {}) {
       const index = params.ItemIndex !== undefined ? params.ItemIndex : -1
       const value = params.ItemValue || {}
       const editingYear = this.CaseData.DateOfProcedure.substr(0, 4)
@@ -194,16 +224,9 @@ export default {
         }
       })
     },
-    GoBackToList (hashuid) {
-      if (hashuid === 0) {
-        this.$router.push({ name: 'list' })
-      } else {
-        this.$router.push({ name: 'list', hash: ('#case-' + hashuid) })
-      }
-    },
 
     ShowNotification () {
-      Popups.alert(this.CaseData.Notification)
+      Popups.information(this.CaseData.Notification)
     },
 
     EditListItem (target, index, value) {
@@ -215,7 +238,7 @@ export default {
     RemoveListItem (target, index) {
       this.EditListItem(target, index, '')
     },
-    UpdateList (ListArray, index, value) {
+    UpdateList (list, index, value) {
       const IsObjectEmpty = value =>
         (
           (typeof (value) === 'string' && value === '') ||
@@ -223,52 +246,33 @@ export default {
         )
 
       if (index >= 0) {
-        if (ListArray[index] !== undefined) {
+        if (list[index] !== undefined) {
           // 空データが与えられた場合は当該インデックスを削除
           if (IsObjectEmpty(value)) {
-            ListArray.splice(index, 1)
+            list.splice(index, 1)
           } else {
             // 実データが与えられた場合は当該インデックスの内容を置換する
-            ListArray.splice(index, 1, value)
+            list.splice(index, 1, value)
           }
         }
       } else {
         // インデックスがundefinedもしくは-1の場合は新規項目としてリストに追加する
         if (!IsObjectEmpty(value)) {
-          ListArray.push(value)
+          list.push(value)
         }
       }
     },
-    CancelEditing (offset = 0) {
-      if (this.Edited === false || Popups.confirm('編集中の項目がありますがよろしいですか?')) {
-        if (offset === 0) {
-          this.GoBackToList(this.uid)
-        } else {
-          if (offset < 0 && this.PrevUid !== 0) {
-            this.$router.push({ name: 'edit', params: { uid: this.PrevUid } })
-          }
-          if (offset > 0 && this.NextUid !== 0) {
-            this.$router.push({ name: 'edit', params: { uid: this.NextUid } })
-          }
-        }
-      }
-    },
+
     RemoveCase () {
       if (this.uid > 0 && Popups.confirm('この症例を削除します.よろしいですか?')) {
         this.$store.dispatch('RemoveDocument', { DocumentId: this.uid })
-          .then(_ => this.GoBackToList())
+          .then(_ => this.BackToList(0))
       }
     },
-    CommitCase () {
-      if (this.Processing) {
-        return
-      }
-      this.StoreCase()
-        .then(() => this.GoBackToList(this.uid))
-        .catch(e => Popups.alert(e.message))
-    },
+
     CommitCaseAndGo (to = '') {
-      if (this.Processing) {
+      console.log('CALLED', JSON.stringify(to))
+      if (this.processing) {
         return
       }
       // HACK:
@@ -278,23 +282,37 @@ export default {
         .then(() => {
           switch (to) {
             case 'new':
-              this.$router.push({ name: 'edit', params: { uid: (this.uid === '0') ? '00' : '0' } })
+              this.GoAnotherEdit(0)
               break
             case 'prev':
-              if (this.PrevUid !== 0) this.$router.push({ name: 'edit', params: { uid: this.PrevUid } })
+              if (this.prevUid !== 0) this.GoAnotherEdit(this.prevUid)
               break
             case 'next':
-              if (this.NextUid !== 0) this.$router.push({ name: 'edit', params: { uid: this.NextUid } })
+              if (this.nextUid !== 0) this.GoAnotherEdit(this.nextUid)
               break
             default:
-              this.GoBackToList(this.uid)
+              this.BackToList()
           }
         })
         .catch(e => Popups.alert(e.message))
     },
+    CancelEditing (offset = 0) {
+      if (this.Preserve === JSON.stringify(this.CaseData) || Popups.confirm('編集中の項目がありますがよろしいですか?')) {
+        if (offset === 0) {
+          this.BackToList(this.uid)
+        } else {
+          if (offset < 0 && this.prevUid !== 0) {
+            this.$router.push({ name: 'edit', params: { uid: this.prevUid } })
+          }
+          if (offset > 0 && this.nextUid !== 0) {
+            this.$router.push({ name: 'edit', params: { uid: this.nextUid } })
+          }
+        }
+      }
+    },
 
     async StoreCase () {
-      this.Processing = true
+      this.processing = true
 
       // データベース登録に用いるドキュメントを生成
       const newDocument = {}
@@ -333,7 +351,7 @@ export default {
         await ValidateCase(newDocument)
         await this.$store.dispatch('UpsertDocument', newDocument)
       } finally {
-        this.Processing = false
+        this.processing = false
       }
     }
   }

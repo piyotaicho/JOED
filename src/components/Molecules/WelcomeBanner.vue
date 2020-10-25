@@ -35,29 +35,19 @@ export default {
   components: {
     CloseButton, LabeledCheckbox, TheWrapper
   },
-  mounted () {
-    window.addEventListener('keyup', this.KeyUpEventHandler)
-  },
   computed: {
     ShowWelcomeMessage: {
       get () {
-        return this.$store.getters['system/ShowWelcomeMessage']
+        return this.$store.getters['system/ShowStartupDialog']
       },
       set (newvalue) {
-        this.$store.dispatch('system/SetShowWelcomeMessage', newvalue)
+        this.$store.dispatch('system/SetAndSaveShowStartupDialog', newvalue)
       }
     }
   },
   methods: {
-    KeyUpEventHandler (event) {
-      if (event.which === 27) {
-        this.Close()
-      }
-    },
     Close () {
-      window.removeEventListener('keyup', this.KeyUpEventHandler)
-      this.$store.dispatch('system/SavePreferences')
-      this.$store.commit('HideWelcome')
+      this.$store.commit('system/CloseStartupDialog')
     }
   }
 }

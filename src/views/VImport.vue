@@ -1,13 +1,15 @@
 <template>
-  <div style="width: 900px;">
-    <div class="title-section">mergeファイルからのデータ読み込み</div>
+  <div class="utility">
     <div>
-      症例登録システムver.4で生成されたmergeファイルから症例データを読み込むことが出来ます.<br/>
-      システムの大幅な変更に伴い,データの修正は必ず必要になります.併せて以下の制限がありますがご了承ください.<br/>
-      <ul>
-        <li>この処理で読み込まれたデータについては, 全て編集と確認が必要になります.</li>
-        <li>合併症については「合併症なし」以外は自動での読み込みが出来ません. ご面倒ですが個々に入力を御願いします.</li>
-      </ul>
+      <div class="title-section">mergeファイルからのデータ読み込み</div>
+      <div>
+        症例登録システムver.4で生成されたmergeファイルから症例データを読み込むことが出来ます.<br/>
+        システムの大幅な変更に伴い,データの修正は必ず必要になります.併せて以下の制限がありますがご了承ください.<br/>
+        <ul>
+          <li>この処理で読み込まれたデータについては, 全て編集と確認が必要になります.</li>
+          <li>合併症については「合併症なし」以外は自動での読み込みが出来ません. ご面倒ですが個々に入力を御願いします.</li>
+        </ul>
+      </div>
     </div>
     <div>
       <InputFile @change="LoadFile"></InputFile>
@@ -16,22 +18,22 @@
     </div>
 
     <el-collapse-transition>
-      <div class="progression" v-show="ProcessStep">
+      <div class="progress-views" v-show="ProcessStep">
         <el-steps :active="ProcessStep" process-status="warning" finish-status="success" direction="vertical" space="42px">
-          <el-step title="入力ファイルのフォーマット検証とフィールドの割り当て">
+          <el-step title="入力ファイルのフォーマット検証">
             <template #description>
               <span>ファイル中に{{InFile.length}}件のデータがあります.<br/></span>
               <span v-if="DeIdentified">指定のファイルは提出用データです.患者IDは登録番号から自動生成されます.</span>
             </template>
           </el-step>
-          <el-step title="レコードの検証">
+          <el-step title="フィールドの割り当てとレコードの検証">
             <template #description>
               <span v-if="QueryDocuments.length > 0">{{QueryDocuments.length}}件のデータが対象になります.</span>
             </template>
           </el-step>
-          <el-step title="登録" v-show="ProcessStep === 3">
+          <el-step title="登録">
             <template #description>
-              <el-progress :percentage="ImportProgress"></el-progress>
+              <el-progress  v-show="Processing" :percentage="ImportProgress"></el-progress>
             </template>
           </el-step>
         </el-steps>

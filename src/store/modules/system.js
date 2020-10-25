@@ -4,98 +4,113 @@ import { LoadConfig, SaveConfig } from 'depmodules/config'
 export default {
   namespaced: true,
   state: {
-    InstitutionName: '',
-    InstitutionID: '',
-    JSOGoncologyboardID: '',
-    ShowWelcomeMessage: true,
-    DefaultViewSetting: {
-      Filter: [],
-      Sort: {
-        field: 'DocumentId',
-        order: -1
-      }
+    settings: {
+      InstitutionName: '',
+      InstitutionID: '',
+      JSOGoncologyboardID: '',
+      EditJSOGId: true,
+      EditNCDId: true,
+      View: {},
+      ShowStartupDialog: true
     },
-    EnabledJSOGId: true,
-    EnabledNCDId: true
+    StartupDialogStatus: true
   },
   getters: {
     ApplicationName () {
-      return 'JOED5'
+      return process.env.VUE_APP_NAME
     },
     ApplicationVersion () {
       return process.env.VUE_APP_VERSION
     },
+    Settings (state) {
+      return Object.assign({}, state.settings)
+    },
     InstituteInformation (state) {
       return {
-        InstitutionName: state.InstitutionName,
-        InstitutionID: state.InstitutionID,
-        JSOGoncologyboardID: state.JSOGoncologyboardID
+        InstitutionName: state.settings.InstitutionName,
+        InstitutionID: state.settings.InstitutionID,
+        JSOGoncologyboardID: state.settings.JSOGoncologyboardID
       }
     },
     InstitutionName (state) {
-      return state.InstitutionName
+      return state.settings.InstitutionName
     },
     InstitutionID (state) {
-      return state.InstitutionID
+      return state.settings.InstitutionID
     },
     JSOGInstitutionID (state) {
-      return state.JSOGoncologyboardID
+      return state.settings.JSOGoncologyboardID
     },
     EditJSOGId (state) {
-      return state.EnabledJSOGId
+      return state.settings.EditJSOGId
     },
     EditNCDId (state) {
-      return state.EnabledNCDId
+      return state.settings.EditNCDId
     },
-    ShowWelcomeMessage (state) {
-      return state.ShowWelcomeMessage
+    ShowStartupDialog (state) {
+      return state.StartupDialogStatus
     },
-    DefaultViewSetting (state) {
-      return state.DefaultViewSetting
+
+    SavedView (state) {
+      return Object.assign({}, state.settings.View)
     }
   },
   mutations: {
-    SetPreferences (state, payloads = {}) {
-      for (const key of Object.keys(payloads)) {
-        if (state[key] !== undefined) {
-          state[key] = payloads[key]
+    SetPreferences (state, payload = {}) {
+      for (const key of Object.keys(payload)) {
+        if (state.settings[key] !== undefined) {
+          if (key === 'View') {
+            // this.$store.commit('SetView', payload.View)
+          } else {
+            state.settings[key] = payload[key]
+          }
         }
       }
+    },
+    SetView (state, payload = {}) {
+      const newView = {}
+      if (payload.Filter) {
+        newView.Filter = Object.assign([], payload.Filter)
+      }
+      if (payload.Sort) {
+        newView.Sort = Object.assign({}, payload.Sort)
+      }
+
+      this.$set(state.settings, 'View', Object.assign(
+        {
+          Filter: [],
+          Sort: {
+            field: 'DocumentId',
+            order: -1
+          }
+        },
+        state.settings.View,
+        newView
+      ))
+    },
+    CloseStartupDialog (state) {
+      state.StartupDialogStatus = false
     }
   },
   actions: {
     LoadPreferences (context) {
-      /*
-      return context.dispatch('dbFindOne', {
-        Query: { Settings: { $exists: true } }
-      },
-      { root: true })
-      */
       return LoadConfig(context)
         .then(settings => {
-          if (settings !== null) {
+          if (settings) {
             context.commit('SetPreferences', settings.Settings)
+          }
+          if (settings.ShowStartupDialog === false) {
+            context.commit('CloseStartupDialog')
           }
         })
     },
     SavePreferences (context) {
-      const temporaryState = {}
-      for (const key of Object.keys(context.state)) {
-        temporaryState[key] = context.state[key]
-      }
-
-      /*
-      return context.dispatch('dbUpdate', {
-        Query: { Settings: { $exists: true } },
-        Update: { Settings: temporaryState },
-        Options: { upsert: true }
-      },
-      { root: true })
-      */
-      return SaveConfig(temporaryState, context)
+      const settings = JSON.parse(JSON.stringify(context.state.settings))
+      return SaveConfig(settings, context)
     },
-    SetShowWelcomeMessage (context, value) {
-      context.commit('SetPreferences', { ShowWelcomeMessage: value })
+    SetAndSaveShowStartupDialog (context, value) {
+      context.commit('SetPreferences', { ShowStartupDialog: !!value })
+      context.dispatch('SavePreferences')
     }
   }
 }

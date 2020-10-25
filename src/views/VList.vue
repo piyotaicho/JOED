@@ -1,6 +1,6 @@
 <template>
   <div>
-    <WelcomeBanner v-if="ShowWelcomeBanner"></WelcomeBanner>
+    <WelcomeBanner v-if="ShowStartupDialog"></WelcomeBanner>
 
     <DrawerButton div-class="open-drawer" tab-index="0" @click="OpenDrawer" accesskey="D"/>
     <el-drawer
@@ -10,7 +10,7 @@
       :with-header="false"
       :destroy-on-close="true"
       :visible.sync="showMenuDrawer">
-      <Drawer @close="CloseDrawer" @changed="FilterChanged"></Drawer>
+      <Drawer @close="CloseDrawer"></Drawer>
     </el-drawer>
     <NewEntryButton div-class="list-new-entry" tab-index="0" @click="CreateNewEntry()" accesskey="N"/>
 
@@ -39,11 +39,6 @@ export default {
   components: {
     DrawerButton, NewEntryButton, Caseitem, Drawer, WelcomeBanner, InfiniteLoading
   },
-  created () {
-    if (this.$store.state.ShowWelcomeBanner && !this.$store.getters['system/ShowWelcomeMessage']) {
-      this.$store.commit('HideWelcome')
-    }
-  },
   mounted () {
     // routerのモードにかかわらずhashが効果をもたらすようにscrollを代替 - #hashが中心になるようにスクロールする
     if (this.$route.hash && document.querySelector(this.$route.hash)) {
@@ -59,8 +54,8 @@ export default {
     Uids () {
       return this.$store.getters.PagedUids
     },
-    ShowWelcomeBanner () {
-      return this.$store.state.ShowWelcomeBanner
+    ShowStartupDialog () {
+      return this.$store.getters['system/ShowStartupDialog']
     },
     DisplayIdentifier () {
       return this.$store.getters.DisplayIdentifier
@@ -83,9 +78,6 @@ export default {
       } else {
         state.loaded()
       }
-    },
-    FilterChanged () {
-      // nop this.$refs.infiniteloading.$emit('$InfiniteLoading:reset')
     }
   }
 }

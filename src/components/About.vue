@@ -3,7 +3,7 @@
     <h2>ABOUT JOED5</h2>
     <hr />
     <ul>
-      <li><ExtLink url="https://github.com/piyotaicho/JOED/">JOED5</ExtLink> : {{ApplicationVersion}}</li>
+      <li><ExtLink url="https://github.com/piyotaicho/JOED/">JOED</ExtLink>-5 : {{ApplicationVersion}}</li>
       <template v-if="LibraryVersions.electron">
         <li>Electron : {{LibraryVersions.electron}}</li>
         <li>Chrome : {{LibraryVersions.chrome}}</li>

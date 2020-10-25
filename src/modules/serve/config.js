@@ -30,7 +30,7 @@ export async function SavePassword (payload, storecontext) {
     return storecontext.dispatch('dbRemove',
       {
         Query: { Password: { $exists: true } },
-        Options: { multi: false }
+        Options: { multi: true }
       },
       { root: true })
       .then(_ => storecontext.commit('PasswordRequirement', false))
@@ -41,7 +41,7 @@ export async function SavePassword (payload, storecontext) {
       {
         Query: { Password: { $exists: true } },
         Update: { Password: hashedPassword },
-        Options: { upsert: true }
+        Options: { multi: false, upsert: true }
       },
       { root: true })
   }

@@ -4,10 +4,10 @@
     <Dashboard @close="CloseDrawer"></Dashboard>
     <el-collapse accordion @change="AccordionChanged" :value="1">
       <el-collapse-item title="表示の設定" :name="1">
-        <DisplaySetting @commit="SetViewSettings"></DisplaySetting>
+        <DisplaySetting @changed="UpdateView"></DisplaySetting>
       </el-collapse-item>
       <el-collapse-item title="検索" :name="10">
-        <Search @commit="SetViewSettings"></Search>
+        <Search @changed="UpdateView"></Search>
       </el-collapse-item>
       <template v-if="WebApp">
         <el-collapse-item title="データの処理" :name="90">
@@ -46,13 +46,7 @@ export default {
         this.$router.push({ name: 'settings' })
       }
     },
-    SetViewSettings (payload) {
-      if (payload) {
-        this.$store.commit('SetViewSettings', payload)
-      } else {
-        this.$store.commit('SetViewSettings')
-      }
-
+    UpdateView (payload) {
       this.$store.dispatch('ReloadDocumentList').then(_ => {
         this.$emit('changed')
         this.$notify({
@@ -63,9 +57,6 @@ export default {
           duration: 2500
         })
       })
-    },
-    RevertViewSetting () {
-      this.SetiViewSettings()
     }
   }
 }

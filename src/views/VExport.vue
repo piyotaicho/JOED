@@ -1,61 +1,66 @@
 <template>
-  <div style="width: 900px;">
-    <div class="title-section">データの出力</div>
-    <div class="label"><span>出力する年次</span></div>
-    <div class="field">
-      <SelectYear v-model="ExportYear" :accept-all="false"></SelectYear>
-    </div>
+  <div class="utility">
+    <!-- <div class="title-section">データの出力</div> -->
+    <div class="utility-switches">
+      <div>
+        <div class="label">出力する年次</div>
+        <SelectYear div-class="field" v-model="exportYear" :accept-all="false" />
+      </div>
 
-    <div class="utilitypanel">
-    <InputSwitchField
-      v-model="AllFields"
-      title="出力するデータ"
-      :options="{学会提出データ用: false, 全フィールドのデータ: true}" />
+      <InputSwitchField
+        v-model="allFields"
+        title="出力するデータ"
+        :options="{学会提出データ: false, 全フィールドのデータ: true}" />
 
-    <InputSwitchField
-      v-model="ExportDateOfProcedure"
-      :disabled="ExportAllFields"
-      title="手術実施日の出力"
-      :options="{しない: false, する: true}" />
-    </div>
-
-    <div>
-      <el-button type="primary" @click="StartProcessing()" :disabled="ExportYear==''">出力データの作成</el-button>
+      <InputSwitchField
+        v-model="exportDateOfProcedure"
+        :disabled="exportAllFields"
+        title="手術実施日の出力"
+        :options="{しない: false, する: true}" />
+      <div>
+        <el-button type="primary" @click="startProcess()" :disabled="exportYear==''" :loading="processing">出力データの作成</el-button>
+      </div>
     </div>
 
     <el-collapse-transition>
-      <div class="progression" v-if="ProcessStep !== undefined">
-        <el-steps :active="ProcessStep" process-status="warning" finish-status="success" direction="vertical" space="42px">
+      <div class="progress-views" v-show="processStep !== undefined">
+        <el-steps :active="processStep" process-status="warning" finish-status="success" direction="vertical" space="42px">
           <el-step title="システム設定の確認" />
           <el-step title="読み込み症例の確認を検証" />
           <el-step title="登録内容の妥当性の検証">
             <template #description>
-              <el-progress :percentage="ProgressStepThree"></el-progress>
+              <el-progress :percentage="progressCheckConsistency" />
             </template>
           </el-step>
           <el-step title="提出用データとして整形">
             <template #description>
-              <el-progress :percentage="ProgressStepFour"></el-progress>
+              <el-progress :percentage="progressCreateData" />
             </template>
           </el-step>
-          <el-step title="チェックサムの計算" />
-          <el-step title="最終処理" />
+          <el-step title="チェックサムの計算とヘッダの付与" />
         </el-steps>
       </div>
     </el-collapse-transition>
 
-    <TheWrapper v-if="ShowPreview" alpha="60" @click="ShowPreview = false">
+    <el-collapse-transition>
+      <div v-show="readyToExport">
+        <el-dropdown split-button type="primary" @click="Download()">
+          出力先を指定してファイルの出力
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item @click.native="showPreview = true">出力先結果の確認</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </div>
+    </el-collapse-transition>
+
+    <TheWrapper v-if="processing"/>
+    <TheWrapper v-if="showPreview" alpha="60" @click="showPreview = false">
       <div id="preview">
-        画面のクリックで戻ります.<br/>
-        <pre>{{OutputString}}</pre>
+        画面のクリックで戻ります.
+        <hr/>
+        <pre>{{exportText}}</pre>
       </div>
     </TheWrapper>
-    <div>
-      <el-button type="primary" :disabled="!ReadyForExport" @click="ShowPreview = true">出力先結果の確認</el-button>
-      <el-button type="primary" :disabled="!ReadyForExport" @click="Download()" :loading="Processing">出力先を指定してファイルの出力</el-button>
-    </div>
-
-    <TheWrapper v-if="Processing"/>
   </div>
 </template>
 
@@ -74,91 +79,105 @@ export default {
   },
   data () {
     return ({
-      ExportYear: '',
-      ExportDateOfProcedure: true,
-      ExportAllFields: false,
-      Selector: {},
+      exportYear: '',
+      exportAllFields: false,
+      exportDateOfProcedure: true,
+      forceRenumber: false,
 
-      Processing: false,
-      ProcessStep: undefined,
-      ProgressStepThree: 0,
-      ProgressStepFour: 0,
-      ReadyForExport: false,
+      exportText: '',
 
-      ShowPreview: false,
-      OutputString: ''
+      processing: false,
+      processStep: undefined,
+      progressCheckConsistency: 0,
+      progressCreateData: 0,
+
+      showPreview: false
     })
   },
+  watch: {
+    exportYear () {
+      this.resetState()
+    },
+    exportAllFields () {
+      this.resetState()
+    },
+    exportDateOfProcedure () {
+      this.resetState()
+    }
+  },
   computed: {
-    AllFields: {
+    allFields: {
       get () {
-        return this.ExportAllFields
+        return this.exportAllFields
       },
       set (newvalue) {
         if (newvalue && Popups.confirm('不用意に全てのフィールドのデータを出力するのは,個人情報保護の観点からお薦め出来ません.\nそれでも出力しますか?')) {
-          this.ExportAllFields = true
+          this.exportAllFields = true
         } else {
-          this.ExportAllFields = false
+          this.exportAllFields = false
         }
       }
     },
-    Query () {
+    baseQuery () {
       const query = {
         DocumentId: { $gt: 0 }
       }
-      if (this.ExportYear !== '') {
-        const reg = new RegExp('^' + this.ExportYear + '-')
+      if (this.exportYear !== '') {
+        const reg = new RegExp('^' + this.exportYear + '-')
         query.DateOfProcedure = { $regex: reg }
       }
       return query
+    },
+    readyToExport () {
+      return this.exportText.length > 4
     }
   },
   methods: {
-    async StartProcessing () {
-      this.Processing = true
-      this.ProgressStepFour = 0
-      this.ReadyForExport = false
-      this.ShowPreview = false
+    resetState () {
+      this.processStep = undefined
+      this.exportText = ''
+    },
+    async startProcess () {
+      if (this.processing) return
 
-      this.ProcessStep = 0
+      this.processStep = 0
+      this.progressCheckConsistency = 0
+      this.progressCreateData = 0
+      this.exportText = ''
+      this.showPreview = false
 
       try {
         await this.CheckSystem()
+        this.processStep++
 
-        this.ProcessStep++
         await this.CheckImported()
+        this.processStep++
 
-        this.ProcessStep++
-        const documentids = await this.CheckConsistency()
+        const documentIds = await this.CheckConsistency()
+        this.processStep++
 
-        this.ProcessStep++
-        const exportitems = await this.CreateExportData(documentids)
+        const exportitems = await this.CreateExportData(documentIds)
+        this.processStep++
 
-        this.ProcessStep++
-        const ExportCounts = await this.CreateHeader(exportitems)
-
-        this.ProcessStep = 6
-        if (ExportCounts > 0) {
-          this.ReadyForExport = true
-        }
+        this.exportText = await this.CreateHeader(exportitems)
+        this.processStep++
       } catch (error) {
-        this.ReadyForExport = false
-        Popups.alert(error.message)
+        this.$nextTick(_ => Popups.alert(error.message))
       } finally {
-        this.Processing = false
+        this.processing = false
       }
     },
 
     Download () {
-      if (!this.ExportAllFields ||
+      if (!this.exportAllFields ||
         (
-          Popups.confirm('ファイルへの保存が指示されました, 作成されたデータには個人情報が含まれている可能性があります.\n処理を続行しますか?') &&
+          Popups.confirm('ファイルへの保存が指示されました, 作成されたデータにはID番号・氏名・年齢などの個人情報が含まれている可能性があります.\n処理を続行しますか?') &&
           Popups.confirm('出力されたファイルの取り扱いは厳重行ってください.')
         )
       ) {
         // ブラウザの機能でダウンロードさせる.
         const temporaryElementA = document.createElement('A')
-        temporaryElementA.href = URL.createObjectURL(new Blob([this.OutputString]), { type: 'application/json' })
+        temporaryElementA.href = URL.createObjectURL(new Blob([this.exportText]), { type: 'application/json' })
         temporaryElementA.download = 'joed-export-data.json'
         temporaryElementA.style.display = 'none'
         document.body.appendChild(temporaryElementA)
@@ -179,7 +198,7 @@ export default {
           {
             JSOGId: { $exists: true }
           },
-          this.Query
+          this.baseQuery
         )
       })
       if (countJSOGId > 0) {
@@ -198,7 +217,7 @@ export default {
           {
             Imported: { $exists: true }
           },
-          this.Query
+          this.baseQuery
         )
       })
       if (count > 0) {
@@ -211,101 +230,103 @@ export default {
     //  必須項目の有無
     //  項目の重複(ditto含む)
     async CheckConsistency () {
-      this.ProgressStepThree = 0
+      this.progressCheckConsistency = 0
 
-      const documentids = (
+      const documentIds = (
         await this.$store.dispatch('dbFind',
           {
-            Query: this.Query,
+            Query: this.baseQuery,
             Projection: { DocumentId: 1, _id: 0 }
           }) ||
         []
       ).map(item => item.DocumentId)
-      if (documentids.length === 0) throw new Error('エクスポートの対象がありません.')
+      if (documentIds.length === 0) throw new Error('エクスポートの対象症例がありません.')
 
-      let DocumentErrors = 0
+      let errorCount = 0
 
-      for (const index in documentids) {
-        this.ProgressStepThree = parseInt(index * 100.0 / documentids.length)
+      for (const index in documentIds) {
+        this.progressCheckConsistency = parseInt(index * 100.0 / documentIds.length)
         try {
           await ValidateCase(
             await this.$store.dispatch('dbFindOne',
               {
-                Query: { DocumentId: documentids[index] }
+                Query: { DocumentId: documentIds[index] }
               })
           )
         } catch (error) {
           this.$store.dispatch('dbUpdate',
             {
-              Query: { DocumentId: documentids[index] },
+              Query: { DocumentId: documentIds[index] },
               Update: { $set: { Notification: error } }
             })
-          DocumentErrors++
+          errorCount++
         }
       }
-      this.ProgressStepThree = 100
+      this.progressCheckConsistency = 100
 
-      if (DocumentErrors > 0) {
+      if (errorCount > 0) {
         throw new Error(
-          'データ検証で' + DocumentErrors + '件のエラーが確認されました.\n' +
+          'データ検証で' + errorCount + '件のエラーが確認されました.\n' +
           '該当するデータの修正を御願いします.'
         )
       }
 
-      return documentids
+      return documentIds
     },
 
     // Step 4 - データの整形
     //
-    async CreateExportData (documentids) {
-      this.ProgressStepFour = 0
+    async CreateExportData (documentIds) {
+      this.progressCreateData = 0
 
       const ExportItems = []
 
-      let serial = (
-        await this.$store.dispatch('dbFindOne',
-          {
-            Query: Object.assign(
+      let serial = this.forceRenumber ? 0
+        : Number(
+          (
+            await this.$store.dispatch('dbFindOne',
               {
-                UniqueID: { $exists: true }
-              },
-              this.Query),
-            Sort: { UniqueID: -1, _id: 0 }
-          }
-        ) || { UniqueID: 0 })
-        .UniqueID
-
-      for (const index in documentids) {
-        this.ProgressStepFour = parseInt(index * 100.0 / documentids.length)
-        const exportdocument = await this.$store.dispatch('dbFindOne',
-          { Query: { DocumentId: documentids[index] } }
+                Query: Object.assign(
+                  { UniqueID: { $exists: true } },
+                  this.baseQuery),
+                Sort: { UniqueID: -1 }
+              }) ||
+              { UniqueID: '0000-99999-0' }
+          ).UniqueID.substr(11)
         )
 
-        if (!exportdocument.UniqueID) {
+      for (const index in documentIds) {
+        this.progressCreateData = parseInt(index * 100.0 / documentIds.length)
+        const exportdocument = await this.$store.dispatch('dbFindOne',
+          { Query: { DocumentId: documentIds[index] } }
+        )
+
+        if (this.forceRenumber || !exportdocument.UniqueID) {
           ++serial
           exportdocument.UniqueID = [
             this.$store.getters['system/InstitutionID'],
-            this.Year,
+            this.exportYear,
             serial
           ].join('-')
 
           await this.$store.dispatch('dbUpdate',
             {
-              Query: { DocumentId: documentids[index] },
+              Query: { DocumentId: documentIds[index] },
               Update: { $set: { UniqueID: exportdocument.UniqueID } }
             })
         }
 
         ExportItems.push(
-          CaseDocumentHandler.exportCase(
+          CaseDocumentHandler.ExportCase(
             exportdocument,
             {
-              spliceDateOfProcedure: !this.ExportDateOfProcedure
+              exportAllFields: this.exportAllFields,
+              spliceDateOfProcedure: !this.exportDateOfProcedure
             }
           )
         )
       }
-      this.ProgressStepFour = 100
+      this.progressCreateData = 100
       return ExportItems
     },
 
@@ -318,42 +339,26 @@ export default {
         const HHX = require('xxhashjs')
         const TimeStamp = Date.now()
 
-        const OutputString = JSON.stringify(exportItem, ' ', 2)
-        const Checksum = HHX.h64(OutputString, TimeStamp).toString(16)
+        const exportText = JSON.stringify(exportItem, ' ', 2)
+        const Checksum = HHX.h64(exportText, TimeStamp).toString(16)
 
         exportItem.splice(0, 0, {
           InstitutionName: this.$store.getters['system/InstitutionName'],
           InstitutionID: this.$store.getters['system/InstitutionID'],
           JSOGoncologyboardID: this.$store.getters['system/JSOGInstitutionID'],
           TimeStamp: TimeStamp,
-          Year: this.ExportYear || 'ALL',
+          Year: this.exportYear || 'ALL',
           NumberOfCases: exportItem.length,
           MD5: Checksum
         })
       }
-      this.OutputString = JSON.stringify(exportItem, ' ', 2)
-
-      return length
+      return JSON.stringify(exportItem, ' ', 2)
     }
   }
 }
 </script>
 
 <style lang="sass">
-div.utilitypanel
-  display: flex
-  flex-direction: column
-  margin-bottom: 1rem
-  div
-    display: flex
-    flex-direction: row
-    margin: 0.4rem 0
-    div.label
-      margin-top: 0.7rem
-      width: 20%
-      font-weight: bold
-    div.field
-
 div#preview
   position: relative
   height: 80vh
@@ -361,5 +366,6 @@ div#preview
   margin: 4rem
   padding: 1rem
   border: 2px solid var(--color-text-primary)
+  border-radius: 0.5rem
   background: var(--background-color-list)
 </style>

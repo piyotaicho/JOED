@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :class="divClass">
     <select v-model="SelectedValue">
       <option v-for="(value, name) of Selections" :key="value" :value="name">{{name}}年 ({{value}}件)</option>
       <option value="" v-if="acceptAll">すべて</option>
@@ -16,7 +16,8 @@ export default {
   },
   props: {
     value: { required: true },
-    acceptAll: { type: Boolean, default: true }
+    acceptAll: { type: Boolean, default: true },
+    divClass: { type: String }
   },
   data () {
     return ({

@@ -59,30 +59,9 @@ export default {
     // 空白パスワード文字列はパスワードのレコード自体を削除する.
     //
     // @param {String} パスワード文字列
-    SetPassword (context, payload) {
-      SavePassword(payload, context)
-      /*
-      const HHX = require('xxhashjs')
-
-      if (payload === '') {
-        return context.dispatch('dbRemove',
-          {
-            Query: { Password: { $exists: true } },
-            Options: { multi: false }
-          },
-          { root: true })
-          .then(_ => context.commit('PasswordRequirement', false))
-      } else {
-        const hashedPassword = HHX.h64(payload, MD5salt).toString(16)
-        return context.dispatch('dbUpdate',
-          {
-            Query: { Password: { $exists: true } },
-            Update: { Password: hashedPassword },
-            Options: { upsert: true }
-          },
-          { root: true })
-      }
-      */
+    async SetPassword (context, payload) {
+      await SavePassword(payload, context)
+      context.commit('PasswordRequirement', payload !== '')
     }
   }
 }

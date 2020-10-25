@@ -4,7 +4,7 @@
     <div class="menu-item-content">
       <div>
         <div>
-          <select v-model="Field" @change="changeSelection">
+          <select v-model="Field"> <!-- @change="changeSelection"> -->
             <option value="" disabled style="display: none;">検索する項目を選択してください.</option>
             <option value="Id">患者ID</option>
             <option value="Name">患者名</option>
@@ -28,8 +28,8 @@
       />
     </div>
     <div class="menu-item-bottom">
-      <!-- <el-button type="primary" @click="cancelQuery">検索の解除</el-button> -->
       <el-button type="primary" @click="performQuery">検索</el-button>
+      <el-button type="success" @click="cancelQuery">検索の解除</el-button>
     </div>
   </div>
 </template>
@@ -172,28 +172,58 @@ export default {
       SearchString: ''
     })
   },
+  created () {
+    if (this.$store.getters.ViewSettings.Search) {
+      const settings = JSON.parse(this.$store.getters.ViewSettings.Search.Preserve || '{}')
+
+      Object.keys(this.$data).forEach(key => {
+        if (settings[key] !== undefined) {
+          this.$data[key] = settings[key]
+        }
+      })
+      /*
+      if (settings.UseRegexp !== undefined) this.UseRegexp = settings.UseRegexp
+      if (settings.FindMulti !== undefined) this.FindMulti = settings.FindMulti
+      if (settings.Field !== undefined) this.Field = settings.Field
+      if (settings.SearchString !== undefined) this.SearchString = settings.SearchString
+      */
+    }
+  },
   computed: {
     RegexpDisabled () {
       return (SearchSetting[this.Field] && SearchSetting[this.Field].regexp !== undefined) ? !SearchSetting[this.Field].regexp : true
     }
   },
   methods: {
+    /*
     changeSelection () {
       if (SearchSetting[this.Field].regexp === false) {
         this.UseRegexp = undefined
       }
     },
+    */
     performQuery () {
       if (this.Field && this.SearchString && SearchSetting[this.Field]) {
-        const query = SearchSetting[this.Field].createquery(this.SearchString, this.UseRegexp)
-        if (query) {
-          this.$emit('commit', {
+        const query = Object.entries(SearchSetting[this.Field].createquery(this.SearchString, this.UseRegexp) || {})[0]
+        if (query.length === 2) {
+          console.log('Search keyvalue: ', query)
+          this.$store.commit('SetSearch', {
+            IgnoreQuery: true,
+            Filter: {
+              Field: query[0],
+              Value: query[1]
+            },
+            Preserve: JSON.stringify(this.$data)
+          })
+          this.$emit('changed')
+          /*, {
             noPreserve: true,
             Filter: [{
-              Field: Object.keys(query)[0],
-              Value: query[Object.keys(query)[0]]
+              Field: keyvalue[0],
+              Value: keyvalue[1]
             }]
           })
+          */
         } else {
           console.log('creating query failed.')
         }
