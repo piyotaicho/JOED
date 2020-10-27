@@ -1,8 +1,8 @@
-import SelectionTree from '@/modules/SelectionTree'
+import Master from '@/modules/Master'
 
 export const LastUpdate = '2020-10-23'
 
-export default class DiagnosisMaster extends SelectionTree {
+export default class DiagnosisMaster extends Master {
   constructor () {
     super({
       腹腔鏡: {

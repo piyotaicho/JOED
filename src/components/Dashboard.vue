@@ -4,7 +4,7 @@
     <div class="dashboard">
       <div class="dashboard-title" ref="title">{{InstituteName}}</div>
       <div class="dashboard-row">
-        <span>{{MasterYear}}年版マスタ</span>
+        <span>{{YearOfMaster}}年版マスタ</span>
         <span>表示 {{ViewCount}}件 / 全 {{TotalCount}}件</span>
       </div>
     </div>
@@ -22,11 +22,11 @@ export default {
   },
   created () {
     const master = new DiagnosisMaster()
-    this.MasterYear = master.getMasterYear()
+    this.YearOfMaster = master.Year()
   },
   data () {
     return ({
-      MasterYear: '0000'
+      YearOfMaster: '0000'
     })
   },
   computed: {

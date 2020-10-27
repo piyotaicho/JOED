@@ -100,7 +100,7 @@ export default {
     },
     SetCandidateItemsByFreeword () {
       if (this.EditableItem && this.UserEditingAllowed) {
-        const flatten = DiagnosesTree.flatten(this.Category, this.year)
+        const flatten = DiagnosesTree.getCategoryItems(this.Category, this.year)
         const arr = getMatchesInDiagnoses(this.EditableItem, flatten)
         this.CandidateItems.splice(0, this.CandidateItems.length, ...arr)
         this.$nextTick()

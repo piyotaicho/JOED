@@ -199,7 +199,7 @@ export async function ValidateDiagnoses (item, year) {
         if (diagnosis.UserTyped === true) {
           resolve()
         }
-        const treeList = tree.flatten(diagnosis.Chain[0], year)
+        const treeList = tree.getCategoryItems(diagnosis.Chain[0], year)
         if (treeList.indexOf(diagnosis.Text) >= 0) {
           resolve()
         }
@@ -255,7 +255,7 @@ export async function ValidateProcedures (item, year) {
           if (procedure.UserTyped === true) {
             resolve()
           }
-          const treeList = tree.flatten(procedure.Chain[0], year)
+          const treeList = tree.getCategoryItems(procedure.Chain[0], year)
           if (treeList.indexOf(procedure.Text) >= 0) {
             resolve()
           }

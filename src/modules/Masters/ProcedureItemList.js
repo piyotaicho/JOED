@@ -1,4 +1,4 @@
-import SelectionTree from '@/modules/SelectionTree'
+import Master from '@/modules/Master'
 
 export const LastUpdate = '2020-10-23'
 // Description の Values: [] のフォーマット
@@ -8,7 +8,7 @@ export const LastUpdate = '2020-10-23'
 // $ で終わる文字列が選択された場合はその術式は無効となる(単独選択の場合エラーで登録出来ない)
 // [] で囲まれた文字列は選択肢には表示されず、データの可読性を目的に保持される
 
-export default class ProcedureMaster extends SelectionTree {
+export default class ProcedureMaster extends Master {
   constructor () {
     super({
       腹腔鏡: {
@@ -465,7 +465,7 @@ export default class ProcedureMaster extends SelectionTree {
 
   // ProcedureMasterのstaticメソッド
   // itemは術式への参照
-  // - handleTreeItemはSelectionTreeからの継承
+  // - handleTreeItemはMasterからの継承
 
   static getTitle (item) {
     return this.handleTreeItem(item)
