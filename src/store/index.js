@@ -193,7 +193,7 @@ const store = new Vuex.Store({
     SetDatastore (state, payload) {
       const foundIndex = state.DataStore.findIndex(item => item.DocumentId === payload.DocumentId)
       if (foundIndex === -1) {
-        state.DataStore.push(payload)
+        Vue.set(state.DataStore, state.DataStore.length, payload)
       } else {
         Vue.set(state.DataStore, foundIndex, payload)
       }
@@ -204,7 +204,7 @@ const store = new Vuex.Store({
     RemoveDatastore (state, payload) {
       const foundIndex = state.DataStore.findIndex(item => item.DocumentId === payload.DocumentId)
       if (foundIndex !== -1) {
-        state.DataStore.splice(foundIndex, 1)
+        Vue.delete(state.DataStore, foundIndex)
       }
     },
     // 総症例数
