@@ -227,8 +227,8 @@ const store = new Vuex.Store({
     // Filtersを設定
     //
     // @param {Object}
-    SetFilters (state, payload = []) {
-      const newFilters = payload.length > 0 ? payload : state.system.settings.View.Filters
+    SetFilters (state, payload) {
+      const newFilters = Array.isArray(payload) ? payload : state.system.settings.View.Filters
       Vue.set(state, 'Filters', newFilters)
     },
 

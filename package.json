@@ -7,7 +7,7 @@
     "serve": "vue-cli-service serve --modern",
     "build": "vue-cli-service build --modern",
     "lint": "vue-cli-service lint",
-    "electron:build": "vue-cli-service electron:build --modern --mode electron",
+    "electron:build": "vue-cli-service electron:build --mode electron",
     "electron:serve": "vue-cli-service electron:serve --modern --mode electron",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"

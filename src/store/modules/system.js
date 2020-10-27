@@ -99,13 +99,14 @@ export default {
   actions: {
     LoadPreferences (context) {
       return LoadConfig(context)
-        .then(settings => {
-          if (settings) {
-            context.commit('SetPreferences', settings.Settings)
-            context.commit('SetFilters', settings.Settings.View.Filters, { root: true })
-            context.commit('SetSort', settings.Settings.View.Sort, { root: true })
+        .then(settingdocument => {
+          const Settings = Object.assign({ View: { Filters: undefined, Sort: undefined } }, settingdocument)
+          if (Settings) {
+            context.commit('SetPreferences', Settings)
+            context.commit('SetFilters', Settings.View.Filters, { root: true })
+            context.commit('SetSort', Settings.View.Sort, { root: true })
           }
-          if (settings.ShowStartupDialog === false) {
+          if (Settings.ShowStartupDialog === false) {
             context.commit('CloseStartupDialog')
           }
         })

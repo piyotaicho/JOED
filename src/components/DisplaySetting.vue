@@ -170,6 +170,7 @@ export default {
       this.DisableSearch()
       this.$emit('changed')
       this.ImportSettings()
+      this.$nextTick()
     },
     DisableSearch () {
       if (this.$store.getters.SearchActivated) {
