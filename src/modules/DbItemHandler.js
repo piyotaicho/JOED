@@ -95,7 +95,8 @@ export default class CaseDocumentHandler {
   static ExportCase (
     item = {},
     params = {
-      spliceDateOfProcedure: false,
+      omitDateOfProcedure: false,
+      omitAge: false,
       exportAllfields: false
     }
   ) {
@@ -103,13 +104,13 @@ export default class CaseDocumentHandler {
     const propsToExport = [
       'UniqueID',
       'JSOGId', 'NCDId',
-      'DateOfProcedure', 'ProcedureTime', 'TypeOfProcedure',
+      'Age', 'DateOfProcedure', 'ProcedureTime', 'TypeOfProcedure',
       'PresentAE', 'Imported'
     ]
 
     if (params.exportAllfields) {
-      propsToExport.splice(propsToExport.indexOf('DateOfProcedure'), 0,
-        'PatientId', 'Name', 'Age')
+      propsToExport.splice(propsToExport.indexOf('Age'), 0,
+        'PatientId', 'Name')
       params.omitAge = false
       params.omitDateOfProcedure = false
     }

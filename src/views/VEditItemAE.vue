@@ -748,7 +748,7 @@ export default {
           case '出血':
             return (this.AE.BloodCount.trim === '') ? false
               : (this.AE.BloodCount === '不明' ||
-              ZenToHanNumbers(this.AE.BloodCount).test(/^(\d{2,}|[5-9])\d{2}$/))
+              /^(\d{2,}|[5-9])\d{2}$/.test(ZenToHanNumbers(this.AE.BloodCount)))
           case '気腹・潅流操作':
           case '術後':
             return this.AE.Title.length
