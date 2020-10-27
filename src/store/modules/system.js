@@ -1,4 +1,5 @@
 // 保存先は最終的にはデータベースではなく electron.config に逃げる予定
+import Vue from 'vue'
 import { LoadConfig, SaveConfig } from 'depmodules/config'
 
 export default {
@@ -10,7 +11,12 @@ export default {
       JSOGoncologyboardID: '',
       EditJSOGId: true,
       EditNCDId: true,
-      View: {},
+      View: {
+        Filters: [],
+        Sort: {
+          DocumentId: -1
+        }
+      },
       ShowStartupDialog: true
     },
     StartupDialogStatus: true
@@ -52,44 +58,42 @@ export default {
     },
 
     SavedView (state) {
-      return Object.assign({}, state.settings.View)
+      return state.settings.View
     }
   },
   mutations: {
     SetPreferences (state, payload = {}) {
       for (const key of Object.keys(payload)) {
         if (state.settings[key] !== undefined) {
-          if (key === 'View') {
-            // this.$store.commit('SetView', payload.View)
-          } else {
-            state.settings[key] = payload[key]
-          }
+          Vue.set(state.settings, key, payload[key])
         }
+      }
+      if (state.StartupDialogStatus && !state.settings.ShowStartupDialog) {
+        Vue.set(state, 'StartupDialogStatus', false)
       }
     },
     SetView (state, payload = {}) {
       const newView = {}
-      if (payload.Filter) {
-        newView.Filter = Object.assign([], payload.Filter)
+      if (payload.Filters) {
+        newView.Filters = payload.Filters
       }
       if (payload.Sort) {
-        newView.Sort = Object.assign({}, payload.Sort)
+        newView.Sort = payload.Sort
       }
 
-      this.$set(state.settings, 'View', Object.assign(
+      Vue.set(state.settings, 'View', Object.assign(
         {
-          Filter: [],
+          Filters: [],
           Sort: {
-            field: 'DocumentId',
-            order: -1
+            DocumentId: -1
           }
         },
-        state.settings.View,
+        // state.settings.View,
         newView
       ))
     },
     CloseStartupDialog (state) {
-      state.StartupDialogStatus = false
+      Vue.set(state, 'StartupDialogStatus', false)
     }
   },
   actions: {
@@ -98,6 +102,8 @@ export default {
         .then(settings => {
           if (settings) {
             context.commit('SetPreferences', settings.Settings)
+            context.commit('SetFilters', settings.Settings.View.Filters, { root: true })
+            context.commit('SetSort', settings.Settings.View.Sort, { root: true })
           }
           if (settings.ShowStartupDialog === false) {
             context.commit('CloseStartupDialog')
@@ -108,9 +114,16 @@ export default {
       const settings = JSON.parse(JSON.stringify(context.state.settings))
       return SaveConfig(settings, context)
     },
-    SetAndSaveShowStartupDialog (context, value) {
+    async SetAndSaveShowStartupDialog (context, value) {
       context.commit('SetPreferences', { ShowStartupDialog: !!value })
-      context.dispatch('SavePreferences')
+      await context.dispatch('SavePreferences')
+    },
+    async SaveCurrentView (context) {
+      context.commit('SetView', {
+        Filters: context.rootState.Filters,
+        Sort: context.rootState.Sort
+      })
+      await context.dispatch('SavePreferences')
     }
   }
 }

@@ -40,8 +40,8 @@ export default {
       get () {
         return this.$store.getters['system/ShowStartupDialog']
       },
-      set (newvalue) {
-        this.$store.dispatch('system/SetAndSaveShowStartupDialog', newvalue)
+      async set (newvalue) {
+        await this.$store.dispatch('system/SetAndSaveShowStartupDialog', newvalue)
       }
     }
   },

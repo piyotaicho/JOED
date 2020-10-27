@@ -8,8 +8,9 @@
 export default {
   created () {
     this.$store.commit('initDatabase')
-    this.$store.dispatch('system/LoadPreferences')
-    this.$store.dispatch('ReloadDocumentList')
+    this.$store.dispatch('system/LoadPreferences').then(_ =>
+      this.$store.dispatch('ReloadDocumentList')
+    )
 
     // electron環境下でのメインプロセスからのメッセージ(メニュー操作)を処理
     try {
@@ -38,8 +39,7 @@ export default {
           }
         })
       }
-    } catch (error) {
-      console.log(error)
+    } catch (_) {
     }
   },
   computed: {

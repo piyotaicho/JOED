@@ -56,8 +56,14 @@
 
     </div>
     <div class="menu-item-bottom">
-      <el-button type="primary" @click="Apply()">設定</el-button>
-      <el-button type="success"  @click="Revert()">初期設定に戻す</el-button>
+      <el-dropdown split-button type="primary" @click="Apply()">
+        設定
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item @click.native="Store()">現在の表示設定を規定として保存</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+
+      <el-button type="success" style="margin-left: 0.715rem;" @click="Revert()">規定の設定に戻す</el-button>
     </div>
   </div>
 </template>
@@ -65,6 +71,7 @@
 <script>
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import { CategoryTranslation } from '@/modules/CaseValidater'
+import Popups from 'depmodules/Popups'
 
 export default {
   name: 'DisplaySetting',
@@ -77,7 +84,7 @@ export default {
       Years: {},
       Conditions: {
         合併症あり: { Field: 'PresentAE', Value: true },
-        要確認: { Field: 'Imported', Value: true },
+        未確認: { Field: 'Imported', Value: true },
         エラーあり: { Field: 'Notification', Value: { $exists: true } }
       },
       FilterItems: [],
@@ -96,6 +103,7 @@ export default {
       Object.keys(CountByYear).forEach(year => {
         this.$set(this.Years, year + '年', { Field: 'DateOfProcedure', Value: year })
       })
+      this.$nextTick()
     })
     this.ImportSettings()
   },
@@ -121,7 +129,7 @@ export default {
         this.$set(this.Sort, 'Order', Object.entries(view.Sort)[0][1])
       }
 
-      const viewfilters = view.Filter.map(filter => {
+      const viewfilters = view.Filters.map(filter => {
         switch (filter.Field) {
           case 'TypeOfProcedure':
             return filter.Value
@@ -143,15 +151,34 @@ export default {
         .map(filter => this.Categories[filter] || this.Years[filter] || this.Conditions[filter])
         .filter(filter => filter)
 
-      this.$store.commit('SetFilter', FilterObjects)
+      this.$store.commit('SetFilters', FilterObjects)
       this.$store.commit('SetSort', { [this.Sort.Item]: this.Sort.Order })
+      this.DisableSearch()
       this.$emit('changed')
     },
+    async Store () {
+      try {
+        await this.$store.dispatch('system/SaveCurrentView')
+        Popups.information('現在の表示設定を規定として保存しました.\n環境設定から初期設定にリセットできます.')
+        await this.$nextTick()
+      } catch (_) {
+      }
+    },
     Revert () {
-      this.$store.commit('SetFilter', [])
-      this.$store.commit('SetSort', {})
+      this.$store.commit('SetFilters', {}) // this.$store.getters['system/SavedView'].Filters)
+      this.$store.commit('SetSort', {}) // this.$store.getters['system/SavedView'].Sort)
+      this.DisableSearch()
       this.$emit('changed')
       this.ImportSettings()
+    },
+    DisableSearch () {
+      if (this.$store.getters.SearchActivated) {
+        if (Popups.confirm('検索が実行されています.\n検索を解除しますか?')) {
+          this.$store.commit('SetSearch', {
+            Filter: {}
+          })
+        }
+      }
     }
   }
 }

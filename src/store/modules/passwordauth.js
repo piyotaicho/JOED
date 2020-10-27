@@ -1,3 +1,4 @@
+import Vue from 'vue'
 import { LoadPassword, SavePassword } from 'depmodules/config'
 
 const MD5salt = process.env.VUE_APP_MD5SALT
@@ -10,10 +11,10 @@ export default {
   },
   mutations: {
     AuthenticationStatus (state, payload) {
-      state.Authenticated = payload
+      Vue.set(state, 'Authenticated', payload)
     },
     PasswordRequirement (state, payload) {
-      state.PasswordRequired = payload
+      Vue.set(state, 'PasswordRequired', payload)
     }
   },
   getters: {

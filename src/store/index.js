@@ -13,7 +13,7 @@ const store = new Vuex.Store({
     system, password
   },
   state: {
-    DatabaseInstance: undefined, // 直接参照禁止, electron版では使用されないが開発互換のため残す
+    DatabaseInstance: undefined, // 直接参照禁止, electron版ではundefined
     DocumentIds: {
       List: [], // queryされたuidの全リスト
       TotalCount: 0, // 全登録数
@@ -21,6 +21,7 @@ const store = new Vuex.Store({
       Identifier: 0 // 表示クエリ変更のシリアル値
     },
     LoadAtOnce: 20, // 一度にロードするデータの数
+
     DataStore: [], // インメモリのデータベースレプリケーション
 
     // 以下データベースリストのクエリの待避
@@ -31,13 +32,8 @@ const store = new Vuex.Store({
     Search: {
       IgnoreQuery: false,
       Filter: {},
-      Preserve: '',
-      Activated: false
-    },
-    // Listの表示状態の待避
-    defaultViewSettings: { Sort: { Item: 'DocumentId', Order: -1 }, Filter: [] },
-    preservedViewSettings: { Sort: { Item: 'DocumentId', Order: -1 }, Filter: [] },
-    ViewSettings: { Sort: { Item: 'DocumentId', Order: -1 }, Filter: [] }
+      Preserve: ''
+    }
   },
   getters: {
     // 現在queryで設定されているドキュメントの DocumentId を配列で返す.
@@ -89,56 +85,51 @@ const store = new Vuex.Store({
     },
     // DocumentId をもつドキュメントを取得する. ロードされていない場合は空のオブジェクトが返る.
     //
-    // @param {Number}
+    // @param {Number or Object}
     CaseDocument (state) {
-      return function (DocumentId) {
-        const DocumentIndex = state.DataStore.findIndex(item => item.DocumentId === DocumentId)
-        if (DocumentIndex !== -1) {
-          return state.DataStore[DocumentIndex]
-        } else {
-          return {}
+      return function (payload) {
+        if (payload) {
+          const uid = payload || payload.DocumentId
+          const DocumentIndex = state.DataStore.findIndex(item => item.DocumentId === uid)
+          if (DocumentIndex !== -1) {
+            return state.DataStore[DocumentIndex]
+          }
         }
+        return {}
       }
     },
-    // VListの表示設定を取得
-    //
+    // Listの表示設定を取得
     //
     ViewSettings (state) {
-      return state.Search.Filter > 0
-        ? {
-          Filter: state.Filters,
-          Sort: state.Sort,
-          Search: state.Search
-        }
-        : {
-          Filter: state.Filters,
-          Sort: state.Sort
-        }
+      return {
+        Filters: state.Filters,
+        Sort: state.Sort,
+        Search: state.Search
+      }
+    },
+    // 検索が有効かを取得
+    //
+    SearchActivated (state) {
+      return Object.keys(state.Search.Filter).length > 0
     },
     // 現在のView設定からのクエリを作成する
     //
-    //
     ViewQuery (state) {
-      const filters = [...state.Filters]
+      const filters = Object.assign([], state.Filters)
       const query = {}
       const sort = Object.assign({}, state.Sort)
-
-      console.log('filters: ', filters)
-      console.log('sort: ', sort)
 
       if (Object.keys(state.Search.Filter).length > 0) {
         if (state.Search.IgnoreQuery) {
           filters.splice(0, filters.length, state.Search.Filter)
         } else {
-          filters.splice(0, 0, state.Search.Filter)
+          filters.push(state.Search.Filter)
         }
       }
 
       for (const filter of filters) {
         const key = filter.Field
-        const value = typeof filter.Value === 'object'
-          ? Object.assign({}, filter.Value)
-          : filter.Value
+        const value = filter.Value
 
         if (query[key] === undefined) {
           query[key] = value
@@ -150,23 +141,6 @@ const store = new Vuex.Store({
           }
         }
       }
-
-      /*
-      for (const filteritem of state.ViewSettings) {
-        const key = filteritem.Field
-        const querystring = filteritem.Value
-
-        if (query[key] === undefined) {
-          query[key] = querystring
-        } else {
-          if (query[key].$in) {
-            query[key].$in.push(querystring)
-          } else {
-            query[key] = { $in: [query[key], querystring] }
-          }
-        }
-      }
-      */
 
       // DocumentId > 0 は DocumentIdの指定が無い限り必ず入るのでハードコード
       if (!query.DocumentId) {
@@ -184,7 +158,6 @@ const store = new Vuex.Store({
         query.DateOfProcedure = { $regex: new RegExp(regexp) }
       }
 
-      console.log('query: ', query)
       return {
         Query: query,
         Sort: sort
@@ -197,23 +170,22 @@ const store = new Vuex.Store({
     // App.vue の onCreated からのみ呼ばれる.
     //
     initDatabase (state) {
-      // electronでの実装ではmain processで既にデータベースインスタンスが作成されているので
-      // ここではなにもせず DatabaseInstanceはundefined
-      state.DatabaseInstance = NedbAccess.CreateInstance(
-        // vue-cliではブラウザのローカルストレージを使用したデータベースを作成
-        {
-          filename: 'joed.nedb',
-          autoload: true
-        },
-        Database
-      )
+      if (state.DatabaseInstance === undefined) {
+        Vue.set(state, 'DatabaseInstance', NedbAccess.CreateInstance(
+          {
+            filename: 'joed.nedb',
+            autoload: true
+          },
+          Database
+        ))
+      }
     },
     // DocumentIdsにドキュメントリストを設定する
     //
     // @param {Object} DocumentIds
     SetDocumentIds (state, payload) {
-      state.DocumentIds.List.splice(0, state.DocumentIds.List.length, ...payload.DocumentIds)
-      state.DocumentIds.Identifier++
+      Vue.set(state.DocumentIds, 'List', payload.DocumentIds)
+      Vue.set(state.DocumentIds, 'Identifier', state.DocumentIds.Identifier + 1)
     },
     // DataStoreにデータベースをキャッシュする.
     //
@@ -223,7 +195,7 @@ const store = new Vuex.Store({
       if (foundIndex === -1) {
         state.DataStore.push(payload)
       } else {
-        state.DataStore[foundIndex] = payload
+        Vue.set(state.DataStore, foundIndex, payload)
       }
     },
     // キャッシュDataStoreから指定のドキュメントを破棄.
@@ -239,120 +211,54 @@ const store = new Vuex.Store({
     //
     // @Param {Number}
     SetTotalDocumentCount (state, payload) {
-      state.DocumentIds.TotalCount = payload
+      Vue.set(state.DocumentIds, 'TotalCount', payload)
     },
     // 表示対象数をクリア
     //
     ClearDocumentListRange (state) {
-      state.DocumentIds.Range = Math.min(state.LoadAtOnce, state.DocumentIds.List.length)
+      Vue.set(state.DocumentIds, 'Range', Math.min(state.LoadAtOnce, state.DocumentIds.List.length))
     },
     // 表示対象数を増やす
     //
     IncrementDocumentListRange (state) {
-      state.DocumentIds.Range = Math.min(state.DocumentIds.Range + state.LoadAtOnce, state.DocumentIds.List.length)
+      Vue.set(state.DocumentIds, 'Range', Math.min(state.DocumentIds.Range + state.LoadAtOnce, state.DocumentIds.List.length))
     },
-    // Filterを設定
+
+    // Filtersを設定
     //
     // @param {Object}
-    SetFilter (state, payload) {
-      state.Filters.splice(0, state.Filters.length, ...payload)
+    SetFilters (state, payload = []) {
+      const newFilters = payload.length > 0 ? payload : state.system.settings.View.Filters
+      Vue.set(state, 'Filters', newFilters)
     },
 
     // Searchを設定
     //
     // @param {Object}
-    SetSearch (state, payload) {
+    SetSearch (state, payload = {}) {
       if (payload.Filter !== undefined) {
-        state.Search.Filter = payload.Filter
+        Vue.set(state.Search, 'Filter', payload.Filter)
       }
       if (payload.IgnoreQuery !== undefined) {
-        state.Search.IgnoreQuery = !!payload.IgnoreQuery
+        Vue.set(state.Search, 'IgnoreQuery', !!payload.IgnoreQuery)
       }
       if (payload.Preserve !== undefined) {
-        state.Search.Preserve = payload.Preserve
+        Vue.set(state.Search, 'Preserve', payload.Preserve)
       }
     },
 
     // Sortの設定
     //
     // @param {Object}
-    SetSort (state, payload) {
-      if (payload) {
-        const keyvalue = Object.entries(payload)[0]
-        state.Sort = (keyvalue && keyvalue.length === 2)
+    SetSort (state, payload = {}) {
+      const keyvalue = Object.entries(payload)[0]
+      Vue.set(state, 'Sort',
+        (keyvalue && keyvalue.length === 2)
           ? {
             [keyvalue[0]]: keyvalue[1]
           }
-          : {
-            DocumentId: -1
-          }
-      }
-    },
-
-    // 表示設定の設定と待避
-    //
-    // @param {Object} Sort.Item, Sort.Order, Filter[ { Field:, Value: }... ]
-    SetViewSettings (state, payload) {
-      function createFilterQuery (Filter) {
-        const paramFilter = {}
-        for (const filteritem of Filter) {
-          const filterField = filteritem.Field
-          const filterValue = filteritem.Value
-
-          if (paramFilter[filterField] === undefined) {
-            paramFilter[filterField] = filterValue
-          } else {
-            if (paramFilter[filterField].$in) {
-              paramFilter[filterField].$in.push(filterValue)
-            } else {
-              paramFilter[filterField] = { $in: [paramFilter[filterField], filterValue] }
-            }
-          }
-        }
-
-        if (!paramFilter.DocumentId) {
-          paramFilter.DocumentId = { $gt: 0 }
-        }
-
-        if (paramFilter.DateOfProcedure) {
-          let regexStr = ''
-          if (paramFilter.DateOfProcedure.$in) {
-            regexStr = paramFilter.DateOfProcedure.$in.join('|')
-          } else {
-            regexStr = paramFilter.DateOfProcedure
-          }
-          regexStr = '^(' + regexStr + ')-'
-          paramFilter.DateOfProcedure = { $regex: new RegExp(regexStr) }
-        }
-
-        return paramFilter
-      }
-
-      function preserveSetting (source) {
-        if (!preserve) return
-
-        state.ViewSettings.Sort.Item = source.Sort.Item
-        state.ViewSettings.Sort.Order = source.Sort.Order
-        state.ViewSettings.Filter
-          .splice(
-            0, state.ViewSettings.Filter.length,
-            ...source.Filter
-          )
-      }
-
-      const preserve = payload && !payload.noPreserve
-
-      if (payload) {
-        preserveSetting(payload)
-        state.Sort = payload.Sort
-          ? { [payload.Sort.Item]: Number(payload.Sort.Order) }
-          : { [state.defaultViewSettings.Sort.Item]: Number(state.defaultViewSettings.Sort.Order) }
-        state.Filter = createFilterQuery(payload.Filter)
-      } else {
-        preserveSetting(state.defaultViewSettings)
-        state.Sort = { [state.defaultViewSettings.Sort.Item]: Number(state.defaultViewSettings.Sort.Order) }
-        state.Filter = createFilterQuery(state.defaultViewSettings.Filter)
-      }
+          : state.system.settings.View.Sort
+      )
     }
   },
 
@@ -418,6 +324,7 @@ const store = new Vuex.Store({
     },
 
     // 症例データの取得. ドキュメントの取得自体はgettersを経由する
+    // $store.dispatch('FetchDocument', { DocumentId: foo }).then(_ => $store.getters.CaseDocument( foo ) )
     //
     // @Param {Object} DocumentIdのみのオブジェクト
     FetchDocument (context, payload) {

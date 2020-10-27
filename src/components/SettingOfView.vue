@@ -5,23 +5,23 @@
         症例表示画面の設定
       </div></div>
       <InputSwitchField
-        v-model="displayDialogInList"
+        v-model="showStartupDialog"
         title="リスト表示の起動時のメッセージボックスを表示する"
         :options="{'しない': false, 'する': true}" />
       <InputSwitchField
-        v-model="saveCurrentView"
-        title="現在のリスト表示設定を初期設定にする"
+        v-model="revertView"
+        title="表示設定の規定値を初期設定に戻す"
         :options="{'しない': false, 'する': true}" />
 
       <div><div class="label"><i class="el-icon-s-tools" style="padding-top: 0.36rem; margin-right: 0.6rem;"/>
         症例編集画面の設定
       </div></div>
       <InputSwitchField
-        v-model="skipJSOGIdEntry"
+        v-model="editJSOGId"
         title="日産婦の腫瘍登録症例番号の入力"
         :options="{'しない': false, 'する': true}" />
       <InputSwitchField
-        v-model="skipNCDIdEntry"
+        v-model="editNCDId"
         title="ロボット支援下手術におけるNCD症例番号の入力"
         :options="{'しない': false, 'する': true}" />
     </div>
@@ -43,37 +43,42 @@ export default {
   },
   data () {
     return ({
-      displayDialogInList: false,
-      skipJSOGIdEntry: false,
-      skipNCDIdEntry: false,
-      saveCurrentView: false,
+      showStartupDialog: false,
+      editJSOGId: true,
+      editNCDId: true,
+      revertView: false,
 
       preserve: ''
     })
   },
   created () {
     const settings = this.$store.getters['system/Settings']
-    this.displayDialogInList = settings.ShowStartupDialog
-    this.skipJSOGIdEntry = !settings.EnterJSOGId
-    this.skipNCDIdEntry = !settings.EnterNCDId
-    this.saveCurrentView = false
+    this.showStartupDialog = settings.ShowStartupDialog
+    this.editJSOGId = settings.EditJSOGId
+    this.editNCDId = settings.EditNCDId
+    this.revertView = false
 
-    this.preserve = [this.displayDialogInList, this.skipJSOGIdEntry, this.skipNCDIdEntry, this.saveCurrentView].join('|')
+    this.preserve = [this.showStartupDialog, this.editJSOGId, this.editNCDId, this.revertView].join('|')
   },
   computed: {
     changed () {
       return this.preserve !==
-        [this.displayDialogInList, this.skipJSOGIdEntry, this.skipNCDIdEntry, this.saveCurrentView].join('|')
+        [this.showStartupDialog, this.editJSOGId, this.editNCDId, this.revertView].join('|')
     }
   },
   methods: {
     async CommitSettings () {
       this.$store.commit('system/SetPreferences', {
-        ShowStartupDialog: this.displayDialogInList,
-        EnterJSOGId: !this.skipJSOGIdEntry,
-        EnterNCDId: !this.skipNCDIdEntry
+        ShowStartupDialog: this.showStartupDialog,
+        EditJSOGId: !this.editJSOGId,
+        EditNCDId: this.editNCDId
       })
+      if (this.revertView) {
+        this.$store.commit('system/SetView', {})
+      }
       await this.$store.dispatch('system/SavePreferences')
+      this.preserve = [this.showStartupDialog, this.editJSOGId, this.editNCDId, this.revertView].join('|')
+
       Popups.information('設定が変更されました.')
     }
   }
