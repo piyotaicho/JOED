@@ -119,6 +119,9 @@ export default {
           .catch(error => errors.push(error.Message || error + '\n' + JSON.stringify(newdocument)))
       }
 
+      this.ImportProgress = 100
+      await this.$nextTick()
+
       let message = count + ' 例を登録しました.'
       if (errors.length > 0) {
         console.log(errors)
