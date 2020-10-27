@@ -148,7 +148,7 @@ export default {
       Preserve: ''
     })
   },
-  // DataStoreから既存データの読み込みをする.
+  // 既存データの読み込みをする.
   //
   // @prop {uid} DocumentId
   created () {
