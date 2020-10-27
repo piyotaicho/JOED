@@ -6,14 +6,14 @@
           <InputDateOfProcedure v-model="CaseData.DateOfProcedure" :required="true"/>
           <InputTextField title="患者ID" :required="true" v-model="CaseData.PatientId" placeholder="施設の患者ID"/>
           <InputTextField title="患者名" v-model="CaseData.Name"/>
-          <InputProcedureTime v-model="CaseData.ProcedureTime"/>
+          <InputNumberField title="年齢" v-model="CaseData.Age" :min="1" :max="120"/>
         </div>
         <div class="edit-top-right">
-          <InputTextField title="腫瘍登録番号" v-model="CaseData.JSOGId" placeholder="腫瘍登録患者No."/>
-          <InputTextField title="NCD症例識別コード" v-model="CaseData.NCDId" placeholder="NCD症例識別コード"/>
+          <InputTextField title="腫瘍登録番号" v-model="CaseData.JSOGId" placeholder="腫瘍登録患者No." :disabled="skipJSOGId"/>
+          <InputTextField title="NCD症例識別コード" v-model="CaseData.NCDId" placeholder="NCD症例識別コード" :disabled="skipNCDId"/>
           <div> <!-- spacer -->
           </div>
-          <InputNumberField title="年齢" v-model="CaseData.Age" :min="1" :max="120"/>
+          <InputProcedureTime v-model="CaseData.ProcedureTime"/>
         </div>
       </div>
 
@@ -192,6 +192,12 @@ export default {
     },
     isEditingExistingItem () {
       return (this.uid > 0)
+    },
+    skipJSOGId () {
+      return !this.$store.getters['system/EditJSOGId']
+    },
+    skipNCDId () {
+      return !this.$store.getters['system/EditNCDId']
     }
   },
   methods: {
@@ -271,7 +277,6 @@ export default {
     },
 
     CommitCaseAndGo (to = '') {
-      console.log('CALLED', JSON.stringify(to))
       if (this.processing) {
         return
       }
