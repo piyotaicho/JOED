@@ -102,7 +102,6 @@ export default {
         this.ProcessStep = 2
         this.ReadyToRegister = true
       } catch (error) {
-        console.log(error)
         this.ResetState()
       }
     },
@@ -124,7 +123,6 @@ export default {
 
       let message = count + ' 例を登録しました.'
       if (errors.length > 0) {
-        console.log(errors)
         message += '\n' + errors.length + ' 件の登録に失敗しました.(重複登録の可能性があります.)'
         Popups.alert(message)
       } else {

@@ -24,8 +24,18 @@ export default class Popups {
     return ipcRenderer.sendSync('messagebox',
       {
         type: 'none',
-        buttons: ['Cancel', 'OK'],
+        buttons: ['キャンセル', 'OK'],
         cancelId: 0,
+        message: message
+      }) !== 0
+  }
+
+  static confirmYesNo (message) {
+    return ipcRenderer.sendSync('messagebox',
+      {
+        type: 'none',
+        buttons: ['はい', 'いいえ'],
+        cancelId: 1,
         message: message
       }) !== 0
   }

@@ -1,6 +1,8 @@
 import Master from '@/modules/Master'
 
 export const LastUpdate = '2020-10-23'
+const defaultReference = '2020'
+
 // Description の Values: [] のフォーマット
 //
 // 要素に '$MULTI$' を含むとDescriptionは複数保持可能となる
@@ -27,12 +29,14 @@ export default class ProcedureMaster extends Master {
           },
           {
             Text: '腟式子宮全摘出術(LAVH)',
-            Ditto: ['子宮腟上部切断術(腹腔鏡下)', '腹腔鏡下単純子宮全摘出術']
+            Ditto: ['子宮腟上部切断術(腹腔鏡下)', '腹腔鏡下単純子宮全摘出術',
+              '腹腔鏡下準広汎子宮全摘出術', '腹腔鏡下広汎子宮全摘出術']
           },
           '子宮腟上部切断術(腹腔鏡下)',
           {
             Text: '子宮全摘出術(TLH,LH)',
-            Ditto: ['腟式子宮全摘出術(LAVH)', '腹腔鏡下単純子宮全摘出術']
+            Ditto: ['腟式子宮全摘出術(LAVH)', '腹腔鏡下単純子宮全摘出術',
+              '腹腔鏡下準広汎子宮全摘出術', '腹腔鏡下広汎子宮全摘出術']
           },
           {
             Text: '子宮筋腫核出術(腹腔鏡下)',
@@ -194,15 +198,20 @@ export default class ProcedureMaster extends Master {
           {
             Text: '腹腔鏡下単純子宮全摘出術',
             AdditionalProcedure: '腹腔鏡下リンパ節生検・郭清',
-            Ditto: ['腟式子宮全摘出術(LAVH)', '子宮全摘出術(TLH,LH)']
+            Ditto: ['腟式子宮全摘出術(LAVH)', '子宮全摘出術(TLH,LH)',
+              '腹腔鏡下準広汎子宮全摘出術', '腹腔鏡下広汎子宮全摘出術']
           },
           {
             Text: '腹腔鏡下準広汎子宮全摘出術',
-            AdditionalProcedure: '腹腔鏡下リンパ節生検・郭清'
+            AdditionalProcedure: '腹腔鏡下リンパ節生検・郭清',
+            Ditto: ['腟式子宮全摘出術(LAVH)', '子宮全摘出術(TLH,LH)',
+              '腹腔鏡下広汎子宮全摘出術', '腹腔鏡下単純子宮全摘出術']
           },
           {
             Text: '腹腔鏡下広汎子宮全摘出術',
-            AdditionalProcedure: '腹腔鏡下リンパ節生検・郭清'
+            AdditionalProcedure: '腹腔鏡下リンパ節生検・郭清',
+            Ditto: ['腟式子宮全摘出術(LAVH)', '子宮全摘出術(TLH,LH)',
+              '腹腔鏡下準広汎子宮全摘出術', '腹腔鏡下単純子宮全摘出術']
           },
           {
             Text: '腹腔鏡下子宮頸部摘出術',
@@ -381,15 +390,18 @@ export default class ProcedureMaster extends Master {
         子宮: [
           {
             Text: 'ロボット支援下単純子宮全摘出術',
-            AdditionalProcedure: 'ロボット支援下リンパ節生検・郭清'
+            AdditionalProcedure: 'ロボット支援下リンパ節生検・郭清',
+            Ditto: ['ロボット支援下準広汎子宮全摘出術', 'ロボット支援下広汎子宮全摘出術']
           },
           {
             Text: 'ロボット支援下準広汎子宮全摘出術',
-            AdditionalProcedure: 'ロボット支援下リンパ節生検・郭清'
+            AdditionalProcedure: 'ロボット支援下リンパ節生検・郭清',
+            Ditto: ['ロボット支援下単純子宮全摘出術', 'ロボット支援下広汎子宮全摘出術']
           },
           {
             Text: 'ロボット支援下広汎子宮全摘出術',
-            AdditionalProcedure: 'ロボット支援下リンパ節生検・郭清'
+            AdditionalProcedure: 'ロボット支援下リンパ節生検・郭清',
+            Ditto: ['ロボット支援下単純子宮全摘出術', 'ロボット支援下準広汎子宮全摘出術']
           },
           {
             Text: 'ロボット支援下子宮頸部摘出術',
@@ -460,7 +472,7 @@ export default class ProcedureMaster extends Master {
       }
     },
     // デフォルト参照されるマスター年次設定
-    '2020')
+    defaultReference)
   }
 
   // ProcedureMasterのstaticメソッド

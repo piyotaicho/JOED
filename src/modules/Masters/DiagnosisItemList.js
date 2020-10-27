@@ -1,6 +1,7 @@
 import Master from '@/modules/Master'
 
 export const LastUpdate = '2020-10-23'
+const defaultReference = '2020'
 
 export default class DiagnosisMaster extends Master {
   constructor () {
@@ -352,6 +353,6 @@ export default class DiagnosisMaster extends Master {
       }
     },
     // マスターのシリアル
-    '2020')
+    defaultReference)
   }
 }
