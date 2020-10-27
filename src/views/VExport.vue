@@ -17,6 +17,13 @@
         :disabled="exportAllFields"
         title="手術実施日の出力"
         :options="{しない: false, する: true}" />
+
+      <InputSwitchField
+        v-model="exportAge"
+        :disabled="exportAllFields"
+        title="患者の年齢の出力"
+        :options="{しない: false, する: true}" />
+
       <div>
         <el-button type="primary" @click="startProcess()" :disabled="exportYear==''" :loading="processing">出力データの作成</el-button>
       </div>
@@ -82,6 +89,7 @@ export default {
       exportYear: '',
       exportAllFields: false,
       exportDateOfProcedure: true,
+      exportAge: true,
       forceRenumber: false,
 
       exportText: '',
@@ -162,8 +170,10 @@ export default {
         this.exportText = await this.CreateHeader(exportitems)
         this.processStep++
       } catch (error) {
-        this.$nextTick(_ => Popups.alert(error.message))
+        await this.$nextTick()
+        Popups.alert(error.message)
       } finally {
+        await this.$nextTick()
         this.processing = false
       }
     },
@@ -321,7 +331,8 @@ export default {
             exportdocument,
             {
               exportAllFields: this.exportAllFields,
-              spliceDateOfProcedure: !this.exportDateOfProcedure
+              omitAge: !this.exportAge,
+              omitDateOfProcedure: !this.exportDateOfProcedure
             }
           )
         )

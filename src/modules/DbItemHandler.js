@@ -110,10 +110,15 @@ export default class CaseDocumentHandler {
     if (params.exportAllfields) {
       propsToExport.splice(propsToExport.indexOf('DateOfProcedure'), 0,
         'PatientId', 'Name', 'Age')
-      params.spliceDateOfProcedure = false
+      params.omitAge = false
+      params.omitDateOfProcedure = false
     }
 
-    if (params.spliceDateOfProcedure) {
+    if (params.omitAge) {
+      propsToExport.splice(propsToExport.indexOf('Age'), 1)
+    }
+
+    if (params.omitDateOfProcedure) {
       propsToExport.splice(propsToExport.indexOf('DateOfProcedure'), 1)
     }
 
