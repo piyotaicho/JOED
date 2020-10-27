@@ -1,15 +1,24 @@
 <template>
   <div class="menu-item">
     <div class="subtilte-section">検索対象</div>
+    <div>
+      <InputSwitchField
+        v-model="IgnoreQuery"
+        title=""
+        :options="{ 全データ: true, 現在の表示設定: false }"
+      />
+    </div>
     <div class="menu-item-content">
       <div>
         <div>
-          <select v-model="Field"> <!-- @change="changeSelection"> -->
+          <select v-model="Field">
             <option value="" disabled style="display: none;">検索する項目を選択してください.</option>
             <option value="Id">患者ID</option>
             <option value="Name">患者名</option>
-            <option value="Procedures">手術診断</option>
-            <option value="Diagnoses">実施手術</option>
+            <option value="Diagnoses">手術診断</option>
+            <option value="DiagnosesMain">手術診断 (主たる診断のみ)</option>
+            <option value="Procedures">実施手術</option>
+            <option value="ProceduresMain">実施手術 (主たる手術のみ)</option>
             <option value="QID">問い合わせ番号</option>
           </select>
         </div>
@@ -17,7 +26,7 @@
     </div>
     <div class="subtilte-section">検索内容</div>
     <div class="menu-item-content">
-      <input type="text" v-model="SearchString" />
+      <input type="text" v-model="Search" />
     </div>
     <div>
       <InputSwitchField
@@ -28,8 +37,8 @@
       />
     </div>
     <div class="menu-item-bottom">
-      <el-button type="primary" @click="performQuery">検索</el-button>
-      <el-button type="success" @click="cancelQuery">検索の解除</el-button>
+      <el-button type="primary" :disabled="!Field && !Search" @click="performQuery">検索</el-button>
+      <el-button type="success" :disabled="!SearchActivated" @click="cancelQuery">検索の解除</el-button>
     </div>
   </div>
 </template>
@@ -38,112 +47,106 @@
 import InputSwitchField from '@/components/Molecules/InputSwitchField'
 import { UniqueIDFormat } from '@/modules/CaseValidater'
 
+function makeRegex (str = '', regex = false) {
+  let queryRegex
+  if (regex) {
+    try {
+      queryRegex = new RegExp(str, 'i')
+    } catch (_) {
+      queryRegex = new RegExp(/^()$/)
+    }
+  } else {
+    queryRegex = new RegExp(str.replace(/[\\/.*+?^$-|()\][]/g, c => '\\' + c), 'i')
+  }
+  return queryRegex
+}
+
 const SearchSetting = {
   Id: {
+    title: '患者ID',
     regexp: false,
     multiple: true,
     createquery: (query) => {
-      const queries = query.split(/[\s,，]+/).map(item => item.replace(/[-ｰー－～]/g, ''))
+      const queries = query.split(/[\s,，]+/)
+        .map(item => item
+          .replace(/[-ｰー－～]/g, '')
+          .replace(/.{1}/g, c => c + '[-ｰー－～]*')
+        )
 
       if (queries.length > 0) {
-        const queryRegex = new RegExp('^(' + queries.join('|') + ')$')
+        const regexp = '^(' + queries.join('|') + ')$'
         return {
-          $where: function () {
-            return this.PatientId
-              .replace(/[-ｰー－～]/g, '')
-              .match(queryRegex) !== null
-          }
+          PatientId: { $regex: new RegExp(regexp) }
         }
       } else {
-        return null
+        return undefined
       }
     }
   },
   Name: {
+    title: '患者名',
     regexp: true,
     createquery: (query, regexp) => {
-      if (regexp) {
-        let queryRegex
-        try {
-          queryRegex = new RegExp(query)
-        } catch {
-          return null
-        }
-        return { Name: { $regex: queryRegex } }
-      } else {
-        return { $where: function () { return this.Name.includes(query) } }
-      }
+      return { Name: { $regex: makeRegex(query, regexp) } }
     }
   },
   Diagnoses: {
+    title: '手術診断',
     regexp: true,
     createquery: (query, regexp) => {
-      if (regexp) {
-        let queryRegex
-        try {
-          queryRegex = new RegExp(query)
-        } catch {
-          return null
-        }
-        return {
-          $where: function () {
-            return this.Diagnoses
-              .filter(item => item.Text.match(queryRegex) !== null)
-              .length > 0
+      return {
+        Diagnoses: {
+          $elemMatch: {
+            Text: { $regex: makeRegex(query, regexp) }
           }
         }
-      } else {
-        return {
-          $where: function () {
-            return this.Diagnoses
-              .filter(item => item.Text.includes(query))
-              .length > 0
-          }
-        }
+      }
+    }
+  },
+  DiagnosesMain: {
+    title: '主たる手術診断',
+    regexp: true,
+    createquery: (query, regexp) => {
+      return {
+        'Diagnoses.0.Text': { $regex: makeRegex(query, regexp) }
       }
     }
   },
   Procedures: {
+    title: '実施手術',
     regexp: true,
     createquery: (query, regexp) => {
-      if (regexp) {
-        let queryRegex
-        try {
-          queryRegex = new RegExp(query)
-        } catch {
-          return null
-        }
-        return {
-          $where: function () {
-            return this.Procedures
-              .filter(
-                item => queryRegex.test(item.Text) ||
-                (
-                  item.AdditionalProcedure &&
-                  query.RegEx(item.AdditionalProcedure.Text)
-                )
-              )
-              .length > 0
+      return {
+        $or: [
+          {
+            Procedures: {
+              $elemMatch: {
+                Text: { $regex: makeRegex(query, regexp) }
+              }
+            }
+          },
+          {
+            Diagnoses: {
+              $elemMatch: {
+                'AdditionalProcedure.Text': { $regex: makeRegex(query, regexp) }
+              }
+            }
           }
-        }
-      } else {
-        return {
-          $where: function () {
-            return this.Procedures
-              .filter(
-                item => item.Text.includes(query) ||
-                (
-                  item.AdditionalProcedure &&
-                  item.AdditionalProcedure.Text.includes(query)
-                )
-              )
-              .length > 0
-          }
-        }
+        ]
+      }
+    }
+  },
+  ProceduresMain: {
+    title: '主たる実施手術',
+    regexp: true,
+    createquery: (query, regexp) => {
+      return {
+        'Procedures.0.Text': { $regex: makeRegex(query, regexp) }
       }
     }
   },
   QID: {
+    title: '問い合わせ番号',
     regexp: false,
     multiple: true,
     createquery: (query) => {
@@ -166,10 +169,10 @@ export default {
   },
   data () {
     return ({
+      IgnoreQuery: false,
       UseRegexp: false,
-      FindMulti: false,
       Field: '',
-      SearchString: ''
+      Search: ''
     })
   },
   created () {
@@ -181,34 +184,26 @@ export default {
           this.$data[key] = settings[key]
         }
       })
-      /*
-      if (settings.UseRegexp !== undefined) this.UseRegexp = settings.UseRegexp
-      if (settings.FindMulti !== undefined) this.FindMulti = settings.FindMulti
-      if (settings.Field !== undefined) this.Field = settings.Field
-      if (settings.SearchString !== undefined) this.SearchString = settings.SearchString
-      */
     }
   },
   computed: {
+    SearchActivated () {
+      return this.$store.getters.SearchActivated
+    },
     RegexpDisabled () {
       return (SearchSetting[this.Field] && SearchSetting[this.Field].regexp !== undefined) ? !SearchSetting[this.Field].regexp : true
     }
   },
   methods: {
-    /*
-    changeSelection () {
-      if (SearchSetting[this.Field].regexp === false) {
-        this.UseRegexp = undefined
-      }
-    },
-    */
     performQuery () {
-      if (this.Field && this.SearchString && SearchSetting[this.Field]) {
-        const query = Object.entries(SearchSetting[this.Field].createquery(this.SearchString, this.UseRegexp) || {})[0]
+      if (this.Field && this.Search) {
+        const query = Object.entries(
+          SearchSetting[this.Field].createquery(this.Search, this.UseRegexp) || {}
+        )[0]
+
         if (query.length === 2) {
-          console.log('Search keyvalue: ', query)
           this.$store.commit('SetSearch', {
-            IgnoreQuery: true,
+            IgnoreQuery: this.IgnoreQuery,
             Filter: {
               Field: query[0],
               Value: query[1]
@@ -216,24 +211,14 @@ export default {
             Preserve: JSON.stringify(this.$data)
           })
           this.$emit('changed')
-          /*, {
-            noPreserve: true,
-            Filter: [{
-              Field: keyvalue[0],
-              Value: keyvalue[1]
-            }]
-          })
-          */
-        } else {
-          console.log('creating query failed.')
         }
       }
     },
     cancelQuery () {
-      this.$emit('commit', {
-        noPreserve: true,
-        Filter: [...this.$store.state.preservedViewSettings.Filter]
+      this.$store.commit('SetSearch', {
+        Filter: {}
       })
+      this.$emit('changed')
     }
   }
 }

@@ -180,7 +180,7 @@ app.setAboutPanelOptions({
 // IPCハンドリング
 //
 
-// UI
+// ダイアログ
 ipcMain.on('messagebox', (event, payload) => {
   event.returnValue = dialog.showMessageBoxSync(win, Object.assign({ noLink: true }, payload))
 })
