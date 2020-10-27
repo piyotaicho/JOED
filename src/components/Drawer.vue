@@ -2,17 +2,18 @@
   <div class="drawer-content">
     <!-- <div class="drawer-alignright"><i class="el-icon-close" @click="CloseDrawer"></i></div> -->
     <Dashboard @close="CloseDrawer"></Dashboard>
-    <el-collapse accordion @change="AccordionChanged" :value="1">
-      <el-collapse-item title="表示の設定" :name="1">
+    <el-collapse accordion @change="AccordionChanged" :value="initialView">
+      <el-collapse-item title="表示の設定" name="view">
         <DisplaySetting @changed="UpdateView"></DisplaySetting>
       </el-collapse-item>
-      <el-collapse-item title="検索" :name="10">
+      <el-collapse-item title="検索" name="search">
+        <template #title>検索 <i class="el-icon-success" style="color: var(--color-success); margin-left: 1rem;" v-if="SearchActivated"/></template>
         <Search @changed="UpdateView"></Search>
       </el-collapse-item>
       <template v-if="WebApp">
-        <el-collapse-item title="データの処理" :name="90">
+        <el-collapse-item title="データの処理" name="management">
         </el-collapse-item>
-        <el-collapse-item title="環境設定" :name="91">
+        <el-collapse-item title="環境設定" name="settings">
         </el-collapse-item>
       </template>
     </el-collapse>
@@ -29,9 +30,20 @@ export default {
   components: {
     Dashboard, DisplaySetting, Search
   },
+  data () {
+    return ({
+      initialView: 'view'
+    })
+  },
+  created () {
+    this.initialView = this.SearchActivated ? 'search' : 'view'
+  },
   computed: {
     WebApp () {
       return process.env.VUE_APP_MODE !== 'electron'
+    },
+    SearchActivated () {
+      return this.$store.getters.SearchActivated
     }
   },
   methods: {
@@ -39,10 +51,10 @@ export default {
       this.$emit('close')
     },
     AccordionChanged (itemname) {
-      if (itemname === 90) {
+      if (itemname === 'management') {
         this.$router.push({ name: 'export' })
       }
-      if (itemname === 91) {
+      if (itemname === 'settings') {
         this.$router.push({ name: 'settings' })
       }
     },
@@ -50,7 +62,7 @@ export default {
       this.$store.dispatch('ReloadDocumentList').then(_ => {
         this.$emit('changed')
         this.$notify({
-          title: '表示設定が変更されました',
+          title: '表示条件が変更されました',
           message: this.$store.getters.NumberOfCases > 0
             ? this.$store.getters.NumberOfCases + '件表示します.'
             : '表示する症例がありません.',
