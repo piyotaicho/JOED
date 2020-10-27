@@ -306,7 +306,7 @@ function laparoProcedure (procedure = '', typedprocedure = '', typeofselection =
 }
 
 function handleUserTyped (category, item, typeditem) {
-  return item !== 'その他'
+  return item.substr(0, 3) !== 'その他'
     ? {
       Chain: [category.trim()],
       Text: CharacterReplacer(item.trim())
