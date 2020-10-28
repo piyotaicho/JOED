@@ -93,21 +93,16 @@ export default {
     })
   },
   created () {
-    this.$store.dispatch('system/LoadPreferences')
-      .then(_ => {
-        const settings = this.$store.getters['system/InstituteInformation']
-        this.InstitutionName = settings.InstitutionName
-        this.InstitutionID = settings.InstitutionID
-        this.JSOGoncologyboardID = settings.JSOGoncologyboardID
-      })
-      .then(_ => {
-        this.Preserve = JSON.stringify(
-          [
-            this.InstitutionName,
-            this.InstitutionID,
-            this.JSOGoncologyboardID
-          ])
-      })
+    const settings = this.$store.getters['system/InstituteInformation']
+    this.InstitutionName = settings.InstitutionName
+    this.InstitutionID = settings.InstitutionID
+    this.JSOGoncologyboardID = settings.JSOGoncologyboardID
+    this.Preserve = JSON.stringify(
+      [
+        this.InstitutionName,
+        this.InstitutionID,
+        this.JSOGoncologyboardID
+      ])
   },
   computed: {
     ReadyToCommit () {

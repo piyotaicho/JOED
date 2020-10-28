@@ -18,11 +18,11 @@
       </div></div>
       <InputSwitchField
         v-model="editJSOGId"
-        title="日産婦の腫瘍登録症例番号の入力"
+        title="日産婦腫瘍登録 症例番号の入力"
         :options="{'しない': false, 'する': true}" />
       <InputSwitchField
         v-model="editNCDId"
-        title="ロボット支援下手術におけるNCD症例番号の入力"
+        title="ロボット支援下手術の NCD症例番号の入力"
         :options="{'しない': false, 'する': true}" />
     </div>
 
@@ -53,12 +53,10 @@ export default {
   },
   created () {
     const settings = this.$store.getters['system/Settings']
-    this.showStartupDialog = settings.ShowStartupDialog
-    this.editJSOGId = settings.EditJSOGId
-    this.editNCDId = settings.EditNCDId
-    this.revertView = false
-
-    this.preserve = [this.showStartupDialog, this.editJSOGId, this.editNCDId, this.revertView].join('|')
+    this.$set(this, 'showStartupDialog', settings.ShowStartupDialog)
+    this.$set(this, 'editJSOGId', settings.EditJSOGId)
+    this.$set(this, 'editNCDId', settings.EditNCDId)
+    this.Preserve()
   },
   computed: {
     changed () {
@@ -67,17 +65,20 @@ export default {
     }
   },
   methods: {
+    Preserve () {
+      this.$set(this, 'preserve', [this.showStartupDialog, this.editJSOGId, this.editNCDId, this.revertView].join('|'))
+    },
     async CommitSettings () {
       this.$store.commit('system/SetPreferences', {
         ShowStartupDialog: this.showStartupDialog,
-        EditJSOGId: !this.editJSOGId,
+        EditJSOGId: this.editJSOGId,
         EditNCDId: this.editNCDId
       })
       if (this.revertView) {
         this.$store.commit('system/SetView', {})
       }
       await this.$store.dispatch('system/SavePreferences')
-      this.preserve = [this.showStartupDialog, this.editJSOGId, this.editNCDId, this.revertView].join('|')
+      this.Preserve()
 
       Popups.information('設定が変更されました.')
     }

@@ -29,7 +29,7 @@ export default {
       return process.env.VUE_APP_VERSION
     },
     Settings (state) {
-      return Object.assign({}, state.settings)
+      return state.settings
     },
     InstituteInformation (state) {
       return {
@@ -100,7 +100,7 @@ export default {
     LoadPreferences (context) {
       return LoadConfig(context)
         .then(settingdocument => {
-          const Settings = Object.assign({ View: { Filters: undefined, Sort: undefined } }, settingdocument)
+          const Settings = Object.assign({ View: { Filters: undefined, Sort: undefined } }, settingdocument.Settings)
           if (Settings) {
             context.commit('SetPreferences', Settings)
             context.commit('SetFilters', Settings.View.Filters, { root: true })
@@ -112,8 +112,7 @@ export default {
         })
     },
     SavePreferences (context) {
-      const settings = JSON.parse(JSON.stringify(context.state.settings))
-      return SaveConfig(settings, context)
+      return SaveConfig(context.state.settings, context)
     },
     async SetAndSaveShowStartupDialog (context, value) {
       context.commit('SetPreferences', { ShowStartupDialog: !!value })

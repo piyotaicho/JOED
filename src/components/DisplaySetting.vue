@@ -124,27 +124,31 @@ export default {
       // 現在の表示をインポート
       const view = this.$store.getters.ViewSettings
 
-      if (Object.entries(view.Sort).length > 0) {
-        this.$set(this.Sort, 'Item', Object.entries(view.Sort)[0][0])
-        this.$set(this.Sort, 'Order', Object.entries(view.Sort)[0][1])
-      }
-
-      const viewfilters = view.Filters.map(filter => {
-        switch (filter.Field) {
-          case 'TypeOfProcedure':
-            return filter.Value
-          case 'DateOfProcedure':
-            return filter.Value + '年'
-          default:
-            for (const condition of Object.keys(this.Conditions)) {
-              if (this.Conditions[condition].Field === filter.Field) {
-                return condition
-              }
-            }
-            return undefined
+      if (view) {
+        if (view.Sort && Object.entries(view.Sort).length > 0) {
+          this.$set(this.Sort, 'Item', Object.entries(view.Sort)[0][0])
+          this.$set(this.Sort, 'Order', Object.entries(view.Sort)[0][1])
         }
-      }).filter(item => item)
-      this.FilterItems.splice(0, this.FilterItems.length, ...viewfilters)
+
+        const viewfilters = view.Filters
+          ? view.Filters.map(filter => {
+            switch (filter.Field) {
+              case 'TypeOfProcedure':
+                return filter.Value
+              case 'DateOfProcedure':
+                return filter.Value + '年'
+              default:
+                for (const condition of Object.keys(this.Conditions)) {
+                  if (this.Conditions[condition].Field === filter.Field) {
+                    return condition
+                  }
+                }
+                return undefined
+            }
+          }).filter(item => item)
+          : []
+        this.FilterItems.splice(0, this.FilterItems.length, ...viewfilters)
+      }
     },
     Apply () {
       const FilterObjects = this.FilterItems
