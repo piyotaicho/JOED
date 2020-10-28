@@ -7,7 +7,7 @@ export async function LoadConfig () {
 }
 
 export async function SaveConfig (payload) {
-  return await ipcSaveConfig('Config', payload)
+  return await ipcSaveConfig('Config', { Settings: payload })
 }
 
 export async function LoadPassword () {
