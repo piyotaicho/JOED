@@ -191,7 +191,6 @@ function DiagnosesAndProceduresPrimary (Record, CaseData) {
 }
 
 function DiagnosesAndProceduresSecondary (Record, CaseData) {
-  // 併施手術を設定
   if (Record['腹腔鏡併施手術_術後診断1']) { // }.trim()) {
     if (Record['腹腔鏡併施手術_術後診断1'] !== Record['腹腔鏡術後診断'] || Record['腹腔鏡併施手術_術後診断1'] === 'その他') {
       CaseData.Diagnoses.push(handleUserTyped(
@@ -208,6 +207,7 @@ function DiagnosesAndProceduresSecondary (Record, CaseData) {
     )
     if (item) CaseData.Procedures.push(item)
   }
+
   if (Record['腹腔鏡併施手術_術後診断2']) { // }.trim()) {
     if (Record['腹腔鏡併施手術_術後診断2'] !== Record['腹腔鏡術後診断'] || Record['腹腔鏡併施手術_術後診断2'] === 'その他') {
       CaseData.Diagnoses.push(handleUserTyped(
@@ -224,10 +224,18 @@ function DiagnosesAndProceduresSecondary (Record, CaseData) {
     )
     if (item) CaseData.Procedures.push(item)
   }
+
   if (Record['子宮鏡併施手術_術後診断']) { // }.trim()) {
     if (Record['子宮鏡併施手術_術後診断'] !== Record['子宮鏡術後診断'] || Record['子宮鏡併施手術_術後診断'] === 'その他') {
       CaseData.Diagnoses.push(handleUserTyped(
         '子宮鏡', Record['子宮鏡併施手術_術後診断'], Record['子宮鏡併施手術_術後診断その他']
+      ))
+    }
+  }
+  if (Record['子宮鏡併施手術_施行手術']) { // }.trim()) {
+    if (Record['子宮鏡併施手術_施行手術'] !== Record['子宮鏡施行手術'] || Record['子宮鏡併施手術_施行手術'] === 'その他') {
+      CaseData.Procedures.push(handleUserTyped(
+        '子宮鏡', Record['子宮鏡併施手術_施行手術'], Record['子宮鏡併施手術_施行手術その他']
       ))
     }
   }
