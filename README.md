@@ -4,13 +4,21 @@
 
 ## 構成
 
-- vue cli + vuex + router
-- nedb
+- vue (cli 3) + vuex + router
+- electron
 
 追加パッケージ
 
-- vuedraggable
+- nedb
+- Element
+- Vue.Draggable
+- Vuejs Datepicker
+- Vue infinite loading
 - cross-plathome-YuGothic
+- js-xxhash
+- Difflib.js
+- encoding.js
+- electron store
 
 ### 試験環境
 
@@ -45,6 +53,7 @@ https://p4testsuite.hostingerapp.com/JOEDv5/Latest/
 - 2020-10-27 検索をelectronでの動作が可能なように正規表現での検索に全て変更. 表示状態の保存など実装. それにあわせて, vuexのミューテーションを全てリライト.
 - 2020-10-28 全機能を実装終了. マスタの最終チェック待ち. electronもインストーラー以外は完成.
 - 2020-10-29 設定保存まわりのバグを修正. 要望の強かった手術時間の直接入力としてブラインドタイプから選択されるように拡張.
+- 2020-10-30 手術時間でのソートが正しく動作するように. 合併症入力画面の動作不具合があるためリアクティブ周りを修正. 命名規則に則りコンポーネントの名称・ファイル名の変更多数.
 
 現時点で作成中のweb版ではデータはブラウザのストレージに保存されます.データベースの削除・修正などは https://p4testsuite.hostingerapp.com/JOEDv5/Database_Manager/ のユーティリティを使用してください.
 
@@ -144,8 +153,8 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |Diagnosis                  |string |診断名|
 |ICD10                      |string |ICD-10コード(未実装)
 |Category                   |array  |関連手技 ["腹腔鏡","ロボット支援下","子宮鏡","卵管鏡"]|
-|Target                     |array  |部位 ["子宮","卵巣","卵管","その他"]|
-|Notification               |string |入力時に表示されるおしらせ|
+|Target                     |array  |部位 ["子宮","付属器","その他"]|
+|Notification               |string |入力時に表示されるおしらせ(未実装)|
 |Procedure                  |string |1:1で紐付けられた術式|
 |VaildFrom                  |integer|適用可能年開始|
 |VaildTo                    |integer|適用可能年終了<br/>これより後の年次ではこの病名は無効かつ登録出来ない|
@@ -168,7 +177,7 @@ DiagnosisMasterから作成される
 |Procedure                  |string |手技名|
 |STEM7                      |string |STEM7コード(未実装)|
 |Category                   |array  |良悪性分類 ["腹腔鏡","腹腔鏡悪性","ロボット","ロボット悪性","子宮鏡","卵管鏡"]|
-|Target                     |array  |部位 ["子宮","卵巣","卵管","その他"]|
+|Target                     |array  |部位 ["子宮","付属器","その他"]|
 |VaildFrom                  |string |適用可能年開始|
 |VaildTo                    |string |適用可能年終了<br/>これより後の年次ではこの術式はこの区分は無効かつ登録出来ない|
 |Ditto                      |array  |同時に入力できない同一手技に相当する手技名|
@@ -184,16 +193,14 @@ ProcedureMasterから作成される
         'Target': {
             'Procedure', // なにも付随情報が無い場合
             {
-                {
-                    Text: 'Procedure',
-                    Ditto: [...],
-                    AdditionalProcedure: 'AdditionalProcedure',
-                    Description: {
-                        Text: 'Titie',
-                        Values: [...selections]
-                        // selectionsに$MULTI$を含む場合は複数選択可能
-                        // $で終了する項目を選択した場合はこのエントリ自体が生成されない(=単独作成不可)
-                    }
+                Text: 'Procedure',
+                Ditto: [...],
+                AdditionalProcedure: 'AdditionalProcedure',
+                Description: {
+                    Text: 'Titie',
+                    Values: [...selections]
+                    // selectionsに$MULTI$を含む場合は複数選択可能
+                    // $で終了する項目を選択した場合はこのエントリ自体が生成されない(=単独作成不可)
                 }
             }
         }
