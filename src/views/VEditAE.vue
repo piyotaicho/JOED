@@ -771,11 +771,11 @@ export default {
       const $validateGrade = () => {
         if (this.AE.Grade && this.AE.Course.length > 0) {
           // 合併症は構造が複雑でマスタ化が困難なのでドキュメントの内容からチェック用マスタを生成する
-          const worstcourses = []
-          this.$refs['grade' + this.AE.Grade.substr(0, 1)]
-            .getElementsByTagName('INPUT')
-            .forEach(element => worstcourses.push(element.value))
-
+          const worstcourses = Array.prototype.map.call(
+            this.$refs['grade' + this.AE.Grade.substr(0, 1)]
+              .getElementsByTagName('INPUT'),
+            element => element.value
+          )
           for (const course of this.AE.Course) {
             if (worstcourses.indexOf(course) !== -1) return true
           }
