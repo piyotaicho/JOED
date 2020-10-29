@@ -68,9 +68,6 @@ export default {
           Vue.set(state.settings, key, payload[key])
         }
       }
-      if (state.StartupDialogStatus && !state.settings.ShowStartupDialog) {
-        Vue.set(state, 'StartupDialogStatus', false)
-      }
     },
     SetView (state, payload = {}) {
       const newView = {}
@@ -93,7 +90,7 @@ export default {
       ))
     },
     CloseStartupDialog (state) {
-      Vue.set(state, 'StartupDialogStatus', false)
+      state.StartupDialogStatus = false
     }
   },
   actions: {

@@ -38,7 +38,7 @@ export default {
   computed: {
     ShowWelcomeMessage: {
       get () {
-        return this.$store.getters['system/ShowStartupDialog']
+        return this.$store.getters['system/Settings'].ShowStartupDialog
       },
       async set (newvalue) {
         await this.$store.dispatch('system/SetAndSaveShowStartupDialog', newvalue)
