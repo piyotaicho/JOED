@@ -105,6 +105,7 @@ if (isDevelopment) {
     })
   } else {
     process.on('SIGTERM', () => {
+      console.error('二重起動はできません.')
       app.quit()
     })
   }
@@ -142,7 +143,16 @@ const MenuTemplate = [
   {
     label: 'ヘルプ',
     submenu: [
-      { label: app.getName() + 'について', role: 'about' }
+      { label: app.getName() + 'について', role: 'about' },
+      ...(
+        isDevelopment
+          ? [{
+            label: '開発者ツール',
+            accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
+            click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools()
+          }]
+          : []
+      )
     ]
   }
 ]
@@ -197,26 +207,24 @@ function createDatabaseInstance () {
   // 原則としてバックアップ作成に関わるエラーは全て無視.
   try {
     fs.copyFileSync(DBfilename + '.2', DBfilename + '.3')
-  } catch (error) {
-    isDevelopment && console.log(error)
-  }
-  try {
-    fs.copyFileSync(DBfilename + '.1', DBfilename + '.2')
-  } catch (error) {
-    isDevelopment && console.log(error)
-  }
-  try {
-    fs.copyFileSync(DBfilename, DBfilename + '.1')
-  } catch (error) {
-    isDevelopment && console.log(error)
+  } catch (_) {
   }
 
-  isDevelopment && console.log('Handle database file ' + DBfilename)
+  try {
+    fs.copyFileSync(DBfilename + '.1', DBfilename + '.2')
+  } catch (_) {
+  }
+
+  try {
+    fs.copyFileSync(DBfilename, DBfilename + '.1')
+  } catch (_) {
+  }
 
   try {
     return new DB({
       filename: DBfilename,
-      autoload: true
+      autoload: true,
+      compareStrings: function (a, b) { return StringCompare(a, b) }
     })
   } catch (error) {
     // 致命的エラーなのでダイアログを出して終了する
@@ -224,10 +232,27 @@ function createDatabaseInstance () {
     dialog.showMessageBoxSync(win, {
       type: 'error',
       buttons: ['OK'],
-      message: 'データベースファイルの操作に失敗しました, アプリケーションを起動できません.\nシステム管理者もしくは学会までお問い合わせください.'
+      message: 'データベースファイルの操作に失敗しました, アプリケーションを起動できません.\n以下の情報を添えて学会までお問い合わせください.\n\n' + error.message
     })
     app.quit()
     return undefined
+  }
+}
+
+// 手術時間を比較する
+//
+const TimeStringMatch = new RegExp(/[1-9]\d?0分/)
+const ExtractTime = new RegExp(/([1-9]\d?0)分(以上|未満)/)
+
+function StringCompare (stringA = '', stringB = '') {
+  if (TimeStringMatch.test(stringA) && TimeStringMatch.test(stringB)) {
+    const matchA = ExtractTime.exec(stringA)
+    const valueA = Number(matchA[1]) - ((matchA[2] || '以上') === '未満' ? 1 : 0)
+    const matchB = ExtractTime.exec(stringB)
+    const valueB = Number(matchB[1]) - ((matchB[2] || '以上') === '未満' ? 1 : 0)
+    return valueA === valueB ? 0 : valueA < valueB ? -1 : 1
+  } else {
+    return stringA.localeCompare(stringB)
   }
 }
 

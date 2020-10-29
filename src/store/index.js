@@ -6,8 +6,6 @@ import password from '@/store/modules/passwordauth'
 
 Vue.use(Vuex)
 
-const Database = require('nedb')
-
 const store = new Vuex.Store({
   modules: {
     system, password
@@ -173,10 +171,8 @@ const store = new Vuex.Store({
       if (state.DatabaseInstance === undefined) {
         Vue.set(state, 'DatabaseInstance', NedbAccess.CreateInstance(
           {
-            filename: 'joed.nedb',
-            autoload: true
-          },
-          Database
+            filename: 'joed.nedb'
+          }
         ))
       }
     },
@@ -352,7 +348,6 @@ const store = new Vuex.Store({
     //
     // @param {Object} オブジェクトCase
     InsertDocument (context, payload) {
-      // const DatabaseInstance = context.state.DatabaseInstance
       const ErrorAutonumberFailed = 'データベースエラーです. AUTO-NUMBERING FAILED'
 
       return new Promise((resolve, reject) => {

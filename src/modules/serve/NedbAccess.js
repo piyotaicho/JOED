@@ -1,5 +1,15 @@
-export function CreateInstance (payload, NedbDatabaseObject) {
-  return new NedbDatabaseObject(payload)
+const _Database = require('nedb')
+
+export function CreateInstance (payload) { // }, NedbDatabaseObject) {
+  const config = Object.assign(
+    {
+      filename: '',
+      autoload: true,
+      compareStrings: function (a, b) { return StringCompare(a, b) }
+    },
+    payload)
+
+  return new _Database(config)
 }
 
 export function Insert (payload, DatabaseInstance) {
@@ -104,4 +114,19 @@ export function Remove (payload, DatabaseInstance) {
         }
       })
   })
+}
+
+const TimeStringMatch = new RegExp(/[1-9]\d?0分/)
+const ExtractTime = new RegExp(/([1-9]\d?0)分(以上|未満)/)
+
+function StringCompare (stringA = '', stringB = '') {
+  if (TimeStringMatch.test(stringA) && TimeStringMatch.test(stringB)) {
+    const matchA = ExtractTime.exec(stringA)
+    const valueA = Number(matchA[1]) - ((matchA[2] || '以上') === '未満' ? 1 : 0)
+    const matchB = ExtractTime.exec(stringB)
+    const valueB = Number(matchB[1]) - ((matchB[2] || '以上') === '未満' ? 1 : 0)
+    return valueA === valueB ? 0 : valueA < valueB ? -1 : 1
+  } else {
+    return stringA.localeCompare(stringB)
+  }
 }
