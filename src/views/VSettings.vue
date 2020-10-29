@@ -27,7 +27,7 @@ import SettingOfView from '@/components/SettingOfView'
 import About from '@/components/About'
 
 export default {
-  name: 'ViewSettings',
+  name: 'VSettings',
   components: {
     SettingOfInstutute, SettingOfAuthentication, SettingOfView, About
   },

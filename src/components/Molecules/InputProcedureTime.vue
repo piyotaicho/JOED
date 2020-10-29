@@ -57,25 +57,15 @@ export default {
   },
   methods: {
     TypeInChar (char) {
-      /*
-      const keyCodeToChar = {
-        // eslint-disable-next-line object-property-newline
-        48: '0', 49: '1', 50: '2', 51: '3', 52: '4', 53: '5', 54: '6', 55: '7', 56: '8', 57: '9',
-        // eslint-disable-next-line object-property-newline
-        96: '0', 97: '1', 98: '2', 99: '3', 100: '4', 101: '5', 102: '6', 103: '7', 104: '8', 105: '9',
-        // eslint-disable-next-line object-property-newline
-        186: ':'
-      }
-      */
       if (char === 'DEL') {
-        this.$set(this, 'typed', this.typed.slice(0, -1))
+        this.typed = this.typed.slice(0, -1)
       } else {
-        this.$set(this, 'typed', this.typed + char)
+        this.typed = (this.typed + char).substr(-4, 4)
       }
-      this.$set(this, 'ProcedureTime', ProcedureTimeSelections(this.typed))
+      this.ProcedureTime = ProcedureTimeSelections(this.typed)
     },
     ClearTypedValue () {
-      this.$set(this, 'typed', '')
+      this.typed = ''
     }
   }
 }

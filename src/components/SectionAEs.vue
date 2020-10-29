@@ -13,7 +13,7 @@
         <div slot="content">
           <DescriptionOfAE :item="item"></DescriptionOfAE>
         </div>
-        <ItemOfSection :item="item" @remove="RemoveItem(index)" :draggable="false" #default="slotProps">
+        <SectionItem :item="item" @remove="RemoveItem(index)" :draggable="false" #default="slotProps">
           <span class="w20">{{ slotProps.item.Category }}</span>
           <span class="w30">
             {{ (slotProps.item.Category === '出血')
@@ -24,7 +24,7 @@
                 ||(slotProps.item.Cause&&slotProps.item.Cause[0])) }}
           </span>
           <span class="w20">( Grade : {{slotProps.item.Grade}} )</span>
-        </ItemOfSection>
+        </SectionItem>
       </el-tooltip>
     </div>
     <NewEntryButton @click="AddNewItem()" tabindex="0" />

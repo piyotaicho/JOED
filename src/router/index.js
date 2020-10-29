@@ -3,16 +3,16 @@ import VueRouter from 'vue-router'
 
 import ViewLogin from '@/views/VLogin'
 
-import ViewList from '@/views/VList'
+import VList from '@/views/VList'
 
-import ViewEditCase from '@/views/VEditCase'
-import ViewEditItemDiagnosis from '@/views/VEditItemDiagnosis'
-import ViewEditItemProcedure from '@/views/VEditItemProcedure'
-import ViewEditItemAE from '@/views/VEditItemAE'
+import VEdit from '@/views/VEdit'
+import ViewEditItemDiagnosis from '@/views/VEditDiagnosis'
+import ViewEditItemProcedure from '@/views/VEditProcedure'
+import ViewEditItemAE from '@/views/VEditAE'
 
 import ViewUtilites from '@/views/VUtilities'
 // import ViewAbout from '@/views/VAbout'
-import ViewSettings from '@/views/VSettings'
+import VSettings from '@/views/VSettings'
 import ViewExport from '@/views/VExport'
 import ViewImport from '@/views/VImport'
 import Store from '@/store/index'
@@ -28,13 +28,13 @@ const routes = [
   {
     name: 'list',
     path: '/list',
-    component: ViewList,
+    component: VList,
     meta: { requireLogin: true }
   },
   {
     name: 'edit',
     path: '/edit/:uid',
-    component: ViewEditCase,
+    component: VEdit,
     props: true,
     meta: { requireLogin: true },
     children: [
@@ -79,7 +79,7 @@ const routes = [
   {
     name: 'settings',
     path: '/settings',
-    component: ViewSettings,
+    component: VSettings,
     meta: { requireLogin: true }
   }
 ]

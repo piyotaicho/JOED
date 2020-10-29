@@ -1,12 +1,12 @@
 <script>
 import draggable from 'vuedraggable'
-import ItemOfSection from '@/components/ItemOfEditSection'
+import SectionItem from '@/components/SectionItem'
 import NewEntryButton from '@/components/Atoms/NewEntryButton'
 
 export default {
   components:
   {
-    draggable, ItemOfSection, NewEntryButton
+    draggable, SectionItem, NewEntryButton
   },
   props: {
     container: {

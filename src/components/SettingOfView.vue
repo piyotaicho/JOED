@@ -53,9 +53,9 @@ export default {
   },
   created () {
     const settings = this.$store.getters['system/Settings']
-    this.$set(this, 'showStartupDialog', settings.ShowStartupDialog)
-    this.$set(this, 'editJSOGId', settings.EditJSOGId)
-    this.$set(this, 'editNCDId', settings.EditNCDId)
+    this.showStartupDialog = settings.ShowStartupDialog
+    this.editJSOGId = settings.EditJSOGId
+    this.editNCDId = settings.EditNCDId
     this.Preserve()
   },
   computed: {
@@ -66,7 +66,7 @@ export default {
   },
   methods: {
     Preserve () {
-      this.$set(this, 'preserve', [this.showStartupDialog, this.editJSOGId, this.editNCDId, this.revertView].join('|'))
+      this.preserve = [this.showStartupDialog, this.editJSOGId, this.editNCDId, this.revertView].join('|')
     },
     async CommitSettings () {
       this.$store.commit('system/SetPreferences', {

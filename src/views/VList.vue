@@ -35,7 +35,7 @@ import WelcomeBanner from '@/components/Molecules/WelcomeBanner'
 import InfiniteLoading from 'vue-infinite-loading'
 
 export default {
-  name: 'ViewList',
+  name: 'VList',
   components: {
     DrawerButton, NewEntryButton, Caseitem, Drawer, WelcomeBanner, InfiniteLoading
   },

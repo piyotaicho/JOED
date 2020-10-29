@@ -106,7 +106,7 @@ import Popups from 'depmodules/Popups'
 import { ValidateCase } from '@/modules/CaseValidater'
 
 export default {
-  name: 'ViewEditCase',
+  name: 'VEdit',
   components: {
     InputTextField,
     InputNumberField,
@@ -158,15 +158,10 @@ export default {
           const casedocument = this.$store.getters.CaseDocument(this.uid)
           for (var key in this.CaseData) {
             if (casedocument !== undefined && casedocument[key] !== undefined) {
-              switch (toString.call(casedocument[key])) {
-                case '[object Object]':
-                  this.CaseData[key] = Object.assign(this.CaseData[key], casedocument[key])
-                  break
-                case '[object Array]':
-                  casedocument[key].forEach(item => this.CaseData[key].push(item))
-                  break
-                default:
-                  this.CaseData[key] = casedocument[key]
+              if (toString.call(casedocument[key]) === '[object Object]') {
+                this.$set(this.CaseData, key, Object.assign(this.CaseData[key], casedocument[key]))
+              } else {
+                this.$set(this.CaseData, key, casedocument[key])
               }
             }
           }
@@ -187,7 +182,7 @@ export default {
         return !this.CaseData.PresentAE
       },
       set (newvalue) {
-        this.CaseData.PresentAE = !newvalue
+        this.$set(this.CaseData, 'PresentAE', !newvalue)
       }
     },
     isEditingExistingItem () {
@@ -208,7 +203,7 @@ export default {
         this.$router.push({ name: 'list', hash: ('#case-' + uid) })
       }
     },
-    GoAnotherEdit (uid) {
+    AnotherEdit (uid) {
       if (uid > 0) {
         this.$router.push({ name: 'edit', params: { uid: uid } })
       }
@@ -238,7 +233,7 @@ export default {
     EditListItem (target, index, value) {
       this.UpdateList(this.CaseData[target], index, value)
       if (target === 'AEs') {
-        this.CaseData.PresentAE = (this.CaseData.AEs.length > 0)
+        this.$set(this.CaseData, 'PresentAE', this.CaseData.AEs.length > 0)
       }
     },
     RemoveListItem (target, index) {
@@ -287,13 +282,13 @@ export default {
         .then(() => {
           switch (to) {
             case 'new':
-              this.GoAnotherEdit(0)
+              this.AnotherEdit(0)
               break
             case 'prev':
-              if (this.prevUid !== 0) this.GoAnotherEdit(this.prevUid)
+              if (this.prevUid !== 0) this.AnotherEdit(this.prevUid)
               break
             case 'next':
-              if (this.nextUid !== 0) this.GoAnotherEdit(this.nextUid)
+              if (this.nextUid !== 0) this.AnotherEdit(this.nextUid)
               break
             default:
               this.BackToList()

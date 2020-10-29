@@ -720,6 +720,7 @@ export default {
         return this.AE.Grade ? Number(this.AE.Grade[0]) >= (value || undefined) : !value
       }
     }
+
   },
   methods: {
     CategoryChanged () {
@@ -742,13 +743,15 @@ export default {
     GoBack () {
       this.$router.replace('./')
     },
-    CommitChanges () {
+    async CommitChanges () {
       const $validateCatogory = () => {
         switch (this.Category) {
           case '出血':
-            return (this.AE.BloodCount.trim === '') ? false
-              : (this.AE.BloodCount === '不明' ||
-              /^(\d{2,}|[5-9])\d{2}$/.test(ZenToHanNumbers(this.AE.BloodCount)))
+            return (this.AE.BloodCount.trim() === '') ? false
+              : (
+                this.AE.BloodCount === '不明' ||
+                /^(\d{2,}|[5-9])\d{2}$/.test(this.AE.BloodCount)
+              )
           case '気腹・潅流操作':
           case '術後':
             return this.AE.Title.length
@@ -769,7 +772,9 @@ export default {
         if (this.AE.Grade && this.AE.Course.length > 0) {
           // 合併症は構造が複雑でマスタ化が困難なのでドキュメントの内容からチェック用マスタを生成する
           const worstcourses = []
-          this.$refs['grade' + this.AE.Grade.substr(0, 1)].getElementsByTagName('INPUT').forEach(element => worstcourses.push(element.value))
+          this.$refs['grade' + this.AE.Grade.substr(0, 1)]
+            .getElementsByTagName('INPUT')
+            .forEach(element => worstcourses.push(element.value))
 
           for (const course of this.AE.Course) {
             if (worstcourses.indexOf(course) !== -1) return true
@@ -778,8 +783,13 @@ export default {
         return false
       }
 
+      if (this.AE.BloodCount !== '不明' && this.AE.BloodCount !== '') {
+        this.AE.BloodCount = ZenToHanNumbers(this.AE.BloodCount.trim())
+      }
+      await this.$nextTick()
+
       if (!$validateCatogory()) {
-        Popups.alert('合併症の内容登録に不足があります.')
+        Popups.alert('登録内容に未入力もしくは合併症の内容登録が不足しています.')
         return
       }
 
@@ -788,18 +798,15 @@ export default {
         return
       }
 
-      const filteredItems = { Category: this.Category }
-      if (this.AE.BloodCount !== '不明') {
-        this.AE.BloodCount = ZenToHanNumbers(this.AE.BloodCount.trim())
-      }
+      const documentAEItem = { Category: this.Category }
       for (const key in this.AE) {
         if (this.AE[key] &&
           (Array.isArray(this.AE[key]) ? this.AE[key].length > 0 : true)) {
-          filteredItems[key] = this.AE[key]
+          documentAEItem[key] = this.AE[key]
         }
       }
 
-      this.$emit('data-upsert', 'AEs', this.ItemIndex, filteredItems)
+      this.$emit('data-upsert', 'AEs', this.ItemIndex, documentAEItem)
       this.GoBack()
     }
   }

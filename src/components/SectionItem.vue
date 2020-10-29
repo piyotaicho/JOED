@@ -16,7 +16,7 @@
 import CaseDocumentHandler from '@/modules/DbItemHandler'
 
 export default {
-  name: 'ItemOfSection',
+  name: 'SectionItem',
   props: {
     item: {
       type: Object,
