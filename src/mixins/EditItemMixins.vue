@@ -51,11 +51,8 @@ export default {
     ToggleEditsection () {
       this.ExpandEditsection = !this.ExpandEditsection || (this.ItemValue.UserTyped === true) || this.IsItemEdited
     },
-    GoBack () {
-      this.$router.replace('./')
-    },
 
-    CategoryIsChanged () {
+    async CategoryIsChanged () {
       this.TargetOrgan = ''
       if (this.SelectedItem !== '') {
         this.EditableItem = ''
@@ -64,19 +61,19 @@ export default {
       this.SelectedItem = ''
       this.CandidateItems.splice(0)
 
-      this.$nextTick().then(_ => {
-        if (this.TargetOrgans.length === 1) {
-          this.TargetOrgan = this.TargetOrgans[0]
-          this.SetCandidateItemsBySelection()
-        }
-        this.$nextTick()
-      })
+      await this.$nextTick()
+
+      if (this.TargetOrgans.length === 1) {
+        this.TargetOrgan = this.TargetOrgans[0]
+        await this.$nextTick()
+
+        this.SetCandidateItemsBySelection()
+        await this.$nextTick()
+      }
     },
 
-    SubmitOnEnterkey (event) {
-      if (event.keyCode === 13) {
-        this.CommitChanges()
-      }
+    GoBack () {
+      this.$router.replace('./')
     }
   }
 }
