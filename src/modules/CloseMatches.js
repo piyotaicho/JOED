@@ -49,7 +49,7 @@ const DiagnosisTranslation = {
 const ProcedureTranslation = {
   '(のう|嚢)(腫|胞)': '嚢胞',
   '傍?(卵巣|卵管)': '卵巣 卵管 附属器',
-  'LA?M': '子宮筋腫核出術',
+  'T?LA?M': '子宮筋腫核出術',
   癌: '癌 摘出',
   子宮内膜症: '子宮内膜症 チョコレート嚢胞',
   トラケレクトミー: '頸部摘出術',
@@ -65,7 +65,11 @@ const ProcedureTranslation = {
   'D&C': '剥爬術',
   アブレーション: '焼灼術',
   IUD: '異物',
-  LSC: '骨盤臓器脱修復術'
+  LSC: '骨盤臓器脱修復術',
+  MEA: '子宮内膜焼灼術',
+  SO: '付属器切除術',
+  TLC: '嚢胞摘出術',
+  TCR: '摘出術'
 }
 
 export function getMatchesInDiagnoses (str = '', candidates = []) {
