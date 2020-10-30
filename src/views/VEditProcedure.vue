@@ -247,7 +247,7 @@ export default {
 
           const dittos = ProcedureMaster.getDittos(ProceduresTree.getItemByName(...temporaryItem.Chain, temporaryItem.Text, this.year))
           if (dittos) {
-            temporaryItem.Ditto = Object.assign([], dittos)
+            temporaryItem.Ditto = [...dittos]
           }
 
           if (this.Description.Title !== '') {

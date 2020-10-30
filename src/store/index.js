@@ -113,9 +113,9 @@ const store = new Vuex.Store({
     // 現在のView設定からのクエリを作成する
     //
     ViewQuery (state) {
-      const filters = Object.assign([], state.Filters)
+      const filters = [...state.Filters]
       const query = {}
-      const sort = Object.assign({}, state.Sort)
+      const sort = { ...state.Sort }
 
       if (Object.keys(state.Search.Filter).length > 0) {
         if (state.Search.IgnoreQuery) {

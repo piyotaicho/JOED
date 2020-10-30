@@ -25,7 +25,7 @@
         :options="{しない: false, する: true}" />
 
       <div>
-        <el-button type="primary" @click="startProcess()" :disabled="exportYear==''" :loading="processing">出力データの作成</el-button>
+        <el-button type="primary" @click="Process()" :disabled="exportYear==''" :loading="processing">出力データの作成</el-button>
       </div>
     </div>
 
@@ -104,13 +104,13 @@ export default {
   },
   watch: {
     exportYear () {
-      this.resetState()
+      this.ResetState()
     },
     exportAllFields () {
-      this.resetState()
+      this.ResetState()
     },
     exportDateOfProcedure () {
-      this.resetState()
+      this.ResetState()
     }
   },
   computed: {
@@ -141,11 +141,12 @@ export default {
     }
   },
   methods: {
-    resetState () {
+    ResetState () {
       this.processStep = undefined
       this.exportText = ''
     },
-    async startProcess () {
+
+    async Process () {
       if (this.processing) return
 
       this.processStep = 0
@@ -204,17 +205,14 @@ export default {
       }
 
       const countJSOGId = await this.$store.dispatch('dbCount', {
-        Query: Object.assign(
+        Query:
           {
-            JSOGId: { $exists: true }
-          },
-          this.baseQuery
-        )
+            JSOGId: { $exists: true },
+            ...this.baseQuery
+          }
       })
-      if (countJSOGId > 0) {
-        if (!this.$store.getters['sysyem/JSOGInstitutionID']) {
-          throw new Error('日本産科婦人科学会腫瘍登録施設番号が未設定です.')
-        }
+      if (countJSOGId > 0 && !this.$store.getters['system/JSOGInstitutionID']) {
+        throw new Error('日本産科婦人科学会腫瘍登録施設番号が未設定です.')
       }
     },
 
@@ -223,12 +221,11 @@ export default {
     // インポートデータ( Imported )で特になんの問題も無くインポートできたもの以外には Notification がある
     async CheckImported () {
       const count = await this.$store.dispatch('dbCount', {
-        Query: Object.assign(
+        Query:
           {
-            Imported: { $exists: true }
-          },
-          this.baseQuery
-        )
+            Imported: { $exists: true },
+            ...this.baseQuery
+          }
       })
       if (count > 0) {
         throw new Error('未確認の読み込み症例が ' + count + ' 症例あります.\n確認を御願いします.')
@@ -296,12 +293,17 @@ export default {
           (
             await this.$store.dispatch('dbFindOne',
               {
-                Query: Object.assign(
-                  { UniqueID: { $exists: true } },
-                  this.baseQuery),
+                Query:
+                  {
+                    UniqueID: { $exists: true },
+                    ...this.baseQuery
+                  },
                 Sort: { UniqueID: -1 }
               }) ||
-              { UniqueID: '0000-99999-0' }
+              {
+                // UniqueIDが無い場合のダミー つまるところ 0.
+                UniqueID: '2222-99001-0'
+              }
           ).UniqueID.substr(11)
         )
 

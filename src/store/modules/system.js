@@ -97,7 +97,15 @@ export default {
     LoadPreferences (context) {
       return LoadConfig(context)
         .then(settingdocument => {
-          const Settings = Object.assign({ View: { Filters: undefined, Sort: undefined } }, settingdocument.Settings)
+          const Settings =
+            {
+              View: {
+                Filters: undefined,
+                Sort: undefined
+              },
+              ...settingdocument.Settings
+            }
+
           if (Settings) {
             context.commit('SetPreferences', Settings)
             context.commit('SetFilters', Settings.View.Filters, { root: true })
