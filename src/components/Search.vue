@@ -156,7 +156,7 @@ const SearchSetting = {
       if (queries.length > 0) {
         return { UniqueID: { $in: [...queries] } }
       } else {
-        return null
+        return undefined
       }
     }
   }
@@ -201,7 +201,7 @@ export default {
           SearchSetting[this.Field].createquery(this.Search, this.UseRegexp) || {}
         )[0]
 
-        if (query.length === 2) {
+        if (query && query.length === 2) {
           this.$store.commit('SetSearch', {
             IgnoreQuery: this.IgnoreQuery,
             Filter: {
