@@ -748,10 +748,7 @@ export default {
         switch (this.Category) {
           case '出血':
             return (this.AE.BloodCount.trim() === '') ? false
-              : (
-                this.AE.BloodCount === '不明' ||
-                /^(\d{2,}|[5-9])\d{2}$/.test(this.AE.BloodCount)
-              )
+              : /^(不明|([1-9]\d+|[5-9])\d{2})$/.test(this.AE.BloodCount)
           case '気腹・潅流操作':
           case '術後':
             return this.AE.Title.length
@@ -789,7 +786,7 @@ export default {
       await this.$nextTick()
 
       if (!$validateCatogory()) {
-        Popups.alert('登録内容に未入力もしくは合併症の内容登録が不足しています.')
+        Popups.alert('登録内容が不十分です.')
         return
       }
 

@@ -2,19 +2,19 @@ import DaignosisMaster from '@/modules/Masters/DiagnosisItemList'
 import ProcedureMaster from '@/modules/Masters/ProcedureItemList'
 
 // 日付の表記
-export const DateFormat = /^20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/g
+export const DateFormat = /^20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/
 
 // 施設番号の表記
-export const InstituteIDFormat = /^(0[1-9]|[1-3]\d|4[0-7])\d{3}$/g
+export const InstituteIDFormat = /^(0[1-9]|[1-3]\d|4[0-7])\d{3}$/
 
 // UniqueIDの表記
-export const UniqueIDFormat = /^(0[1-9]|[1-3]\d|4[0-7])\d{3}-20\d{2}-[0-9]\d*/g
+export const UniqueIDFormat = /^(0[1-9]|[1-3]\d|4[0-7])\d{3}-20\d{2}-[0-9]\d*$/
 
 // 2020年時点の日産腫瘍登録患者No.表記
-export const JSOGboardCaseNoFormat = /^(CC|EM|US|UAS|OV|VU|TS)20\d{2}-\d+$/ig
+export const JSOGboardCaseNoFormat = /^(CC|EM|US|UAS|OV|VU|TS)20\d{2}-\d+$/i
 
 // NCDの症例識別コード
-export const NCDIdFormat = /\d{18}-\d{2}-\d{2}-\d{2}/g
+export const NCDIdFormat = /^\d{18}-\d{2}-\d{2}-\d{2}$/
 
 // カテゴリチェック(診断のカテゴリに集約する)のテーブル
 export const CategoryTranslation = {

@@ -241,8 +241,8 @@ function createDatabaseInstance () {
 
 // 手術時間を比較する
 //
-const TimeStringMatch = new RegExp(/[1-9]\d?0分/)
-const ExtractTime = new RegExp(/([1-9]\d?0)分(以上|未満)/)
+const TimeStringMatch = /[1-9]\d?0分/
+const ExtractTime = /([1-9]\d?0)分(以上|未満)/
 
 function StringCompare (stringA = '', stringB = '') {
   if (TimeStringMatch.test(stringA) && TimeStringMatch.test(stringB)) {
