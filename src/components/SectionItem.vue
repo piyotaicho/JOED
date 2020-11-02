@@ -1,5 +1,5 @@
 <template>
-  <div class="section-item">
+  <div class="section-item" tabindex="0">
     <i class="handle el-icon-d-caret" v-if="draggable"></i>
     <slot :item="item">
       <span>{{Title}}</span>
