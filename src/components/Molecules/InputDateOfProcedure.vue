@@ -1,17 +1,18 @@
 <template>
   <div>
     <div class="label"><span>手術日</span></div>
-    <Datepicker
-      v-model="DateOfProcedure"
-      wrapper-class="field"
-      placeholder="クリックでカレンダー"
-      :typeable="true"
-      format="yyyy-MM-dd"
-      :input-class="RequiredClass"
-      :language="DatepickerTranslation"
-      :disabled="disabled"
-      >
-    </Datepicker>
+    <template ref="datepicker">
+      <Datepicker
+        v-model="DateOfProcedure"
+        wrapper-class="field"
+        placeholder="クリックでカレンダー"
+        :typeable="true"
+        format="yyyy-MM-dd"
+        :input-class="RequiredClass"
+        :language="DatepickerTranslation"
+        :disabled="disabled"
+        />
+    </template>
   </div>
 </template>
 

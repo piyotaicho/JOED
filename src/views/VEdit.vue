@@ -3,17 +3,17 @@
     <div class="app-dialog w800p">
       <div class="edit-top">
         <div class="edit-top-left">
-          <InputDateOfProcedure v-model="CaseData.DateOfProcedure" :required="true"/>
-          <InputTextField title="患者ID" :required="true" v-model="CaseData.PatientId" placeholder="施設の患者ID"/>
-          <InputTextField title="患者名" v-model="CaseData.Name"/>
-          <InputNumberField title="年齢" v-model="CaseData.Age" :min="1" :max="120"/>
+          <InputDateOfProcedure v-model="CaseData.DateOfProcedure" :required="true" :disabled="editingSection"/>
+          <InputTextField title="患者ID" :required="true" v-model="CaseData.PatientId" placeholder="施設の患者ID" :disabled="editingSection"/>
+          <InputTextField title="患者名" v-model="CaseData.Name" :disabled="editingSection"/>
+          <InputNumberField title="年齢" v-model="CaseData.Age" :min="1" :max="120" :disabled="editingSection"/>
         </div>
         <div class="edit-top-right">
-          <InputTextField title="腫瘍登録番号" v-model="CaseData.JSOGId" placeholder="腫瘍登録患者No." :disabled="skipJSOGId"/>
-          <InputTextField title="NCD症例識別コード" v-model="CaseData.NCDId" placeholder="NCD症例識別コード" :disabled="skipNCDId"/>
+          <InputTextField title="腫瘍登録番号" v-model="CaseData.JSOGId" placeholder="腫瘍登録患者No." :disabled="skipJSOGId || editingSection"/>
+          <InputTextField title="NCD症例識別コード" v-model="CaseData.NCDId" placeholder="NCD症例識別コード" :disabled="skipNCDId || editingSection"/>
           <div> <!-- spacer -->
           </div>
-          <InputProcedureTime v-model="CaseData.ProcedureTime"/>
+          <InputProcedureTime v-model="CaseData.ProcedureTime" :disabled="editingSection"/>
         </div>
       </div>
 
@@ -40,11 +40,13 @@
 
       <!-- Controles -->
       <el-button icon="el-icon-caret-left" size="medium" circle id="MovePrev"
+        tabindex="-1"
         v-if="isEditingExistingItem"
         :disabled="!prevUid"
         @click.exact="CancelEditing(-1)"
         @click.ctrl.shift="CommitCaseAndGo('prev')" />
       <el-button icon="el-icon-caret-right" size="medium" circle id="MoveNext"
+        tabindex="-1"
         v-if="isEditingExistingItem"
         :disabled="!nextUid"
         @click.exact="CancelEditing(+1)"
@@ -52,17 +54,25 @@
 
       <div class="edit-controls">
         <div class="edit-controls-left">
-          <el-button type="warning" icon="el-icon-warning" @click="ShowNotification"
+          <el-button type="warning" icon="el-icon-warning"
+            :disabled="editingSection"
+            @click="ShowNotification"
             v-if="CaseData.Notification">
             入力内容の確認が必要です.
           </el-button>
         </div>
         <div class="edit-controls-right">
           <div>
-            <el-button type="primary" icon="el-icon-arrow-left" @click="CancelEditing()">戻る</el-button>
+            <el-button type="primary" icon="el-icon-arrow-left"
+              :disabled="editingSection"
+              @click="CancelEditing()">
+              戻る
+            </el-button>
           </div>
           <div>
-            <el-dropdown split-button type="primary" @click="CommitCaseAndGo()" @command="CommitCaseAndGo">
+            <el-dropdown split-button type="primary"
+              @click="CommitCaseAndGo()"
+              @command="CommitCaseAndGo">
               編集内容を保存<i class="el-icon-loading" v-if="processing"/>
 
               <el-dropdown-menu slot="dropdown">
@@ -76,7 +86,11 @@
             </el-dropdown>
           </div>
           <div v-if="isEditingExistingItem">
-            <el-button type="danger" icon="el-icon-delete" @click="RemoveCase()">削除</el-button>
+            <el-button type="danger" icon="el-icon-delete"
+              :disabled="editingSection"
+              @click="RemoveCase()">
+              削除
+            </el-button>
           </div>
         </div>
       </div>
@@ -188,6 +202,9 @@ export default {
     isEditingExistingItem () {
       return (this.uid > 0)
     },
+    editingSection () {
+      return this.$route.name !== 'edit'
+    },
     skipJSOGId () {
       return !this.$store.getters['system/EditJSOGId']
     },
@@ -200,7 +217,7 @@ export default {
       if (uid === 0) {
         this.$router.push({ name: 'list' })
       } else {
-        this.$router.push({ name: 'list', hash: ('#case-' + uid) })
+        this.$router.push({ name: 'list', hash: ('#doc' + uid) })
       }
     },
     AnotherEdit (uid) {
@@ -213,6 +230,8 @@ export default {
     },
 
     EditSection (target, params = {}) {
+      if (this.editingSection) return
+
       const index = params.ItemIndex !== undefined ? params.ItemIndex : -1
       const value = params.ItemValue || {}
       const editingYear = this.CaseData.DateOfProcedure.substr(0, 4)
@@ -237,6 +256,8 @@ export default {
       }
     },
     RemoveListItem (target, index) {
+      if (this.editingSection) return
+
       this.EditListItem(target, index, '')
     },
     UpdateList (list, index, value) {
@@ -272,7 +293,7 @@ export default {
     },
 
     CommitCaseAndGo (to = '') {
-      if (this.processing) {
+      if (this.processing || this.editingSection) {
         return
       }
       // HACK:

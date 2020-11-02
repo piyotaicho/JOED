@@ -4,6 +4,7 @@
     <div class="field">
       <select v-model="ProcedureTime"
         :class="(!ProcedureTime)?'vacant':''"
+        :tabindex="tabindex"
         @blur="ClearTypedValue()"
         @keypress.esc="ClearTypedValue()"
         @keypress.delete="TypeInChar('DEL')"
@@ -36,6 +37,9 @@ export default {
   name: 'InputProcedureTime',
   props: {
     value: {},
+    tabindex: {
+      type: [Number, String]
+    },
     disabled: {
       type: Boolean,
       default: false

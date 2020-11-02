@@ -10,6 +10,7 @@
           :max="max"
           :class="AdditionalClass"
           :disabled="disabled"
+          :tabindex="tabindex"
           />
         <span class="number-field__control number-field__decrease" @click="Decrease">&#xe790;</span>
         <span class="number-field__control number-field__increase" @click="Increase">&#xe78f;</span>
@@ -32,6 +33,9 @@ export default {
     },
     placeholder: {
       default: ''
+    },
+    tabindex: {
+      type: [Number, String]
     },
     min: {
       type: Number

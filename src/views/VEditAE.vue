@@ -6,8 +6,7 @@
           <span>合併症の内容</span>
         </div>
         <div class="w80">
-          <!-- <select :value="Category" @change="Category = $event.target.value, CategoryChanged()"> -->
-          <select v-model="Category" @change="CategoryChanged()">
+          <select v-model="Category" @change="CategoryChanged()" ref="firstelement">
             <option value="" disabled style="display:none;">リストから選択</option>
             <option value="出血">総出血量500ml以上</option>
             <option value="術中手術操作">術中手術操作に伴う合併症・偶発症</option>
@@ -26,44 +25,24 @@
         </div>
         <div class="w80">
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="皮下気腫"/>
-              皮下気腫
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="ガス塞栓（炭酸ガス）"/>
-              ガス塞栓（炭酸ガス）
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="ガス塞栓（空気）"/>
-              ガス塞栓（空気）
-            </label>
+            <LabeledCheckbox v-model="AE.Title" value="皮下気腫"/>
+            <LabeledCheckbox v-model="AE.Title" value="ガス塞栓(炭酸ガス)">炭酸ガス塞栓</LabeledCheckbox>
+            <LabeledCheckbox v-model="AE.Title" value="ガス塞栓(空気)">空気塞栓</LabeledCheckbox>
           </div>
           <div>
+            <LabeledCheckbox v-model="AE.Title" value="経過観察">経過観察</LabeledCheckbox>
             <label>
               <input type="checkbox" v-model="AE.Title" value="水中毒"/>
               水中毒
             </label>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="そのほか心臓障害"/>
-              そのほか心臓障害
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="そのほか呼吸器障害"/>
-              そのほか呼吸器障害
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="そのほか神経系障害"/>
-              そのほか神経系障害
-            </label>
+            <LabeledCheckbox v-model="AE.Title" value="そのほか心臓障害"/>
+            <LabeledCheckbox v-model="AE.Title" value="そのほか呼吸器障害"/>
+            <LabeledCheckbox v-model="AE.Title" value="そのほか神経系障害"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="上記以外"/>
-              上記以外
-            </label>
+            <LabeledCheckbox v-model="AE.Title" value="上記以外"/>
           </div>
         </div>
       </div>
@@ -73,88 +52,40 @@
         </div>
         <div class="w80">
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="鉗子"/>
-              鉗子
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="内視鏡"/>
-              内視鏡(スコープ・シース)
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="カテーテル"/>
-              カテーテル・ガイドワイヤー
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="鉗子"/>
+            <LabeledCheckbox v-model="AE.Cause" value="内視鏡">内視鏡(スコープ・シース)</LabeledCheckbox>
+            <LabeledCheckbox v-model="AE.Cause" value="カテーテル">カテーテル・ガイドワイヤー</LabeledCheckbox>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="内視鏡関連装置"/>
-              内視鏡関連装置
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="潅流気腹装置"/>
-              潅流・気腹装置
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="内視鏡関連装置"/>
+            <LabeledCheckbox v-model="AE.Cause" value="潅流気腹装置">潅流・気腹装置</LabeledCheckbox>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="トロッカー"/>
-              トロッカー
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="トロッカー"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="子宮操作器具"/>
-              子宮マニピュレーター・腟カップ・パイプ
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="子宮操作器具">子宮マニピュレーター・腟カップ・パイプ</LabeledCheckbox>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="組織回収器具"/>
-              組織回収器具（袋）・モルセレーター
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="組織回収器具">組織回収器具（袋）・モルセレーター</LabeledCheckbox>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="止血材料"/>
-              血管クリップ・縫合糸
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="ステープラー"/>
-              自動縫合・吻合器
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="止血材料">血管クリップ・縫合糸</LabeledCheckbox>
+            <LabeledCheckbox v-model="AE.Cause" value="ステープラー">自動縫合・吻合器</LabeledCheckbox>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="電気メス"/>
-              電気メス（モノポーラー・バイポーラー・アルゴンビーム）
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="電気メス">電気メス（モノポーラー・バイポーラー・アルゴンビーム）</LabeledCheckbox>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="SUS"/>
-              超音波凝固切開装置
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="VSS"/>
-              ベッセルシーリングシステム
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="SUS">超音波凝固切開装置</LabeledCheckbox>
+            <LabeledCheckbox v-model="AE.Cause" value="VSS">ベッセルシーリングシステム</LabeledCheckbox>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="レーザー"/>
-              レーザー
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="マイクロ波"/>
-              マイクロ波
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="レーザー"/>
+            <LabeledCheckbox v-model="AE.Cause" value="マイクロ波"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="上記にないもの"/>
-              上記にないもの
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="上記にないもの"/>
           </div>
         </div>
       </div>
@@ -164,14 +95,8 @@
         </div>
         <div class="w80">
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="臓器損傷" data-need_locations="T">
-              臓器損傷
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="出血" data-need_locations="T">
-              出血
-            </label>
+            <LabeledCheckbox v-model="AE.Title" value="臓器損傷"/>
+            <LabeledCheckbox v-model="AE.Title" value="出血"/>
           </div>
         </div>
       </div>
@@ -181,26 +106,14 @@
         </div>
         <div class="w80">
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="バソプレッシン">
-              バソプレッシン
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="アドレナリン">
-              アドレナリン
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="バソプレッシン"/>
+            <LabeledCheckbox v-model="AE.Cause" value="アドレナリン"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="インジゴカルミン">
-              インジゴカルミン
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="インジゴカルミン"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="上記にないもの">
-              上記にないもの
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="上記にないもの"/>
           </div>
         </div>
       </div>
@@ -209,22 +122,11 @@
           <span>発生した合併症</span>
         </div>
         <div class="w80">
-          <label>
-            <input type="checkbox" v-model="AE.Title" value="アナフィラキシー">
-            アナフィラキシー
-          </label>
-          <label>
-            <input type="checkbox" v-model="AE.Title" value="心停止">
-            心停止
-          </label>
-          <label>
-            <input type="checkbox" v-model="AE.Title" value="洞性徐脈">
-            洞性徐脈
-          </label>
-          <label>
-            <input type="checkbox" v-model="AE.Title" value="それ以外">
-            それ以外
-          </label>
+          <LabeledCheckbox v-model="AE.Title" value="アナフィラキシー"/>
+          <LabeledCheckbox v-model="AE.Title" value="心停止"/>
+          <LabeledCheckbox v-model="AE.Title" value="徐脈"/>
+          <LabeledCheckbox v-model="AE.Title" value="頻脈"/>
+          <LabeledCheckbox v-model="AE.Title" value="それ以外"/>
         </div>
       </div>
       <div class="flex-content" v-show="showRemnunts">
@@ -233,34 +135,19 @@
         </div>
         <div class="w80">
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="検体">
-              検体
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="検体"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="器械">
-              器械
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="器械"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="ガーゼなど衛生材料">
-              ガーゼなど衛生材料
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="ガーゼなど衛生材料"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="針">
-              針
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="針"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Cause" value="上記にないもの">
-              上記にないもの
-            </label>
+            <LabeledCheckbox v-model="AE.Cause" value="上記にないもの"/>
           </div>
         </div>
       </div>
@@ -270,138 +157,54 @@
         </div>
         <div class="w80">
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="出血" data-need_locations="T">
-              出血
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="血腫" data-need_locations="T">
-              血腫
-            </label>
+            <LabeledCheckbox v-model="AE.Title" value="出血"/>
+            <LabeledCheckbox v-model="AE.Title" value="血腫"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="創離開">
-              創離開
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="創傷感染">
-              創傷感染
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="腟断端部離開">
-              腟断端部離開
-            </label>
+            <LabeledCheckbox v-model="AE.Title" value="創部感染"/>
+            <LabeledCheckbox v-model="AE.Title" value="創離開"/>
+            <LabeledCheckbox v-model="AE.Title" value="腟断端部離開"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="腹膜炎">
-              腹膜炎
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="子宮感染">
-              子宮感染
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="卵管・卵巣感染">
-              卵管・卵巣感染
-            </label>
+            <LabeledCheckbox v-model="AE.Title" value="腹膜炎"/>
+            <LabeledCheckbox v-model="AE.Title" value="子宮感染"/>
+            <LabeledCheckbox v-model="AE.Title" value="卵管・卵巣感染"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="麻痺性イレウス">
-              麻痺性イレウス
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="絞扼性イレウス">
-              絞扼性イレウス
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="消化管穿孔">
-              消化管穿孔
-            </label>
+            <LabeledCheckbox v-model="AE.Title" value="イレウス">イレウス(腸管麻痺)</LabeledCheckbox>
+            <LabeledCheckbox v-model="AE.Title" value="腸閉塞">腸閉塞(機械的閉塞・絞扼性イレウス)</LabeledCheckbox>
+            <LabeledCheckbox v-model="AE.Title" value="消化管穿孔"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="腹壁瘢痕・ポートサイトヘルニア">
-              腹壁瘢痕・ポートサイトヘルニア
-            </label>
+            <LabeledCheckbox v-model="AE.Title" value="腹壁瘢痕・ポートサイトヘルニア"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="尿管損傷">
-              尿管損傷
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="尿路閉塞">
-              尿路閉塞
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="膀胱損傷">
-              膀胱損傷
-            </label>
+            <LabeledCheckbox v-model="AE.Title" value="尿管損傷"/>
+            <LabeledCheckbox v-model="AE.Title" value="尿路閉塞"/>
+            <LabeledCheckbox v-model="AE.Title" value="膀胱損傷"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="肺動脈血栓塞栓症">
-              肺動脈血栓塞栓症
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="深部静脈血栓症">
-              深部静脈血栓症
-            </label>
+            <LabeledCheckbox v-model="AE.Title" value="肺動脈血栓塞栓症"/>
+            <LabeledCheckbox v-model="AE.Title" value="深部静脈血栓症"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="気胸">
-              気胸
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="心肺停止">
-              心肺停止
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="コンパートメント症候群">
-              コンパートメント症候群
-            </label>
+            <LabeledCheckbox v-model="AE.Title" value="気胸"/>
+            <LabeledCheckbox v-model="AE.Title" value="心肺停止"/>
+            <LabeledCheckbox v-model="AE.Title" value="コンパートメント症候群"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="上肢神経障害">
-              上肢神経障害
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="下肢神経障害">
-              下肢神経障害
-            </label>
+            <LabeledCheckbox v-model="AE.Title" value="上肢神経障害"/>
+            <LabeledCheckbox v-model="AE.Title" value="下肢神経障害"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="リンパ浮腫">
-              リンパ浮腫
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="非感染性リンパ嚢胞">
-              非感染性リンパ嚢胞
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="感染性リンパ嚢胞・後腹膜膿瘍">
-              感染性リンパ嚢胞・後腹膜膿瘍
-            </label>
+            <LabeledCheckbox v-model="AE.Title" value="リンパ浮腫"/>
+            <LabeledCheckbox v-model="AE.Title" value="非感染性リンパ嚢胞"/>
+            <LabeledCheckbox v-model="AE.Title" value="感染性リンパ嚢胞・後腹膜膿瘍"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="子宮腔からの出血持続">
-              子宮腔からの出血持続
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="子宮腔の癒着">
-              子宮腔の癒着
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="卵管閉塞">
-              卵管閉塞
-            </label>
+            <LabeledCheckbox v-model="AE.Title" value="子宮腔からの出血持続"/>
+            <LabeledCheckbox v-model="AE.Title" value="子宮腔の癒着"/>
+            <LabeledCheckbox v-model="AE.Title" value="卵管閉塞"/>
           </div>
         </div>
       </div>
@@ -411,86 +214,35 @@
         </div>
         <div class="w80">
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Location" value="子宮">
-              子宮
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Location" value="卵管">
-              卵管
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Location" value="卵巣">
-              卵巣
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Location" value="腟">
-              腟
-            </label>
+            <LabeledCheckbox v-model="AE.Location" value="子宮"/>
+            <LabeledCheckbox v-model="AE.Location" value="卵管"/>
+            <LabeledCheckbox v-model="AE.Location" value="卵巣"/>
+            <LabeledCheckbox v-model="AE.Location" value="腟"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Location" value="膀胱">
-              膀胱
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Location" value="尿管">
-              尿管
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Location" value="後腹膜">
-              後腹膜
-            </label>
+            <LabeledCheckbox v-model="AE.Location" value="膀胱"/>
+            <LabeledCheckbox v-model="AE.Location" value="尿管"/>
+            <LabeledCheckbox v-model="AE.Location" value="後腹膜"/>
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Location" value="消化管">
-              消化管
-            </label>
+            <LabeledCheckbox v-model="AE.Location" value="消化管" />
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Location" value="腹壁">
-              腹壁
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Location" value="腹壁血管">
-              腹壁血管
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Location" value="皮下">
-              皮下
-            </label>
+            <LabeledCheckbox v-model="AE.Location" value="腹壁" />
+            <LabeledCheckbox v-model="AE.Location" value="腹壁血管" />
+            <LabeledCheckbox v-model="AE.Location" value="皮下" />
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Location" value="動脈">
-              動脈
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Location" value="静脈">
-              静脈
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Location" value="大血管動脈">
-              大血管動脈
-            </label>
-            <label>
-              <input type="checkbox" v-model="AE.Location" value="大血管静脈">
-              大血管静脈
-            </label>
+            <LabeledCheckbox v-model="AE.Location" value="動脈" />
+            <LabeledCheckbox v-model="AE.Location" value="静脈" />
+            <LabeledCheckbox v-model="AE.Location" value="大血管動脈" />
+            <LabeledCheckbox v-model="AE.Location" value="大血管静脈" />
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Location" value="神経">
-              神経
-            </label>
+            <LabeledCheckbox v-model="AE.Location" value="神経" />
           </div>
           <div>
-            <label>
-              <input type="checkbox" v-model="AE.Location" value="上記にない部位">
-              上記にない部位
-            </label>
+            <LabeledCheckbox v-model="AE.Location" value="上記にない部位" />
           </div>
         </div>
       </div>
@@ -503,12 +255,7 @@
             <input type="text" v-model="AE.BloodCount" :disabled="unknownBloodCounts" placeholder="出血量を入力してください"/> ml
           </div>
           <div>
-            <label>
-              <input type="checkbox"
-                :value="unknownBloodCounts"
-                @change="UnknownBleedCountsChanged($event)"/>
-              出血量不明
-            </label>
+            <LabeledCheckbox :container="unknownBloodCounts" @change="UnknownBleedCountsChanged">出血量不明</LabeledCheckbox>
           </div>
         </div>
       </div>
@@ -537,36 +284,18 @@
           <div ref="grade1" v-show="showByGrading(1)">
             <el-divider class="AE" content-position="left">Grade 1～2</el-divider>
             <div>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="経過観察">
-                経過観察
-              </label>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="周術期管理の延長">
-                抗菌薬投与など周術期管理の延長
-              </label>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="入院期間の延長">
-                入院期間の延長
-              </label>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="再入院">
-                再入院
-              </label>
+              <LabeledCheckbox v-model="AE.Course" value="経過観察">経過観察</LabeledCheckbox>
+              <LabeledCheckbox v-model="AE.Course" value="周術期管理の延長">抗菌薬投与など周術期管理の延長</LabeledCheckbox>
+              <LabeledCheckbox v-model="AE.Course" value="入院期間の延長">入院期間の延長</LabeledCheckbox>
+              <LabeledCheckbox v-model="AE.Course" value="再入院">再入院</LabeledCheckbox>
             </div>
           </div>
 
           <div ref="grade2" v-show="showByGrading(2)">
             <el-divider class="AE" content-position="left">Grade 2</el-divider>
             <div>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="自己血輸血・術中回収血">
-                輸血～自己血輸血・術中回収血
-              </label>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="輸血・血液製剤">
-                輸血・血液製剤
-              </label>
+              <LabeledCheckbox v-model="AE.Course" value="自己血輸血・術中回収血">輸血～自己血輸血・術中回収血</LabeledCheckbox>
+              <LabeledCheckbox v-model="AE.Course" value="輸血・血液製剤">輸血・血液製剤</LabeledCheckbox>
             </div>
           </div>
 
@@ -574,69 +303,33 @@
             <el-divider class="AE" content-position="left">Grade 3</el-divider>
             <div><span>術中の追加手術</span></div>
             <div>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="術中の追加手術～開腹">
-                開腹
-              </label>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="術中の追加手術～腹腔鏡">
-                腹腔鏡
-              </label>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="術中の追加手術～子宮鏡">
-                子宮鏡
-              </label>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="術中の追加手術～経腟">
-                経腟
-              </label>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="術中の追加手術～その他">
-                その他
-              </label>
+              <LabeledCheckbox v-model="AE.Course" value="術中の追加手術～開腹">開腹</LabeledCheckbox>
+              <LabeledCheckbox v-model="AE.Course" value="術中の追加手術～腹腔鏡">腹腔鏡</LabeledCheckbox>
+              <LabeledCheckbox v-model="AE.Course" value="術中の追加手術～子宮鏡">子宮鏡</LabeledCheckbox>
+              <LabeledCheckbox v-model="AE.Course" value="術中の追加手術～経腟">経腟</LabeledCheckbox>
+              <LabeledCheckbox v-model="AE.Course" value="術中の追加手術～その他">その他</LabeledCheckbox>
             </div>
             <div><span>術後の再手術</span></div>
             <div>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="術後の再手術～開腹">
-                開腹
-              </label>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="術後の再手術～腹腔鏡">
-                腹腔鏡
-              </label>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="術後の再手術～子宮鏡">
-                子宮鏡
-              </label>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="術後の再手術～経腟">
-                経腟
-              </label>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="術後の再手術～その他">
-                その他,術後のIVRを含む再手術・追加処置
-              </label>
+              <LabeledCheckbox v-model="AE.Course" value="術後の再手術～開腹">開腹</LabeledCheckbox>
+              <LabeledCheckbox v-model="AE.Course" value="術後の再手術～腹腔鏡">腹腔鏡</LabeledCheckbox>
+              <LabeledCheckbox v-model="AE.Course" value="術後の再手術～子宮鏡">子宮鏡</LabeledCheckbox>
+              <LabeledCheckbox v-model="AE.Course" value="術後の再手術～経腟">経腟</LabeledCheckbox>
+              <LabeledCheckbox v-model="AE.Course" value="術後の再手術～その他">その他,術後のIVRを含む再手術・追加処置</LabeledCheckbox>
             </div>
           </div>
 
           <div ref="grade4" v-show="showByGrading(4)">
             <el-divider class="AE" content-position="left">Grade 4</el-divider>
             <div>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="合併症管理のためのICU入室">
-                合併症管理のためのICU入室
-              </label>
+              <LabeledCheckbox v-model="AE.Course" value="ICU管理">合併症管理のためのICU入室</LabeledCheckbox>
             </div>
           </div>
 
           <div ref="grade5" v-show="showByGrading(5)">
             <el-divider class="AE" content-position="left">Grade 5</el-divider>
             <div>
-              <label>
-                <input type="checkbox" v-model="AE.Course" value="死亡">
-                死亡
-              </label>
+              <LabeledCheckbox v-model="AE.Course" value="死亡">死亡</LabeledCheckbox>
             </div>
           </div>
         </div>
@@ -653,10 +346,12 @@
 </template>
 
 <script>
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import { ZenToHanNumbers } from '@/modules/ZenHanChars'
 import Popups from 'depmodules/Popups'
 
 export default {
+  components: { LabeledCheckbox },
   props: {
     ItemIndex: {
       type: Number,
@@ -679,6 +374,9 @@ export default {
       },
       unknownBloodCounts: false
     }
+  },
+  mounted () {
+    this.$refs.firstelement.focus()
   },
   computed: {
     showBleedings () {
@@ -729,8 +427,8 @@ export default {
       this.AE.Location.splice(0)
       this.AE.BloodCount = ''
     },
-    UnknownBleedCountsChanged (event) {
-      if (event.target.checked) {
+    UnknownBleedCountsChanged (value) {
+      if (value) {
         this.unknownBloodCounts = true
         this.AE.BloodCount = '不明'
       } else {

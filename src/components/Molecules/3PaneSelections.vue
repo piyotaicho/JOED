@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-content">
+  <div class="flex-content" ref="panes">
     <div class="w20 selectionbox">
       <SelectPane
         ref="Pane1"
@@ -99,6 +99,12 @@ export default {
     disabled: {
       type: Boolean,
       default: false
+    }
+  },
+  mounted () {
+    const selects = this.$refs.panes.getElementsByTagName('select')
+    if (selects && selects.length > 0) {
+      selects[0].focus()
     }
   },
   computed: {

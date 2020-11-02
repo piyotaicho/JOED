@@ -7,6 +7,7 @@
         :placeholder="placeholder"
         :class="RequiredClass"
         @keyup.13="$emit('enter')"
+        :tabindex="tabindex"
         :disabled="disabled"
         :accesskey="accesskey"/>
     </div>
@@ -25,6 +26,9 @@ export default {
     },
     placeholder: {
       default: ''
+    },
+    tabindex: {
+      type: [Number, String]
     },
     required: {
       default: false
