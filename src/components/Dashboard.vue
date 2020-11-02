@@ -1,7 +1,7 @@
 <template>
   <div>
-    <CloseButton @close="Close"></CloseButton>
     <div class="dashboard">
+      <CloseButton @close="Close"></CloseButton>
       <div class="dashboard-title" ref="title">{{InstituteName}}</div>
       <div class="dashboard-row">
         <span>{{YearOfMaster}}年版マスタ</span>
@@ -51,7 +51,7 @@ export default {
 <style lang="sass">
 div.dashboard
   margin: 0.7rem
-  margin-right: 2.8rem
+  margin-right: 0.5rem
   padding: 0.3rem
   border: 0.18rem solid var(--border-color-base)
   border-radius: 0.3rem
