@@ -1,21 +1,14 @@
 <template>
   <div>
-    <WelcomeBanner v-if="ShowStartupDialog"></WelcomeBanner>
+    <WelcomeBanner v-if="ShowStartupDialog"/>
 
-    <DrawerButton div-class="open-drawer" tab-index="0" @click="OpenDrawer" accesskey="D"/>
-    <el-drawer
-      title="MenuDrawer"
-      size="26rem"
-      direction="ltr"
-      :with-header="false"
-      :destroy-on-close="true"
-      :visible.sync="showMenuDrawer">
-      <Drawer @close="CloseDrawer"></Drawer>
-    </el-drawer>
-    <NewEntryButton div-class="list-new-entry" tab-index="0" @click="CreateNewEntry()" accesskey="N"/>
+    <DrawerButton div-class="open-drawer" tab-index="0" @click="OpenDrawer"/>
+    <NewEntryButton div-class="list-new-entry" tab-index="0" @click="CreateNewEntry()"/>
+
+    <Drawer :showDrawer="showMenuDrawer" @close="CloseDrawer"/>
 
     <div class="itemlist">
-      <Caseitem v-for="uid in Uids" :key="uid" :uid="uid" />
+      <Caseitem v-for="uid in Uids" :key="uid" :uid="uid"/>
       <InfiniteLoading @infinite="HandleInfinite" :identifier="DisplayIdentifier" ref="infiniteloading">
         <span slot="no-more"></span>
         <span slot="no-results"></span>
@@ -40,7 +33,7 @@ export default {
     DrawerButton, NewEntryButton, Caseitem, Drawer, WelcomeBanner, InfiniteLoading
   },
   mounted () {
-    // routerのモードにかかわらずhashが効果をもたらすようにscrollを代替 - #hashが中心になるようにスクロールする
+    // scrollを代替 - #id なエレメントが中心になるようにスクロールする
     if (this.$route.hash && document.querySelector(this.$route.hash)) {
       document.querySelector(this.$route.hash).scrollIntoView({ block: 'center' })
     }

@@ -1,5 +1,5 @@
 <template>
-  <div class="caseitem" :id="'case-'+uid" tabindex="0" @dblclick="MoveToEditView()">
+  <div class="caseitem" :id="'doc' + uid.toString(10)" tabindex="0" @dblclick="MoveToEditView()">
     <div class="caseitem-icon">
       <CategoryIdentifier :category="Category" :notification="Notification"></CategoryIdentifier>
     </div>
