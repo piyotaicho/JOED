@@ -97,22 +97,24 @@ export default class CaseDocumentHandler {
     params = {
       omitDateOfProcedure: false,
       omitAge: false,
-      exportAllfields: false
+      exportAllFields: false
     }
   ) {
     const temporaryItem = {}
     const propsToExport = [
       'UniqueID',
       'JSOGId', 'NCDId',
-      'Age', 'DateOfProcedure', 'ProcedureTime', 'TypeOfProcedure',
+      'PatientId', 'Name', 'Age',
+      'DateOfProcedure', 'ProcedureTime', 'TypeOfProcedure',
       'PresentAE', 'Imported'
     ]
 
-    if (params.exportAllfields) {
-      propsToExport.splice(propsToExport.indexOf('Age'), 0,
-        'PatientId', 'Name')
+    if (params.exportAllFields) {
       params.omitAge = false
       params.omitDateOfProcedure = false
+    } else {
+      propsToExport.splice(propsToExport.indexOf('PatientId'), 1)
+      propsToExport.splice(propsToExport.indexOf('Name'), 1)
     }
 
     if (params.omitAge) {
