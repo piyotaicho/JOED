@@ -24,7 +24,13 @@
         </div>
       </div>
     </div>
-    <div class="subtilte-section">検索内容</div>
+
+    <div class="subtilte-section">
+      検索内容
+      <span style="font-size: 0.8rem;" v-show="MultipleQueryAccepted">
+        区切り文字で区切って複数の検索が可能です.
+      </span>
+    </div>
     <div class="menu-item-content">
       <input type="text" v-model="Search" />
     </div>
@@ -36,6 +42,7 @@
         :disabled="RegexpDisabled"
       />
     </div>
+
     <div class="menu-item-bottom">
       <el-button type="primary" :disabled="!Field && !Search" @click="performQuery">検索</el-button>
       <el-button type="success" :disabled="!SearchActivated" @click="cancelQuery">検索の解除</el-button>
@@ -70,7 +77,7 @@ const SearchSetting = {
       const queries = query.split(/[\s,，]+/)
         .map(item => item
           .replace(/[-ｰー－～]/g, '')
-          .replace(/.{1}/g, c => c + '[-ｰー－～]*')
+          .replace(/./g, c => c + '[-ｰー－～]*')
         )
 
       if (queries.length > 0) {
@@ -191,7 +198,20 @@ export default {
       return this.$store.getters.SearchActivated
     },
     RegexpDisabled () {
-      return (SearchSetting[this.Field] && SearchSetting[this.Field].regexp !== undefined) ? !SearchSetting[this.Field].regexp : true
+      return (
+        SearchSetting[this.Field] &&
+        SearchSetting[this.Field].regexp !== undefined
+      )
+        ? !SearchSetting[this.Field].regexp
+        : true
+    },
+    MultipleQueryAccepted () {
+      return (
+        SearchSetting[this.Field] &&
+        SearchSetting[this.Field].multiple !== undefined
+      )
+        ? SearchSetting[this.Field].multiple
+        : false
     }
   },
   methods: {
