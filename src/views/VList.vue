@@ -8,7 +8,7 @@
     <Drawer :showDrawer="showMenuDrawer" @close="CloseDrawer"/>
 
     <div class="itemlist">
-      <Caseitem v-for="uid in Uids" :key="uid" :uid="uid"/>
+      <CaseDocument v-for="uid in Uids" :key="uid" :uid="uid"/>
       <InfiniteLoading @infinite="HandleInfinite" :identifier="DisplayIdentifier" ref="infiniteloading">
         <span slot="no-more"></span>
         <span slot="no-results"></span>
@@ -22,7 +22,7 @@
 <script>
 import DrawerButton from '@/components/Atoms/DrawerButton.vue'
 import NewEntryButton from '@/components/Atoms/NewEntryButton'
-import Caseitem from '@/components/Caseitem'
+import CaseDocument from '@/components/CaseDocument'
 import Drawer from '@/components/Drawer'
 import WelcomeBanner from '@/components/Molecules/WelcomeBanner'
 import InfiniteLoading from 'vue-infinite-loading'
@@ -30,7 +30,7 @@ import InfiniteLoading from 'vue-infinite-loading'
 export default {
   name: 'VList',
   components: {
-    DrawerButton, NewEntryButton, Caseitem, Drawer, WelcomeBanner, InfiniteLoading
+    DrawerButton, NewEntryButton, CaseDocument, Drawer, WelcomeBanner, InfiniteLoading
   },
   mounted () {
     // scrollを代替 - #id なエレメントが中心になるようにスクロールする

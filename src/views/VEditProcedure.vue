@@ -25,7 +25,7 @@
         <div class="flex-content">
           <div class="w30"></div>
           <div class="w30">
-            <div class="subtitle-section">
+            <div class="subtitle">
               <span>付随する実施手術</span>
             </div>
           </div>
@@ -42,7 +42,7 @@
       <!-- 自由入力・検索セクション -->
       <div class="flex-content inputbox">
         <div class="w20"></div>
-        <div class="w20 subtitle-section">
+        <div class="w20 subtitle">
           <div tabindex="0" @click="ToggleEditsection()">
             <span>手術入力</span>
             <span style="padding-left: 1rem;">

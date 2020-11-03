@@ -1,14 +1,16 @@
 <template>
-  <div>
-    <h2>ABOUT JOED5</h2>
+  <div class="utility">
+    <h2>JOE-D 5について</h2>
     <hr />
+    <span>アプリケーションおよび主要コンポーネントのバージョン</span>
     <ul>
-      <li><ExtLink url="https://github.com/piyotaicho/JOED/">JOED</ExtLink>-5 : {{ApplicationVersion}}</li>
+      <li><ExtLink url="https://github.com/piyotaicho/JOED/">JOED5</ExtLink> : {{ApplicationVersion}}</li>
       <template v-if="LibraryVersions.electron">
         <li>Electron : {{LibraryVersions.electron}}</li>
+        <li>Vue : {{LibraryVersions.Vue}}
         <li>Chrome : {{LibraryVersions.chrome}}</li>
         <li>node : {{LibraryVersions.node}}</li>
-        <li>V8 : {{LibraryVersions.V8}}</li>
+        <li>V8 : {{LibraryVersions.v8}}</li>
       </template>
     </ul>
     <hr />
@@ -60,10 +62,13 @@ export default {
   },
   computed: {
     ApplicationVersion () {
-      return process.env.VUE_APP_VERSION || '5.DEVELOPMENT'
+      return this.$store.getters['system/ApplicationVersion']
     },
     LibraryVersions () {
-      return process.versions || { electron: 'undefined', node: 'undefined', V8: 'undefined', chrome: 'undefined' }
+      return {
+        Vue: this.$store.getters['system/VueVersion'],
+        ...(process.versions || { electron: 'undefined', node: 'undefined', v8: 'undefined', chrome: 'undefined' })
+      }
     }
   }
 }

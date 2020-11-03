@@ -4,7 +4,7 @@
       <img src="@/assets/JOED5logo.png" alt="[JOED5]">
     </div>
     <div class="w70" id="auth">
-      <div class="title-section">{{Title}}</div>
+      <div class="title">{{Title}}</div>
 
       <div>
         <label>

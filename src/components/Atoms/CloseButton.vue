@@ -1,10 +1,15 @@
 <template>
-    <div class="closebutton" @click="Close">&#xe6db;</div>
+    <div class="closebutton" @keypress.enter="Close" @click="Close" :tabindex="this.tabindex">&#xe6db;</div>
 </template>
 
 <script>
 export default {
   name: 'CloseButton',
+  props: {
+    tabindex: {
+      type: [Number, String]
+    }
+  },
   methods: {
     Close () {
       this.$emit('close')

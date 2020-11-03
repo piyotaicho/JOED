@@ -19,7 +19,7 @@
       <div id="welcome-banner-footer">
         日本産科婦人科内視鏡学会 調査普及委員会
       </div>
-      <CloseButton @close="Close" />
+      <CloseButton @close="Close" tabindex="0"/>
     </div>
     </TheWrapper>
   </div>

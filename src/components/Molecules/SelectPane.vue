@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="subtitle-section">{{title}}</div>
+    <div class="subtitle">{{title}}</div>
     <select tabindex="0"
       ref="SelectPane" :size="lines"
       v-model="PaneValue"

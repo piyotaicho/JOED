@@ -2,7 +2,7 @@
   <div class="flex-content">
     <div class="w30"></div>
     <div class="w20 selectionbox">
-      <div class="subtitle-section">
+      <div class="subtitle">
         <span>{{Container.Title}}</span>
       </div>
     </div>

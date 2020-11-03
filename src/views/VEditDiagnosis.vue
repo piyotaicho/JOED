@@ -15,7 +15,7 @@
 
       <div class="flex-content inputbox">
         <div class="w20"></div>
-        <div class="w20 subtitle-section">
+        <div class="w20 subtitle">
           <div tabindex="0" @click="ToggleEditsection()">
             <span>診断入力</span>
             <span style="padding-left: 1rem;">

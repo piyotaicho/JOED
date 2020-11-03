@@ -2,7 +2,7 @@
   <div class="edititem-overlay">
     <div class="edititem-overlay-content">
       <div class="flex-content">
-        <div class="w20 subtitle-section">
+        <div class="w20 subtitle">
           <span>合併症の内容</span>
         </div>
         <div class="w80">
@@ -20,7 +20,7 @@
         </div>
       </div>
       <div class="flex-content" v-show="showPerfusionRelated">
-        <div class="w20 subtitle-section">
+        <div class="w20 subtitle">
           <span>発生した合併症</span>
         </div>
         <div class="w80">
@@ -47,7 +47,7 @@
         </div>
       </div>
       <div class="flex-content" v-show="showInjuriesCause">
-        <div class="w20 subtitle-section">
+        <div class="w20 subtitle">
           <span>関連する機器</span>
         </div>
         <div class="w80">
@@ -90,7 +90,7 @@
         </div>
       </div>
       <div class="flex-content" v-show="showInjuriesTitle">
-        <div class="w20 subtitle-section">
+        <div class="w20 subtitle">
           <span>発生した合併症</span>
         </div>
         <div class="w80">
@@ -101,7 +101,7 @@
         </div>
       </div>
       <div class="flex-content" v-show="showDrugRelated">
-        <div class="w20 subtitle-section">
+        <div class="w20 subtitle">
           <span>関連する薬剤</span>
         </div>
         <div class="w80">
@@ -118,7 +118,7 @@
         </div>
       </div>
       <div class="flex-content" v-show="showDrugRelated">
-        <div class="w20 subtitle-section">
+        <div class="w20 subtitle">
           <span>発生した合併症</span>
         </div>
         <div class="w80">
@@ -130,7 +130,7 @@
         </div>
       </div>
       <div class="flex-content" v-show="showRemnunts">
-        <div class="w20 subtitle-section">
+        <div class="w20 subtitle">
           <span>遺残したもの</span>
         </div>
         <div class="w80">
@@ -152,7 +152,7 @@
         </div>
       </div>
       <div class="flex-content" v-show="showPostoperative">
-        <div class="w20 subtitle-section">
+        <div class="w20 subtitle">
           <span>合併症の内容</span>
         </div>
         <div class="w80">
@@ -209,7 +209,7 @@
         </div>
       </div>
       <div class="flex-content" v-show="showLocations">
-        <div class="w20 subtitle-section">
+        <div class="w20 subtitle">
           <span>発生部位</span>
         </div>
         <div class="w80">
@@ -247,7 +247,7 @@
         </div>
       </div>
       <div class="flex-content" v-show="showBleedings">
-        <div class="w20 subtitle-section">
+        <div class="w20 subtitle">
           <span>出血量</span>
         </div>
         <div class="w80">
@@ -260,7 +260,7 @@
         </div>
       </div>
       <div class="flex-content"> <!-- Grade -->
-        <div class="w20 subtitle-section">
+        <div class="w20 subtitle">
           <span>合併症の程度</span>
         </div>
         <div class="w80">
@@ -276,7 +276,7 @@
         </div>
       </div>
       <div class="flex-content"> <!-- Course -->
-        <div class="w20 subtitle-section">
+        <div class="w20 subtitle">
           <span>転帰</span>
         </div>
         <div class="w80">
