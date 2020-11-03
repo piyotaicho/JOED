@@ -122,7 +122,7 @@ const MenuTemplate = [
   {
     label: 'ファイル',
     submenu: [
-      { label: '新規症例の登録', accelerator: 'CmdORCtrl+N', click: (item, focusedWindow) => RendererRoute('new', focusedWindow) },
+      { label: '新規症例の登録', accelerator: process.platform === 'darwin' ? 'Cmd+N' : 'Alt+N', click: (item, focusedWindow) => RendererRoute('new', focusedWindow) },
       { type: 'separator' },
       { label: 'データの読み込み', click: (item, focusedWindow) => RendererRoute('import', focusedWindow) },
       { label: 'データの書き出し', click: (item, focusedWindow) => RendererRoute('export', focusedWindow) },
@@ -146,11 +146,21 @@ const MenuTemplate = [
       { label: app.getName() + 'について', role: 'about' },
       ...(
         isDevelopment
-          ? [{
-            label: '開発者ツール',
-            accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
-            click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools()
-          }]
+          ? [
+            {
+              type: 'separator'
+            },
+            {
+              label: 'リロード',
+              role: 'reload',
+              accelerator: ''
+            },
+            {
+              label: '開発者ツール',
+              accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
+              click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools()
+            }
+          ]
           : []
       )
     ]
