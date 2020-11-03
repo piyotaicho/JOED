@@ -1,6 +1,6 @@
 <template>
   <div class="menu-item">
-    <div class="subtitle-section">表示の順番</div>
+    <div class="subtitle">表示の順番</div>
     <div class="menu-item-content">
       <div>
         <select v-model="Sort.Item">
@@ -23,7 +23,7 @@
         inactive-color="var(--color-primary)" />
     </div>
 
-    <div class="subtitle-section">表示する内容</div>
+    <div class="subtitle">表示する内容</div>
     <div class="menu-item-content" id="display-item-selection">
       <div><LabeledCheckbox v-model="isFilterItemsEmpty">全て表示する</LabeledCheckbox></div>
 
@@ -74,7 +74,7 @@ import { CategoryTranslation } from '@/modules/CaseValidater'
 import Popups from 'depmodules/Popups'
 
 export default {
-  name: 'DisplaySetting',
+  name: 'FilterNSort',
   components: { LabeledCheckbox },
   data () {
     return ({

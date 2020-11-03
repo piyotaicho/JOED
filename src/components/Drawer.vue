@@ -11,14 +11,14 @@
 
       <el-collapse accordion @change="AccordionChanged" :value="initialView">
         <el-collapse-item title="表示の設定" name="view">
-          <DisplaySetting @changed="ViewUpdated"></DisplaySetting>
+          <FilterNSort @changed="ViewUpdated"/>
         </el-collapse-item>
 
         <el-collapse-item name="search">
           <template #title>
             検索 <i class="el-icon-success" style="color: var(--color-success); margin-left: 1rem;" v-if="SearchActivated"/>
           </template>
-          <Search @changed="ViewUpdated"></Search>
+          <Search @changed="ViewUpdated"/>
         </el-collapse-item>
 
         <el-collapse-item title="データの処理" name="management" v-if="WebApp"/>
@@ -31,13 +31,13 @@
 
 <script>
 import Dashboard from '@/components/Dashboard'
-import DisplaySetting from '@/components/DisplaySetting'
+import FilterNSort from '@/components/FilterNSort'
 import Search from '@/components/Search'
 
 export default {
   name: 'Drawer',
   components: {
-    Dashboard, DisplaySetting, Search
+    Dashboard, FilterNSort, Search
   },
   props: {
     showDrawer: {

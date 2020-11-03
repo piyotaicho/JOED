@@ -28,6 +28,9 @@ export default {
     ApplicationVersion () {
       return process.env.VUE_APP_VERSION
     },
+    VueVersion () {
+      return Vue.version || 'undefined'
+    },
     Settings (state) {
       return state.settings
     },

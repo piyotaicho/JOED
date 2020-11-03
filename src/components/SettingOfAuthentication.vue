@@ -1,6 +1,6 @@
 <template>
   <div class="utility">
-    <!-- <div class="title-section">パスワード認証の設定</div> -->
+    <!-- <div class="title">パスワード認証の設定</div> -->
     <div class="utility-switches">
       <InputSwitchField
         v-model="UseAuthentication"

@@ -1,6 +1,6 @@
 <template>
   <div class="selectionbox">
-    <div class="subtitle-section">{{title}}</div>
+    <div class="subtitle">{{title}}</div>
     <select v-model="ComponentValue" :size="size" :multi="multi" @event="EventHandler">
       <slot name="options"></slot>
     </select>

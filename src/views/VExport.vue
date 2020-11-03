@@ -1,6 +1,6 @@
 <template>
   <div class="utility">
-    <!-- <div class="title-section">データの出力</div> -->
+    <!-- <div class="title">データの出力</div> -->
     <div class="utility-switches">
       <div>
         <div class="label">出力する年次</div>
@@ -25,7 +25,7 @@
         :options="{しない: false, する: true}" />
 
       <div>
-        <el-button type="primary" @click="Process()" :disabled="exportYear==''" :loading="processing">出力データの作成</el-button>
+        <el-button type="primary" @click="Process()" :disabled="exportYear=='' || processing">出力データの作成</el-button>
       </div>
     </div>
 

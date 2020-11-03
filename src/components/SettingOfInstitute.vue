@@ -1,6 +1,6 @@
 <template>
   <div class="utility">
-    <!-- <div class="title-section">施設の設定</div> -->
+    <!-- <div class="title">施設の設定</div> -->
     <div class="utility-switches">
       <InputTextField
         v-model="InstitutionName"
