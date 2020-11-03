@@ -1,19 +1,19 @@
 <template>
   <div>
-    <div class="app-dialog w800p">
+    <div class="app-dialog w800p" ref="edit">
       <div class="edit-top">
         <div class="edit-top-left">
-          <InputDateOfProcedure v-model="CaseData.DateOfProcedure" :required="true" :disabled="editingSection"/>
-          <InputTextField title="患者ID" :required="true" v-model="CaseData.PatientId" placeholder="施設の患者ID" :disabled="editingSection"/>
-          <InputTextField title="患者名" v-model="CaseData.Name" :disabled="editingSection"/>
-          <InputNumberField title="年齢" v-model="CaseData.Age" :min="1" :max="120" :disabled="editingSection"/>
+          <InputDateOfProcedure v-model="CaseData.DateOfProcedure" :required="true"/>
+          <InputTextField title="患者ID" :required="true" v-model="CaseData.PatientId" placeholder="施設の患者ID"/>
+          <InputTextField title="患者名" v-model="CaseData.Name"/>
+          <InputNumberField title="年齢" v-model="CaseData.Age" :min="1" :max="120"/>
         </div>
         <div class="edit-top-right">
-          <InputTextField title="腫瘍登録番号" v-model="CaseData.JSOGId" placeholder="腫瘍登録患者No." :disabled="skipJSOGId || editingSection"/>
-          <InputTextField title="NCD症例識別コード" v-model="CaseData.NCDId" placeholder="NCD症例識別コード" :disabled="skipNCDId || editingSection"/>
+          <InputTextField title="腫瘍登録番号" v-model="CaseData.JSOGId" placeholder="腫瘍登録患者No." :disabled="skipJSOGId"/>
+          <InputTextField title="NCD症例識別コード" v-model="CaseData.NCDId" placeholder="NCD症例識別コード" :disabled="skipNCDId"/>
           <div> <!-- spacer -->
           </div>
-          <InputProcedureTime v-model="CaseData.ProcedureTime" :disabled="editingSection"/>
+          <InputProcedureTime v-model="CaseData.ProcedureTime"/>
         </div>
       </div>
 
@@ -55,7 +55,7 @@
       <div class="edit-controls">
         <div class="edit-controls-left">
           <el-button type="warning" icon="el-icon-warning"
-            :disabled="editingSection"
+
             @click="ShowNotification"
             v-if="CaseData.Notification">
             入力内容の確認が必要です.
@@ -64,7 +64,7 @@
         <div class="edit-controls-right">
           <div>
             <el-button type="primary" icon="el-icon-arrow-left"
-              :disabled="editingSection"
+
               @click="CancelEditing()">
               戻る
             </el-button>
@@ -72,8 +72,9 @@
           <div>
             <el-dropdown split-button type="primary"
               @click="CommitCaseAndGo()"
-              @command="CommitCaseAndGo">
-              編集内容を保存<i class="el-icon-loading" v-if="processing"/>
+              @command="CommitCaseAndGo"
+              v-loading="processing">
+              編集内容を保存<!-- <i class="el-icon-loading" v-if="processing"/> -->
 
               <el-dropdown-menu slot="dropdown">
                 <template v-if="isEditingExistingItem">
@@ -87,7 +88,6 @@
           </div>
           <div v-if="isEditingExistingItem">
             <el-button type="danger" icon="el-icon-delete"
-              :disabled="editingSection"
               @click="RemoveCase()">
               削除
             </el-button>
@@ -159,6 +159,7 @@ export default {
       prevUid: 0,
       nextUid: 0,
       processing: true,
+      editingSection: false,
       Preserve: ''
     })
   },
@@ -190,6 +191,33 @@ export default {
       this.Preserve = JSON.stringify(this.CaseData)
     }
   },
+  beforeRouteUpdate (to, from, next) {
+    this.editingSection = (to.name !== 'edit')
+
+    // オーバーレイを展開しているときには editビューのコントロールにキーボード操作でフォーカスしないようにする.
+    //
+    // HACK: フォーカス対象外のエレメントは基本的に tabIndex: -1 なので、
+    // tabIndex: 0 -> -2 にして復旧できるようにする. そのほかの tabIndex には未対応.
+    if (this.editingSection) {
+      if (document.activeElement) {
+        document.activeElement.preservedFocus = true
+      }
+      Array.prototype.filter.call(this.$refs.edit.getElementsByTagName('*'),
+        element => element.tabIndex === 0)
+        .forEach(element => { element.tabIndex = -2 })
+    } else {
+      Array.prototype.filter.call(this.$refs.edit.getElementsByTagName('*'),
+        element => element.tabIndex === -2)
+        .forEach(element => {
+          element.tabIndex = 0
+          if (element.preservedFocus) {
+            element.focus()
+            delete element.preservedFocus
+          }
+        })
+    }
+    next()
+  },
   computed: {
     isNoAEs: {
       get () {
@@ -201,9 +229,6 @@ export default {
     },
     isEditingExistingItem () {
       return (this.uid > 0)
-    },
-    editingSection () {
-      return this.$route.name !== 'edit'
     },
     skipJSOGId () {
       return !this.$store.getters['system/EditJSOGId']
