@@ -37,7 +37,7 @@ function createWindow () {
     maxWidth: 960,
     height: 700,
     center: true,
-    title: 'JOED',
+    title: app.getName(),
     icon: path.join(__static, 'icon.png'),
     backgroundColor: '#dddddd',
     webPreferences: {
@@ -114,10 +114,6 @@ if (isDevelopment) {
 //
 // アプリケーションメニュー
 //
-function RendererRoute (routename, targetwindow) {
-  targetwindow.webContents.send('RendererRoute', { Name: routename })
-}
-
 const MenuTemplate = [
   {
     label: 'ファイル',
@@ -195,6 +191,11 @@ app.setAboutPanelOptions({
 //
 // IPCハンドリング
 //
+
+// main -> renderer : routeの切り替え要求(メニュー)
+function RendererRoute (routename, targetwindow) {
+  targetwindow.webContents.send('RendererRoute', { Name: routename })
+}
 
 // ダイアログ
 ipcMain.on('messagebox', (event, payload) => {
