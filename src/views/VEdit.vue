@@ -9,8 +9,8 @@
           <InputNumberField title="年齢" v-model="CaseData.Age" :min="1" :max="120"/>
         </div>
         <div class="edit-top-right">
-          <InputTextField title="腫瘍登録番号" v-model="CaseData.JSOGId" placeholder="腫瘍登録患者No." :disabled="skipJSOGId"/>
-          <InputTextField title="NCD症例識別コード" v-model="CaseData.NCDId" placeholder="NCD症例識別コード" :disabled="skipNCDId"/>
+          <InputTextField title="腫瘍登録番号" v-model="CaseData.JSOGId" placeholder="腫瘍登録患者No." :disabled="skipJSOGId && CaseData.JSOGId === ''"/>
+          <InputTextField title="NCD症例識別コード" v-model="CaseData.NCDId" placeholder="NCD症例識別コード" :disabled="skipNCDId && CaseData.NCDId === ''"/>
           <div> <!-- spacer -->
           </div>
           <InputProcedureTime v-model="CaseData.ProcedureTime"/>
