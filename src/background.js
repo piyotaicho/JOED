@@ -127,17 +127,12 @@ const MenuTemplate = [
       { label: 'データの読み込み', click: (item, focusedWindow) => RendererRoute('import', focusedWindow) },
       { label: 'データの書き出し', click: (item, focusedWindow) => RendererRoute('export', focusedWindow) },
       ...(process.platform === 'darwin'
-        ? [{ type: 'separator' }]
+        ? []
         : [
           { type: 'separator' },
           { label: '設定', accelerator: 'CmdORCtrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
-          { type: 'separator' }
-        ]),
-      {
-        label: process.platform === 'darwin' ? 'ウインドウを閉じる' : '終了',
-        accelerator: process.platform === 'darwin' ? 'Cmd+W' : 'Alt+F4',
-        role: process.platform === 'darwin' ? 'close' : 'quit'
-      }
+          { label: '終了', accelerator: 'Alt+F4', role: 'quit' }
+        ])
     ]
   },
   {
@@ -169,6 +164,7 @@ const MenuTemplate = [
 
 if (process.platform === 'darwin') {
   MenuTemplate.unshift({
+    label: app.getName(),
     submenu: [
       // アプリケーションメニュー
       { label: app.getName() + 'について', role: 'about' },
