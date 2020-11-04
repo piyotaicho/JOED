@@ -1,5 +1,10 @@
 <template>
-  <div>
+  <div
+    @keydown.up.prevent="MoveFocus(-1)"
+    @keydown.75.ctrl="MoveFocus(-1)"
+    @keydown.down.prevent="MoveFocus(+1)"
+    @keydown.74.ctrl="MoveFocus(+1)"
+  >
     <WelcomeBanner v-if="ShowStartupDialog"/>
 
     <DrawerButton div-class="open-drawer" tab-index="0" @click="OpenDrawer"/>
@@ -70,6 +75,17 @@ export default {
         state.complete()
       } else {
         state.loaded()
+      }
+    },
+    MoveFocus (diff) {
+      const currentid = document.activeElement.id
+      if (!this.showMenuDrawer && !this.ShowStartupDialog && currentid !== '') {
+        const moveto = this.Uids[
+          this.Uids.indexOf(Number(currentid.substr(3))) + diff
+        ]
+        if (moveto) {
+          document.getElementById('doc' + moveto).focus()
+        }
       }
     }
   }
