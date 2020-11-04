@@ -71,7 +71,7 @@ input.LabeledCheckbox[type="checkbox"]
     border: 1px solid var(--border-color-base)
     border-radius: 0.15rem
     content: ''
-    top: 0.15rem
+    top: 0.13rem
     left: 0.4rem
     height: 0.8rem
     width: 0.8rem
@@ -88,7 +88,7 @@ input.LabeledCheckbox[type="checkbox"]
     border-bottom: 2px solid var(--background-color-dialog)
     border-left: 2px solid var(--background-color-dialog)
     content: ''
-    top: 0.43rem
+    top: 0.42rem
     left: 0.69rem
     height: 0.3rem
     width: 0.5rem
