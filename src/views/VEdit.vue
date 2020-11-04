@@ -43,14 +43,14 @@
         tabindex="-1"
         v-if="isEditingExistingItem"
         :disabled="!prevUid"
-        @click.exact="CancelEditing(-1)"
-        @click.ctrl.shift="CommitCaseAndGo('prev')" />
+        @click.exact="CancelEditing('prev')"
+        @click.ctrl.shift="CommitCase('prev')" />
       <el-button icon="el-icon-caret-right" size="medium" circle id="MoveNext"
         tabindex="-1"
         v-if="isEditingExistingItem"
         :disabled="!nextUid"
-        @click.exact="CancelEditing(+1)"
-        @click.ctrl.shift="CommitCaseAndGo('next')" />
+        @click.exact="CancelEditing('next')"
+        @click.ctrl.shift="CommitCase('next')" />
 
       <div class="edit-controls">
         <div class="edit-controls-left">
@@ -71,8 +71,8 @@
           </div>
           <div>
             <el-dropdown split-button type="primary"
-              @click="CommitCaseAndGo()"
-              @command="CommitCaseAndGo"
+              @click="CommitCase()"
+              @command="CommitCase"
               v-loading="processing">
               編集内容を保存<!-- <i class="el-icon-loading" v-if="processing"/> -->
 
@@ -317,7 +317,7 @@ export default {
       }
     },
 
-    CommitCaseAndGo (to = '') {
+    CommitCase (to = '') {
       if (this.processing || this.editingSection) {
         return
       }
@@ -342,17 +342,26 @@ export default {
         })
         .catch(e => Popups.alert(e.message))
     },
-    CancelEditing (offset = 0) {
+    CancelEditing (to = '') {
+      if (this.processing || this.editingSection) {
+        return
+      }
+
       if (this.Preserve === JSON.stringify(this.CaseData) || Popups.confirm('編集中の項目がありますがよろしいですか?')) {
-        if (offset === 0) {
-          this.BackToList(this.uid)
-        } else {
-          if (offset < 0 && this.prevUid !== 0) {
-            this.$router.push({ name: 'edit', params: { uid: this.prevUid } })
-          }
-          if (offset > 0 && this.nextUid !== 0) {
-            this.$router.push({ name: 'edit', params: { uid: this.nextUid } })
-          }
+        switch (to) {
+          case '':
+            this.BackToList(this.uid)
+            break
+          case 'prev':
+            if (this.prevUid !== 0) {
+              this.$router.push({ name: 'edit', params: { uid: this.prevUid } })
+            }
+            break
+          case 'next':
+            if (this.nextUid !== 0) {
+              this.$router.push({ name: 'edit', params: { uid: this.nextUid } })
+            }
+            break
         }
       }
     },
