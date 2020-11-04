@@ -58,6 +58,7 @@ https://p4testsuite.hostingerapp.com/JOEDv5/Latest/
 - 2020-11-01 合併症内容の微妙な修正. チェックボックスを自前コントロールに再実装してデザインを修正. キーボードでの操作性をあるていど確保(tabindex). electronのmacosでの動作検証を開始.
 - 2020-11-02 Exportのセッティングエラーを修正.
 - 2020-11-03 tabIndexの問題で背景のコントロールにフォーカスが移動してしまう問題をほぼ修正. TheWrapperにも同様の仕掛けを実装.
+- 2020-11-04 JSGOE,NCD idが入力されていた場合は編集可能にする. Listでのキーボード操作を実装(上下矢印 kj でフォーカス移動).
 
 現時点で作成中のweb版ではデータはブラウザのストレージに保存されます.データベースの削除・修正などは https://p4testsuite.hostingerapp.com/JOEDv5/Database_Manager/ のユーティリティを使用してください.
 
