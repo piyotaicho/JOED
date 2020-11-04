@@ -10,7 +10,7 @@
     <DrawerButton div-class="open-drawer" tab-index="0" @click="OpenDrawer"/>
     <NewEntryButton div-class="list-new-entry" tab-index="0" @click="CreateNewEntry()"/>
 
-    <Drawer :showDrawer="showMenuDrawer" @close="CloseDrawer"/>
+    <Drawer :visible="showMenuDrawer" @close="CloseDrawer"/>
 
     <div class="itemlist">
       <CaseDocument v-for="uid in Uids" :key="uid" :uid="uid"/>

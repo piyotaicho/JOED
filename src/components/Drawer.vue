@@ -1,15 +1,15 @@
 <template>
   <el-drawer
-    title="MenuDrawer"
     size="26rem"
     direction="ltr"
     :with-header="false"
+    :visible="visible"
     :destroy-on-close="true"
-    :visible.sync="showMenuDrawer">
+    @close="CloseDrawer">
     <div class="drawer-content">
-      <Dashboard @close="CloseDrawer"></Dashboard>
+      <Dashboard @close="CloseDrawer"/>
 
-      <el-collapse accordion @change="AccordionChanged" :value="initialView">
+      <el-collapse accordion @change="AccordionChanged" :value="view">
         <el-collapse-item title="表示の設定" name="view">
           <FilterNSort @changed="ViewUpdated"/>
         </el-collapse-item>
@@ -40,17 +40,17 @@ export default {
     Dashboard, FilterNSort, Search
   },
   props: {
-    showDrawer: {
+    visible: {
       type: Boolean
     }
   },
   data () {
     return ({
-      initialView: 'view'
+      view: 'view'
     })
   },
   created () {
-    this.initialView = this.SearchActivated ? 'search' : 'view'
+    this.view = this.SearchActivated ? 'search' : 'view'
   },
   computed: {
     WebApp () {
@@ -58,16 +58,6 @@ export default {
     },
     SearchActivated () {
       return this.$store.getters.SearchActivated
-    },
-    showMenuDrawer: {
-      get () {
-        return this.showDrawer
-      },
-      set (value) {
-        if (value === false) {
-          this.CloseDrawer()
-        }
-      }
     }
   },
   methods: {
