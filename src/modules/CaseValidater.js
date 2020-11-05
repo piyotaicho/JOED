@@ -30,69 +30,34 @@ export const CategoryTranslation = {
 //
 // @Param Object １症例分のドキュメントオブジェクト
 export async function ValidateCase (item = {}) {
-  return new Promise((resolve) => { resolve() })
-    .then(_ => {
-      return CheckBasicInformations(item)
-    })
-    .then(_ => {
-      return ValidateAdditionalInformations(item)
-    })
-    .then(_ => {
-      return CheckSections(item)
-    })
-    .then(_ => {
-      return ValidateCategoryMatch(item)
-    })
-    .then(_ => {
-      const Year = item.DateOfProcedure.substr(0, 4)
+  await CheckBasicInformations(item)
+  await ValidateAdditionalInformations(item)
+  await CheckSections(item)
+  await ValidateCategoryMatch(item)
 
-      return new Promise((resolve, reject) => {
-        // ES2020が使えるようになったらPromise.allSettledへ置き換える
-        Promise.all([
-          /*
-          new Promise(resolve => {
-            CheckDupsInDiagnoses(item)
-              .then(_ => resolve())
-              .catch(e => resolve(e))
-          }),
-          */
-          new Promise(resolve => {
-            ValidateDiagnoses(item, Year)
-              .then(_ => resolve())
-              .catch(e => resolve(e))
-          }),
-          /*
-          new Promise(resolve => {
-            CheckDupsInProcedures(item)
-              .then(_ => resolve())
-              .catch(e => resolve(e))
-          }),
-          */
-          new Promise(resolve => {
-            ValidateProcedures(item, Year)
-              .then(_ => resolve())
-              .catch(e => resolve(e))
-          }),
-          new Promise(resolve => {
-            ValidateAEs(item)
-              .then(_ => resolve())
-              .catch(e => resolve(e))
-          })
-        ])
-          .then(results => {
-            const warningMessage = results
-              .filter(value => value)
-              .map(item => item.message)
-              .join('\n')
-
-            if (warningMessage) {
-              reject(new Error(warningMessage))
-            } else {
-              resolve()
-            }
-          })
-      })
+  const Year = item.DateOfProcedure.substr(0, 4)
+  // ES2020が使えるようになったらPromise.allSettledへ置き換える
+  const warningMessages = (await Promise.all([
+    new Promise(resolve => {
+      ValidateDiagnoses(item, Year)
+        .then(_ => resolve(), e => resolve(e))
+    }),
+    new Promise(resolve => {
+      ValidateProcedures(item, Year)
+        .then(_ => resolve(), e => resolve(e))
+    }),
+    new Promise(resolve => {
+      ValidateAEs(item)
+        .then(_ => resolve(), e => resolve(e))
     })
+  ]))
+    .filter(value => value)
+    .map(item => item.message)
+    .join('\n')
+
+  if (warningMessages) {
+    throw new Error(warningMessages)
+  }
 }
 
 // 必須基本情報の有無
@@ -107,7 +72,7 @@ export async function CheckBasicInformations (item) {
     ) {
       resolve()
     } else {
-      reject(new Error('患者ID・手術日・手術時間・患者年齢の入力を確認してください.'))
+      reject(new Error('患者ID・手術日・手術時間・患者年齢を確認してください.'))
     }
   })
 }
@@ -165,7 +130,7 @@ export async function ValidateCategoryMatch (item) {
       CategoryTranslation[item.Procedures[0].Chain[0]]) {
       resolve()
     } else {
-      reject(new Error('主たる術後診断と主たる実施術式のカテゴリが一致していません.'))
+      reject(new Error('主たる手術診断と主たる実施術式のカテゴリが一致していません.'))
     }
   })
 }
@@ -191,8 +156,7 @@ export async function ValidateDiagnoses (item, year) {
   return new Promise((resolve, reject) => {
     const promiseArray = [new Promise(resolve => {
       CheckDupsInDiagnoses(item)
-        .then(_ => resolve())
-        .catch(error => resolve(error.message))
+        .then(_ => resolve(), error => resolve(error.message))
     })]
     for (const diagnosis of item.Diagnoses) {
       promiseArray.push(new Promise(resolve => {
@@ -224,12 +188,13 @@ export async function CheckDupsInProcedures (item) {
   return new Promise((resolve, reject) => {
     if (item.Procedures.map(
       item => [
-        (item.AdditionalProcedure ? [item.Text, item.AdditionalProcedure.Text] : [item.Text]),
-        ...(item.Ditto ? item.Ditto : [])
+        item.Text,
+        (item.AdditionalProcedure ? item.AdditionalProcedure.Text : []),
+        (item.Ditto ? item.Ditto : [])
       ]
     )
-      .flat()
-      .filter((item, index, self) => item && (self.indexOf(item) !== self.lastIndexOf(item)))
+      .flat(2)
+      .filter((item, index, self) => self.indexOf(item) !== self.lastIndexOf(item))
       .length <= 0) {
       resolve()
     } else {
@@ -246,8 +211,7 @@ export async function ValidateProcedures (item, year) {
   return new Promise((resolve, reject) => {
     const promiseArray = [new Promise(resolve => {
       CheckDupsInProcedures(item)
-        .then(_ => resolve())
-        .catch(error => resolve(error.message))
+        .then(_ => resolve(), error => resolve(error.message))
     })]
     for (const procedure of item.Procedures) {
       promiseArray.push(
@@ -286,14 +250,9 @@ export async function ValidateAEs (item) {
         if (AEs.filter((value, index, self) => self.indexOf(value) !== self.lastIndexOf(value)).length <= 0) {
           resolve()
         }
-        resolve('合併症の登録内容に重複があります.')
+        resolve('合併症の登録に重複があります.')
       }),
       new Promise((resolve) => {
-        /* CheckSectionsで同一の整合性確認がなされているのでここでは省略する
-        if (item.PresentAE === true && (!item.AEs || item.AEs.length === 0)) {
-          resolve('合併症の項目が入力されていません.')
-        }
-        */
         if (item.PresentAE === false && (item.AEs && item.AEs.length > 0)) {
           resolve('合併症の有無と合併症の入力との整合がとれません.')
         }
