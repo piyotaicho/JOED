@@ -67,9 +67,9 @@ function createWindow () {
     win = null
   })
 
-  win.on('app-command', (_event, command) => {
-    console.log('catch app-command ', command)
-  })
+  // win.on('app-command', (_event, command) => {
+  //   console.log('catch app-command ', command)
+  // })
 }
 
 app.on('window-all-closed', () => {
