@@ -30,7 +30,8 @@ export default class Popups {
       await MessageBox.confirm(message, {
         title: '確認',
         iconClass: 'el-icon-question',
-        showClose: false
+        showClose: false,
+        closeOnPressEscape: false
       })
       return true
     } catch (_) {

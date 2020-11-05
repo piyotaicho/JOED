@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="app-dialog w800p" ref="edit">
+    <div class="app-dialog w800p" ref="edit" @keydown.esc="CancelEditing()">
       <div class="edit-top">
         <div class="edit-top-left">
           <InputDateOfProcedure v-model="CaseData.DateOfProcedure" :required="true"/>
@@ -190,6 +190,11 @@ export default {
       this.processing = false
       this.Preserve = JSON.stringify(this.CaseData)
     }
+    document.addEventListener('keydown', event => {
+      if (event.keyCode === 27) {
+        this.CancelEditing()
+      }
+    }, { once: true })
   },
   beforeRouteUpdate (to, from, next) {
     this.editingSection = (to.name !== 'edit')
@@ -326,9 +331,6 @@ export default {
 
       if (this.Preserve === JSON.stringify(this.CaseData) || await Popups.confirm('項目が編集中です.移動しますか?')) {
         switch (to) {
-          case '':
-            this.BackToList(this.uid)
-            break
           case 'prev':
             if (this.prevUid !== 0) {
               this.$router.push({ name: 'edit', params: { uid: this.prevUid } })
@@ -339,6 +341,8 @@ export default {
               this.$router.push({ name: 'edit', params: { uid: this.nextUid } })
             }
             break
+          default:
+            this.BackToList(this.uid)
         }
       }
     },
