@@ -39,31 +39,11 @@
         />
       </template>
 
-      <!-- 自由入力・検索セクション -->
-      <div class="flex-content inputbox">
-        <div class="w20"></div>
-        <div class="w20 subtitle">
-          <div tabindex="0" @click="ToggleEditsection()">
-            <span>手術入力</span>
-            <span style="padding-left: 1rem;">
-              <i class="el-icon-d-arrow-right" v-show="!ExpandEditsection"/>
-              <i class="el-icon-d-arrow-left" v-show="ExpandEditsection"/>
-            </span>
-          </div>
-        </div>
-        <div class="w40" v-show="ExpandEditsection">
-            <input type="text"
-              v-model="EditableItem"
-              :disabled="disabled || !UserEditingAllowed"
-              placeholder="カテゴリ選択後に検索可能になります"
-            />
-        </div>
-        <div class="w20" v-show="ExpandEditsection">
-          <el-button type="primary" @click="SetCandidateItemsByFreeword()" icon="el-icon-search" :disabled="disabled">候補を検索</el-button>
-        </div>
-      </div>
+      <FreewordSection
+        v-model="EditableItem"
+        :disabled="!UserEditingAllowed"
+        @click-search="SetCandidateItemsByFreeword"/>
 
-      <!-- コントロール -->
       <div class="content-bottom">
         <div class="controls">
           <el-button type="primary" @click="GoBack" :disabled="disabled || disableCancel">取り消し</el-button>
@@ -83,6 +63,7 @@ import Popups from '@/modules/Popups'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import ThreePaneSelections from '@/components/Molecules/3PaneSelections'
 import DescriptionSection from '@/components/Molecules/DescriptionSection'
+import FreewordSection from '@/components/Molecules/FreewordSection'
 
 const ProceduresTree = new ProcedureMaster()
 
@@ -94,7 +75,8 @@ export default {
   components: {
     TheWrapper,
     ThreePaneSelections,
-    DescriptionSection
+    DescriptionSection,
+    FreewordSection
   },
   props: {
     disableCancel: {
@@ -164,16 +146,19 @@ export default {
 
     OnCandidateSelected () {
       const newValue = this.SelectedItem
-      this.EditableItem = newValue
+      if (newValue) {
+        this.EditableItem = newValue
 
-      if (!this.TargetOrgan) {
-        const searchByName = ProceduresTree.findItemByName(newValue, this.year)
-        this.TargetOrgan = searchByName.Chain[1]
+        if (!this.TargetOrgan) {
+          const searchByName = ProceduresTree.findItemByName(newValue, this.year)
+          this.TargetOrgan = searchByName.Chain[1]
+        }
+
+        const selectedItem = ProceduresTree.getItemByName(this.Category, this.TargetOrgan, newValue, this.year)
+        this.setDescriptionSection(selectedItem)
+        this.setAdditionalProcedureSection(selectedItem)
+        this.$nextTick()
       }
-      const selectedItem = ProceduresTree.getItemByName(this.Category, this.TargetOrgan, newValue, this.year)
-
-      this.setDescriptionSection(selectedItem)
-      this.setAdditionalProcedureSection(selectedItem)
     },
 
     setAdditionalProcedureSection (item) {

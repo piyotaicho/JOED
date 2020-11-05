@@ -18,12 +18,8 @@ export default {
       Category: '',
       TargetOrgan: '',
       SelectedItem: '',
-      EditableItem: '',
-      ExpandEditsection: false
+      EditableItem: ''
     }
-  },
-  mounted () {
-    this.ExpandEditsection = (this.ItemValue && this.ItemValue.UserTyped === true)
   },
   computed: {
     UserEditingAllowed () {
