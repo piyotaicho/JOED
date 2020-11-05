@@ -1,28 +1,27 @@
 <template>
   <div class="utility">
-    <!-- <div class="title">データの出力</div> -->
     <div class="utility-switches">
       <div>
         <div class="label">出力する年次</div>
-        <SelectYear div-class="field" v-model="exportYear" :accept-all="false" />
+        <SelectYear div-class="field" v-model="exportYear" :accept-all="false"/>
       </div>
 
       <InputSwitchField
         v-model="allFields"
         title="出力するデータ"
-        :options="{学会提出データ: false, 全フィールドのデータ: true}" />
+        :options="{学会提出データ: false, 全フィールドのデータ: true}"/>
 
       <InputSwitchField
         v-model="exportDateOfProcedure"
         :disabled="exportAllFields"
         title="手術実施日の出力"
-        :options="{しない: false, する: true}" />
+        :options="{しない: false, する: true}"/>
 
       <InputSwitchField
         v-model="exportAge"
         :disabled="exportAllFields"
         title="患者の年齢の出力"
-        :options="{しない: false, する: true}" />
+        :options="{しない: false, する: true}"/>
 
       <div>
         <el-button type="primary" @click="Process()" :disabled="exportYear=='' || processing">出力データの作成</el-button>
@@ -32,19 +31,19 @@
     <el-collapse-transition>
       <div class="progress-views" v-show="processStep !== undefined">
         <el-steps :active="processStep" process-status="warning" finish-status="success" direction="vertical" space="42px">
-          <el-step title="システム設定の確認" />
-          <el-step title="読み込み症例の確認を検証" />
+          <el-step title="システム設定の確認"/>
+          <el-step title="読み込み症例の確認を検証"/>
           <el-step title="登録内容の妥当性の検証">
             <template #description>
-              <el-progress :percentage="progressCheckConsistency" />
+              <el-progress :v-show="progressCheckConsistency > 0" :percentage="progressCheckConsistency"/>
             </template>
           </el-step>
           <el-step title="提出用データとして整形">
             <template #description>
-              <el-progress :percentage="progressCreateData" />
+              <el-progress :v-show="progressCreateData > 0" :percentage="progressCreateData"/>
             </template>
           </el-step>
-          <el-step title="チェックサムの計算とヘッダの付与" />
+          <el-step title="チェックサムの計算とヘッダの付与"/>
         </el-steps>
       </div>
     </el-collapse-transition>
@@ -172,7 +171,7 @@ export default {
         this.processStep++
       } catch (error) {
         await this.$nextTick()
-        Popups.alert(error.message)
+        Popups.error(error.message)
       } finally {
         await this.$nextTick()
         this.processing = false
@@ -182,7 +181,7 @@ export default {
     async Download () {
       if (!this.exportAllFields ||
         (
-          await Popups.confirm('保存されるデータにはID番号・氏名・年齢などの個人情報が含まれている可能性があります.\n\n処理を続行しますか?') &&
+          await Popups.confirmYesNo('保存されるデータにはID番号・氏名・年齢などの個人情報が含まれている可能性があります.\n\n処理を続行しますか?') &&
           await Popups.confirm('出力されたファイルの取り扱いは厳重行ってください.')
         )
       ) {
