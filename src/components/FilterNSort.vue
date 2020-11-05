@@ -150,14 +150,14 @@ export default {
         this.FilterItems.splice(0, this.FilterItems.length, ...viewfilters)
       }
     },
-    Apply () {
+    async Apply () {
       const FilterObjects = this.FilterItems
         .map(filter => this.Categories[filter] || this.Years[filter] || this.Conditions[filter])
         .filter(filter => filter)
 
       this.$store.commit('SetFilters', FilterObjects)
       this.$store.commit('SetSort', { [this.Sort.Item]: this.Sort.Order })
-      this.DisableSearch()
+      await this.DisableSearch()
       this.$emit('changed')
     },
     async Store () {
@@ -168,17 +168,17 @@ export default {
       } catch (_) {
       }
     },
-    Revert () {
+    async Revert () {
       this.$store.commit('SetFilters', {}) // this.$store.getters['system/SavedView'].Filters)
       this.$store.commit('SetSort', {}) // this.$store.getters['system/SavedView'].Sort)
-      this.DisableSearch()
+      await this.DisableSearch()
       this.$emit('changed')
       this.ImportSettings()
       this.$nextTick()
     },
     async DisableSearch () {
       if (this.$store.getters.SearchActivated) {
-        if (await Popups.confirm('検索が実行されています.\n検索を解除しますか?')) {
+        if (await Popups.confirmYesNo('検索が実行されています.\n検索を解除しますか?')) {
           this.$store.commit('SetSearch', {
             Filter: {}
           })
