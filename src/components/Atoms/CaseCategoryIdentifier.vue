@@ -60,10 +60,10 @@ div.has-notification::after
   top: 0
   width: 0
   height: 0
-  border-top: 0.38rem solid var(--color-warning)
-  border-left: 0.38rem solid var(--color-warning)
-  border-right: 0.38rem solid transparent
-  border-bottom: 0.38rem solid transparent
+  border-top: 0.37rem solid var(--color-warning)
+  border-left: 0.37rem solid var(--color-warning)
+  border-right: 0.37rem solid transparent
+  border-bottom: 0.37rem solid transparent
 
 div.category-malignancy::after
   position: absolute
@@ -73,8 +73,8 @@ div.category-malignancy::after
   bottom: 0
   width: 0
   height: 0
-  border-top: 0.38rem solid transparent
-  border-left: 0.38rem solid transparent
-  border-right: 0.38rem solid var(--color-danger)
-  border-bottom: 0.38rem solid var(--color-danger)
+  border-top: 0.37rem solid transparent
+  border-left: 0.37rem solid transparent
+  border-right: 0.37rem solid var(--color-danger)
+  border-bottom: 0.37rem solid var(--color-danger)
 </style>
