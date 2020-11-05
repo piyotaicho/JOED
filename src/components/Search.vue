@@ -44,7 +44,7 @@
     </div>
 
     <div class="menu-item-bottom">
-      <el-button type="primary" :disabled="!Field && !Search" @click="performQuery">検索</el-button>
+      <el-button type="primary" :disabled="Field === '' || Search.trim() === ''" @click="performQuery">検索</el-button>
       <el-button type="success" :disabled="!SearchActivated" @click="cancelQuery">検索の解除</el-button>
     </div>
   </div>
