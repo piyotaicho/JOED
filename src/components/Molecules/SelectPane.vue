@@ -5,6 +5,7 @@
       ref="SelectPane" :size="lines"
       v-model="PaneValue"
       @change="Change()"
+      @keypress.enter="Enter()"
       @dblclick="DblClick()"
       :disabled="disabled">
       <option v-if="items.length===0" disabled :value="null"/>
@@ -63,6 +64,9 @@ export default {
     },
     DblClick (value) {
       this.$emit('dblclick', value)
+    },
+    Enter (value) {
+      this.$emit('keypress-enter', value)
     },
     Clear () {
       this.$refs.SelectPane.selectIndex = -1

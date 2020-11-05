@@ -32,6 +32,7 @@
         v-model="Pane3Selection"
         :items="Pane3Items"
         @change="Pane3Changed()"
+        @keypress-enter="Pane3DblClick()"
         @dblclick="Pane3DblClick()"
         :disabled="disabled"
         >
