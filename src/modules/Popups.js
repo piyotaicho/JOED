@@ -44,6 +44,7 @@ export default class Popups {
         title: '確認',
         iconClass: 'el-icon-question',
         showClose: false,
+        closeOnPressEscape: false,
         cancelButtonText: 'いいえ',
         confirmButtonText: 'はい'
       })
