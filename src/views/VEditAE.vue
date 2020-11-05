@@ -1,5 +1,5 @@
 <template>
-  <div class="edititem-overlay">
+  <TheWrapper alpha="10">
     <div class="edititem-overlay-content">
       <div class="flex-content">
         <div class="w20 subtitle">
@@ -342,16 +342,21 @@
         </div>
       </div>
     </div>
-  </div>
+  </TheWrapper>
 </template>
 
 <script>
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
+import TheWrapper from '@/components/Atoms/TheWrapper'
+
 import { ZenToHanNumbers } from '@/modules/ZenHanChars'
-import Popups from 'depmodules/Popups'
+import Popups from '@/modules/Popups'
 
 export default {
-  components: { LabeledCheckbox },
+  components: {
+    TheWrapper,
+    LabeledCheckbox
+  },
   props: {
     ItemIndex: {
       type: Number,

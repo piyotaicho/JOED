@@ -1,5 +1,5 @@
 <template>
-  <div class="edititem-overlay">
+  <TheWrapper alpha="10">
     <div class="edititem-overlay-content">
       <ThreePaneSelections
         Pane3Title="候補病名"
@@ -43,15 +43,16 @@
         </div>
       </div>
     </div>
-  </div>
+  </TheWrapper>
 </template>
 
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
 import DiagnosisMaster from '@/modules/Masters/DiagnosisItemList'
 import { getMatchesInDiagnoses } from '@/modules/CloseMatches'
-import Popups from 'depmodules/Popups'
+import Popups from '@/modules/Popups'
 
+import TheWrapper from '@/components/Atoms/TheWrapper'
 import ThreePaneSelections from '@/components/Molecules/3PaneSelections'
 
 const DiagnosesTree = new DiagnosisMaster()
@@ -65,7 +66,10 @@ export default {
   mixins: [
     EditItemMixins
   ],
-  components: { ThreePaneSelections },
+  components: {
+    TheWrapper,
+    ThreePaneSelections
+  },
   created () {
     if (this.ItemValue.UserTyped && this.ItemValue.UserTyped === true) {
       this.Category = this.ItemValue.Chain[0]
@@ -106,11 +110,11 @@ export default {
         this.$nextTick()
       }
     },
-    CommitChanges () {
+    async CommitChanges () {
       const temporaryItem = {}
       if (this.IsItemEdited) {
         this.SetCandidateItemsByFreeword()
-        if (this.CandidateItems.length !== 0 && Popups.confirm('候補診断名があります,選択を優先してください.') === false) return
+        if (this.CandidateItems.length !== 0 && await Popups.confirm('候補診断名があります,選択を優先してください.') === false) return
         if (Popups.confirm('直接入力した診断名の登録は可能な限り控えてください.') === false) return
         Object.assign(temporaryItem,
           {

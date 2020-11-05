@@ -1,5 +1,5 @@
 <template>
-  <div class="edititem-overlay">
+  <TheWrapper alpha="10">
     <div class="edititem-overlay-content">
       <ThreePaneSelections
         Pane3Title="候補術式"
@@ -71,15 +71,16 @@
         </div>
       </div>
     </div>
-  </div>
+  </TheWrapper>
 </template>
 
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
 import ProcedureMaster from '@/modules/Masters/ProcedureItemList'
 import { getMatchesInProcedures } from '@/modules/CloseMatches'
-import Popups from 'depmodules/Popups'
+import Popups from '@/modules/Popups'
 
+import TheWrapper from '@/components/Atoms/TheWrapper'
 import ThreePaneSelections from '@/components/Molecules/3PaneSelections'
 import DescriptionSection from '@/components/Molecules/DescriptionSection'
 
@@ -91,6 +92,7 @@ export default {
     EditItemMixins
   ],
   components: {
+    TheWrapper,
     ThreePaneSelections,
     DescriptionSection
   },
@@ -213,7 +215,7 @@ export default {
       }
     },
 
-    CommitChanges () {
+    async CommitChanges () {
       if (
         this.Category !== '' &&
         this.TrimmedEditableItem !== '' &&
@@ -228,8 +230,8 @@ export default {
 
         if (this.IsItemEdited) {
           this.SetCandidateItemsByFreeword()
-          if (this.CandidateItems.length !== 0 && Popups.confirm('候補術式名があります,選択を優先してください.') === false) return
-          if (Popups.confirm('直接入力した術式の登録は可能な限り控えてください.') === false) return
+          if (this.CandidateItems.length !== 0 && await Popups.confirm('候補術式名があります,選択を優先してください.') === false) return
+          if (await Popups.confirm('直接入力した術式の登録は可能な限り控えてください.') === false) return
 
           // ユーザ手入力の場合は選択が掛かっていないので最低限の情報のみかつフラグを必ず立てる
           temporaryItem.Chain = [this.Category]

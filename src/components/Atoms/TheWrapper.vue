@@ -1,6 +1,6 @@
 <template>
   <div class="thewrapper" :style="Style" @click="Click" ref="wrapper">
-  <slot></slot>
+  <div><slot></slot></div>
   </div>
 </template>
 
@@ -65,10 +65,10 @@ export default {
 
 <style lang="sass">
 div.thewrapper
-  position: fixed
-  z-index: +999
+  position: absolute
+  z-index: +99
   left: 0
   top: 0
-  right: 0
-  bottom: 0
+  width: 100%
+  min-height: 100vh
 </style>

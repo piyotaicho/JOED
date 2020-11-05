@@ -116,7 +116,7 @@ import InputDateOfProcedure from '@/components/Molecules/InputDateOfProcedure'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 
 import { ZenToHan } from '@/modules/ZenHanChars'
-import Popups from 'depmodules/Popups'
+import Popups from '@/modules/Popups'
 import { ValidateCase } from '@/modules/CaseValidater'
 
 export default {
@@ -193,29 +193,6 @@ export default {
   },
   beforeRouteUpdate (to, from, next) {
     this.editingSection = (to.name !== 'edit')
-
-    // オーバーレイを展開しているときには editビューのコントロールにキーボード操作でフォーカスしないようにする.
-    //
-    // HACK: フォーカス対象外のエレメントは基本的に tabIndex: -1 なので、
-    // tabIndex: 0 -> -2 にして復旧できるようにする. そのほかの tabIndex には未対応.
-    if (this.editingSection) {
-      if (document.activeElement) {
-        document.activeElement.preservedFocus = true
-      }
-      Array.prototype.filter.call(this.$refs.edit.getElementsByTagName('*'),
-        element => element.tabIndex === 0)
-        .forEach(element => { element.tabIndex = -2 })
-    } else {
-      Array.prototype.filter.call(this.$refs.edit.getElementsByTagName('*'),
-        element => element.tabIndex === -2)
-        .forEach(element => {
-          element.tabIndex = 0
-          if (element.preservedFocus) {
-            element.focus()
-            delete element.preservedFocus
-          }
-        })
-    }
     next()
   },
   computed: {
@@ -310,8 +287,8 @@ export default {
       }
     },
 
-    RemoveCase () {
-      if (this.uid > 0 && Popups.confirm('この症例を削除します.よろしいですか?')) {
+    async RemoveCase () {
+      if (this.uid > 0 && await Popups.confirmYesNo('この症例を削除します.よろしいですか?')) {
         this.$store.dispatch('RemoveDocument', { DocumentId: this.uid })
           .then(_ => this.BackToList(0))
       }
@@ -342,12 +319,12 @@ export default {
         })
         .catch(e => Popups.alert(e.message))
     },
-    CancelEditing (to = '') {
+    async CancelEditing (to = '') {
       if (this.processing || this.editingSection) {
         return
       }
 
-      if (this.Preserve === JSON.stringify(this.CaseData) || Popups.confirm('編集中の項目がありますがよろしいですか?')) {
+      if (this.Preserve === JSON.stringify(this.CaseData) || await Popups.confirm('項目が編集中です.移動しますか?')) {
         switch (to) {
           case '':
             this.BackToList(this.uid)
@@ -447,7 +424,7 @@ div.edit-top-right
 
 div.vdp-datepicker__calendar
   width: 300px !important
-  z-index: 900
+  z-index: +10
 /* セクション系ペイン */
 /* コントロール */
 #MovePrev
