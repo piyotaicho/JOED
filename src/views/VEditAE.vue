@@ -1,6 +1,6 @@
 <template>
   <TheWrapper alpha="10">
-    <div class="edititem-overlay-content">
+    <div class="edititem">
       <div class="flex-content">
         <div class="w20 subtitle">
           <span>合併症の内容</span>
