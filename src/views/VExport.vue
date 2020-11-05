@@ -76,7 +76,7 @@ import InputSwitchField from '@/components/Molecules/InputSwitchField'
 import SelectYear from '@/components/Molecules/SelectYear'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import CaseDocumentHandler from '@/modules/DbItemHandler'
-import Popups from 'depmodules/Popups'
+import Popups from '@/modules/Popups'
 import { ValidateCase } from '@/modules/CaseValidater'
 
 export default {
@@ -118,8 +118,8 @@ export default {
       get () {
         return this.exportAllFields
       },
-      set (newvalue) {
-        if (newvalue && Popups.confirm('不用意に全てのフィールドのデータを出力するのは,個人情報保護の観点からお薦め出来ません.\nそれでも出力しますか?')) {
+      async set (newvalue) {
+        if (newvalue && await Popups.confirm('不用意に全てのフィールドのデータを出力するのは,個人情報保護の観点からお薦め出来ません.\nそれでも出力しますか?')) {
           this.exportAllFields = true
         } else {
           this.exportAllFields = false
@@ -179,11 +179,11 @@ export default {
       }
     },
 
-    Download () {
+    async Download () {
       if (!this.exportAllFields ||
         (
-          Popups.confirm('ファイルへの保存が指示されました, 作成されたデータにはID番号・氏名・年齢などの個人情報が含まれている可能性があります.\n処理を続行しますか?') &&
-          Popups.confirm('出力されたファイルの取り扱いは厳重行ってください.')
+          await Popups.confirm('保存されるデータにはID番号・氏名・年齢などの個人情報が含まれている可能性があります.\n\n処理を続行しますか?') &&
+          await Popups.confirm('出力されたファイルの取り扱いは厳重行ってください.')
         )
       ) {
         // ブラウザの機能でダウンロードさせる.
@@ -274,7 +274,7 @@ export default {
       if (errorCount > 0) {
         throw new Error(
           'データ検証で' + errorCount + '件のエラーが確認されました.\n' +
-          '該当するデータの修正を御願いします.'
+          '修正を御願いします.'
         )
       }
 

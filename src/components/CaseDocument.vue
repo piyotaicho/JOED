@@ -26,7 +26,7 @@
 
 <script>
 import CategoryIdentifier from '@/components/Atoms/CaseCategoryIdentifier'
-import Popups from 'depmodules/Popups'
+import Popups from '@/modules/Popups'
 import CaseDocumentHandler from '@/modules/DbItemHandler'
 
 export default {
@@ -96,8 +96,8 @@ export default {
         this.$router.push({ name: 'edit', params: { uid: this.uid } })
       }
     },
-    RemoveDocument () {
-      if (Popups.confirm('この症例を削除します.よろしいですか?')) {
+    async RemoveDocument () {
+      if (await Popups.confirm('この症例を削除します.よろしいですか?')) {
         this.Loading = true
         this.$store.dispatch('RemoveDocument', { DocumentId: this.uid })
       }

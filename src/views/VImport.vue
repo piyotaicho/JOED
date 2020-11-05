@@ -48,7 +48,7 @@
 import InputFile from '@/components/Molecules/InputFile'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import { phraseTitledCSV, CreateDocument } from '@/modules/CSVimporter'
-import Popups from 'depmodules/Popups'
+import Popups from '@/modules/Popups'
 
 export default {
   name: 'ViewImport',
@@ -85,7 +85,7 @@ export default {
       }
       this.ProcessStep = 0
     },
-    ProcessFile () {
+    async ProcessFile () {
       this.QueryDocuments.splice(0)
       try {
         this.ProcessStep = 1
@@ -94,7 +94,7 @@ export default {
             const createddocument = CreateDocument(record)
             this.QueryDocuments.push(createddocument)
           } catch (error) {
-            if (!Popups.confirm('指定されたファイル中に不適切なレコードがあります.\n残りの処理を続行しますか?')) {
+            if (!(await Popups.confirm('指定されたファイル中に不適切なレコードがあります.\n残りの処理を続行しますか?'))) {
               throw new Error('不適切なレコード\n', JSON.stringify(record))
             }
           }

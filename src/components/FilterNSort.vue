@@ -71,7 +71,7 @@
 <script>
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import { CategoryTranslation } from '@/modules/CaseValidater'
-import Popups from 'depmodules/Popups'
+import Popups from '@/modules/Popups'
 
 export default {
   name: 'FilterNSort',
@@ -176,9 +176,9 @@ export default {
       this.ImportSettings()
       this.$nextTick()
     },
-    DisableSearch () {
+    async DisableSearch () {
       if (this.$store.getters.SearchActivated) {
-        if (Popups.confirm('検索が実行されています.\n検索を解除しますか?')) {
+        if (await Popups.confirm('検索が実行されています.\n検索を解除しますか?')) {
           this.$store.commit('SetSearch', {
             Filter: {}
           })
