@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 /* global __static */
 'use strict'
 
@@ -38,11 +39,9 @@ function createWindow () {
     height: 700,
     center: true,
     title: app.getName(),
-    icon: path.join(__static, 'icon.png'),
+    icon: './build/Windows.ico',
     backgroundColor: '#dddddd',
     webPreferences: {
-      // Use pluginOptions.nodeIntegration, leave this alone
-      // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
       spellcheck: false,
       enableWebSQL: false,
@@ -66,10 +65,6 @@ function createWindow () {
   win.on('closed', () => {
     win = null
   })
-
-  // win.on('app-command', (_event, command) => {
-  //   console.log('catch app-command ', command)
-  // })
 }
 
 app.on('window-all-closed', () => {
@@ -202,6 +197,10 @@ ipcMain.on('messagebox', (event, payload) => {
   event.returnValue = dialog.showMessageBoxSync(win, Object.assign({ noLink: true }, payload))
 })
 
+// Rendererからの終了リクエスト
+ipcMain.on('CloseApp', _ => {
+  app.quit()
+})
 // nedb データベースAPIラッパー
 const DB = require('nedb')
 
