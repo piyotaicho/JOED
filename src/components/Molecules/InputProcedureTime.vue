@@ -3,8 +3,8 @@
     <div class="label"><span class="required">手術時間</span></div>
     <div class="field">
       <select v-model="ProcedureTime"
-        :class="(!ProcedureTime)?'vacant':''"
-        :tabindex="tabindex"
+        :class="[!ProcedureTime ? 'vacant' : '']"
+        v-bind="$attrs"
         @blur="ClearTypedValue()"
         @keypress.esc="ClearTypedValue()"
         @keypress.delete="TypeInChar('DEL')"
@@ -36,14 +36,7 @@ import ProcedureTimeSelections from '@/modules/ProcedureTimes'
 export default {
   name: 'InputProcedureTime',
   props: {
-    value: {},
-    tabindex: {
-      type: [Number, String]
-    },
-    disabled: {
-      type: Boolean,
-      default: false
-    }
+    value: {}
   },
   data () {
     return ({

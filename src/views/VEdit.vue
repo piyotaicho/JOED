@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="app-dialog w800p" ref="edit" @keydown.esc="CancelEditing()">
+    <div class="edit-dialog" ref="edit">
       <div class="edit-top">
         <div class="edit-top-left">
           <InputDateOfProcedure v-model="CaseData.DateOfProcedure" :required="true"/>
@@ -11,8 +11,7 @@
         <div class="edit-top-right">
           <InputTextField title="腫瘍登録番号" v-model="CaseData.JSOGId" placeholder="腫瘍登録患者No." :disabled="skipJSOGId && CaseData.JSOGId === ''"/>
           <InputTextField title="NCD症例識別コード" v-model="CaseData.NCDId" placeholder="NCD症例識別コード" :disabled="skipNCDId && CaseData.NCDId === ''"/>
-          <div> <!-- spacer -->
-          </div>
+          <div><!-- spacer --></div>
           <InputProcedureTime v-model="CaseData.ProcedureTime"/>
         </div>
       </div>
@@ -190,11 +189,6 @@ export default {
       this.processing = false
       this.Preserve = JSON.stringify(this.CaseData)
     }
-    document.addEventListener('keydown', event => {
-      if (event.keyCode === 27) {
-        this.CancelEditing()
-      }
-    }, { once: true })
   },
   beforeRouteUpdate (to, from, next) {
     this.editingSection = (to.name !== 'edit')
@@ -332,14 +326,10 @@ export default {
       if (this.Preserve === JSON.stringify(this.CaseData) || await Popups.confirm('項目が編集中です.移動しますか?')) {
         switch (to) {
           case 'prev':
-            if (this.prevUid !== 0) {
-              this.$router.push({ name: 'edit', params: { uid: this.prevUid } })
-            }
+            if (this.prevUid !== 0) this.AnotherEdit(this.prevUid)
             break
           case 'next':
-            if (this.nextUid !== 0) {
-              this.$router.push({ name: 'edit', params: { uid: this.nextUid } })
-            }
+            if (this.nextUid !== 0) this.AnotherEdit(this.nextUid)
             break
           default:
             this.BackToList(this.uid)

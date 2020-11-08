@@ -133,7 +133,6 @@ div.caseitem-description
   div.caseitem-row
     display: flex
     flex-direction: row
-    // justify-content: space-between
 div.caseitem-controller
   width: 60px
   display: flex
@@ -141,11 +140,11 @@ div.caseitem-controller
   justify-content: space-around
   text-align: center
 .caution-badge
-  border-radius: 10px
+  border-radius: 1rem
   background-color: red
   color: white
   text-align: center
-  padding-top: 0.125rem
+  padding-top: 0.1rem
   font-size: 0.9rem
 .button-font
   font-size: 1.4rem

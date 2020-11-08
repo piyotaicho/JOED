@@ -5,7 +5,7 @@
       <div tabindex="0" @click="Toggle">
         <span>自由入力</span>
         <span style="padding-left: 1rem;">
-          <i :class="expandInput ? 'el-icon-d-arrow-left' : 'el-icon-d-arrow-right'"/>
+          <i :class="[expandInput ? 'el-icon-d-arrow-left' : 'el-icon-d-arrow-right']"/>
         </span>
       </div>
     </div>

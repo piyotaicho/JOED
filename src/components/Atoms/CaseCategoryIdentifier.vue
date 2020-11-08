@@ -1,5 +1,5 @@
 <template>
-  <div class="casecategory" :class="NotificationClass" :style="BoxColorStyle">
+  <div class="casecategory" :class="[notification ? 'has-notification' : '']" :style="BoxColorStyle">
     <div :class="MalignancyClass"></div>
   </div>
 </template>

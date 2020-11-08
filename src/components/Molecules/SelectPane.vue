@@ -69,7 +69,7 @@ export default {
       this.$emit('keypress-enter', value)
     },
     Clear () {
-      this.$refs.SelectPane.selectIndex = -1
+      this.$refs.SelectPane.selectedIndex = -1
     }
   }
 }

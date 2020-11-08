@@ -4,12 +4,8 @@
     <div class="field">
       <input type="text"
         v-model="InputText"
-        :placeholder="placeholder"
-        :class="RequiredClass"
-        @keyup.13="$emit('enter')"
-        :tabindex="tabindex"
-        :disabled="disabled"
-        :accesskey="accesskey"/>
+        :class="[(!value && required) ? 'vacant' : '']"
+        v-bind="$attrs"/>
     </div>
 </div>
 </template>
@@ -18,33 +14,17 @@
 export default {
   name: 'InputTextField',
   props: {
+    required: {
+      default: false
+    },
     value: {
       required: true
     },
     title: {
       default: 'TEXT FIELD'
-    },
-    placeholder: {
-      default: ''
-    },
-    tabindex: {
-      type: [Number, String]
-    },
-    required: {
-      default: false
-    },
-    disabled: {
-      type: Boolean,
-      default: false
-    },
-    accesskey: {
-      type: String
     }
   },
   computed: {
-    RequiredClass () {
-      return (this.required === true && this.value === '') ? 'vacant' : ''
-    },
     InputText: {
       get () { return this.value },
       set (newvalue) {

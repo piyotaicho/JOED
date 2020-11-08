@@ -106,7 +106,7 @@ export default {
                 Filters: undefined,
                 Sort: undefined
               },
-              ...settingdocument.Settings
+              ...(settingdocument ? settingdocument.Settings : {})
             }
 
           if (Settings) {

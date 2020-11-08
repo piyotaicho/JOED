@@ -118,7 +118,7 @@ option:checked
   white-space: nowrap
   text-overflow: ellipsis
 
-// ％指定幅のブロック
+// ブロックの幅指定
 .w10
   width: 10%
 .w20
@@ -138,33 +138,20 @@ option:checked
 .w90
   width: 90%
 
-// ダイアログ形式
-.w600p
-  width: 600px
-  margin-left: 148px
-.w800p
-  width: 800px
-  margin-left: 48px
-div.app-dialog
+// Edit
+div.edit-dialog
   position: relative
   border: 1px black solid
   border-radius: 0.5rem
   background-color: ivory
+  margin-left: 48px
   margin-top: 3rem
   padding: 1rem 1.5rem
+  width: 800px
   display: flex
   flex-direction: column
-div.app-dialog-row
-  position: relative
-  border: 1px black solid
-  border-radius: 0.5rem
-  background-color: ivory
-  margin-top: 3rem
-  padding: 1rem 1.5rem
-  display: flex
-  flex-direction: row
 
-// EditCase内の各セクションの共通スタイル
+// Edit中のセクション
 div.section
   position: relative
   background: white
@@ -208,7 +195,7 @@ div.section
   div.section-item-list:first-of-type div.section-item:first-of-type
       border-left: black 2px solid
 
-// EditItemビューの共通スタイル
+// Editビューの共通スタイル
 div.edititem
   position: relative
   display: block
@@ -253,11 +240,7 @@ div.content-bottom
     margin: 2px 0
     height: 2.5em
 
-// その他
-div.progress-views
-  margin: 1.5rem 0.7rem
-  width: 45rem
-
+// 機能画面
 div.utility
   margin: 0 3rem
 
@@ -284,3 +267,7 @@ div.utility-switches
       width: 50%
     div div.field
       width: 50%
+
+div.progress-views
+  margin: 1.5rem 0.7rem
+  width: 45rem

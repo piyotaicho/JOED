@@ -54,7 +54,6 @@ export default {
       type: [Number, String],
       default: 8
     },
-    // Pane[1-3]のプロパティには親でv-bind.syncを使用する
     Pane1: {
       type: String,
       default: undefined,
@@ -106,6 +105,7 @@ export default {
     const selects = this.$refs.panes.getElementsByTagName('select')
     if (selects && selects.length > 0) {
       selects[0].focus()
+      selects[0].selectedIndex = -1
     }
   },
   computed: {

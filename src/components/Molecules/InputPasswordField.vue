@@ -4,10 +4,7 @@
     <div class="field">
       <input type="password"
         v-model="InputText"
-        :placeholder="placeholder"
-        :class="RequiredClass"
-        @keyup.13="$emit('enter')"
-        :disabled="disabled"/>
+        :class="[(value === '' && required) ? 'vacant' : '']"        v-bind="$attrs"/>
     </div>
 </div>
 </template>
@@ -22,21 +19,11 @@ export default {
     title: {
       default: 'TEXT FIELD'
     },
-    placeholder: {
-      default: ''
-    },
     required: {
-      default: false
-    },
-    disabled: {
-      type: Boolean,
       default: false
     }
   },
   computed: {
-    RequiredClass () {
-      return (this.required === true && this.value === '') ? 'vacant' : ''
-    },
     InputText: {
       get () { return this.value },
       set (newvalue) {

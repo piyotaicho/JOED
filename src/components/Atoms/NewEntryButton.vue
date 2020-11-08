@@ -1,6 +1,5 @@
 <template>
     <div class="new-entry-button"
-      :class="DivClass"
       :tabindex="tabindex"
       @click="onClick"
       @keydown.enter="onClick"
@@ -12,9 +11,6 @@
 export default {
   name: 'NewEntryButton',
   props: {
-    DivClass: {
-      type: String
-    },
     tabindex: {
       type: [String, Number],
       default: 0

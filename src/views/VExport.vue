@@ -3,7 +3,7 @@
     <div class="utility-switches">
       <div>
         <div class="label">出力する年次</div>
-        <SelectYear div-class="field" v-model="exportYear" :accept-all="false"/>
+        <SelectYear class="field" v-model="exportYear" :accept-all="false"/>
       </div>
 
       <InputSwitchField

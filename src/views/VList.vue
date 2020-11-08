@@ -7,8 +7,8 @@
   >
     <WelcomeBanner v-if="ShowStartupDialog"/>
 
-    <DrawerButton div-class="open-drawer" tab-index="0" @click="OpenDrawer"/>
-    <NewEntryButton div-class="list-new-entry" tab-index="0" @click="CreateNewEntry()"/>
+    <DrawerButton class="open-drawer" tab-index="0" @click="OpenDrawer"/>
+    <NewEntryButton class="list-new-entry" tab-index="0" @click="CreateNewEntry()"/>
 
     <Drawer :visible="showMenuDrawer" @close="CloseDrawer"/>
 
