@@ -350,7 +350,7 @@ import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 
 import { ZenToHanNumbers } from '@/modules/ZenHanChars'
-import Popups from '@/modules/Popups'
+import * as Popups from '@/modules/Popups'
 
 export default {
   components: {

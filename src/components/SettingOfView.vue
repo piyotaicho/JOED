@@ -34,7 +34,7 @@
 
 <script>
 import InputSwitchField from '@/components/Molecules/InputSwitchField'
-import Popups from '@/modules/Popups'
+import * as Popups from '@/modules/Popups'
 
 export default {
   name: 'SettingOfView',

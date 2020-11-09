@@ -75,7 +75,7 @@ import InputSwitchField from '@/components/Molecules/InputSwitchField'
 import SelectYear from '@/components/Molecules/SelectYear'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import CaseDocumentHandler from '@/modules/DbItemHandler'
-import Popups from '@/modules/Popups'
+import * as Popups from '@/modules/Popups'
 import { ValidateCase } from '@/modules/CaseValidater'
 
 export default {

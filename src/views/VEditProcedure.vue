@@ -58,7 +58,7 @@
 import EditItemMixins from '@/mixins/EditItemMixins'
 import ProcedureMaster from '@/modules/Masters/ProcedureItemList'
 import { getMatchesInProcedures } from '@/modules/CloseMatches'
-import Popups from '@/modules/Popups'
+import * as Popups from '@/modules/Popups'
 
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import ThreePaneSelections from '@/components/Molecules/3PaneSelections'

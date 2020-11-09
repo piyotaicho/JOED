@@ -58,7 +58,7 @@ export function phraseTitledCSV (loadeddocument) {
 export function CreateDocument (record) {
   const CaseData = {
     Imported: true,
-    Notification: 'インポートされたデータです.編集画面で確認後に再保存が必要です.\n'
+    Notification: 'インポートされたデータです.確認後に保存が必要です.\n'
   }
 
   DateOfProcedure(record, CaseData)
