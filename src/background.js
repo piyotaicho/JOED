@@ -37,6 +37,7 @@ function createWindow () {
     minWidth: 960,
     maxWidth: 960,
     height: 700,
+    fullscreen: false,
     center: true,
     title: app.getName(),
     icon: './build/Windows.ico',
@@ -113,15 +114,15 @@ const MenuTemplate = [
   {
     label: 'ファイル',
     submenu: [
-      { label: '新規症例の登録', accelerator: process.platform === 'darwin' ? 'Cmd+N' : 'Alt+N', click: (item, focusedWindow) => RendererRoute('new', focusedWindow) },
+      { label: '新規症例の登録', id: 'list-new', accelerator: process.platform === 'darwin' ? 'Cmd+N' : 'Alt+N', click: (item, focusedWindow) => RendererRoute('new', focusedWindow) },
       { type: 'separator' },
-      { label: 'データの読み込み', click: (item, focusedWindow) => RendererRoute('import', focusedWindow) },
-      { label: 'データの書き出し', click: (item, focusedWindow) => RendererRoute('export', focusedWindow) },
+      { label: 'データの読み込み', id: 'list-import', click: (item, focusedWindow) => RendererRoute('import', focusedWindow) },
+      { label: 'データの書き出し', id: 'list-export', click: (item, focusedWindow) => RendererRoute('export', focusedWindow) },
       ...(process.platform === 'darwin'
         ? []
         : [
           { type: 'separator' },
-          { label: '設定', accelerator: 'CmdORCtrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+          { label: '設定', id: 'setup', accelerator: 'CmdORCtrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
           { label: '終了', accelerator: 'Alt+F4', role: 'quit' }
         ])
     ]
