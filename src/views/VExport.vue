@@ -331,7 +331,7 @@ export default {
         //       Update: { $set: { UniqueID: exportdocument.UniqueID } }
         //     })
         // }
-        if (this.exportRaw) {
+        if (this.exportAllFields && this.exportRaw) {
           ExportItems.push(exportdocument)
         } else {
           ExportItems.push(

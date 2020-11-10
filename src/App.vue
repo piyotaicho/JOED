@@ -11,9 +11,7 @@ export default {
     this.$store.dispatch('system/LoadPreferences').then(_ => {
       // システムSALTが未設定の場合は起動時をSALTにする.
       if (!this.$store.getters['system/SALT']) {
-        const salt = Date.now()
-        console.log('SET SALT to ', salt)
-        this.$store.commit('system/SetPreferences', { Salt: salt })
+        this.$store.commit('system/SetPreferences', { Salt: Date.now() })
         this.$store.dispatch('system/SavePreferences')
       }
       this.$store.dispatch('ReloadDocumentList')
