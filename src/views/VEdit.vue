@@ -140,7 +140,6 @@ export default {
   data () {
     return ({
       CaseData: {
-        UniqueID: undefined,
         Name: '',
         Age: undefined,
         PatientId: '',
