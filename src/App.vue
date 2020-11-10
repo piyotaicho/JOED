@@ -8,9 +8,16 @@
 export default {
   created () {
     this.$store.commit('initDatabase')
-    this.$store.dispatch('system/LoadPreferences').then(_ =>
+    this.$store.dispatch('system/LoadPreferences').then(_ => {
+      // システムSALTが未設定の場合は起動時をSALTにする.
+      if (!this.$store.getters['system/SALT']) {
+        const salt = Date.now()
+        console.log('SET SALT to ', salt)
+        this.$store.commit('system/SetPreferences', { Salt: salt })
+        this.$store.dispatch('system/SavePreferences')
+      }
       this.$store.dispatch('ReloadDocumentList')
-    )
+    })
 
     // electron環境下でのメインプロセスからのメッセージ(メニュー操作)を処理
     try {
