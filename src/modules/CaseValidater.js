@@ -36,27 +36,32 @@ export async function ValidateCase (item = {}) {
   await ValidateCategoryMatch(item)
 
   const Year = item.DateOfProcedure.substr(0, 4)
-  // ES2020が使えるようになったらPromise.allSettledへ置き換える
-  const warningMessages = (await Promise.all([
-    new Promise(resolve => {
-      ValidateDiagnoses(item, Year)
-        .then(_ => resolve(), e => resolve(e))
-    }),
-    new Promise(resolve => {
-      ValidateProcedures(item, Year)
-        .then(_ => resolve(), e => resolve(e))
-    }),
-    new Promise(resolve => {
-      ValidateAEs(item)
-        .then(_ => resolve(), e => resolve(e))
-    })
-  ]))
-    .filter(value => value)
-    .map(item => item.message)
-    .join('\n')
+  if (item.Notification) {
+    // 既存のエラー情報あり、未修正
+    throw new Error(item.Notification)
+  } else {
+    // ES2020が使えるようになったらPromise.allSettledへ置き換える
+    const warningMessages = (await Promise.all([
+      new Promise(resolve => {
+        ValidateDiagnoses(item, Year)
+          .then(_ => resolve(), e => resolve(e))
+      }),
+      new Promise(resolve => {
+        ValidateProcedures(item, Year)
+          .then(_ => resolve(), e => resolve(e))
+      }),
+      new Promise(resolve => {
+        ValidateAEs(item)
+          .then(_ => resolve(), e => resolve(e))
+      })
+    ]))
+      .filter(value => value)
+      .map(item => item.message)
+      .join('\n')
 
-  if (warningMessages) {
-    throw new Error(warningMessages)
+    if (warningMessages) {
+      throw new Error(warningMessages)
+    }
   }
 }
 
