@@ -19,7 +19,7 @@
             <option value="DiagnosesMain">手術診断 (主たる診断のみ)</option>
             <option value="Procedures">実施手術</option>
             <option value="ProceduresMain">実施手術 (主たる手術のみ)</option>
-            <option value="QID">問い合わせ番号</option>
+            <!-- <option value="QID">問い合わせ番号</option> -->
           </select>
         </div>
       </div>
