@@ -94,20 +94,21 @@ export default class CaseDocumentHandler {
   // @Param Object
   static ExportCase (
     item = {},
-    params = {
-      omitDateOfProcedure: false,
-      omitAge: false,
-      exportAllFields: false
-    }
+    param = {}
   ) {
     const temporaryItem = {}
     const propsToExport = [
-      'UniqueID',
       'JSOGId', 'NCDId',
       'PatientId', 'Name', 'Age',
       'DateOfProcedure', 'ProcedureTime', 'TypeOfProcedure',
       'PresentAE', 'Imported'
     ]
+    const params = {
+      exportAllFields: false,
+      omitDateOfProcedure: true,
+      omitAge: true,
+      ...param
+    }
 
     if (params.exportAllFields) {
       params.omitAge = false

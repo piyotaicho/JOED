@@ -1,3 +1,5 @@
+import * as difflib from 'difflib'
+
 export const name = 'CloseMatches'
 
 const CommonTranslation = {
@@ -73,7 +75,7 @@ const ProcedureTranslation = {
 }
 
 export function getMatchesInDiagnoses (str = '', candidates = []) {
-  const difflib = require('difflib')
+  // const difflib = require('difflib')
 
   // 全角の半角化
   str = str.replace(/[ーｰ～]/g, '-')
@@ -97,7 +99,7 @@ export function getMatchesInDiagnoses (str = '', candidates = []) {
 }
 
 export function getMatchesInProcedures (str = '', candidates = []) {
-  const difflib = require('difflib')
+  // const difflib = require('difflib')
 
   // 全角の半角化
   str = str.replace(/[ーｰ～]/g, '-')

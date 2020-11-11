@@ -71,7 +71,7 @@
 <script>
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import { CategoryTranslation } from '@/modules/CaseValidater'
-import Popups from '@/modules/Popups'
+import * as Popups from '@/modules/Popups'
 
 export default {
   name: 'FilterNSort',

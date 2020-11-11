@@ -48,7 +48,7 @@
 import InputFile from '@/components/Molecules/InputFile'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import { phraseTitledCSV, CreateDocument } from '@/modules/CSVimporter'
-import Popups from '@/modules/Popups'
+import * as Popups from '@/modules/Popups'
 
 export default {
   name: 'ViewImport',

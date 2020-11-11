@@ -115,7 +115,7 @@ import InputDateOfProcedure from '@/components/Molecules/InputDateOfProcedure'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 
 import { ZenToHan } from '@/modules/ZenHanChars'
-import Popups from '@/modules/Popups'
+import * as Popups from '@/modules/Popups'
 import { ValidateCase } from '@/modules/CaseValidater'
 
 export default {
@@ -140,7 +140,6 @@ export default {
   data () {
     return ({
       CaseData: {
-        UniqueID: undefined,
         Name: '',
         Age: undefined,
         PatientId: '',
@@ -247,7 +246,13 @@ export default {
     },
 
     ShowNotification () {
-      Popups.information(this.CaseData.Notification)
+      Popups.information(
+        this.$createElement('div', null,
+          this.CaseData.Notification
+            .split('\n')
+            .map(line => this.$createElement('p', null, line))
+        )
+      )
     },
 
     EditListItem (target, index, value) {
@@ -316,7 +321,13 @@ export default {
               this.BackToList()
           }
         })
-        .catch(e => Popups.alert(e.message))
+        .catch(e => Popups.alert(
+          this.$createElement('div', null,
+            e.message
+              .split('\n')
+              .map(line => this.$createElement('p', null, line))
+          ))
+        )
     },
     async CancelEditing (to = '') {
       if (this.processing || this.editingSection) {

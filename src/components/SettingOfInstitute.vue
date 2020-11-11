@@ -73,7 +73,7 @@
 
 <script>
 import InputTextField from '@/components/Molecules/InputTextField'
-import Popups from '@/modules/Popups'
+import * as Popups from '@/modules/Popups'
 import { ListOfInstitutions, ListOfPrefectures } from '@/modules/Masters/InstituteList'
 import { InstituteIDFormat } from '@/modules/CaseValidater'
 

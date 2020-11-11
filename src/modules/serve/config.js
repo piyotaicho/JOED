@@ -1,4 +1,4 @@
-const MD5salt = process.env.VUE_APP_MD5SALT
+import HHX from 'xxhashjs'
 
 export function LoadConfig (storecontext) {
   return storecontext.dispatch('dbFindOne', {
@@ -26,21 +26,22 @@ export async function LoadPassword (storecontext) {
 }
 
 export async function SavePassword (payload, storecontext) {
-  if (payload === '') {
-    return storecontext.dispatch('dbRemove',
+  const password = payload.password
+  const salt = payload.salt
+
+  if (password === '') {
+    storecontext.dispatch('dbRemove',
       {
         Query: { Password: { $exists: true } },
         Options: { multi: true }
       },
       { root: true })
-      .then(_ => storecontext.commit('PasswordRequirement', false))
   } else {
-    const HHX = require('xxhashjs')
-    const hashedPassword = HHX.h64(payload, MD5salt).toString(16)
-    return storecontext.dispatch('dbUpdate',
+    const hashedpassword = password === '' ? '' : HHX.h64(password, salt).toString(16)
+    storecontext.dispatch('dbUpdate',
       {
         Query: { Password: { $exists: true } },
-        Update: { Password: hashedPassword },
+        Update: { Password: hashedpassword },
         Options: { multi: false, upsert: true }
       },
       { root: true })

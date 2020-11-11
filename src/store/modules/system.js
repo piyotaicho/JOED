@@ -6,6 +6,7 @@ export default {
   namespaced: true,
   state: {
     settings: {
+      Salt: 0,
       InstitutionName: '',
       InstitutionID: '',
       JSOGoncologyboardID: '',
@@ -22,6 +23,9 @@ export default {
     StartupDialogStatus: true
   },
   getters: {
+    SALT (state) {
+      return state.settings.Salt
+    },
     ApplicationName () {
       return process.env.VUE_APP_NAME
     },

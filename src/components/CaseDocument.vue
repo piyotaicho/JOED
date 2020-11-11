@@ -26,7 +26,7 @@
 
 <script>
 import CategoryIdentifier from '@/components/Atoms/CaseCategoryIdentifier'
-import Popups from '@/modules/Popups'
+import * as Popups from '@/modules/Popups'
 import CaseDocumentHandler from '@/modules/DbItemHandler'
 
 export default {

@@ -8,19 +8,19 @@
 
       <InputSwitchField
         v-model="allFields"
-        title="出力するデータ"
-        :options="{学会提出データ: false, 全フィールドのデータ: true}"/>
+        title="出力する様式"
+        :options="{学会提出データ: false, バックアップデータ: true}"/>
 
       <InputSwitchField
-        v-model="exportDateOfProcedure"
-        :disabled="exportAllFields"
-        title="手術実施日の出力"
-        :options="{しない: false, する: true}"/>
+        v-model="exportRaw"
+        :disabled="!exportAllFields"
+        title="データ形式"
+        :options="{生データ: true, 処理データ: false}"/>
 
       <InputSwitchField
-        v-model="exportAge"
-        :disabled="exportAllFields"
-        title="患者の年齢の出力"
+        v-model="addHeader"
+        :disabled="!(exportAllFields && exportRaw)"
+        title="ヘッダの生成"
         :options="{しない: false, する: true}"/>
 
       <div>
@@ -75,7 +75,8 @@ import InputSwitchField from '@/components/Molecules/InputSwitchField'
 import SelectYear from '@/components/Molecules/SelectYear'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import CaseDocumentHandler from '@/modules/DbItemHandler'
-import Popups from '@/modules/Popups'
+import * as Popups from '@/modules/Popups'
+import HHX from 'xxhashjs'
 import { ValidateCase } from '@/modules/CaseValidater'
 
 export default {
@@ -87,9 +88,8 @@ export default {
     return ({
       exportYear: '',
       exportAllFields: false,
-      exportDateOfProcedure: true,
-      exportAge: true,
-      forceRenumber: false,
+      exportRaw: true,
+      addHeader: false,
 
       exportText: '',
 
@@ -108,7 +108,10 @@ export default {
     exportAllFields () {
       this.ResetState()
     },
-    exportDateOfProcedure () {
+    exportRaw () {
+      this.ResetState()
+    },
+    addHeader () {
       this.ResetState()
     }
   },
@@ -284,59 +287,65 @@ export default {
     //
     async CreateExportData (documentIds) {
       this.progressCreateData = 0
-
       const ExportItems = []
+      const hashHHX = HHX.h64(this.$store.getters['system/SALT'])
 
-      let serial = this.forceRenumber ? 0
-        : Number(
-          (
-            await this.$store.dispatch('dbFindOne',
-              {
-                Query:
-                  {
-                    UniqueID: { $exists: true },
-                    ...this.baseQuery
-                  },
-                Sort: { UniqueID: -1 }
-              }) ||
-              {
-                // UniqueIDが無い場合のダミー つまるところ 0.
-                UniqueID: '2222-99001-0'
-              }
-          ).UniqueID.substr(11)
-        )
+      // let serial = this.forceRenumber ? 0
+      //   : Number(
+      //     (
+      //       await this.$store.dispatch('dbFindOne',
+      //         {
+      //           Query:
+      //             {
+      //               UniqueID: { $exists: true },
+      //               ...this.baseQuery
+      //             },
+      //           Sort: { UniqueID: -1 }
+      //         }) ||
+      //         {
+      //           // UniqueIDが無い場合のダミー つまるところ 0.
+      //           UniqueID: '2222-99001-0'
+      //         }
+      //     ).UniqueID.substr(11)
+      //   )
 
       for (const index in documentIds) {
         this.progressCreateData = parseInt(index * 100.0 / documentIds.length)
         const exportdocument = await this.$store.dispatch('dbFindOne',
-          { Query: { DocumentId: documentIds[index] } }
+          {
+            Query: { DocumentId: documentIds[index] },
+            Projection: { _id: 0 }
+          }
         )
+        // if (this.forceRenumber || !exportdocument.UniqueID) {
+        //   ++serial
+        //   exportdocument.UniqueID = [
+        //     this.$store.getters['system/InstitutionID'],
+        //     this.exportYear,
+        //     serial
+        //   ].join('-')
 
-        if (this.forceRenumber || !exportdocument.UniqueID) {
-          ++serial
-          exportdocument.UniqueID = [
-            this.$store.getters['system/InstitutionID'],
-            this.exportYear,
-            serial
-          ].join('-')
-
-          await this.$store.dispatch('dbUpdate',
+        //   await this.$store.dispatch('dbUpdate',
+        //     {
+        //       Query: { DocumentId: documentIds[index] },
+        //       Update: { $set: { UniqueID: exportdocument.UniqueID } }
+        //     })
+        // }
+        if (this.exportRaw) {
+          ExportItems.push(exportdocument)
+        } else {
+          ExportItems.push(
             {
-              Query: { DocumentId: documentIds[index] },
-              Update: { $set: { UniqueID: exportdocument.UniqueID } }
-            })
-        }
-
-        ExportItems.push(
-          CaseDocumentHandler.ExportCase(
-            exportdocument,
-            {
-              exportAllFields: this.exportAllFields,
-              omitAge: !this.exportAge,
-              omitDateOfProcedure: !this.exportDateOfProcedure
+              ...CaseDocumentHandler.ExportCase(
+                exportdocument,
+                {
+                  exportAllFields: this.exportAllFields
+                }
+              ),
+              hash: hashHHX.update(JSON.stringify(exportdocument)).digest().toString(36)
             }
           )
-        )
+        }
       }
       this.progressCreateData = 100
       return ExportItems
@@ -345,24 +354,26 @@ export default {
     // Step 5 - データヘッダの作成
     //
     async CreateHeader (exportItem) {
-      const length = exportItem.length
+      if (!(this.exportAllFields && this.exportRaw && !this.addHeader)) {
+        const length = exportItem.length
 
-      if (length > 0) {
-        const HHX = require('xxhashjs')
-        const TimeStamp = Date.now()
+        if (length > 0) {
+          const TimeStamp = Date.now()
 
-        const exportText = JSON.stringify(exportItem, ' ', 2)
-        const Checksum = HHX.h64(exportText, TimeStamp).toString(16)
+          const exportText = JSON.stringify(exportItem, ' ', 2)
+          const hash = HHX.h64(exportText, TimeStamp).toString(16)
 
-        exportItem.splice(0, 0, {
-          InstitutionName: this.$store.getters['system/InstitutionName'],
-          InstitutionID: this.$store.getters['system/InstitutionID'],
-          JSOGoncologyboardID: this.$store.getters['system/JSOGInstitutionID'],
-          TimeStamp: TimeStamp,
-          Year: this.exportYear || 'ALL',
-          NumberOfCases: exportItem.length,
-          MD5: Checksum
-        })
+          exportItem.unshift({
+            InstitutionName: this.$store.getters['system/InstitutionName'],
+            InstitutionID: this.$store.getters['system/InstitutionID'],
+            JSOGoncologyboardID: this.$store.getters['system/JSOGInstitutionID'],
+            TimeStamp: TimeStamp.toString(10),
+            Year: this.exportYear || 'ALL',
+            NumberOfCases: exportItem.length,
+            Version: this.$store.getters['system/ApplicationVersion'],
+            hash: hash
+          })
+        }
       }
       return JSON.stringify(exportItem, ' ', 2)
     }
