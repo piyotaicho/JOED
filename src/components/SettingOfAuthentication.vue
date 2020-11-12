@@ -12,7 +12,7 @@
         title="現在のパスワード"
         placeholder="********"
         :required="true"
-        v-if="$store.getters['password/isPasswordRequired']" />
+        v-if="passwordRequired" />
 
       <InputPasswordField
         v-model.lazy="NewPasswordString"
@@ -48,15 +48,24 @@ export default {
       UseAuthentication: true,
       PasswordString: '',
       NewPasswordString: '',
-      NewPasswordStringVerify: ''
+      NewPasswordStringVerify: '',
+      preserve: ''
     })
   },
   created () {
     this.ResetState()
+    this.$nextTick(_ => {
+      this.preserve = this.UseAuthentication
+    })
+  },
+  computed: {
+    passwordRequired () {
+      return this.$store.getters['password/isPasswordRequired']
+    }
   },
   methods: {
     ResetState () {
-      this.UseAuthentication = this.$store.getters['password/isPasswordRequired']
+      this.UseAuthentication = this.passwordRequired
       this.PasswordString = ''
       this.NewPasswordString = ''
       this.NewPasswordStringVerify = ''

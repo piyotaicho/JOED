@@ -10,7 +10,7 @@ module.exports = {
     target: process.env.VUE_APP_MODE === 'electron' ? 'electron-renderer' : 'web',
     optimization: {
       splitChunks: {
-        maxSize: 5000000
+        maxSize: 512000
       }
     },
     resolve: {
