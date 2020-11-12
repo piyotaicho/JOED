@@ -37,7 +37,7 @@
         @removeitem="RemoveListItem('AEs', $event)"
       />
 
-      <!-- Controles -->
+      <!-- Navigations -->
       <el-button icon="el-icon-caret-left" size="medium" circle id="MovePrev"
         tabindex="-1"
         v-if="isEditingExistingItem"
@@ -51,6 +51,7 @@
         @click.exact="CancelEditing('next')"
         @click.ctrl.shift="CommitCase('next')" />
 
+      <!--Controls -->
       <div class="edit-controls">
         <div class="edit-controls-left">
           <el-button type="warning" icon="el-icon-warning"
@@ -71,9 +72,8 @@
           <div>
             <el-dropdown split-button type="primary"
               @click="CommitCase()"
-              @command="CommitCase"
-              v-loading="processing">
-              編集内容を保存<!-- <i class="el-icon-loading" v-if="processing"/> -->
+              @command="CommitCase">
+              編集内容を保存 <i class="el-icon-loading" v-show="processing"/>
 
               <el-dropdown-menu slot="dropdown">
                 <template v-if="isEditingExistingItem">
