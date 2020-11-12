@@ -11,7 +11,7 @@
         <template v-for="item of Source">
           <LabeledCheckbox v-model="SelectedValue" :value="item" :key="item">
             {{spliceMarker(item)}}
-          </LabeledCheckbox>
+          </LabeledCheckbox><br :key="item"/>
         </template>
       </template>
       <template v-else>

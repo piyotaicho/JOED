@@ -59,6 +59,7 @@ label.LabeledCheckbox
   padding: 0.08rem
   padding-right: 0.7rem
   margin-left: 0.3rem
+  white-space: nowrap
 
 input.LabeledCheckbox[type="checkbox"]
   display: none
