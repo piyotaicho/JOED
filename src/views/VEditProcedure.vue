@@ -133,7 +133,7 @@ export default {
     },
     SetCandidateItemsByFreeword () {
       if (this.EditableItem && this.UserEditingAllowed) {
-        const flatten = ProceduresTree.getCategoryItems(this.Category, this.year)
+        const flatten = ProceduresTree.getItemsInCategory(this.Category, this.year)
         const arr = getMatchesInProcedures(this.EditableItem, flatten)
 
         this.CandidateItems.splice(0, this.CandidateItems.length, ...arr)

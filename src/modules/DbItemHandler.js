@@ -134,6 +134,10 @@ export default class CaseDocumentHandler {
 
     temporaryItem.Diagnoses = this.$flattenItem(item.Diagnoses)
     temporaryItem.Procedures = this.$flattenItem(item.Procedures)
+
+    if (params.omitDateOfProcedure) {
+      temporaryItem.YearOfProcedure = item.DateOfProcedure.substr(0, 4)
+    }
     if (item.AEs) {
       temporaryItem.AEs = Object.assign([], item.AEs)
     }

@@ -477,22 +477,22 @@ export default class ProcedureMaster extends Master {
 
   // ProcedureMasterのstaticメソッド
   // itemは術式への参照
-  // - handleTreeItemはMasterからの継承
+  // - parseItemはMasterからの継承
 
   static getTitle (item) {
-    return this.handleTreeItem(item)
+    return this.parseItem(item)
   }
 
   static getAdditioninalProcedure (item) {
-    return this.handleTreeItem(item, 'AdditionalProcedure')
+    return this.parseItem(item, 'AdditionalProcedure')
   }
 
   static getDittos (item) {
-    return this.handleTreeItem(item, 'Ditto')
+    return this.parseItem(item, 'Ditto')
   }
 
   static getDescriptionObject (item) {
-    return this.handleTreeItem(item, 'Description')
+    return this.parseItem(item, 'Description')
   }
 
   static getDescriptionTitle (item) {
