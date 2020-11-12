@@ -36,7 +36,7 @@ export default {
               case 'export':
               case 'import':
               case 'settings':
-                if (routename !== 'new') {
+                if (routename !== 'new' && this.$route.name !== routename) {
                   this.$router.push({ name: routename })
                 }
                 break
