@@ -74,7 +74,6 @@
 <script>
 import InputTextField from '@/components/Molecules/InputTextField'
 import * as Popups from '@/modules/Popups'
-import { ListOfInstitutions, ListOfPrefectures } from '@/modules/Masters/InstituteList'
 import { InstituteIDFormat } from '@/modules/CaseValidater'
 
 export default {
@@ -128,29 +127,31 @@ export default {
 
       if (search === '' && pref === '') return
 
-      let prefecturesMatch = ''
-      if (pref) {
-        const matched = ListOfPrefectures
-          .map((item, index) => item.match('^' + pref)
-            ? ('0' + (Number(index) + 1).toString(10)).slice(-2)
-            : undefined
-          )
-          .filter(item => item)
-        if (matched.length > 0) {
-          prefecturesMatch = '^(' + matched.join('|') + ')'
+      import('@/modules/Masters/InstituteList').then(({ ListOfInstitutions, ListOfPrefectures }) => {
+        let prefecturesMatch = ''
+        if (pref) {
+          const matched = ListOfPrefectures
+            .map((item, index) => item.match('^' + pref)
+              ? ('0' + (Number(index) + 1).toString(10)).slice(-2)
+              : undefined
+            )
+            .filter(item => item)
+          if (matched.length > 0) {
+            prefecturesMatch = '^(' + matched.join('|') + ')'
+          }
         }
-      }
 
-      const filteredlist = ListOfInstitutions
-        .filter(item =>
-          (!prefecturesMatch || item.ID.match(prefecturesMatch)) && !!item.name.match(search)
-        )
-        .map(item => {
-          item.Prefecture = ListOfPrefectures[Number(item.ID.substr(0, 2)) - 1]
-          return item
-        })
+        const filteredlist = ListOfInstitutions
+          .filter(item =>
+            (!prefecturesMatch || item.ID.match(prefecturesMatch)) && !!item.name.match(search)
+          )
+          .map(item => {
+            item.Prefecture = ListOfPrefectures[Number(item.ID.substr(0, 2)) - 1]
+            return item
+          })
 
-      this.InstituteList.splice(0, 0, ...filteredlist)
+        this.InstituteList.splice(0, 0, ...filteredlist)
+      })
     },
 
     SetInstituteProperties (instituteProperties) {
