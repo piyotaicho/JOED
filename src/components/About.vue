@@ -5,7 +5,7 @@
     <span>アプリケーションおよび主要コンポーネントのバージョン</span>
     <ul>
       <li><ExtLink url="https://github.com/piyotaicho/JOED/">JOED5</ExtLink> : {{ApplicationVersion}}</li>
-      <template v-if="LibraryVersions.electron">
+      <template v-if="electron">
         <li>Electron : {{LibraryVersions.electron}}</li>
         <li>Vue : {{LibraryVersions.Vue}}
         <li>Chrome : {{LibraryVersions.chrome}}</li>
@@ -13,7 +13,15 @@
         <li>V8 : {{LibraryVersions.v8}}</li>
       </template>
     </ul>
-    <hr />
+
+    <hr/>
+    <span>ライセンス - MIT</span>
+    <p>Copyright (c) 2020 Yasuhiro Yamamoto @piyotaicho and 一般社団法人日本産科婦人科内視鏡学会</p>
+    <p>以下に定める条件に従い、本ソフトウェアおよび関連文書のファイル（以下「ソフトウェア」）の複製を取得するすべての人に対し、ソフトウェアを無制限に扱うことを無償で許可します。これには、ソフトウェアの複製を使用、複写、変更、結合、掲載、頒布、サブライセンス、および/または販売する権利、およびソフトウェアを提供する相手に同じことを許可する権利も無制限に含まれます。</p>
+    <p>上記の著作権表示および本許諾表示を、ソフトウェアのすべての複製または重要な部分に記載するものとします。</p>
+    <p>ソフトウェアは「現状のまま」で、明示であるか暗黙であるかを問わず、何らの保証もなく提供されます。ここでいう保証とは、商品性、特定の目的への適合性、および権利非侵害についての保証も含みますが、それに限定されるものではありません。 作者または著作権者は、契約行為、不法行為、またはそれ以外であろうと、ソフトウェアに起因または関連し、あるいはソフトウェアの使用またはその他の扱いによって生じる一切の請求、損害、その他の義務について何らの責任も負わないものとします。</p>
+
+    <hr/>
     <span>JOED5は以下のオープンソースコンポーネント及びその下位コンポーネントを用いて作成されています.</span>
     <ul>
       <li v-for="(item, index) of List" :key="index">
@@ -52,22 +60,25 @@ export default {
     })
   },
   created () {
-    if (process.env.VUE_APP_MODE === 'electron') {
-      this.List.push(...[
+    if (this.electron) {
+      this.List.push(
         { name: 'electron', href: 'https://www.electronjs.org/', license: 'MIT' },
         { name: 'electron builder', href: 'https://www.electron.build/', license: 'MIT' },
         { name: 'electron store', href: 'https://github.com/sindresorhus/electron-store', license: 'MIT' }
-      ])
+      )
     }
   },
   computed: {
+    electron () {
+      return process.env.VUE_APP_ELECTRON
+    },
     ApplicationVersion () {
       return this.$store.getters['system/ApplicationVersion']
     },
     LibraryVersions () {
       return {
         Vue: this.$store.getters['system/VueVersion'],
-        ...(process.versions || { electron: 'undefined', node: 'undefined', v8: 'undefined', chrome: 'undefined' })
+        ...(this.electron ? { electron: 'undefined', node: 'undefined', v8: 'undefined', chrome: 'undefined' } : {})
       }
     }
   }

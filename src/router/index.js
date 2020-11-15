@@ -75,15 +75,35 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if (to.path !== '/') {
-    if (Store.getters['password/isAuthenticated']) {
-      next()
-    } else {
-      next('/')
-    }
-  } else {
-    next()
+  let ipcrenderer
+  if (process.env.VUE_APP_ELECTRON) {
+    const { ipcRenderer } = require('electron')
+    ipcrenderer = ipcRenderer
   }
+
+  if (to.path === '/' || Store.getters['password/isAuthenticated']) {
+    ipcrenderer && ipcrenderer.send('menuroute', to.name)
+    next()
+  } else {
+    ipcrenderer && ipcrenderer.send('menuroute', 'login')
+    next('/')
+  }
+  // if (process.env.VUE_APP_ELECTRON) {
+  //   const { ipcRenderer } = require('electron')
+  //   if (to.path !== '/' && Store.getters['password/isAuthenticated']) {
+  //     ipcRenderer.send('menuroute', to.name)
+  //     next()
+  //   } else {
+  //     ipcRenderer.send('menuroute', 'login')
+  //     next('/')
+  //   }
+  // } else {
+  //   if (to.path !== '/' && Store.getters['password/isAuthenticated']) {
+  //     next()
+  //   } else {
+  //     next('/')
+  //   }
+  // }
 })
 
 export default router

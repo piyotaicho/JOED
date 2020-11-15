@@ -19,7 +19,7 @@ export default {
 
     // electron環境下でのメインプロセスからのメッセージ(メニュー操作)を処理
     try {
-      if (process.env.VUE_APP_MODE === 'electron') {
+      if (process.env.VUE_APP_ELECTRON) {
         const { ipcRenderer } = require('electron')
 
         ipcRenderer.on('RendererRoute', (event, payload) => {
