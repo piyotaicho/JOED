@@ -2,8 +2,7 @@
 /* global __static */
 'use strict'
 
-// eslint-disable-next-line no-unused-vars
-import { app, protocol, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron'
+import { app, protocol, BrowserWindow, Menu, ipcMain, dialog } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
@@ -92,6 +91,8 @@ app.on('ready', async () => {
   createWindow()
 })
 
+app.on('activate-with-no-open-windows', _ => createWindow())
+
 if (isDevelopment) {
   if (process.platform === 'win32') {
     process.on('message', (data) => {
@@ -114,15 +115,15 @@ const MenuTemplate = [
   {
     label: 'ファイル',
     submenu: [
-      { label: '新規症例の登録', id: 'list-new', accelerator: process.platform === 'darwin' ? 'Cmd+N' : 'Alt+N', click: (item, focusedWindow) => RendererRoute('new', focusedWindow) },
+      { label: '新規症例の登録', id: 'list-new', enabled: false, accelerator: process.platform === 'darwin' ? 'Cmd+N' : 'Alt+N', click: (item, focusedWindow) => RendererRoute('new', focusedWindow) },
       { type: 'separator' },
-      { label: 'データの読み込み', id: 'list-import', click: (item, focusedWindow) => RendererRoute('import', focusedWindow) },
-      { label: 'データの書き出し', id: 'list-export', click: (item, focusedWindow) => RendererRoute('export', focusedWindow) },
+      { label: 'データの読み込み', id: 'list-import', enabled: false, click: (item, focusedWindow) => RendererRoute('import', focusedWindow) },
+      { label: 'データの書き出し', id: 'list-export', enabled: false, click: (item, focusedWindow) => RendererRoute('export', focusedWindow) },
       ...(process.platform === 'darwin'
         ? []
         : [
           { type: 'separator' },
-          { label: '設定', id: 'setup', accelerator: 'CmdORCtrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+          { label: '設定', id: 'setup', enabled: false, accelerator: 'CmdORCtrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
           { label: '終了', accelerator: 'Alt+F4', role: 'quit' }
         ])
     ]
@@ -161,7 +162,7 @@ if (process.platform === 'darwin') {
       // アプリケーションメニュー
       { label: app.getName() + 'について', role: 'about' },
       { type: 'separator' },
-      { label: '設定', accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+      { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
       { type: 'separator' },
       { label: 'サービス', role: 'services', submenu: [] },
       { type: 'separator' },
@@ -188,7 +189,7 @@ app.setAboutPanelOptions({
 // IPCハンドリング
 //
 
-// main -> renderer : routeの切り替え要求(メニュー)
+// main -> renderer : メニューからrouterの切り替え要求 (App.vueで処理)
 function RendererRoute (routename, targetwindow) {
   targetwindow.webContents.send('RendererRoute', { Name: routename })
 }
@@ -198,10 +199,45 @@ ipcMain.on('messagebox', (event, payload) => {
   event.returnValue = dialog.showMessageBoxSync(win, Object.assign({ noLink: true }, payload))
 })
 
+// route毎のメニュー操作
+ipcMain.on('menuroute', (event, payload) => {
+  const menu = Menu.getApplicationMenu()
+  switch (payload) {
+    case 'login':
+    case 'edit':
+    case 'diagnosis':
+    case 'procedure':
+    case 'AE':
+      menu.getMenuItemById('list-new').enabled = false
+      menu.getMenuItemById('list-import').enabled = false
+      menu.getMenuItemById('list-export').enabled = false
+      menu.getMenuItemById('setup').enabled = false
+      break
+    case 'list':
+      menu.getMenuItemById('list-new').enabled = true
+      menu.getMenuItemById('list-import').enabled = true
+      menu.getMenuItemById('list-export').enabled = true
+      menu.getMenuItemById('setup').enabled = true
+      break
+    case 'utility':
+    case 'setup':
+      menu.getMenuItemById('list-new').enabled = false
+      menu.getMenuItemById('list-import').enabled = true
+      menu.getMenuItemById('list-export').enabled = true
+      menu.getMenuItemById('setup').enabled = true
+      break
+    default:
+      menu.getMenuItemById('list-new').enabled = false
+      menu.getMenuItemById('list-import').enabled = false
+      menu.getMenuItemById('list-export').enabled = false
+      menu.getMenuItemById('setup').enabled = false
+  }
+})
 // Rendererからの終了リクエスト
 ipcMain.on('CloseApp', _ => {
   app.quit()
 })
+
 // nedb データベースAPIラッパー
 const DB = require('nedb')
 

@@ -2,7 +2,8 @@
   <div class="login-dialog">
     <div class="w30" id="auth-logo"><Icon/></div>
     <div class="w70" id="auth">
-      <div class="title">{{Title}}</div>
+      <div class="title">{{Title[0]}}</div>
+      <div class="subtitle">{{Title[1]}}</div>
 
       <div>
         <label>
@@ -40,9 +41,12 @@ export default {
   },
   computed: {
     Title () {
-      return this.$store.getters['system/ApplicationName'] +
+      return [
+        '日本産科婦人科内視鏡学会 合併症報告',
+        this.$store.getters['system/ApplicationName'] +
         ' version ' +
         this.$store.getters['system/ApplicationVersion']
+      ]
     },
     StateLess () {
       return !this.$store.getters['password/isPasswordRequired']
@@ -76,9 +80,10 @@ div.login-dialog
   flex-direction: row
   justify-content: space-around
   svg
-    width: 100px
-    height: 100px
+    width: 100%
+    height: 100%
     padding: 10px
+    margin: auto 0
 #auth
   display: flex
   flex-direction: column

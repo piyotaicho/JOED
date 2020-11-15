@@ -25,31 +25,21 @@ export function information (message) {
 }
 
 export async function confirm (message) {
-  try {
-    await MessageBox.confirm(message, {
-      title: '確認',
-      iconClass: 'el-icon-question',
-      showClose: false,
-      closeOnPressEscape: false
-    })
-    return true
-  } catch (_) {
-    return false
-  }
+  return await MessageBox.confirm(message, {
+    title: '確認',
+    iconClass: 'el-icon-question',
+    showClose: false,
+    closeOnPressEscape: false
+  }).then(_ => true, _ => false)
 }
 
 export async function confirmYesNo (message) {
-  try {
-    await MessageBox.confirm(message, {
-      title: '確認',
-      iconClass: 'el-icon-question',
-      showClose: false,
-      closeOnPressEscape: false,
-      cancelButtonText: 'いいえ',
-      confirmButtonText: 'はい'
-    })
-    return true
-  } catch (_) {
-    return false
-  }
+  return await MessageBox.confirm(message, {
+    title: '確認',
+    iconClass: 'el-icon-question',
+    showClose: false,
+    closeOnPressEscape: false,
+    cancelButtonText: 'いいえ',
+    confirmButtonText: 'はい'
+  }).then(_ => true, _ => false)
 }
