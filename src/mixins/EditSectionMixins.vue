@@ -20,7 +20,7 @@ export default {
     }
   },
   computed: {
-    ItemContainer: {
+    items: {
       get () {
         return this.container
       },
@@ -28,7 +28,7 @@ export default {
         this.$emit('update:container', value)
       }
     },
-    ItemOption: {
+    option: {
       get () {
         return this.optionValue
       },

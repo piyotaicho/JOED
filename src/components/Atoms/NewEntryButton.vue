@@ -3,6 +3,7 @@
       :tabindex="tabindex"
       @click="onClick"
       @keydown.enter="onClick"
+      @keydown.space="onClick"
       :accesskey="accesskey">
     </div>
 </template>

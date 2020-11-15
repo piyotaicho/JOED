@@ -367,10 +367,11 @@ export default {
             InstitutionName: this.$store.getters['system/InstitutionName'],
             InstitutionID: this.$store.getters['system/InstitutionID'],
             JSOGoncologyboardID: this.$store.getters['system/JSOGInstitutionID'],
-            TimeStamp: TimeStamp.toString(10),
+            TimeStamp: TimeStamp,
             Year: this.exportYear || 'ALL',
             NumberOfCases: exportItem.length,
             Version: this.$store.getters['system/ApplicationVersion'],
+            Plathome: process.platform + '(' + process.arch + ')',
             hash: hash
           })
         }
@@ -384,9 +385,9 @@ export default {
 <style lang="sass">
 div#preview
   position: relative
-  height: 80vh
-  overflow-y: scroll
-  margin: 4rem
+  height: 80%
+  overflow-y: none
+  margin: 1rem 4rem
   padding: 1rem
   border: 2px solid var(--color-text-primary)
   border-radius: 0.5rem

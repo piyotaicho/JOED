@@ -1,5 +1,5 @@
 <template>
-  <div class="section-item" tabindex="0" @keydown.delete="RemoveItem">
+  <div class="section-item" tabindex="0" @keydown.ctrl.x="RemoveItem">
     <i class="handle el-icon-d-caret" v-if="draggable"></i>
     <slot :item="item">
       <span>{{title}}</span>

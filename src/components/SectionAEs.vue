@@ -2,12 +2,12 @@
   <div class="section">
     <span class="section-title">合併症 ： </span>
     <span>
-      <LabeledCheckbox v-model="ItemOption">合併症なし</LabeledCheckbox>
+      <LabeledCheckbox v-model="option">合併症なし</LabeledCheckbox>
     </span>
     <!-- Quick hack for designs -->
     <div class="section-item-list" style="display: none;"><div class="item-description"></div></div>
     <div class="section-item-list"
-      v-for="(item, index) in ItemContainer"
+      v-for="(item, index) in items"
       :key="index">
       <el-tooltip placement="top-start" :open-delay="700">
         <div slot="content">

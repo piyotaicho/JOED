@@ -1,7 +1,10 @@
 <template>
-  <div class="caseitem" :id="'doc' + uid.toString(10)" tabindex="0" @keypress.enter="MoveToEditView" @dblclick="MoveToEditView">
+  <div class="caseitem" :id="'doc' + uid.toString(10)" tabindex="0"
+  @keypress.enter="MoveToEditView()"
+  @dblclick="MoveToEditView()"
+  @keydown.ctrl.x="RemoveDocument()">
     <div class="caseitem-icon">
-      <CategoryIdentifier :category="Category" :notification="Notification"></CategoryIdentifier>
+      <CategoryIdentifier :category="Category" :notification="Notification"/>
     </div>
     <div class="caseitem-description">
       <div class="caseitem-row">
@@ -18,8 +21,11 @@
       </div>
     </div>
     <div class="caseitem-controller">
-        <i class="el-icon-loading" v-if="Loading"></i>
-        <i class="el-icon-edit button-font" @click.exact="MoveToEditView()" @click.ctrl.shift="RemoveDocument()" v-if="!Loading"></i>
+        <i class="el-icon-loading" v-if="Loading"/>
+        <i class="el-icon-edit button-font"
+         v-if="!Loading"
+        @click.exact="MoveToEditView()"
+        @click.ctrl.shift="RemoveDocument()"/>
     </div>
   </div>
 </template>

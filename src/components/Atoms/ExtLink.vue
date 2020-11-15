@@ -15,7 +15,7 @@ export default {
   },
   methods: {
     Click () {
-      if (process.env.VUE_APP_MODE === 'electron') {
+      if (process.env.VUE_APP_ELECTRON) {
         try {
           const { shell } = require('electron')
           shell.openExternal(this.url)

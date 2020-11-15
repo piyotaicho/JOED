@@ -5,25 +5,26 @@
     :with-header="false"
     :visible="visible"
     :destroy-on-close="true"
+    @open="DrawerOpened"
     @close="CloseDrawer">
-    <div class="drawer-content">
+    <div class="drawer-content" @keydown.ctrl.w.capture="CloseDrawer()">
       <Dashboard @close="CloseDrawer"/>
 
-      <el-collapse accordion @change="AccordionChanged" :value="view">
+      <el-collapse accordion @change="CollapseChanged" :value="view">
         <el-collapse-item title="表示の設定" name="view">
-          <FilterNSort @changed="ViewUpdated"/>
+          <FilterNSort @changed="UpdateView"/>
         </el-collapse-item>
 
         <el-collapse-item name="search">
           <template #title>
-            検索 <i class="el-icon-success" style="color: var(--color-success); margin-left: 1rem;" v-if="SearchActivated"/>
+            検索 <i class="el-icon-success" style="color: var(--color-success); margin-left: 1rem;" v-if="searchActivated"/>
           </template>
-          <Search @changed="ViewUpdated"/>
+          <Search @changed="UpdateView"/>
         </el-collapse-item>
 
-        <el-collapse-item title="データの処理" name="management" v-if="WebApp"/>
+        <el-collapse-item title="データの処理" name="management" v-if="webApp"/>
 
-        <el-collapse-item title="環境設定" name="settings" v-if="WebApp"/>
+        <el-collapse-item title="環境設定" name="settings" v-if="webApp"/>
       </el-collapse>
     </div>
   </el-drawer>
@@ -49,22 +50,23 @@ export default {
       view: 'view'
     })
   },
-  created () {
-    this.view = this.SearchActivated ? 'search' : 'view'
-  },
   computed: {
-    WebApp () {
-      return process.env.VUE_APP_MODE !== 'electron'
+    webApp () {
+      return !process.env.VUE_APP_ELECTRON
     },
-    SearchActivated () {
+    searchActivated () {
       return this.$store.getters.SearchActivated
     }
   },
   methods: {
+    DrawerOpened () {
+      this.view = this.searchActivated ? 'search' : this.view
+    },
     CloseDrawer () {
       this.$emit('close')
     },
-    AccordionChanged (itemname) {
+    CollapseChanged (itemname) {
+      this.view = itemname
       if (itemname === 'management') {
         this.$router.push({ name: 'export' })
       }
@@ -72,15 +74,15 @@ export default {
         this.$router.push({ name: 'settings' })
       }
     },
-    ViewUpdated (payload) {
+    UpdateView (payload) {
       this.$store.dispatch('ReloadDocumentList').then(_ => {
         this.$emit('changed')
         this.$notify({
           title: '表示条件が変更されました',
           message: this.$store.getters.NumberOfCases > 0
             ? this.$store.getters.NumberOfCases + '件表示します.'
-            : '表示する症例がありません.',
-          duration: 2500
+            : '表示する症例はありません.',
+          duration: 2000
         })
       })
     }

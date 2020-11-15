@@ -59,7 +59,7 @@ export default {
     Toggle () {
       this.expandInput = !this.expandInput
       if (this.expandInput) {
-        this.$refs.input.focus()
+        this.$nextTick().then(_ => this.$refs.input.focus())
       }
     },
     OnSearch () {

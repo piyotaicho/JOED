@@ -158,7 +158,8 @@ export default {
       nextUid: 0,
       processing: true,
       editingSection: false,
-      Preserve: ''
+      preserve: '',
+      preservedElement: null
     })
   },
   // 既存データの読み込みをする.
@@ -178,7 +179,7 @@ export default {
               }
             }
           }
-          this.Preserve = JSON.stringify(this.CaseData)
+          this.preserve = JSON.stringify(this.CaseData)
 
           this.processing = false
           this.prevUid = this.$store.getters.NextUids(this.uid).Prev
@@ -186,11 +187,25 @@ export default {
         })
     } else {
       this.processing = false
-      this.Preserve = JSON.stringify(this.CaseData)
+      this.preserve = JSON.stringify(this.CaseData)
     }
   },
+  mounted () {
+    document.addEventListener('keydown', this.EventListner, true)
+  },
+  beforeDestroy () {
+    document.removeEventListener('keydown', this.EventListner, true)
+  },
   beforeRouteUpdate (to, from, next) {
-    this.editingSection = (to.name !== 'edit')
+    const goEditingSection = to.name !== 'edit'
+    this.editingSection = goEditingSection
+    if (goEditingSection) {
+      this.preservedElement = document.activeElement
+    } else {
+      try {
+        this.preservedElement.focus()
+      } catch (_) {}
+    }
     next()
   },
   computed: {
@@ -298,14 +313,14 @@ export default {
       }
     },
 
-    CommitCase (to = '') {
+    async CommitCase (to = '') {
       if (this.processing || this.editingSection) {
         return
       }
       // HACK:
       // 新規(uid = '0')→新規(uid = '0')ではApp.vueで定義したRouterKeyが重複するための quick hack.
       // uid = '00' も uid > 0 がfalseで新規扱いになるのでそれを利用する.
-      this.StoreCase()
+      await this.StoreCase()
         .then(() => {
           switch (to) {
             case 'new':
@@ -334,7 +349,7 @@ export default {
         return
       }
 
-      if (this.Preserve === JSON.stringify(this.CaseData) || await Popups.confirm('項目が編集中です.移動しますか?')) {
+      if (this.preserve === JSON.stringify(this.CaseData) || await Popups.confirm('項目が編集中です.移動しますか?')) {
         switch (to) {
           case 'prev':
             if (this.prevUid !== 0) this.AnotherEdit(this.prevUid)
@@ -389,6 +404,34 @@ export default {
         await this.$store.dispatch('UpsertDocument', newDocument)
       } finally {
         this.processing = false
+      }
+    },
+
+    async EventListner (event) {
+      if (this.editingSection || event.repeat) return
+
+      if (event.ctrlKey === true) {
+        switch (event.key) {
+          case 'w':
+            await this.CancelEditing()
+            break
+          case 'j':
+            await this.CancelEditing('next')
+            break
+          case 'k':
+            await this.CancelEditing('prev')
+            break
+          case 'J':
+            await this.CommitCase('next')
+            break
+          case 'K':
+            await this.CommitCase('prev')
+            break
+          case 'Enter':
+            event.preventDefault()
+            await this.CommitCase()
+            break
+        }
       }
     }
   }

@@ -1,18 +1,16 @@
 <template>
   <div
     @keydown.up.prevent="MoveFocus(-1)"
-    @keydown.75.ctrl="MoveFocus(-1)"
+    @keydown.ctrl.k="MoveFocus(-1)"
     @keydown.down.prevent="MoveFocus(+1)"
-    @keydown.74.ctrl="MoveFocus(+1)"
+    @keydown.ctrl.j="MoveFocus(+1)"
   >
-    <WelcomeBanner v-if="ShowStartupDialog"/>
-
-    <DrawerButton class="open-drawer" tab-index="0" @click="OpenDrawer"/>
-    <NewEntryButton class="list-new-entry" tab-index="0" @click="CreateNewEntry()"/>
-
-    <Drawer :visible="showMenuDrawer" @close="CloseDrawer"/>
-
     <div class="itemlist">
+      <DrawerButton class="open-drawer" tab-index="0" @click="OpenDrawer"/>
+      <NewEntryButton class="list-new-entry" tab-index="0" @click="CreateNewEntry()"/>
+
+      <Drawer :visible="showMenuDrawer" @close="CloseDrawer"/>
+
       <CaseDocument v-for="uid in Uids" :key="uid" :uid="uid"/>
       <InfiniteLoading @infinite="HandleInfinite" :identifier="DisplayIdentifier" ref="infiniteloading">
         <span slot="no-more"></span>
@@ -20,6 +18,7 @@
       </InfiniteLoading>
     </div>
 
+    <WelcomeBanner v-if="ShowStartupDialog"/>
     <router-view></router-view>
   </div>
 </template>
@@ -38,9 +37,13 @@ export default {
     DrawerButton, NewEntryButton, CaseDocument, Drawer, WelcomeBanner, InfiniteLoading
   },
   mounted () {
-    // scrollを代替 - #id なエレメントが中心になるようにスクロールする
-    if (this.$route.hash && document.querySelector(this.$route.hash)) {
-      document.querySelector(this.$route.hash).scrollIntoView({ block: 'center' })
+    // vue routerのscrollを代替 - #doc-id なエレメントが中心になるようにスクロールとfocusする
+    if (this.$route.hash) {
+      const element = document.getElementById(this.$route.hash.substr(1))
+      if (element) {
+        element.scrollIntoView({ block: 'center' })
+        element.focus()
+      }
     }
   },
   data () {
@@ -108,13 +111,11 @@ div.itemlist
     content: ''
 
 div.open-drawer
-  z-index: 10
   position: fixed
   top: 14px
   left: 9px
 
 div.list-new-entry
-  z-index: 10
   position: fixed
   top: 14px
   left: 880px

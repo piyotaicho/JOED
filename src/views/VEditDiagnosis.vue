@@ -1,6 +1,6 @@
 <template>
   <TheWrapper alpha="10">
-    <div class="edititem">
+    <div class="edititem" @keydown.ctrl.enter.prevent.capture="CommitChanges()" @keydown.ctrl.w.capture="GoBack()">
       <ThreePaneSelections
         Pane3Title="候補病名"
         :Pane1.sync="Category" :Pane1Items="Categories"

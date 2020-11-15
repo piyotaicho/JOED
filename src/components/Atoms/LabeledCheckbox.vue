@@ -2,8 +2,8 @@
   <label class="LabeledCheckbox"
     :disabled="disabled"
     :tabindex="tabindex"
-    @keydown.enter="Click"
-    @keydown.space.prevent="Click">
+    @keydown.enter.exact="Click"
+    @keydown.space.exact.prevent="Click">
     <input type="checkbox" class="LabeledCheckbox"
       ref="input"
       v-model="CheckboxValue"

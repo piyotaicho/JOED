@@ -18,6 +18,7 @@
         @keypress.55.prevent="TypeInChar('7')" @keypress.103.prevent="TypeInChar('7')"
         @keypress.56.prevent="TypeInChar('8')" @keypress.104.prevent="TypeInChar('8')"
         @keypress.57.prevent="TypeInChar('9')" @keypress.105.prevent="TypeInChar('9')"
+        @keypress.58.prevent="TypeInChar(':')"
       >
         <option value="" disabled style="display:none;">手術所要時間</option>
         <option v-for="item in ProcedureTimeSelections"
@@ -59,7 +60,15 @@ export default {
       } else {
         this.typed = (this.typed + char).substr(-4, 4)
       }
-      this.ProcedureTime = ProcedureTimeSelections(this.typed)
+      const hourExpression = this.typed.indexOf(':')
+      if (hourExpression !== -1) {
+        this.ProcedureTime = ProcedureTimeSelections(
+          Number(this.typed.substr(0, hourExpression)) * 60 +
+          Number(this.typed.substr(hourExpression + 1))
+        )
+      } else {
+        this.ProcedureTime = ProcedureTimeSelections(this.typed)
+      }
     },
     ClearTypedValue () {
       this.typed = ''

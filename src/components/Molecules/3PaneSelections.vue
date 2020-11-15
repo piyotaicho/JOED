@@ -102,11 +102,12 @@ export default {
     }
   },
   mounted () {
-    const selects = this.$refs.panes.getElementsByTagName('select')
-    if (selects && selects.length > 0) {
-      selects[0].focus()
-      selects[0].selectedIndex = -1
-    }
+    this.$nextTick(_ => {
+      const selects = this.$refs.panes.getElementsByTagName('select')
+      if (selects && selects.length > 0) {
+        selects[0].focus()
+      }
+    })
   },
   computed: {
     Pane1Selection: {
