@@ -16,6 +16,9 @@ export default {
       default: 0
     }
   },
+  created () {
+    document.getElementsByTagName('html')[0].style.overflowY = 'hidden'
+  },
   mounted () {
     // TheWrapper コンポーネントの内部以外のコントロールへの tabIndex を抑止する.
     const myelements = Array.prototype.filter.call(
@@ -43,6 +46,7 @@ export default {
     }
   },
   beforeDestroy () {
+    document.getElementsByTagName('html')[0].style.overflowY = 'auto'
     // tabIndex の復旧
     Array.prototype.filter.call(
       document.getElementsByTagName('*'),
@@ -65,10 +69,11 @@ export default {
 
 <style lang="sass">
 div.thewrapper
-  position: absolute
-  z-index: +99
+  position: fixed
+  z-index: +10
   left: 0
   top: 0
   width: 100%
-  min-height: 100vh
+  height: 100%
+  overflow: auto
 </style>
