@@ -61,6 +61,8 @@ https://p4testsuite.hostingerapp.com/JOEDv5/Latest/
 - 2020-11-04 JSGOE,NCD idが入力されていた場合は編集可能にする. Listでのキーボード操作を実装(上下矢印 kj でフォーカス移動).
 - 2020-11-10 より確実な匿名化のために大幅に仕様変更. 対応表となるUniqueIdを廃止. レコードのhashを出力するが, SALTは初回起動時のタイムスタンプとして永続して使用, 外部に出力せず, パスワードもそれを使用する. つまり別マシンに引っ越したら問い合わせはもうできない(問い合わせは未実装).
 - 2020-11-12 起動時間短縮とチャンクが大きくなって動作が不安定になったのでdynamic loadingを使用したりいろいろ修正. その他安定性確保のため修正.
+- 2020-11-14 ヘッダの年次でALLを廃止. 設定などの部分のメニュー位置変更とあわせてrouterとの整合性を改善. そのほか細かい修正多数. electron nsisの設定が反映されないのをなんとか修正.
+- 2020-11-15 デフォルトのキーバインドを CTRL+Enter:登録 CTRL+X:削除 CTRL+W:ダイアログを閉じて前へ戻る CTRL+J:次(+SHIFTで登録して次) CTRL+K:前(+SHIFTで登録して前) に統一.
 
 現時点で作成中のweb版ではデータはブラウザのストレージに保存されます.データベースの削除・修正などは https://p4testsuite.hostingerapp.com/JOEDv5/Database_Manager/ のユーティリティを使用してください.
 
@@ -87,10 +89,11 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |InstitutionName            |string | |X|X|施設名テーブルから引用される|
 |InstitutionID              |string |\d{5}|X|X|施設名テーブルから引用される、未登録施設は学会に申請して番号交付を受ける|
 |JSOGoncologyboardID        |string | | |X|日産婦の腫瘍登録施設番号
-|ApplicationVersion         |string | |X|X|提出データ作成時のソフトウエアのバージョン|
 |Timestump                  |integer | |X|X|提出データ作成日時のUNIX timestump|
-|Year                       |string |(20(19\|[23][0-9])|ALL) |X|X|提出データの年次|
+|Year                       |string |20(19\|[23][0-9])|X|X|提出データの年次|
 |NumberOfCases              |integer| |X|X|Casesの数（サードパーティーからの書き出しに対するエラーチェック用）|
+|Version                    |string | |X|X|提出データ作成時のソフトウエアのバージョン|
+|Plathome                   |string | |X|X|使用環境調査 plathome (arch)|
 |hash                       |string | |X|X|症例データ部分だけのハッシュ値|
 
 ### 症例データベースオブジェクト:Case
