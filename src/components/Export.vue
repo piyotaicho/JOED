@@ -263,11 +263,15 @@ export default {
               })
           )
         } catch (error) {
+          console.log(error.message)
           this.$store.dispatch('dbUpdate',
             {
               Query: { DocumentId: documentIds[index] },
-              Update: { $set: { Notification: error } }
+              Update: { $set: { Notification: error.message } }
             })
+          this.$store.commit('RemoveDatastore', {
+            DocumentId: documentIds[index]
+          })
           errorCount++
         }
       }
@@ -290,25 +294,6 @@ export default {
       const ExportItems = []
       const hashHHX = HHX.h64(this.$store.getters['system/SALT'])
 
-      // let serial = this.forceRenumber ? 0
-      //   : Number(
-      //     (
-      //       await this.$store.dispatch('dbFindOne',
-      //         {
-      //           Query:
-      //             {
-      //               UniqueID: { $exists: true },
-      //               ...this.baseQuery
-      //             },
-      //           Sort: { UniqueID: -1 }
-      //         }) ||
-      //         {
-      //           // UniqueIDが無い場合のダミー つまるところ 0.
-      //           UniqueID: '2222-99001-0'
-      //         }
-      //     ).UniqueID.substr(11)
-      //   )
-
       for (const index in documentIds) {
         this.progressCreateData = parseInt(index * 100.0 / documentIds.length)
         const exportdocument = await this.$store.dispatch('dbFindOne',
@@ -317,20 +302,6 @@ export default {
             Projection: { _id: 0 }
           }
         )
-        // if (this.forceRenumber || !exportdocument.UniqueID) {
-        //   ++serial
-        //   exportdocument.UniqueID = [
-        //     this.$store.getters['system/InstitutionID'],
-        //     this.exportYear,
-        //     serial
-        //   ].join('-')
-
-        //   await this.$store.dispatch('dbUpdate',
-        //     {
-        //       Query: { DocumentId: documentIds[index] },
-        //       Update: { $set: { UniqueID: exportdocument.UniqueID } }
-        //     })
-        // }
         if (this.exportAllFields && this.exportRaw) {
           ExportItems.push(exportdocument)
         } else {

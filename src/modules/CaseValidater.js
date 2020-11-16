@@ -36,32 +36,27 @@ export async function ValidateCase (item = {}) {
   await ValidateCategoryMatch(item)
 
   const Year = item.DateOfProcedure.substr(0, 4)
-  if (item.Notification) {
-    // 既存のエラー情報あり、未修正
-    throw new Error(item.Notification)
-  } else {
-    // ES2020が使えるようになったらPromise.allSettledへ置き換える
-    const warningMessages = (await Promise.all([
-      new Promise(resolve => {
-        ValidateDiagnoses(item, Year)
-          .then(_ => resolve(), e => resolve(e))
-      }),
-      new Promise(resolve => {
-        ValidateProcedures(item, Year)
-          .then(_ => resolve(), e => resolve(e))
-      }),
-      new Promise(resolve => {
-        ValidateAEs(item)
-          .then(_ => resolve(), e => resolve(e))
-      })
-    ]))
-      .filter(value => value)
-      .map(item => item.message)
-      .join('\n')
+  // ES2020が使えるようになったらPromise.allSettledへ置き換える
+  const warningMessages = (await Promise.all([
+    new Promise(resolve => {
+      ValidateDiagnoses(item, Year)
+        .then(_ => resolve(), e => resolve(e))
+    }),
+    new Promise(resolve => {
+      ValidateProcedures(item, Year)
+        .then(_ => resolve(), e => resolve(e))
+    }),
+    new Promise(resolve => {
+      ValidateAEs(item)
+        .then(_ => resolve(), e => resolve(e))
+    })
+  ]))
+    .filter(value => value)
+    .map(item => item.message)
+    .join('\n')
 
-    if (warningMessages) {
-      throw new Error(warningMessages)
-    }
+  if (warningMessages) {
+    throw new Error(warningMessages)
   }
 }
 
@@ -174,16 +169,16 @@ export async function ValidateDiagnoses (item, year) {
         }
         resolve(diagnosis.Text + ' が診断マスタにありません.再入力をお願いします.')
       }))
-      Promise
-        .all(promiseArray)
-        .then(errors => {
-          const realerrors = errors.filter(item => item)
-          if (realerrors.length > 0) {
-            reject(new Error(realerrors.join('\n')))
-          }
-          resolve()
-        })
     }
+    Promise
+      .all(promiseArray)
+      .then(errors => {
+        const realerrors = errors.filter(item => item)
+        if (realerrors.length > 0) {
+          reject(new Error(realerrors.join('\n')))
+        }
+        resolve()
+      })
   })
 }
 
