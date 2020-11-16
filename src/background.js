@@ -30,7 +30,6 @@ if (!instanceLock) {
 }
 
 function createWindow () {
-  // Create the browser window.
   win = new BrowserWindow({
     width: 960,
     minWidth: 960,
@@ -80,6 +79,28 @@ app.on('activate', () => {
 })
 
 app.on('ready', async () => {
+  // コマンドラインオプションの処理
+  // drop-database : データベースファイルの削除 (=all でバックアップも削除)
+  if (app.commandLine.hasSwitch('drop-database')) {
+    const fs = require('fs')
+    const DBfilename = path.join(app.getPath('userData'), 'joed.nedb')
+    try {
+      fs.unlinkSync(DBfilename)
+    } catch {}
+
+    try {
+      if (app.commandLine.getSwitchValue('drop-database').toLowerCase() === 'all') {
+        fs.unlinkSync(DBfilename + '.1')
+        fs.unlinkSync(DBfilename + '.2')
+        fs.unlinkSync(DBfilename + '.3')
+      }
+    } catch {}
+
+    dialog.showMessageBoxSync({ title: 'JOED5', message: 'データベースファイルを削除しました.' })
+    app.quit()
+  }
+
+  // ウインドウの作成
   if (isDevelopment && !process.env.IS_TEST) {
     // Install Vue Devtools
     try {
@@ -91,7 +112,19 @@ app.on('ready', async () => {
   createWindow()
 })
 
-app.on('activate-with-no-open-windows', _ => createWindow())
+// macosではウインドウを閉じても終了ではないのが標準.
+// dockから再度ウインドウを開くことが出来る.
+if (process.platform === 'darwin') {
+  app.on('close', _ => {
+    const menu = Menu.getApplicationMenu()
+    menu.getMenuItemById('list-new').enabled = false
+    menu.getMenuItemById('list-import').enabled = false
+    menu.getMenuItemById('list-export').enabled = false
+    menu.getMenuItemById('setup').enabled = false
+  })
+
+  app.on('activate-with-no-open-windows', _ => createWindow())
+}
 
 if (isDevelopment) {
   if (process.platform === 'win32') {
@@ -109,9 +142,31 @@ if (isDevelopment) {
 }
 
 //
-// アプリケーションメニュー
+// メニュー
 //
 const MenuTemplate = [
+  // アプリケーションメニュー
+  ...(
+    process.platform === 'darwin'
+      ? [{
+        label: app.getName(),
+        submenu: [
+          { label: app.getName() + 'について', role: 'about' },
+          { type: 'separator' },
+          { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+          { type: 'separator' },
+          { label: 'サービス', role: 'services', submenu: [] },
+          { type: 'separator' },
+          { label: app.getName() + 'を隠す', accelerator: 'Command+H', role: 'hide' },
+          { label: '他を隠す', accelerator: 'Command+Alt+H', role: 'hideothers' },
+          { label: '全てを表示', role: 'unhide' },
+          { type: 'separator' },
+          { label: '終了', accelerator: 'Command+Q', role: 'quit' }
+        ]
+      }]
+      : []
+  ),
+  // 通常のメニュー
   {
     label: 'ファイル',
     submenu: [
@@ -128,52 +183,36 @@ const MenuTemplate = [
         ])
     ]
   },
-  {
-    label: 'ヘルプ',
-    submenu: [
-      { label: app.getName() + 'について', role: 'about' },
-      ...(
-        isDevelopment
-          ? [
-            {
-              type: 'separator'
-            },
-            {
-              label: 'リロード',
-              role: 'reload',
-              accelerator: ''
-            },
-            {
-              label: '開発者ツール',
-              accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
-              click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools()
-            }
-          ]
-          : []
-      )
-    ]
-  }
+  ...(
+    process.platform === 'win32'
+      ? [{
+        label: 'ヘルプ',
+        submenu: [
+          { label: app.getName() + 'について', role: 'about' }
+        ]
+      }]
+      : []
+  ),
+  ...(
+    isDevelopment
+      ? [{
+        label: '開発支援',
+        submenu: [
+          {
+            label: 'リロード',
+            role: 'reload',
+            accelerator: ''
+          },
+          {
+            label: '開発者ツール',
+            accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
+            click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools()
+          }
+        ]
+      }]
+      : []
+  )
 ]
-
-if (process.platform === 'darwin') {
-  MenuTemplate.unshift({
-    label: app.getName(),
-    submenu: [
-      // アプリケーションメニュー
-      { label: app.getName() + 'について', role: 'about' },
-      { type: 'separator' },
-      { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
-      { type: 'separator' },
-      { label: 'サービス', role: 'services', submenu: [] },
-      { type: 'separator' },
-      { label: app.getName() + 'を隠す', accelerator: 'Command+H', role: 'hide' },
-      { label: '他を隠す', accelerator: 'Command+Alt+H', role: 'hideothers' },
-      { label: '全てを表示', role: 'unhide' },
-      { type: 'separator' },
-      { label: '終了', accelerator: 'Command+Q', role: 'quit' }
-    ]
-  })
-}
 
 Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate))
 
@@ -198,6 +237,15 @@ function RendererRoute (routename, targetwindow) {
 ipcMain.on('messagebox', (event, payload) => {
   event.returnValue = dialog.showMessageBoxSync(win, Object.assign({ noLink: true }, payload))
 })
+
+// // RendererからのClose抑制
+// app.preventClose = false
+// ipcMain.on('PreventCloseApp', (event, payload) => {
+//   app.preventClose = !!payload
+// })
+// win.onbeforeunload = (event) => {
+//   return !app.preventClose
+// }
 
 // route毎のメニュー操作
 ipcMain.on('menuroute', (event, payload) => {
@@ -233,17 +281,12 @@ ipcMain.on('menuroute', (event, payload) => {
       menu.getMenuItemById('setup').enabled = false
   }
 })
-// Rendererからの終了リクエスト
-ipcMain.on('CloseApp', _ => {
-  app.quit()
-})
 
-// nedb データベースAPIラッパー
+// nedb
 const DB = require('nedb')
 
 function createDatabaseInstance () {
   const fs = require('fs')
-
   const DBfilename = path.join(app.getPath('userData'), 'joed.nedb')
 
   // データベースファイルのバックアップを作る(３世代まで)
@@ -301,6 +344,10 @@ function StringCompare (stringA = '', stringB = '') {
 
 app.DatabaseInstance = createDatabaseInstance()
 
+//  データベースAPIラッパー
+
+// Insert
+// @Object.Document : Object
 ipcMain.handle('Insert', (_, payload) => {
   return new Promise((resolve, reject) => {
     app.DatabaseInstance
@@ -314,6 +361,12 @@ ipcMain.handle('Insert', (_, payload) => {
   })
 })
 
+// Find
+// @Object.Query : Object
+// @Object.Projection : Object
+// @Object.Sort : Object
+// @Object.Skip : String, Number
+// @Object.Limit : String, Number
 ipcMain.handle('Find', (_, payload) => {
   return new Promise((resolve, reject) => {
     const query = payload.Query ? payload.Query : {}
@@ -338,6 +391,11 @@ ipcMain.handle('Find', (_, payload) => {
   })
 })
 
+// FindOne
+// @Object.Query : Object
+// @Object.Projection : Object
+// @Object.Sort : Object
+// @Object.Skip : String, Number
 ipcMain.handle('FindOne', (_, payload) => {
   return new Promise((resolve, reject) => {
     const query = payload.Query ? payload.Query : {}
@@ -360,6 +418,8 @@ ipcMain.handle('FindOne', (_, payload) => {
   })
 })
 
+// Count
+// @Object.Query : Object
 ipcMain.handle('Count', (_, payload) => {
   return new Promise((resolve, reject) => {
     const query = payload.Query ? payload.Query : {}
@@ -374,6 +434,10 @@ ipcMain.handle('Count', (_, payload) => {
   })
 })
 
+// Update
+// @Object.Query : Object
+// @Object.Update : Object
+// @Object.Options : Object
 ipcMain.handle('Update', (_, payload) => {
   return new Promise((resolve, reject) => {
     const query = payload.Query ? payload.Query : {}
@@ -390,6 +454,9 @@ ipcMain.handle('Update', (_, payload) => {
   })
 })
 
+// Remove
+// @Object.Query : Object
+// @Object.Options : Object
 ipcMain.handle('Remove', (_, payload) => {
   return new Promise((resolve, reject) => {
     const query = payload.Query ? payload.Query : {}
@@ -406,15 +473,20 @@ ipcMain.handle('Remove', (_, payload) => {
 })
 
 // データベースというかローカルjsonとしての Config
-
 const ConfigStore = require('electron-store')
 
 app.configstore = new ConfigStore()
 
+// LoadConfig
+// @Object.Key : String
+// @Object.DefaultConfig : Object
 ipcMain.handle('LoadConfig', (_, payload) =>
   app.configstore.get(payload.Key, payload.DefaultConfig)
 )
 
+// SaveConfig
+// @Object.Key : String
+// @Object.Config : Object
 ipcMain.handle('SaveConfig', (_, payload) =>
   app.configstore.set(payload.Key, payload.Config)
 )
