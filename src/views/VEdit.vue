@@ -43,13 +43,13 @@
         v-if="isEditingExistingItem"
         :disabled="!prevUid"
         @click.exact="CancelEditing('prev')"
-        @click.ctrl.shift="CommitCase('prev')" />
+        @click.alt="CommitCase('prev')" />
       <el-button icon="el-icon-caret-right" size="medium" circle id="MoveNext"
         tabindex="-1"
         v-if="isEditingExistingItem"
         :disabled="!nextUid"
         @click.exact="CancelEditing('next')"
-        @click.ctrl.shift="CommitCase('next')" />
+        @click.alt="CommitCase('next')" />
 
       <!--Controls -->
       <div class="edit-controls">
@@ -410,7 +410,7 @@ export default {
     async EventListner (event) {
       if (this.editingSection || event.repeat) return
 
-      if (event.ctrlKey === true) {
+      if (event.ctrlKey && !event.altKey && !event.metaKey) {
         switch (event.key) {
           case 'w':
             await this.CancelEditing()
@@ -421,15 +421,18 @@ export default {
           case 'k':
             await this.CancelEditing('prev')
             break
-          case 'J':
-            await this.CommitCase('next')
-            break
-          case 'K':
-            await this.CommitCase('prev')
-            break
           case 'Enter':
             event.preventDefault()
             await this.CommitCase()
+            break
+        }
+      } else if (event.altKey && !event.metaKey) {
+        switch (event.key) {
+          case 'j':
+            await this.CommitCase('next')
+            break
+          case 'k':
+            await this.CommitCase('prev')
             break
         }
       }
