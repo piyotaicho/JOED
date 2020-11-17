@@ -67,7 +67,7 @@ https://p4testsuite.hostingerapp.com/JOEDv5/Latest/
 - 2020-11-17 パスワード認証が機能しないのを修正. macosの操作に合わせてリストでのアイコンを使用しての削除を alt/option+clickに変更.
 
 現時点で作成中のweb版ではデータはブラウザのストレージに保存されます.データベースの削除・修正などは https://p4testsuite.hostingerapp.com/JOEDv5/Database_Manager/ のユーティリティを使用してください.
-electron版でデータベースの削除は, Windowsでは %AppData%¥JOED5¥joed.nedb* , macosでは ~/Library/ApplicationSupport/JOED5/joed.nedb* を削除することで可能です.
+electron版でデータベースの削除は, Windowsでは %AppData%¥JOED5¥joed.nedb* , macosでは ~/Library/ApplicationSupport/JOED5/joed.nedb* を削除することで可能です. コマンドラインから実行できる場合は JOED5 --drop-database[=all] でデータベースファイルを削除できます(実行に際して一切確認はありませんのでご注意ください).
 
 # 仕様
 
