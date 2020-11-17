@@ -42,7 +42,7 @@ export default {
         if (!payload.SuppressStateChange) {
           context.commit('PasswordRequirement', true)
         }
-        if (hashedpassword === HHX.h64(payload.PasswordString, this.$store.getters['system/SALT']).toString(16)) {
+        if (hashedpassword === HHX.h64(payload.PasswordString, context.rootGetters['system/SALT']).toString(16)) {
           if (!payload.SuppressStateChange) {
             context.commit('AuthenticationStatus', true)
           }
