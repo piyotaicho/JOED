@@ -426,7 +426,7 @@ export default {
             await this.CommitCase()
             break
         }
-      } else if (event.altKey && !event.metaKey) {
+      } else if (!event.ctrlKey && event.altKey && !event.metaKey) {
         switch (event.key) {
           case 'j':
             await this.CommitCase('next')

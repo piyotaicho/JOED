@@ -1,19 +1,19 @@
 <template>
   <div class="utility">
     <div class="utility-switches wide-label">
-      <div><div class="label"><i class="el-icon-s-tools" style="padding-top: 0.36rem; margin-right: 0.6rem;"/>
+      <div><div class="label"><i class="el-icon-arrow-down" style="padding-top: 0.36rem; margin-right: 0.6rem;"/>
         症例表示画面の設定
       </div></div>
       <InputSwitchField
         v-model="showStartupDialog"
-        title="リスト表示の起動時のメッセージボックスを表示する"
+        title="リスト表示の起動時メッセージの表示"
         :options="{'しない': false, 'する': true}" />
       <InputSwitchField
         v-model="revertView"
         title="表示設定の規定値を初期設定に戻す"
         :options="{'しない': false, 'する': true}" />
 
-      <div><div class="label"><i class="el-icon-s-tools" style="padding-top: 0.36rem; margin-right: 0.6rem;"/>
+      <div><div class="label"><i class="el-icon-arrow-down" style="padding-top: 0.36rem; margin-right: 0.6rem;"/>
         症例編集画面の設定
       </div></div>
       <InputSwitchField
