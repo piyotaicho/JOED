@@ -64,7 +64,7 @@ https://p4testsuite.hostingerapp.com/JOEDv5/Latest/
 - 2020-11-14 ヘッダの年次でALLを廃止. 設定などの部分のメニュー位置変更とあわせてrouterとの整合性を改善. そのほか細かい修正多数. electron nsisの設定が反映されないのをなんとか修正.
 - 2020-11-15 デフォルトのキーバインドを CTRL+Enter:登録 CTRL+X:削除 CTRL+W:ダイアログを閉じて前へ戻る CTRL+J:次(+SHIFTで登録して次) CTRL+K:前(+SHIFTで登録して前) に統一.
 - 2020-11-16 診断のチェックがちゃんと出来ていなかった点を修正. macosでSHIFT+CTRL+JがIM切り替えと衝突するので登録して次をalt/option+J/Kに変更, 併せてナビゲーションもalt/option+clickで登録して移動に変更. 
-- 2020-11-17 パスワード認証が機能しないのを修正. macosの操作に合わせてリストでのアイコンを使用しての削除を alt/option+clickに変更.
+- 2020-11-17 パスワード認証が機能しないのを修正. macosの操作に合わせてリストでのアイコンを使用しての削除を alt/option+clickに変更. 編集中にウインドウを閉じると確認するようにイベントハンドラを実装.
 
 現時点で作成中のweb版ではデータはブラウザのストレージに保存されます.データベースの削除・修正などは https://p4testsuite.hostingerapp.com/JOEDv5/Database_Manager/ のユーティリティを使用してください.
 electron版でデータベースの削除は, Windowsでは %AppData%¥JOED5¥joed.nedb* , macosでは ~/Library/ApplicationSupport/JOED5/joed.nedb* を削除することで可能です.
