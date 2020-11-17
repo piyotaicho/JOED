@@ -1,17 +1,18 @@
 <template>
-  <div>
+  <div ref="datepicker">
     <div class="label"><span>手術日</span></div>
-    <Datepicker
-      v-model="DateOfProcedure"
-      wrapper-class="field"
-      placeholder="クリックでカレンダー"
-      :typeable="true"
-      format="yyyy-MM-dd"
-      :input-class="RequiredClass"
-      :language="DatepickerTranslation"
-      :disabled="disabled"
-      >
-    </Datepicker>
+    <template>
+      <Datepicker
+        v-model="DateOfProcedure"
+        wrapper-class="field"
+        placeholder="クリックでカレンダー"
+        :typeable="true"
+        format="yyyy-MM-dd"
+        :input-class="RequiredClass"
+        :language="DatepickerTranslation"
+        :disabled="disabled"
+        />
+    </template>
   </div>
 </template>
 
@@ -29,6 +30,9 @@ export default {
     disabled: {
       type: Boolean,
       default: false
+    },
+    tabindex: {
+      type: [Number, String]
     }
   },
   components: {
@@ -38,6 +42,9 @@ export default {
     return ({
       DatepickerTranslation: ja
     })
+  },
+  mounted () {
+    this.SetTabindex()
   },
   computed: {
     DateOfProcedure: {
@@ -55,6 +62,20 @@ export default {
     },
     RequiredClass () {
       return (this.required === true && this.value === '') ? 'vacant' : ''
+    }
+  },
+  methods: {
+    SetTabindex () {
+      if (this.tabindex !== undefined) {
+        let inputelement
+        try {
+          inputelement = this.$refs.datepicker.getElementsByTagName('input')[0]
+        } catch {
+        }
+        if (inputelement) {
+          inputelement.tabIndex = this.tabindex
+        }
+      }
     }
   }
 }

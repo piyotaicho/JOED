@@ -1,27 +1,24 @@
 <template>
-  <div>
-    <WelcomeBanner v-if="ShowStartupDialog"></WelcomeBanner>
-
-    <DrawerButton div-class="open-drawer" tab-index="0" @click="OpenDrawer" accesskey="D"/>
-    <el-drawer
-      title="MenuDrawer"
-      size="26rem"
-      direction="ltr"
-      :with-header="false"
-      :destroy-on-close="true"
-      :visible.sync="showMenuDrawer">
-      <Drawer @close="CloseDrawer"></Drawer>
-    </el-drawer>
-    <NewEntryButton div-class="list-new-entry" tab-index="0" @click="CreateNewEntry()" accesskey="N"/>
-
+  <div
+    @keydown.up.prevent="MoveFocus(-1)"
+    @keydown.ctrl.k="MoveFocus(-1)"
+    @keydown.down.prevent="MoveFocus(+1)"
+    @keydown.ctrl.j="MoveFocus(+1)"
+  >
     <div class="itemlist">
-      <Caseitem v-for="uid in Uids" :key="uid" :uid="uid" />
+      <DrawerButton class="open-drawer" tab-index="0" @click="OpenDrawer"/>
+      <NewEntryButton class="list-new-entry" tab-index="0" @click="CreateNewEntry()"/>
+
+      <Drawer :visible="showMenuDrawer" @close="CloseDrawer"/>
+
+      <CaseDocument v-for="uid in Uids" :key="uid" :uid="uid"/>
       <InfiniteLoading @infinite="HandleInfinite" :identifier="DisplayIdentifier" ref="infiniteloading">
         <span slot="no-more"></span>
         <span slot="no-results"></span>
       </InfiniteLoading>
     </div>
 
+    <WelcomeBanner v-if="ShowStartupDialog"/>
     <router-view></router-view>
   </div>
 </template>
@@ -29,7 +26,7 @@
 <script>
 import DrawerButton from '@/components/Atoms/DrawerButton.vue'
 import NewEntryButton from '@/components/Atoms/NewEntryButton'
-import Caseitem from '@/components/Caseitem'
+import CaseDocument from '@/components/CaseDocument'
 import Drawer from '@/components/Drawer'
 import WelcomeBanner from '@/components/Molecules/WelcomeBanner'
 import InfiniteLoading from 'vue-infinite-loading'
@@ -37,12 +34,16 @@ import InfiniteLoading from 'vue-infinite-loading'
 export default {
   name: 'VList',
   components: {
-    DrawerButton, NewEntryButton, Caseitem, Drawer, WelcomeBanner, InfiniteLoading
+    DrawerButton, NewEntryButton, CaseDocument, Drawer, WelcomeBanner, InfiniteLoading
   },
   mounted () {
-    // routerのモードにかかわらずhashが効果をもたらすようにscrollを代替 - #hashが中心になるようにスクロールする
-    if (this.$route.hash && document.querySelector(this.$route.hash)) {
-      document.querySelector(this.$route.hash).scrollIntoView({ block: 'center' })
+    // vue routerのscrollを代替 - #doc-id なエレメントが中心になるようにスクロールとfocusする
+    if (this.$route.hash) {
+      const element = document.getElementById(this.$route.hash.substr(1))
+      if (element) {
+        element.scrollIntoView({ block: 'center' })
+        element.focus()
+      }
     }
   },
   data () {
@@ -78,6 +79,17 @@ export default {
       } else {
         state.loaded()
       }
+    },
+    MoveFocus (diff) {
+      const currentid = document.activeElement.id
+      if (!this.showMenuDrawer && !this.ShowStartupDialog && currentid !== '') {
+        const moveto = this.Uids[
+          this.Uids.indexOf(Number(currentid.substr(3))) + diff
+        ]
+        if (moveto) {
+          document.getElementById('doc' + moveto).focus()
+        }
+      }
     }
   }
 }
@@ -99,13 +111,11 @@ div.itemlist
     content: ''
 
 div.open-drawer
-  z-index: 10
   position: fixed
   top: 14px
   left: 9px
 
 div.list-new-entry
-  z-index: 10
   position: fixed
   top: 14px
   left: 880px

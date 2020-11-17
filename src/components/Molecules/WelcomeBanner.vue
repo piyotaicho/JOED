@@ -19,7 +19,7 @@
       <div id="welcome-banner-footer">
         日本産科婦人科内視鏡学会 調査普及委員会
       </div>
-      <CloseButton @close="Close" />
+      <CloseButton @close="Close" tabindex="0"/>
     </div>
     </TheWrapper>
   </div>
@@ -54,11 +54,9 @@ export default {
 </script>
 <style lang="sass">
 #welcome-banner-dialog
-  position: absolute
+  position: relative
   width: 600px
-  z-index: 9999
-  left: 150px
-  top: 15vh
+  margin: 8rem auto
   padding: 1.6rem
   border: 2px solid black
   border-radius: 1rem

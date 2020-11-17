@@ -35,6 +35,9 @@ $--color-text-placeholder: #dddddd
   --color-text-placeholder: #dddddd
   //#C0C4CC
 
+body
+  margin: 0
+
 html
   font-family: cross-platform-yu-gothic, sans-serif
   font-weight: 500
@@ -50,7 +53,6 @@ button
   font-size: 1rem
   height: 2.8rem
 
-
 input[type="text"],[type="number"],[type="password"]
   font-family: inherit
   font-size: 1rem
@@ -62,6 +64,7 @@ input[type="text"],[type="number"],[type="password"]
   border-radius: 2px
   &:focus
     outline: none
+    box-shadow: 0 0 0 1px $--border-color-base
 
 select
   font-family: inherit
@@ -73,7 +76,7 @@ select
   border-radius: 2px
   padding: 1px
   &:focus
-    outline: none
+    outline: 1px dotted $--border-color-base
 
 option
   font-family: inherit
@@ -93,14 +96,18 @@ option:checked
 .vacant
   border-color: $--color-danger !important
   padding: 2px
+  &:focus
+    outline: none
+    box-shadow: 0 0 0 1px $--color-danger !important
+
 
 // タイトル文字
-.title-section
+.title
   font-size: 1.35rem
   font-weight: bold
   letter-spacing: 0.05rem
 
-.subtitle-section
+.subtitle
   font-size: 1.15rem
   letter-spacing: 0.05rem
 
@@ -111,7 +118,7 @@ option:checked
   white-space: nowrap
   text-overflow: ellipsis
 
-// ％指定幅のブロック
+// ブロックの幅指定
 .w10
   width: 10%
 .w20
@@ -131,33 +138,20 @@ option:checked
 .w90
   width: 90%
 
-// ダイアログ形式
-.w600p
-  width: 600px
-  margin-left: 148px
-.w800p
-  width: 800px
-  margin-left: 48px
-div.app-dialog
+// Edit
+div.edit-dialog
   position: relative
   border: 1px black solid
   border-radius: 0.5rem
   background-color: ivory
-  margin-top: 3rem
+  margin-left: 48px
+  margin-top: 1rem
   padding: 1rem 1.5rem
+  width: 800px
   display: flex
   flex-direction: column
-div.app-dialog-row
-  position: relative
-  border: 1px black solid
-  border-radius: 0.5rem
-  background-color: ivory
-  margin-top: 3rem
-  padding: 1rem 1.5rem
-  display: flex
-  flex-direction: row
 
-// EditCase内の各セクションの共通スタイル
+// Edit中のセクション
 div.section
   position: relative
   background: white
@@ -201,28 +195,17 @@ div.section
   div.section-item-list:first-of-type div.section-item:first-of-type
       border-left: black 2px solid
 
-// EditItemビューの共通スタイル
-div.edititem-overlay
-  z-index: 99
-  position: fixed !important
-  top: 0
-  left: 0
-  bottom: 0
-  right: 0
-  background-color: rgba(0,0,0,0.1)
-  align-item: center
-  justify-content: center
-  padding-left: 40px
-  overflow-y: auto
-
-div.edititem-overlay-content
+// Editビューの共通スタイル
+div.edititem
   position: relative
   display: block
   background: white
   width: 800px
   border: 4px solid gray
   border-radius: 10px
-  margin: 120px 18px
+  margin-top: 120px
+  margin-left: 50px
+  margin-bottom: 1rem
   padding: 16px
 div.content-title
   padding: 8px
@@ -257,14 +240,9 @@ div.content-bottom
     margin: 2px 0
     height: 2.5em
 
-// その他
-div.progress-views
-  margin: 1.5rem 0.7rem
-  width: 45rem
-
+// 機能画面
 div.utility
-  width: 900px
-  padding: 0 3rem
+  margin: 3rem 0.8rem
 
 div.utility-switches
   display: flex
@@ -276,12 +254,12 @@ div.utility-switches
     margin: 0.4rem 0
     div.label
       padding-top: 0.25rem
-      width: 20%
+      width: 30%
       font-size: 1.1rem
       font-weight: bold
       color: $--color-text-regular
     div.field
-      width: 80%
+      width: 70%
       font-size: 0.5rem
       color: $--color-text-primary
   &.wide-label
@@ -289,3 +267,7 @@ div.utility-switches
       width: 50%
     div div.field
       width: 50%
+
+div.progress-views
+  margin: 1.5rem 0.7rem
+  width: 45rem

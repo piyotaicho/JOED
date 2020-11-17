@@ -1,21 +1,8 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import Store from '@/store/index'
 
 import ViewLogin from '@/views/VLogin'
-
-import VList from '@/views/VList'
-
-import VEdit from '@/views/VEdit'
-import ViewEditItemDiagnosis from '@/views/VEditDiagnosis'
-import ViewEditItemProcedure from '@/views/VEditProcedure'
-import ViewEditItemAE from '@/views/VEditAE'
-
-import ViewUtilites from '@/views/VUtilities'
-// import ViewAbout from '@/views/VAbout'
-import VSettings from '@/views/VSettings'
-import ViewExport from '@/views/VExport'
-import ViewImport from '@/views/VImport'
-import Store from '@/store/index'
 
 Vue.use(VueRouter)
 
@@ -28,32 +15,32 @@ const routes = [
   {
     name: 'list',
     path: '/list',
-    component: VList,
+    component: () => import('@/views/VList'),
     meta: { requireLogin: true }
   },
   {
     name: 'edit',
     path: '/edit/:uid',
-    component: VEdit,
+    component: () => import('@/views/VEdit'),
     props: true,
     meta: { requireLogin: true },
     children: [
       {
         name: 'diagnosis',
         path: 'diagnosis',
-        component: ViewEditItemDiagnosis,
+        component: () => import('@/views/VEditDiagnosis'),
         props: true
       },
       {
         name: 'procedure',
         path: 'procedure',
-        component: ViewEditItemProcedure,
+        component: () => import('@/views/VEditProcedure'),
         props: true
       },
       {
         name: 'AE',
         path: 'AE',
-        component: ViewEditItemAE,
+        component: () => import('@/views/VEditAE'),
         props: true
       }
     ]
@@ -61,25 +48,23 @@ const routes = [
   {
     name: 'utilities',
     path: '/utilities',
-    component: ViewUtilites,
+    component: () => import('@/views/VUtilities'), // ViewUtilites,
     meta: { requireLogin: true },
     children: [
       {
         name: 'export',
-        path: 'export',
-        component: ViewExport
+        path: 'export'
       },
       {
         name: 'import',
-        path: 'import',
-        component: ViewImport
+        path: 'import'
       }
     ]
   },
   {
     name: 'settings',
     path: '/settings',
-    component: VSettings,
+    component: () => import('@/views/VSettings'), // VSettings,
     meta: { requireLogin: true }
   }
 ]
@@ -90,15 +75,35 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if (to.path !== '/') {
-    if (Store.getters['password/isAuthenticated']) {
-      next()
-    } else {
-      next('/')
-    }
-  } else {
-    next()
+  let ipcrenderer
+  if (process.env.VUE_APP_ELECTRON) {
+    const { ipcRenderer } = require('electron')
+    ipcrenderer = ipcRenderer
   }
+
+  if (to.path === '/' || Store.getters['password/isAuthenticated']) {
+    ipcrenderer && ipcrenderer.send('menuroute', to.name)
+    next()
+  } else {
+    ipcrenderer && ipcrenderer.send('menuroute', 'login')
+    next('/')
+  }
+  // if (process.env.VUE_APP_ELECTRON) {
+  //   const { ipcRenderer } = require('electron')
+  //   if (to.path !== '/' && Store.getters['password/isAuthenticated']) {
+  //     ipcRenderer.send('menuroute', to.name)
+  //     next()
+  //   } else {
+  //     ipcRenderer.send('menuroute', 'login')
+  //     next('/')
+  //   }
+  // } else {
+  //   if (to.path !== '/' && Store.getters['password/isAuthenticated']) {
+  //     next()
+  //   } else {
+  //     next('/')
+  //   }
+  // }
 })
 
 export default router

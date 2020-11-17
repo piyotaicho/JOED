@@ -1,50 +1,49 @@
 <template>
   <div class="utility">
-    <!-- <div class="title-section">データの出力</div> -->
     <div class="utility-switches">
       <div>
         <div class="label">出力する年次</div>
-        <SelectYear div-class="field" v-model="exportYear" :accept-all="false" />
+        <SelectYear class="field" v-model="exportYear" :accept-all="false"/>
       </div>
 
       <InputSwitchField
         v-model="allFields"
-        title="出力するデータ"
-        :options="{学会提出データ: false, 全フィールドのデータ: true}" />
+        title="出力する様式"
+        :options="{学会提出データ: false, バックアップデータ: true}"/>
 
       <InputSwitchField
-        v-model="exportDateOfProcedure"
-        :disabled="exportAllFields"
-        title="手術実施日の出力"
-        :options="{しない: false, する: true}" />
+        v-model="exportRaw"
+        :disabled="!exportAllFields"
+        title="データ形式"
+        :options="{生データ: true, 処理データ: false}"/>
 
       <InputSwitchField
-        v-model="exportAge"
-        :disabled="exportAllFields"
-        title="患者の年齢の出力"
-        :options="{しない: false, する: true}" />
+        v-model="addHeader"
+        :disabled="!(exportAllFields && exportRaw)"
+        title="ヘッダの生成"
+        :options="{しない: false, する: true}"/>
 
       <div>
-        <el-button type="primary" @click="Process()" :disabled="exportYear==''" :loading="processing">出力データの作成</el-button>
+        <el-button type="primary" @click="Process()" :disabled="exportYear=='' || processing">出力データの作成</el-button>
       </div>
     </div>
 
     <el-collapse-transition>
       <div class="progress-views" v-show="processStep !== undefined">
         <el-steps :active="processStep" process-status="warning" finish-status="success" direction="vertical" space="42px">
-          <el-step title="システム設定の確認" />
-          <el-step title="読み込み症例の確認を検証" />
+          <el-step title="システム設定の確認"/>
+          <el-step title="読み込み症例の確認を検証"/>
           <el-step title="登録内容の妥当性の検証">
             <template #description>
-              <el-progress :percentage="progressCheckConsistency" />
+              <el-progress :v-show="progressCheckConsistency > 0" :percentage="progressCheckConsistency"/>
             </template>
           </el-step>
           <el-step title="提出用データとして整形">
             <template #description>
-              <el-progress :percentage="progressCreateData" />
+              <el-progress :v-show="progressCreateData > 0" :percentage="progressCreateData"/>
             </template>
           </el-step>
-          <el-step title="チェックサムの計算とヘッダの付与" />
+          <el-step title="チェックサムの計算とヘッダの付与"/>
         </el-steps>
       </div>
     </el-collapse-transition>
@@ -76,11 +75,12 @@ import InputSwitchField from '@/components/Molecules/InputSwitchField'
 import SelectYear from '@/components/Molecules/SelectYear'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import CaseDocumentHandler from '@/modules/DbItemHandler'
-import Popups from 'depmodules/Popups'
+import * as Popups from '@/modules/Popups'
+import HHX from 'xxhashjs'
 import { ValidateCase } from '@/modules/CaseValidater'
 
 export default {
-  name: 'ViewExport',
+  name: 'Export',
   components: {
     SelectYear, InputSwitchField, TheWrapper
   },
@@ -88,9 +88,8 @@ export default {
     return ({
       exportYear: '',
       exportAllFields: false,
-      exportDateOfProcedure: true,
-      exportAge: true,
-      forceRenumber: false,
+      exportRaw: true,
+      addHeader: false,
 
       exportText: '',
 
@@ -109,7 +108,10 @@ export default {
     exportAllFields () {
       this.ResetState()
     },
-    exportDateOfProcedure () {
+    exportRaw () {
+      this.ResetState()
+    },
+    addHeader () {
       this.ResetState()
     }
   },
@@ -118,8 +120,8 @@ export default {
       get () {
         return this.exportAllFields
       },
-      set (newvalue) {
-        if (newvalue && Popups.confirm('不用意に全てのフィールドのデータを出力するのは,個人情報保護の観点からお薦め出来ません.\nそれでも出力しますか?')) {
+      async set (newvalue) {
+        if (newvalue && await Popups.confirm('不用意に全てのフィールドのデータを出力するのは,個人情報保護の観点からお薦め出来ません.\nそれでも出力しますか?')) {
           this.exportAllFields = true
         } else {
           this.exportAllFields = false
@@ -172,18 +174,18 @@ export default {
         this.processStep++
       } catch (error) {
         await this.$nextTick()
-        Popups.alert(error.message)
+        Popups.error(error.message)
       } finally {
         await this.$nextTick()
         this.processing = false
       }
     },
 
-    Download () {
+    async Download () {
       if (!this.exportAllFields ||
         (
-          Popups.confirm('ファイルへの保存が指示されました, 作成されたデータにはID番号・氏名・年齢などの個人情報が含まれている可能性があります.\n処理を続行しますか?') &&
-          Popups.confirm('出力されたファイルの取り扱いは厳重行ってください.')
+          await Popups.confirmYesNo('保存されるデータにはID番号・氏名・年齢などの個人情報が含まれている可能性があります.\n\n処理を続行しますか?') &&
+          await Popups.confirm('出力されたファイルの取り扱いは厳重行ってください.')
         )
       ) {
         // ブラウザの機能でダウンロードさせる.
@@ -261,11 +263,15 @@ export default {
               })
           )
         } catch (error) {
+          console.log(error.message)
           this.$store.dispatch('dbUpdate',
             {
               Query: { DocumentId: documentIds[index] },
-              Update: { $set: { Notification: error } }
+              Update: { $set: { Notification: error.message } }
             })
+          this.$store.commit('RemoveDatastore', {
+            DocumentId: documentIds[index]
+          })
           errorCount++
         }
       }
@@ -274,7 +280,7 @@ export default {
       if (errorCount > 0) {
         throw new Error(
           'データ検証で' + errorCount + '件のエラーが確認されました.\n' +
-          '該当するデータの修正を御願いします.'
+          '修正を御願いします.'
         )
       }
 
@@ -285,59 +291,32 @@ export default {
     //
     async CreateExportData (documentIds) {
       this.progressCreateData = 0
-
       const ExportItems = []
-
-      let serial = this.forceRenumber ? 0
-        : Number(
-          (
-            await this.$store.dispatch('dbFindOne',
-              {
-                Query:
-                  {
-                    UniqueID: { $exists: true },
-                    ...this.baseQuery
-                  },
-                Sort: { UniqueID: -1 }
-              }) ||
-              {
-                // UniqueIDが無い場合のダミー つまるところ 0.
-                UniqueID: '2222-99001-0'
-              }
-          ).UniqueID.substr(11)
-        )
+      const hashHHX = HHX.h64(this.$store.getters['system/SALT'])
 
       for (const index in documentIds) {
         this.progressCreateData = parseInt(index * 100.0 / documentIds.length)
         const exportdocument = await this.$store.dispatch('dbFindOne',
-          { Query: { DocumentId: documentIds[index] } }
+          {
+            Query: { DocumentId: documentIds[index] },
+            Projection: { _id: 0 }
+          }
         )
-
-        if (this.forceRenumber || !exportdocument.UniqueID) {
-          ++serial
-          exportdocument.UniqueID = [
-            this.$store.getters['system/InstitutionID'],
-            this.exportYear,
-            serial
-          ].join('-')
-
-          await this.$store.dispatch('dbUpdate',
+        if (this.exportAllFields && this.exportRaw) {
+          ExportItems.push(exportdocument)
+        } else {
+          ExportItems.push(
             {
-              Query: { DocumentId: documentIds[index] },
-              Update: { $set: { UniqueID: exportdocument.UniqueID } }
-            })
-        }
-
-        ExportItems.push(
-          CaseDocumentHandler.ExportCase(
-            exportdocument,
-            {
-              exportAllFields: this.exportAllFields,
-              omitAge: !this.exportAge,
-              omitDateOfProcedure: !this.exportDateOfProcedure
+              ...CaseDocumentHandler.ExportCase(
+                exportdocument,
+                {
+                  exportAllFields: this.exportAllFields
+                }
+              ),
+              hash: hashHHX.update(JSON.stringify(exportdocument)).digest().toString(36)
             }
           )
-        )
+        }
       }
       this.progressCreateData = 100
       return ExportItems
@@ -346,24 +325,27 @@ export default {
     // Step 5 - データヘッダの作成
     //
     async CreateHeader (exportItem) {
-      const length = exportItem.length
+      if (!(this.exportAllFields && this.exportRaw && !this.addHeader)) {
+        const length = exportItem.length
 
-      if (length > 0) {
-        const HHX = require('xxhashjs')
-        const TimeStamp = Date.now()
+        if (length > 0) {
+          const TimeStamp = Date.now()
 
-        const exportText = JSON.stringify(exportItem, ' ', 2)
-        const Checksum = HHX.h64(exportText, TimeStamp).toString(16)
+          const exportText = JSON.stringify(exportItem, ' ', 2)
+          const hash = HHX.h64(exportText, TimeStamp).toString(16)
 
-        exportItem.splice(0, 0, {
-          InstitutionName: this.$store.getters['system/InstitutionName'],
-          InstitutionID: this.$store.getters['system/InstitutionID'],
-          JSOGoncologyboardID: this.$store.getters['system/JSOGInstitutionID'],
-          TimeStamp: TimeStamp,
-          Year: this.exportYear || 'ALL',
-          NumberOfCases: exportItem.length,
-          MD5: Checksum
-        })
+          exportItem.unshift({
+            InstitutionName: this.$store.getters['system/InstitutionName'],
+            InstitutionID: this.$store.getters['system/InstitutionID'],
+            JSOGoncologyboardID: this.$store.getters['system/JSOGInstitutionID'],
+            TimeStamp: TimeStamp,
+            Year: this.exportYear || 'ALL',
+            NumberOfCases: exportItem.length,
+            Version: this.$store.getters['system/ApplicationVersion'],
+            Plathome: process.platform + '(' + process.arch + ')',
+            hash: hash
+          })
+        }
       }
       return JSON.stringify(exportItem, ' ', 2)
     }
@@ -374,9 +356,9 @@ export default {
 <style lang="sass">
 div#preview
   position: relative
-  height: 80vh
-  overflow-y: scroll
-  margin: 4rem
+  height: 80%
+  overflow-y: none
+  margin: 1rem 4rem
   padding: 1rem
   border: 2px solid var(--color-text-primary)
   border-radius: 0.5rem

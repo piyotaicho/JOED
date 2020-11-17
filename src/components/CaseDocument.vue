@@ -1,7 +1,10 @@
 <template>
-  <div class="caseitem" :id="'case-'+uid" tabindex="0" @dblclick="MoveToEditView()">
+  <div class="caseitem" :id="'doc' + uid.toString(10)" tabindex="0"
+  @keypress.enter="MoveToEditView()"
+  @dblclick="MoveToEditView()"
+  @keydown.ctrl.x="RemoveDocument()">
     <div class="caseitem-icon">
-      <CategoryIdentifier :category="Category" :notification="Notification"></CategoryIdentifier>
+      <CategoryIdentifier :category="Category" :notification="Notification"/>
     </div>
     <div class="caseitem-description">
       <div class="caseitem-row">
@@ -18,19 +21,22 @@
       </div>
     </div>
     <div class="caseitem-controller">
-        <i class="el-icon-loading" v-if="Loading"></i>
-        <i class="el-icon-edit button-font" @click.exact="MoveToEditView()" @click.ctrl.shift="RemoveDocument()" v-if="!Loading"></i>
+        <i class="el-icon-loading" v-if="Loading"/>
+        <i class="el-icon-edit button-font"
+         v-if="!Loading"
+        @click.exact="MoveToEditView()"
+        @click.ctrl.shift="RemoveDocument()"/>
     </div>
   </div>
 </template>
 
 <script>
 import CategoryIdentifier from '@/components/Atoms/CaseCategoryIdentifier'
-import Popups from 'depmodules/Popups'
+import * as Popups from '@/modules/Popups'
 import CaseDocumentHandler from '@/modules/DbItemHandler'
 
 export default {
-  name: 'Caseitem',
+  name: 'CaseDocument',
   props: {
     uid: {
       required: true
@@ -96,8 +102,8 @@ export default {
         this.$router.push({ name: 'edit', params: { uid: this.uid } })
       }
     },
-    RemoveDocument () {
-      if (Popups.confirm('この症例を削除します.よろしいですか?')) {
+    async RemoveDocument () {
+      if (await Popups.confirm('この症例を削除します.よろしいですか?')) {
         this.Loading = true
         this.$store.dispatch('RemoveDocument', { DocumentId: this.uid })
       }
@@ -133,7 +139,6 @@ div.caseitem-description
   div.caseitem-row
     display: flex
     flex-direction: row
-    // justify-content: space-between
 div.caseitem-controller
   width: 60px
   display: flex
@@ -141,11 +146,11 @@ div.caseitem-controller
   justify-content: space-around
   text-align: center
 .caution-badge
-  border-radius: 10px
+  border-radius: 1rem
   background-color: red
   color: white
   text-align: center
-  padding-top: 0.125rem
+  padding-top: 0.1rem
   font-size: 0.9rem
 .button-font
   font-size: 1.4rem

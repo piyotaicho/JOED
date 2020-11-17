@@ -1,6 +1,6 @@
 <template>
-  <div class="thewrapper" :style="Style" @click="Click">
-  <slot></slot>
+  <div class="thewrapper" :style="Style" @click="Click" ref="wrapper">
+  <div><slot></slot></div>
   </div>
 </template>
 
@@ -15,6 +15,44 @@ export default {
       },
       default: 0
     }
+  },
+  created () {
+    document.getElementsByTagName('html')[0].style.overflowY = 'hidden'
+  },
+  mounted () {
+    // TheWrapper コンポーネントの内部以外のコントロールへの tabIndex を抑止する.
+    const myelements = Array.prototype.filter.call(
+      this.$refs.wrapper.getElementsByTagName('*'),
+      element => element.tabIndex === 0
+    )
+
+    if (myelements.length > 0) {
+      const documentelements = Array.prototype.filter.call(
+        this.$root.$el.getElementsByTagName('*'),
+        element => element.tabIndex === 0
+      )
+      documentelements.forEach(element => {
+        if (Array.prototype.indexOf.call(myelements, element) === -1) {
+          element.tabIndex = -2
+        }
+      })
+    } else {
+      // TheWrapper コンポーネントが空っぽの場合はドキュメントの tabIndex を全部抑止
+      Array.prototype.filter.call(
+        this.$root.$el.getElementsByTagName('*'),
+        element => element.tabIndex === 0
+      )
+        .forEach(element => { element.tabIndex = -2 })
+    }
+  },
+  beforeDestroy () {
+    document.getElementsByTagName('html')[0].style.overflowY = 'auto'
+    // tabIndex の復旧
+    Array.prototype.filter.call(
+      document.getElementsByTagName('*'),
+      element => element.tabIndex === -2
+    )
+      .forEach(element => { element.tabIndex = 0 })
   },
   computed: {
     Style () {
@@ -32,9 +70,10 @@ export default {
 <style lang="sass">
 div.thewrapper
   position: fixed
-  z-index: +1000
+  z-index: +10
   left: 0
   top: 0
-  right: 0
-  bottom: 0
+  width: 100%
+  height: 100%
+  overflow: auto
 </style>

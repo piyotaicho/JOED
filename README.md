@@ -55,6 +55,16 @@ https://p4testsuite.hostingerapp.com/JOEDv5/Latest/
 - 2020-10-29 設定保存まわりのバグを修正. 要望の強かった手術時間の直接入力としてブラインドタイプから選択されるように拡張.
 - 2020-10-30 手術時間でのソートが正しく動作するように. 合併症入力画面の動作不具合があるためリアクティブ周りを修正. 命名規則に則りコンポーネントの名称・ファイル名の変更多数.
 - 2020-10-31 Exportのエラーチェックにtypoあり修正. 正規表現の解釈周りで複数項目検索ができなかったので修正. 内容だけでよい配列・オブジェクトの新規割り当てをスプレッドシンタックスに変更.
+- 2020-11-01 合併症内容の微妙な修正. チェックボックスを自前コントロールに再実装してデザインを修正. キーボードでの操作性をあるていど確保(tabindex). electronのmacosでの動作検証を開始.
+- 2020-11-02 Exportのセッティングエラーを修正.
+- 2020-11-03 tabIndexの問題で背景のコントロールにフォーカスが移動してしまう問題をほぼ修正. TheWrapperにも同様の仕掛けを実装.
+- 2020-11-04 JSGOE,NCD idが入力されていた場合は編集可能にする. Listでのキーボード操作を実装(上下矢印 kj でフォーカス移動).
+- 2020-11-10 より確実な匿名化のために大幅に仕様変更. 対応表となるUniqueIdを廃止. レコードのhashを出力するが, SALTは初回起動時のタイムスタンプとして永続して使用, 外部に出力せず, パスワードもそれを使用する. つまり別マシンに引っ越したら問い合わせはもうできない(問い合わせは未実装).
+- 2020-11-12 起動時間短縮とチャンクが大きくなって動作が不安定になったのでdynamic loadingを使用したりいろいろ修正. その他安定性確保のため修正.
+- 2020-11-14 ヘッダの年次でALLを廃止. 設定などの部分のメニュー位置変更とあわせてrouterとの整合性を改善. そのほか細かい修正多数. electron nsisの設定が反映されないのをなんとか修正.
+- 2020-11-15 デフォルトのキーバインドを CTRL+Enter:登録 CTRL+X:削除 CTRL+W:ダイアログを閉じて前へ戻る CTRL+J:次(+SHIFTで登録して次) CTRL+K:前(+SHIFTで登録して前) に統一.
+- 2020-11-16 診断のチェックがちゃんと出来ていなかった点を修正. macosでSHIFT+CTRL+JがIM切り替えと衝突するので登録して次をalt/option+J/Kに変更, 併せてナビゲーションもalt+clickで登録して移動に変更. 
+- 2020-11-17 細かい修正.
 
 現時点で作成中のweb版ではデータはブラウザのストレージに保存されます.データベースの削除・修正などは https://p4testsuite.hostingerapp.com/JOEDv5/Database_Manager/ のユーティリティを使用してください.
 
@@ -81,24 +91,25 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |InstitutionName            |string | |X|X|施設名テーブルから引用される|
 |InstitutionID              |string |\d{5}|X|X|施設名テーブルから引用される、未登録施設は学会に申請して番号交付を受ける|
 |JSOGoncologyboardID        |string | | |X|日産婦の腫瘍登録施設番号
-|ApplicationVersion         |string | |X|X|提出データ作成時のソフトウエアのバージョン|
 |Timestump                  |integer | |X|X|提出データ作成日時のUNIX timestump|
-|Year                       |string |(20(19\|[23][0-9])|ALL) |X|X|提出データの年次|
+|Year                       |string |20(19\|[23][0-9])|X|X|提出データの年次|
 |NumberOfCases              |integer| |X|X|Casesの数（サードパーティーからの書き出しに対するエラーチェック用）|
-|MD5                        |string | |X|X|症例データ部分だけのMD5チェックサム|
+|Version                    |string | |X|X|提出データ作成時のソフトウエアのバージョン|
+|Plathome                   |string | |X|X|使用環境調査 plathome (arch)|
+|hash                       |string | |X|X|症例データ部分だけのハッシュ値|
 
 ### 症例データベースオブジェクト:Case
 |名称                        | タイプ |フォーマット規則|必須項目|エクスポート対象|解説|
 |:--------------------------|:-----:|:--:|:--:|:--:|:--|
 |_id                        |integer| | | |データベースエンジンが付与する内部管理id|
 |DocumentId                 |integer| |X| |連続番号|
-|UniqueId                   |string |{InstitutionID}-{ExportYear}(20(19\|[23][0-9]))-連続番号|X|データ書き出しの際に付与される連番, 問い合わせに利用される.|
+|hash                       |string | |-|X|DocumentIdのハッシュ値(提出データにのみ付加)|
 |Name                       |string | | | |患者名|
 |Age                        |integer| |X| |年齢|
 |PatientId                  |string | |X| |施設での患者ID|
 |JSOGId                     |string | | |X|日産婦腫瘍登録番号|
 |NCDId                      |string |\d{18}-\d{2}-\d{2}-\d{2}| |X|NCD症例識別コード～ロボット登録にけるNCD側の患者番号（将来的にこちらからのデータ流し込みにNCDが対応したときに備える）|
-|DateOfProcedure            |string |20(19\|[23][0-9])-(0[1-9]\|1[012])-([0-2][0-9]\|3[01])|X|x|手術日<br/>InstitutionalPatientIDとDateOfProcedureでユニークが望ましいが確認のみとする|
+|DateOfProcedure            |string |20(19\|[23][0-9])-(0[1-9]\|1[012])-([0-2][0-9]\|3[01])|X||手術日<br/>InstitutionalPatientIDとDateOfProcedureでユニークが望ましいが確認のみとする|
 |ProcedureTime              |string | |X|X|手術時間表記テーブルから引用される|
 |TypeOfProcedure            |string |(腹腔鏡\|腹腔鏡悪性\|ロボット支援下\|ロボット支援下悪性\|子宮鏡\|卵管鏡)|X|X|主たる術式の種別、Procedures配列の最上位の順位のものが採用される|
 |PresentAE                  |boolean| |X|X|合併症の登録があればtrue =(AE.length>0)|

@@ -39,10 +39,4 @@ export default class Popups {
         message: message
       }) !== 0
   }
-
-  static async timerwait (duration = 500) {
-    return new Promise((resolve) => {
-      setTimeout(resolve, duration)
-    })
-  }
 }

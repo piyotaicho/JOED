@@ -1,8 +1,8 @@
+// eslint-disable-next-line no-unused-vars
 /* global __static */
 'use strict'
 
-// eslint-disable-next-line no-unused-vars
-import { app, protocol, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron'
+import { app, protocol, BrowserWindow, Menu, ipcMain, dialog } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
@@ -30,19 +30,17 @@ if (!instanceLock) {
 }
 
 function createWindow () {
-  // Create the browser window.
   win = new BrowserWindow({
     width: 960,
     minWidth: 960,
     maxWidth: 960,
     height: 700,
+    fullscreen: false,
     center: true,
-    title: 'JOED',
-    icon: path.join(__static, 'icon.png'),
+    title: app.getName(),
+    icon: './build/Windows.ico',
     backgroundColor: '#dddddd',
     webPreferences: {
-      // Use pluginOptions.nodeIntegration, leave this alone
-      // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
       spellcheck: false,
       enableWebSQL: false,
@@ -66,10 +64,6 @@ function createWindow () {
   win.on('closed', () => {
     win = null
   })
-
-  win.on('app-command', (_event, command) => {
-    console.log('catch app-command ', command)
-  })
 }
 
 app.on('window-all-closed', () => {
@@ -85,6 +79,28 @@ app.on('activate', () => {
 })
 
 app.on('ready', async () => {
+  // コマンドラインオプションの処理
+  // drop-database : データベースファイルの削除 (=all でバックアップも削除)
+  if (app.commandLine.hasSwitch('drop-database')) {
+    const fs = require('fs')
+    const DBfilename = path.join(app.getPath('userData'), 'joed.nedb')
+    try {
+      fs.unlinkSync(DBfilename)
+    } catch {}
+
+    try {
+      if (app.commandLine.getSwitchValue('drop-database').toLowerCase() === 'all') {
+        fs.unlinkSync(DBfilename + '.1')
+        fs.unlinkSync(DBfilename + '.2')
+        fs.unlinkSync(DBfilename + '.3')
+      }
+    } catch {}
+
+    dialog.showMessageBoxSync({ title: 'JOED5', message: 'データベースファイルを削除しました.' })
+    app.quit()
+  }
+
+  // ウインドウの作成
   if (isDevelopment && !process.env.IS_TEST) {
     // Install Vue Devtools
     try {
@@ -95,6 +111,20 @@ app.on('ready', async () => {
   }
   createWindow()
 })
+
+// macosではウインドウを閉じても終了ではないのが標準.
+// dockから再度ウインドウを開くことが出来る.
+if (process.platform === 'darwin') {
+  app.on('close', _ => {
+    const menu = Menu.getApplicationMenu()
+    menu.getMenuItemById('list-new').enabled = false
+    menu.getMenuItemById('list-import').enabled = false
+    menu.getMenuItemById('list-export').enabled = false
+    menu.getMenuItemById('setup').enabled = false
+  })
+
+  app.on('activate-with-no-open-windows', _ => createWindow())
+}
 
 if (isDevelopment) {
   if (process.platform === 'win32') {
@@ -112,69 +142,77 @@ if (isDevelopment) {
 }
 
 //
-// アプリケーションメニュー
+// メニュー
 //
-function RendererRoute (routename, targetwindow) {
-  targetwindow.webContents.send('RendererRoute', { Name: routename })
-}
-
 const MenuTemplate = [
+  // アプリケーションメニュー
+  ...(
+    process.platform === 'darwin'
+      ? [{
+        label: app.getName(),
+        submenu: [
+          { label: app.getName() + 'について', role: 'about' },
+          { type: 'separator' },
+          { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+          { type: 'separator' },
+          { label: 'サービス', role: 'services', submenu: [] },
+          { type: 'separator' },
+          { label: app.getName() + 'を隠す', accelerator: 'Command+H', role: 'hide' },
+          { label: '他を隠す', accelerator: 'Command+Alt+H', role: 'hideothers' },
+          { label: '全てを表示', role: 'unhide' },
+          { type: 'separator' },
+          { label: '終了', accelerator: 'Command+Q', role: 'quit' }
+        ]
+      }]
+      : []
+  ),
+  // 通常のメニュー
   {
     label: 'ファイル',
     submenu: [
-      { label: '新規症例の登録', accelerator: 'CmdORCtrl+N', click: (item, focusedWindow) => RendererRoute('new', focusedWindow) },
+      { label: '新規症例の登録', id: 'list-new', enabled: false, accelerator: process.platform === 'darwin' ? 'Cmd+N' : 'Alt+N', click: (item, focusedWindow) => RendererRoute('new', focusedWindow) },
       { type: 'separator' },
-      { label: 'データの読み込み', click: (item, focusedWindow) => RendererRoute('import', focusedWindow) },
-      { label: 'データの書き出し', click: (item, focusedWindow) => RendererRoute('export', focusedWindow) },
+      { label: 'データの読み込み', id: 'list-import', enabled: false, click: (item, focusedWindow) => RendererRoute('import', focusedWindow) },
+      { label: 'データの書き出し', id: 'list-export', enabled: false, click: (item, focusedWindow) => RendererRoute('export', focusedWindow) },
       ...(process.platform === 'darwin'
-        ? [{ type: 'separator' }]
+        ? []
         : [
           { type: 'separator' },
-          { label: '設定', accelerator: 'CmdORCtrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
-          { type: 'separator' }
-        ]),
-      {
-        label: process.platform === 'darwin' ? 'ウインドウを閉じる' : '終了',
-        accelerator: process.platform === 'darwin' ? 'Cmd+W' : 'Alt+F4',
-        role: process.platform === 'darwin' ? 'close' : 'quit'
-      }
+          { label: '設定', id: 'setup', enabled: false, accelerator: 'CmdORCtrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+          { label: '終了', accelerator: 'Alt+F4', role: 'quit' }
+        ])
     ]
   },
-  {
-    label: 'ヘルプ',
-    submenu: [
-      { label: app.getName() + 'について', role: 'about' },
-      ...(
-        isDevelopment
-          ? [{
+  ...(
+    process.platform === 'win32'
+      ? [{
+        label: 'ヘルプ',
+        submenu: [
+          { label: app.getName() + 'について', role: 'about' }
+        ]
+      }]
+      : []
+  ),
+  ...(
+    isDevelopment
+      ? [{
+        label: '開発支援',
+        submenu: [
+          {
+            label: 'リロード',
+            role: 'reload',
+            accelerator: ''
+          },
+          {
             label: '開発者ツール',
             accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
             click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools()
-          }]
-          : []
-      )
-    ]
-  }
+          }
+        ]
+      }]
+      : []
+  )
 ]
-
-if (process.platform === 'darwin') {
-  MenuTemplate.unshift({
-    submenu: [
-      // アプリケーションメニュー
-      { label: app.getName() + 'について', role: 'about' },
-      { type: 'separator' },
-      { label: '設定', accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
-      { type: 'separator' },
-      { label: 'サービス', role: 'services', submenu: [] },
-      { type: 'separator' },
-      { label: app.getName() + 'を隠す', accelerator: 'Command+H', role: 'hide' },
-      { label: '他を隠す', accelerator: 'Command+Alt+H', role: 'hideothers' },
-      { label: '全てを表示', role: 'unhide' },
-      { type: 'separator' },
-      { label: '終了', accelerator: 'Command+Q', role: 'quit' }
-    ]
-  })
-}
 
 Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate))
 
@@ -190,17 +228,65 @@ app.setAboutPanelOptions({
 // IPCハンドリング
 //
 
+// main -> renderer : メニューからrouterの切り替え要求 (App.vueで処理)
+function RendererRoute (routename, targetwindow) {
+  targetwindow.webContents.send('RendererRoute', { Name: routename })
+}
+
 // ダイアログ
 ipcMain.on('messagebox', (event, payload) => {
   event.returnValue = dialog.showMessageBoxSync(win, Object.assign({ noLink: true }, payload))
 })
 
-// nedb データベースAPIラッパー
+// // RendererからのClose抑制
+// app.preventClose = false
+// ipcMain.on('PreventCloseApp', (event, payload) => {
+//   app.preventClose = !!payload
+// })
+// win.onbeforeunload = (event) => {
+//   return !app.preventClose
+// }
+
+// route毎のメニュー操作
+ipcMain.on('menuroute', (event, payload) => {
+  const menu = Menu.getApplicationMenu()
+  switch (payload) {
+    case 'login':
+    case 'edit':
+    case 'diagnosis':
+    case 'procedure':
+    case 'AE':
+      menu.getMenuItemById('list-new').enabled = false
+      menu.getMenuItemById('list-import').enabled = false
+      menu.getMenuItemById('list-export').enabled = false
+      menu.getMenuItemById('setup').enabled = false
+      break
+    case 'list':
+      menu.getMenuItemById('list-new').enabled = true
+      menu.getMenuItemById('list-import').enabled = true
+      menu.getMenuItemById('list-export').enabled = true
+      menu.getMenuItemById('setup').enabled = true
+      break
+    case 'utility':
+    case 'setup':
+      menu.getMenuItemById('list-new').enabled = false
+      menu.getMenuItemById('list-import').enabled = true
+      menu.getMenuItemById('list-export').enabled = true
+      menu.getMenuItemById('setup').enabled = true
+      break
+    default:
+      menu.getMenuItemById('list-new').enabled = false
+      menu.getMenuItemById('list-import').enabled = false
+      menu.getMenuItemById('list-export').enabled = false
+      menu.getMenuItemById('setup').enabled = false
+  }
+})
+
+// nedb
 const DB = require('nedb')
 
 function createDatabaseInstance () {
   const fs = require('fs')
-
   const DBfilename = path.join(app.getPath('userData'), 'joed.nedb')
 
   // データベースファイルのバックアップを作る(３世代まで)
@@ -258,6 +344,10 @@ function StringCompare (stringA = '', stringB = '') {
 
 app.DatabaseInstance = createDatabaseInstance()
 
+//  データベースAPIラッパー
+
+// Insert
+// @Object.Document : Object
 ipcMain.handle('Insert', (_, payload) => {
   return new Promise((resolve, reject) => {
     app.DatabaseInstance
@@ -271,6 +361,12 @@ ipcMain.handle('Insert', (_, payload) => {
   })
 })
 
+// Find
+// @Object.Query : Object
+// @Object.Projection : Object
+// @Object.Sort : Object
+// @Object.Skip : String, Number
+// @Object.Limit : String, Number
 ipcMain.handle('Find', (_, payload) => {
   return new Promise((resolve, reject) => {
     const query = payload.Query ? payload.Query : {}
@@ -295,6 +391,11 @@ ipcMain.handle('Find', (_, payload) => {
   })
 })
 
+// FindOne
+// @Object.Query : Object
+// @Object.Projection : Object
+// @Object.Sort : Object
+// @Object.Skip : String, Number
 ipcMain.handle('FindOne', (_, payload) => {
   return new Promise((resolve, reject) => {
     const query = payload.Query ? payload.Query : {}
@@ -317,6 +418,8 @@ ipcMain.handle('FindOne', (_, payload) => {
   })
 })
 
+// Count
+// @Object.Query : Object
 ipcMain.handle('Count', (_, payload) => {
   return new Promise((resolve, reject) => {
     const query = payload.Query ? payload.Query : {}
@@ -331,6 +434,10 @@ ipcMain.handle('Count', (_, payload) => {
   })
 })
 
+// Update
+// @Object.Query : Object
+// @Object.Update : Object
+// @Object.Options : Object
 ipcMain.handle('Update', (_, payload) => {
   return new Promise((resolve, reject) => {
     const query = payload.Query ? payload.Query : {}
@@ -347,6 +454,9 @@ ipcMain.handle('Update', (_, payload) => {
   })
 })
 
+// Remove
+// @Object.Query : Object
+// @Object.Options : Object
 ipcMain.handle('Remove', (_, payload) => {
   return new Promise((resolve, reject) => {
     const query = payload.Query ? payload.Query : {}
@@ -363,15 +473,20 @@ ipcMain.handle('Remove', (_, payload) => {
 })
 
 // データベースというかローカルjsonとしての Config
-
 const ConfigStore = require('electron-store')
 
 app.configstore = new ConfigStore()
 
+// LoadConfig
+// @Object.Key : String
+// @Object.DefaultConfig : Object
 ipcMain.handle('LoadConfig', (_, payload) =>
   app.configstore.get(payload.Key, payload.DefaultConfig)
 )
 
+// SaveConfig
+// @Object.Key : String
+// @Object.Config : Object
 ipcMain.handle('SaveConfig', (_, payload) =>
   app.configstore.set(payload.Key, payload.Config)
 )

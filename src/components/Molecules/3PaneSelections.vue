@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-content">
+  <div class="flex-content" ref="panes">
     <div class="w20 selectionbox">
       <SelectPane
         ref="Pane1"
@@ -32,6 +32,7 @@
         v-model="Pane3Selection"
         :items="Pane3Items"
         @change="Pane3Changed()"
+        @keypress-enter="Pane3DblClick()"
         @dblclick="Pane3DblClick()"
         :disabled="disabled"
         >
@@ -53,7 +54,6 @@ export default {
       type: [Number, String],
       default: 8
     },
-    // Pane[1-3]のプロパティには親でv-bind.syncを使用する
     Pane1: {
       type: String,
       default: undefined,
@@ -100,6 +100,14 @@ export default {
       type: Boolean,
       default: false
     }
+  },
+  mounted () {
+    this.$nextTick(_ => {
+      const selects = this.$refs.panes.getElementsByTagName('select')
+      if (selects && selects.length > 0) {
+        selects[0].focus()
+      }
+    })
   },
   computed: {
     Pane1Selection: {

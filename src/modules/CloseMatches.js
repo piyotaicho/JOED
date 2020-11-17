@@ -1,3 +1,5 @@
+import * as difflib from 'difflib'
+
 export const name = 'CloseMatches'
 
 const CommonTranslation = {
@@ -24,9 +26,9 @@ const DiagnosisTranslation = {
   膿瘍: '骨盤腹膜炎',
   異形成: '子宮頸部上皮内腫瘍',
   上皮内癌: '子宮頸部上皮内腫瘍',
-  // 増殖症: '子宮体部前癌病変',
   悪性リンパ腫: '上記以外の悪性腫瘍',
   奇胎: '絨毛性',
+  チョコレート: '子宮内膜症',
   トロホブラスト: '絨毛性',
 
   AEH: '子宮内膜異型増殖症',
@@ -51,7 +53,8 @@ const ProcedureTranslation = {
   '傍?(卵巣|卵管)': '卵巣 卵管 附属器',
   'T?LA?M': '子宮筋腫核出術',
   癌: '癌 摘出',
-  子宮内膜症: '子宮内膜症 チョコレート嚢胞',
+  チョコレート: '子宮内膜症',
+  // 子宮内膜症: '子宮内膜症 チョコレート',
   トラケレクトミー: '頸部摘出術',
   セカンドルック: 'SecondLookOperation',
   補助下: ' ',
@@ -73,7 +76,7 @@ const ProcedureTranslation = {
 }
 
 export function getMatchesInDiagnoses (str = '', candidates = []) {
-  const difflib = require('difflib')
+  // const difflib = require('difflib')
 
   // 全角の半角化
   str = str.replace(/[ーｰ～]/g, '-')
@@ -97,7 +100,7 @@ export function getMatchesInDiagnoses (str = '', candidates = []) {
 }
 
 export function getMatchesInProcedures (str = '', candidates = []) {
-  const difflib = require('difflib')
+  // const difflib = require('difflib')
 
   // 全角の半角化
   str = str.replace(/[ーｰ～]/g, '-')

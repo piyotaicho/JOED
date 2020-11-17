@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import { LoadPassword, SavePassword } from 'depmodules/config'
-
-const MD5salt = process.env.VUE_APP_MD5SALT
+import HHX from 'xxhashjs'
 
 export default {
   namespaced: true,
@@ -32,7 +31,6 @@ export default {
     //
     // @param {String} パスワード文字列
     async Authenticate (context, payload) {
-      const HHX = require('xxhashjs')
       const hashedpassword = await LoadPassword(context)
 
       if (hashedpassword === '') {
@@ -44,7 +42,7 @@ export default {
         if (!payload.SuppressStateChange) {
           context.commit('PasswordRequirement', true)
         }
-        if (hashedpassword === HHX.h64(payload.PasswordString, MD5salt).toString(16)) {
+        if (hashedpassword === HHX.h64(payload.PasswordString, this.$store.getters['system/SALT']).toString(16)) {
           if (!payload.SuppressStateChange) {
             context.commit('AuthenticationStatus', true)
           }
@@ -61,7 +59,10 @@ export default {
     //
     // @param {String} パスワード文字列
     async SetPassword (context, payload) {
-      await SavePassword(payload, context)
+      await SavePassword({
+        password: payload,
+        salt: context.rootGetters['system/SALT']
+      }, context)
       context.commit('PasswordRequirement', payload !== '')
     }
   }

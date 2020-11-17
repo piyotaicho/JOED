@@ -1,7 +1,7 @@
 <template>
   <div class="utility">
     <div>
-      <div class="title-section">mergeファイルからのデータ読み込み</div>
+      <div class="title">mergeファイルからのデータ読み込み</div>
       <div>
         症例登録システムver.4で生成されたmergeファイルから症例データを読み込むことが出来ます.<br/>
         システムの大幅な変更に伴い,データの修正は必ず必要になります.併せて以下の制限がありますがご了承ください.<br/>
@@ -13,8 +13,8 @@
     </div>
     <div>
       <InputFile @change="LoadFile"></InputFile>
-      <el-button type="primary" :disabled="InFile.length <= 0" @click="ProcessFile()">読み込みを開始</el-button>
-      <el-button type="primary" :disabled="!ReadyToRegister" :loading="Processing" @click="CommitImported">読み込んだデータの登録</el-button>
+      <el-button type="primary" :disabled="InFile.length <= 0 || Processing" @click="ProcessFile()">読み込みを開始</el-button>
+      <el-button type="primary" :disabled="!ReadyToRegister || Processing" :loading="Processing" @click="CommitImported">読み込んだデータの登録</el-button>
     </div>
 
     <el-collapse-transition>
@@ -48,10 +48,10 @@
 import InputFile from '@/components/Molecules/InputFile'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import { phraseTitledCSV, CreateDocument } from '@/modules/CSVimporter'
-import Popups from 'depmodules/Popups'
+import * as Popups from '@/modules/Popups'
 
 export default {
-  name: 'ViewImport',
+  name: 'Import',
   components: { InputFile, TheWrapper },
   data () {
     return ({
@@ -85,7 +85,7 @@ export default {
       }
       this.ProcessStep = 0
     },
-    ProcessFile () {
+    async ProcessFile () {
       this.QueryDocuments.splice(0)
       try {
         this.ProcessStep = 1
@@ -94,7 +94,7 @@ export default {
             const createddocument = CreateDocument(record)
             this.QueryDocuments.push(createddocument)
           } catch (error) {
-            if (!Popups.confirm('指定されたファイル中に不適切なレコードがあります.\n残りの処理を続行しますか?')) {
+            if (!(await Popups.confirm('指定されたファイル中に不適切なレコードがあります.\n残りの処理を続行しますか?'))) {
               throw new Error('不適切なレコード\n', JSON.stringify(record))
             }
           }

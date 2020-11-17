@@ -1,6 +1,6 @@
 <template>
-  <div class="edititem-overlay">
-    <div class="edititem-overlay-content">
+  <TheWrapper alpha="10">
+    <div class="edititem" @keydown.ctrl.enter.prevent.capture="CommitChanges()" @keydown.ctrl.w.capture="GoBack()">
       <ThreePaneSelections
         Pane3Title="候補病名"
         :Pane1.sync="Category" :Pane1Items="Categories"
@@ -13,28 +13,10 @@
       >
       </ThreePaneSelections>
 
-      <div class="flex-content inputbox">
-        <div class="w20"></div>
-        <div class="w20 subtitle-section">
-          <div tabindex="0" @click="ToggleEditsection()">
-            <span>診断入力</span>
-            <span style="padding-left: 1rem;">
-              <i class="el-icon-d-arrow-right" v-show="!ExpandEditsection"/>
-              <i class="el-icon-d-arrow-left" v-show="ExpandEditsection"/>
-            </span>
-          </div>
-        </div>
-        <div class="w40" v-show="ExpandEditsection">
-            <input type="text"
-              v-model="EditableItem"
-              :disabled="!UserEditingAllowed"
-              placeholder="カテゴリ選択後に検索可能になります"
-            />
-        </div>
-        <div class="w20" v-show="ExpandEditsection">
-          <el-button type="primary" @click="SetCandidateItemsByFreeword()" icon="el-icon-search">候補を検索</el-button>
-        </div>
-      </div>
+      <FreewordSection
+        v-model="EditableItem"
+        :disabled="!UserEditingAllowed"
+        @click-search="SetCandidateItemsByFreeword"/>
 
       <div class="content-bottom">
         <div class="controls">
@@ -43,16 +25,18 @@
         </div>
       </div>
     </div>
-  </div>
+  </TheWrapper>
 </template>
 
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
 import DiagnosisMaster from '@/modules/Masters/DiagnosisItemList'
 import { getMatchesInDiagnoses } from '@/modules/CloseMatches'
-import Popups from 'depmodules/Popups'
+import * as Popups from '@/modules/Popups'
 
+import TheWrapper from '@/components/Atoms/TheWrapper'
 import ThreePaneSelections from '@/components/Molecules/3PaneSelections'
+import FreewordSection from '@/components/Molecules/FreewordSection'
 
 const DiagnosesTree = new DiagnosisMaster()
 
@@ -65,7 +49,11 @@ export default {
   mixins: [
     EditItemMixins
   ],
-  components: { ThreePaneSelections },
+  components: {
+    TheWrapper,
+    ThreePaneSelections,
+    FreewordSection
+  },
   created () {
     if (this.ItemValue.UserTyped && this.ItemValue.UserTyped === true) {
       this.Category = this.ItemValue.Chain[0]
@@ -85,11 +73,13 @@ export default {
   methods: {
     OnCandidateSelected () {
       const newValue = this.SelectedItem
-      this.EditableItem = newValue
+      if (newValue) {
+        this.EditableItem = newValue
 
-      if (!this.TargetOrgan) {
-        const searchByName = DiagnosesTree.findItemByName(newValue, this.year)
-        this.TargetOrgan = searchByName.Chain[1]
+        if (!this.TargetOrgan) {
+          const searchByName = DiagnosesTree.findItemByName(newValue, this.year)
+          this.TargetOrgan = searchByName.Chain[1]
+        }
       }
     },
 
@@ -100,18 +90,18 @@ export default {
     },
     SetCandidateItemsByFreeword () {
       if (this.EditableItem && this.UserEditingAllowed) {
-        const flatten = DiagnosesTree.getCategoryItems(this.Category, this.year)
+        const flatten = DiagnosesTree.getItemsInCategory(this.Category, this.year)
         const arr = getMatchesInDiagnoses(this.EditableItem, flatten)
         this.CandidateItems.splice(0, this.CandidateItems.length, ...arr)
         this.$nextTick()
       }
     },
-    CommitChanges () {
+    async CommitChanges () {
       const temporaryItem = {}
       if (this.IsItemEdited) {
         this.SetCandidateItemsByFreeword()
-        if (this.CandidateItems.length !== 0 && Popups.confirm('候補診断名があります,選択を優先してください.') === false) return
-        if (Popups.confirm('直接入力した診断名の登録は可能な限り控えてください.') === false) return
+        if (this.CandidateItems.length !== 0 && await Popups.confirm('候補診断名があります,選択を優先してください.') === false) return
+        if (await Popups.confirm('直接入力した診断名の登録は可能な限り控えてください.') === false) return
         Object.assign(temporaryItem,
           {
             Text: this.TrimmedEditableItem,

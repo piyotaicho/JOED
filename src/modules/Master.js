@@ -2,10 +2,14 @@ export default class Master {
   constructor (initialTree = {}, Year = '') {
     Object.assign(this, initialTree)
     if (/^20[0-9]{2}/.test(Year)) {
-      Object.defineProperty(this, '_YearOfThisTree', { value: Year.substr(0, 4) })
+      Object.defineProperty(this, '_Year', { value: Year.substr(0, 4) })
     } else {
       throw Error('マスターセットの日付シリアルに問題があります.')
     }
+  }
+
+  Year () {
+    return this._Year
   }
 
   /*
@@ -31,10 +35,6 @@ export default class Master {
     }
   }
   */
-  Year () {
-    return this._YearOfThisTree
-  }
-
   Categories () {
     return Object.keys(this)
   }
@@ -43,10 +43,10 @@ export default class Master {
     return category !== '' ? Object.keys(this[category]) : []
   }
 
-  Candidates (category = '', target = '', year = this._YearOfThisTree) {
-    if (!year) { year = this._YearOfThisTree }
+  Candidates (category = '', target = '', $year = this._Year) {
+    if ($year < 2019) $year = this._Year
     return (category !== '' && target !== '')
-      ? this[category][target].map(item => Master.handleTreeItem(item, 'Text', year)).filter(item => item !== undefined)
+      ? this[category][target].map(item => Master.parseItem(item, 'Text', $year)).filter(item => item !== undefined)
       : []
   }
 
@@ -56,21 +56,23 @@ export default class Master {
       : undefined
   }
 
-  getItemByName (category = '', target = '', name = '', year = this._YearOfThisTree) {
-    return this[category][target].find(item => Master.handleTreeItem(item, 'Text', year) === name)
+  getItemByName (category = '', target = '', name = '', $year = this._Year) {
+    if ($year < 2019) $year = this._Year
+    return this[category][target].find(item => Master.parseItem(item, 'Text', $year) === name)
   }
 
   // 指定カテゴリで平坦化したリスト項目を取得する
   //
   // @param {string} カテゴリ
   // @param {string} データセットの参照年指定(デフォルトは最新)
-  getCategoryItems (category = '', year = this._YearOfThisTree) {
+  getItemsInCategory (category = '', $year = this._Year) {
+    if ($year < 2019) $year = this._Year
     const temporaryArray = []
     for (const key of Object.keys(this)) {
       if (category === '' || key === category) {
         for (const target of Object.keys(this[key])) {
           for (const item of this[key][target]) {
-            temporaryArray.push(Master.handleTreeItem(item, 'Text', year))
+            temporaryArray.push(Master.parseItem(item, 'Text', $year))
           }
         }
       }
@@ -82,11 +84,11 @@ export default class Master {
   //
   // @param {string} 対象
   // @param {string} データセットの参照年指定(デフォルトは最新)
-  findItemByName (name, year = this._YearOfThisTree) {
+  findItemByName (name, $year = this._Year) {
     for (const category of Object.keys(this)) {
       for (const target of Object.keys(this[category])) {
         for (const item of this[category][target]) {
-          if (Master.handleTreeItem(item, 'Text', year) === name) {
+          if (Master.parseItem(item, 'Text', $year) === name) {
             return { Text: name, Chain: [category, target] }
           }
         }
@@ -100,19 +102,19 @@ export default class Master {
   // @param {object, sting} ３層目の値
   // @param {string}  Text, Ditto, など
   // @param {string}  データセットの参照年指定
-  static handleTreeItem (item, attribute = 'Text', year = '') {
+  static parseItem (item, $attribute = 'Text', $year = '') {
     if (typeof item === 'object') {
-      if (year !== '') {
-        if (item.VaildTo && year > item.VaildTo) {
+      if ($year !== '') {
+        if (item.VaildTo && $year > item.VaildTo) {
           return undefined
         }
-        if (item.VaildFrom && year < item.VaildFrom) {
+        if (item.VaildFrom && $year < item.VaildFrom) {
           return undefined
         }
       }
-      return item[attribute]
+      return item[$attribute]
     } else {
-      if (attribute === 'Text') {
+      if ($attribute === 'Text') {
         return item
       } else {
         return undefined

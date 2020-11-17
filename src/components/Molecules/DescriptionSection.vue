@@ -2,7 +2,7 @@
   <div class="flex-content">
     <div class="w30"></div>
     <div class="w20 selectionbox">
-      <div class="subtitle-section">
+      <div class="subtitle">
         <span>{{Container.Title}}</span>
       </div>
     </div>
@@ -11,7 +11,7 @@
         <template v-for="item of Source">
           <LabeledCheckbox v-model="SelectedValue" :value="item" :key="item">
             {{spliceMarker(item)}}
-          </LabeledCheckbox>
+          </LabeledCheckbox><br :key="item"/>
         </template>
       </template>
       <template v-else>

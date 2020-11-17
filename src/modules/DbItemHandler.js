@@ -94,25 +94,28 @@ export default class CaseDocumentHandler {
   // @Param Object
   static ExportCase (
     item = {},
-    params = {
-      omitDateOfProcedure: false,
-      omitAge: false,
-      exportAllfields: false
-    }
+    param = {}
   ) {
     const temporaryItem = {}
     const propsToExport = [
-      'UniqueID',
       'JSOGId', 'NCDId',
-      'Age', 'DateOfProcedure', 'ProcedureTime', 'TypeOfProcedure',
+      'PatientId', 'Name', 'Age',
+      'DateOfProcedure', 'ProcedureTime', 'TypeOfProcedure',
       'PresentAE', 'Imported'
     ]
+    const params = {
+      exportAllFields: false,
+      omitDateOfProcedure: true,
+      omitAge: true,
+      ...param
+    }
 
-    if (params.exportAllfields) {
-      propsToExport.splice(propsToExport.indexOf('Age'), 0,
-        'PatientId', 'Name')
+    if (params.exportAllFields) {
       params.omitAge = false
       params.omitDateOfProcedure = false
+    } else {
+      propsToExport.splice(propsToExport.indexOf('PatientId'), 1)
+      propsToExport.splice(propsToExport.indexOf('Name'), 1)
     }
 
     if (params.omitAge) {
@@ -131,6 +134,10 @@ export default class CaseDocumentHandler {
 
     temporaryItem.Diagnoses = this.$flattenItem(item.Diagnoses)
     temporaryItem.Procedures = this.$flattenItem(item.Procedures)
+
+    if (params.omitDateOfProcedure) {
+      temporaryItem.YearOfProcedure = item.DateOfProcedure.substr(0, 4)
+    }
     if (item.AEs) {
       temporaryItem.AEs = Object.assign([], item.AEs)
     }

@@ -5,11 +5,10 @@
       <div>
         <input type="text"
           v-model="InputText"
-          :placeholder="placeholder"
           :min="min"
           :max="max"
-          :class="AdditionalClass"
-          :disabled="disabled"
+          :class="[(!value && required) ? 'vacant' : '']"
+          v-bind="$attrs"
           />
         <span class="number-field__control number-field__decrease" @click="Decrease">&#xe790;</span>
         <span class="number-field__control number-field__increase" @click="Increase">&#xe78f;</span>
@@ -30,9 +29,6 @@ export default {
     title: {
       default: 'NUMBER FIELD'
     },
-    placeholder: {
-      default: ''
-    },
     min: {
       type: Number
     },
@@ -40,10 +36,6 @@ export default {
       type: Number
     },
     required: {
-      default: false
-    },
-    disabled: {
-      type: Boolean,
       default: false
     }
   },
@@ -53,9 +45,6 @@ export default {
       set (newvalue) {
         this.$emit('input', ZenToHanNumbers(newvalue))
       }
-    },
-    AdditionalClass () {
-      return (!this.value && this.required) ? 'vacant' : ''
     }
   },
   methods: {

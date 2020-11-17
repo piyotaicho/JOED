@@ -1,6 +1,6 @@
 <template>
   <div class="utility">
-    <!-- <div class="title-section">パスワード認証の設定</div> -->
+    <!-- <div class="title">パスワード認証の設定</div> -->
     <div class="utility-switches">
       <InputSwitchField
         v-model="UseAuthentication"
@@ -12,7 +12,7 @@
         title="現在のパスワード"
         placeholder="********"
         :required="true"
-        v-if="$store.getters['password/isPasswordRequired']" />
+        v-if="passwordRequired" />
 
       <InputPasswordField
         v-model.lazy="NewPasswordString"
@@ -36,7 +36,7 @@
 <script>
 import InputPasswordField from '@/components/Molecules/InputPasswordField'
 import InputSwitchField from '@/components/Molecules/InputSwitchField'
-import Popups from 'depmodules/Popups'
+import * as Popups from '@/modules/Popups'
 
 export default {
   name: 'SettingOfAuthentication',
@@ -48,15 +48,24 @@ export default {
       UseAuthentication: true,
       PasswordString: '',
       NewPasswordString: '',
-      NewPasswordStringVerify: ''
+      NewPasswordStringVerify: '',
+      preserve: ''
     })
   },
   created () {
     this.ResetState()
+    this.$nextTick(_ => {
+      this.preserve = this.UseAuthentication
+    })
+  },
+  computed: {
+    passwordRequired () {
+      return this.$store.getters['password/isPasswordRequired']
+    }
   },
   methods: {
     ResetState () {
-      this.UseAuthentication = this.$store.getters['password/isPasswordRequired']
+      this.UseAuthentication = this.passwordRequired
       this.PasswordString = ''
       this.NewPasswordString = ''
       this.NewPasswordStringVerify = ''

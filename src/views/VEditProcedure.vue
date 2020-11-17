@@ -1,6 +1,6 @@
 <template>
-  <div class="edititem-overlay">
-    <div class="edititem-overlay-content">
+  <TheWrapper alpha="10">
+    <div class="edititem" @keydown.ctrl.enter.prevent.capture="CommitChanges()" @keydown.ctrl.w.capture="GoBack()">
       <ThreePaneSelections
         Pane3Title="候補術式"
         :Pane1.sync="Category" :Pane1Items="Categories"
@@ -25,7 +25,7 @@
         <div class="flex-content">
           <div class="w30"></div>
           <div class="w30">
-            <div class="subtitle-section">
+            <div class="subtitle">
               <span>付随する実施手術</span>
             </div>
           </div>
@@ -39,31 +39,11 @@
         />
       </template>
 
-      <!-- 自由入力・検索セクション -->
-      <div class="flex-content inputbox">
-        <div class="w20"></div>
-        <div class="w20 subtitle-section">
-          <div tabindex="0" @click="ToggleEditsection()">
-            <span>手術入力</span>
-            <span style="padding-left: 1rem;">
-              <i class="el-icon-d-arrow-right" v-show="!ExpandEditsection"/>
-              <i class="el-icon-d-arrow-left" v-show="ExpandEditsection"/>
-            </span>
-          </div>
-        </div>
-        <div class="w40" v-show="ExpandEditsection">
-            <input type="text"
-              v-model="EditableItem"
-              :disabled="disabled || !UserEditingAllowed"
-              placeholder="カテゴリ選択後に検索可能になります"
-            />
-        </div>
-        <div class="w20" v-show="ExpandEditsection">
-          <el-button type="primary" @click="SetCandidateItemsByFreeword()" icon="el-icon-search" :disabled="disabled">候補を検索</el-button>
-        </div>
-      </div>
+      <FreewordSection
+        v-model="EditableItem"
+        :disabled="!UserEditingAllowed"
+        @click-search="SetCandidateItemsByFreeword"/>
 
-      <!-- コントロール -->
       <div class="content-bottom">
         <div class="controls">
           <el-button type="primary" @click="GoBack" :disabled="disabled || disableCancel">取り消し</el-button>
@@ -71,17 +51,19 @@
         </div>
       </div>
     </div>
-  </div>
+  </TheWrapper>
 </template>
 
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
 import ProcedureMaster from '@/modules/Masters/ProcedureItemList'
 import { getMatchesInProcedures } from '@/modules/CloseMatches'
-import Popups from 'depmodules/Popups'
+import * as Popups from '@/modules/Popups'
 
+import TheWrapper from '@/components/Atoms/TheWrapper'
 import ThreePaneSelections from '@/components/Molecules/3PaneSelections'
 import DescriptionSection from '@/components/Molecules/DescriptionSection'
+import FreewordSection from '@/components/Molecules/FreewordSection'
 
 const ProceduresTree = new ProcedureMaster()
 
@@ -91,8 +73,10 @@ export default {
     EditItemMixins
   ],
   components: {
+    TheWrapper,
     ThreePaneSelections,
-    DescriptionSection
+    DescriptionSection,
+    FreewordSection
   },
   props: {
     disableCancel: {
@@ -149,7 +133,7 @@ export default {
     },
     SetCandidateItemsByFreeword () {
       if (this.EditableItem && this.UserEditingAllowed) {
-        const flatten = ProceduresTree.getCategoryItems(this.Category, this.year)
+        const flatten = ProceduresTree.getItemsInCategory(this.Category, this.year)
         const arr = getMatchesInProcedures(this.EditableItem, flatten)
 
         this.CandidateItems.splice(0, this.CandidateItems.length, ...arr)
@@ -162,16 +146,19 @@ export default {
 
     OnCandidateSelected () {
       const newValue = this.SelectedItem
-      this.EditableItem = newValue
+      if (newValue) {
+        this.EditableItem = newValue
 
-      if (!this.TargetOrgan) {
-        const searchByName = ProceduresTree.findItemByName(newValue, this.year)
-        this.TargetOrgan = searchByName.Chain[1]
+        if (!this.TargetOrgan) {
+          const searchByName = ProceduresTree.findItemByName(newValue, this.year)
+          this.TargetOrgan = searchByName.Chain[1]
+        }
+
+        const selectedItem = ProceduresTree.getItemByName(this.Category, this.TargetOrgan, newValue, this.year)
+        this.setDescriptionSection(selectedItem)
+        this.setAdditionalProcedureSection(selectedItem)
+        this.$nextTick()
       }
-      const selectedItem = ProceduresTree.getItemByName(this.Category, this.TargetOrgan, newValue, this.year)
-
-      this.setDescriptionSection(selectedItem)
-      this.setAdditionalProcedureSection(selectedItem)
     },
 
     setAdditionalProcedureSection (item) {
@@ -213,7 +200,7 @@ export default {
       }
     },
 
-    CommitChanges () {
+    async CommitChanges () {
       if (
         this.Category !== '' &&
         this.TrimmedEditableItem !== '' &&
@@ -228,8 +215,8 @@ export default {
 
         if (this.IsItemEdited) {
           this.SetCandidateItemsByFreeword()
-          if (this.CandidateItems.length !== 0 && Popups.confirm('候補術式名があります,選択を優先してください.') === false) return
-          if (Popups.confirm('直接入力した術式の登録は可能な限り控えてください.') === false) return
+          if (this.CandidateItems.length !== 0 && await Popups.confirm('候補術式名があります,選択を優先してください.') === false) return
+          if (await Popups.confirm('直接入力した術式の登録は可能な限り控えてください.') === false) return
 
           // ユーザ手入力の場合は選択が掛かっていないので最低限の情報のみかつフラグを必ず立てる
           temporaryItem.Chain = [this.Category]

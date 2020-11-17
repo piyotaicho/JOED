@@ -1,5 +1,9 @@
 <template>
-    <div :class="DivClass" class="open-drawer-button" :tabindex="tabindex" @click="onClick" :accesskey="accesskey">
+    <div class="open-drawer-button"
+      :tabindex="tabindex"
+      @click="onClick"
+      @keydown.enter="onClick"
+      :accesskey="accesskey">
     </div>
 </template>
 
@@ -7,9 +11,6 @@
 export default {
   name: 'DrawerButton',
   props: {
-    DivClass: {
-      type: String
-    },
     tabindex: {
       type: String, Number
     },
@@ -40,6 +41,9 @@ div.open-drawer-button
     padding-top: 6px
     padding-left: 3px
   &:hover
+    &::after
+      color: var(--color-text-regular)
+  &::focus
     &::after
       color: var(--color-text-regular)
 </style>

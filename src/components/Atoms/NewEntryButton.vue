@@ -1,5 +1,10 @@
 <template>
-    <div :class="DivClass" class="new-entry-button" :tabindex="tabindex" @click="onClick" :accesskey="accesskey">
+    <div class="new-entry-button"
+      :tabindex="tabindex"
+      @click="onClick"
+      @keydown.enter="onClick"
+      @keydown.space="onClick"
+      :accesskey="accesskey">
     </div>
 </template>
 
@@ -7,11 +12,9 @@
 export default {
   name: 'NewEntryButton',
   props: {
-    DivClass: {
-      type: String
-    },
     tabindex: {
-      type: [String, Number]
+      type: [String, Number],
+      default: 0
     },
     accesskey: {
       type: String
@@ -33,6 +36,7 @@ div.new-entry-button
   width: 30px
   height: 30px
   border: 2px solid var(--color-primary)
+  padding: 1px
   border-radius: 5px
   background: var(--background-color-list)
   &::after
@@ -46,4 +50,8 @@ div.new-entry-button
     border-color: var(--color-text-regular)
     &::after
       color: var(--color-text-regular)
+  &:focus
+    outline: none
+    border: 3px solid var(--color-primary)
+    padding: 0px
 </style>

@@ -1,10 +1,9 @@
 <template>
-  <div class="app-dialog-row w600p">
-    <div class="w30" id="auth-logo">
-      <img src="@/assets/JOED5logo.png" alt="[JOED5]">
-    </div>
+  <div class="login-dialog">
+    <div class="w30" id="auth-logo"><Icon/></div>
     <div class="w70" id="auth">
-      <div class="title-section">{{Title}}</div>
+      <div class="title">{{Title[0]}}</div>
+      <div class="subtitle">{{Title[1]}}</div>
 
       <div>
         <label>
@@ -23,26 +22,35 @@
 </template>
 
 <script>
+import Icon from '@/components/Atoms/Icon'
+
 export default {
   name: 'ViewLogin',
+  components: {
+    Icon
+  },
   data () {
     return ({
       Password: '',
       LoginFailed: false
-      // StateLess: false
     })
   },
   created () {
-    // 認証が設定の有無を確認
-    this.$store.dispatch('password/Authenticate', { PasswordString: '' }).catch(_ => {})
+    this.$store.dispatch('password/Authenticate', { PasswordString: '' })
+      .catch(_ => {})
   },
   computed: {
     Title () {
-      return this.$store.getters['system/ApplicationName'] +
+      return [
+        '日本産科婦人科内視鏡学会 合併症報告',
+        this.$store.getters['system/ApplicationName'] +
         ' version ' +
         this.$store.getters['system/ApplicationVersion']
+      ]
     },
-    StateLess () { return !this.$store.getters['password/isPasswordRequired'] }
+    StateLess () {
+      return !this.$store.getters['password/isPasswordRequired']
+    }
   },
   methods: {
     PerformAuthentication () {
@@ -55,14 +63,27 @@ export default {
 </script>
 
 <style lang="sass">
+div.login-dialog
+  position: relative
+  border: 1px black solid
+  border-radius: 0.5rem
+  background-color: ivory
+  margin-top: 3rem
+  margin-left: 148px
+  padding: 1rem 1.5rem
+  width: 600px
+  display: flex
+  flex-direction: row
+
 #auth-logo
   display: flex
   flex-direction: row
   justify-content: space-around
-  img
-    width: 100px
-    height: 100px
+  svg
+    width: 100%
+    height: 100%
     padding: 10px
+    margin: auto 0
 #auth
   display: flex
   flex-direction: column

@@ -1,6 +1,5 @@
 import { ipcRenderer } from 'electron'
-
-const MD5salt = process.env.VUE_APP_MD5SALT
+import HHX from 'xxhashjs'
 
 export async function LoadConfig () {
   return await ipcLoadConfig('Config')
@@ -15,8 +14,10 @@ export async function LoadPassword () {
 }
 
 export async function SavePassword (payload) {
-  const HHX = require('xxhashjs')
-  const hashedpassword = payload === '' ? '' : HHX.h64(payload, MD5salt).toString(16)
+  const password = payload.password
+  const salt = payload.salt
+
+  const hashedpassword = password === '' ? '' : HHX.h64(password, salt).toString(16)
   return await ipcSaveConfig('Password', { Password: hashedpassword })
 }
 

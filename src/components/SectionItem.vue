@@ -1,13 +1,13 @@
 <template>
-  <div class="section-item">
+  <div class="section-item" tabindex="0" @keydown.ctrl.x="RemoveItem">
     <i class="handle el-icon-d-caret" v-if="draggable"></i>
     <slot :item="item">
-      <span>{{Title}}</span>
-      <span v-if="Description !== ''">
-        ( {{Description}} )
+      <span>{{title}}</span>
+      <span v-if="description !== ''">
+        ( {{description}} )
       </span>
     </slot>
-    <i class="edit-button el-icon-edit" @click="EditItem" v-if="RequireEditing" />
+    <i class="edit-button el-icon-edit" @click="EditItem" v-if="editableItem" />
     <i class="remove-button el-icon-delete" @click="RemoveItem" />
   </div>
 </template>
@@ -28,10 +28,10 @@ export default {
     }
   },
   computed: {
-    Title () {
+    title () {
       return CaseDocumentHandler.ItemValue(this.item)
     },
-    Description () {
+    description () {
       if (this.item.Description) {
         return (Array.isArray(this.item.Description) && this.item.Description.length > 1)
           ? this.item.Description.map(item => item.replace(/[[\]]/g, '')).join(', ')
@@ -39,7 +39,7 @@ export default {
       }
       return ''
     },
-    RequireEditing () {
+    editableItem () {
       return this.item.UserTyped === true
     }
   },
@@ -48,7 +48,9 @@ export default {
       this.$emit('remove')
     },
     EditItem () {
-      this.$emit('edit')
+      if (this.editableItem) {
+        this.$emit('edit')
+      }
     }
   }
 }

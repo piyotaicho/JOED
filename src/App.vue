@@ -8,13 +8,18 @@
 export default {
   created () {
     this.$store.commit('initDatabase')
-    this.$store.dispatch('system/LoadPreferences').then(_ =>
+    this.$store.dispatch('system/LoadPreferences').then(_ => {
+      // システムSALTが未設定の場合は起動時をSALTにする.
+      if (!this.$store.getters['system/SALT']) {
+        this.$store.commit('system/SetPreferences', { Salt: Date.now() })
+        this.$store.dispatch('system/SavePreferences')
+      }
       this.$store.dispatch('ReloadDocumentList')
-    )
+    })
 
     // electron環境下でのメインプロセスからのメッセージ(メニュー操作)を処理
     try {
-      if (process.env.VUE_APP_MODE === 'electron') {
+      if (process.env.VUE_APP_ELECTRON) {
         const { ipcRenderer } = require('electron')
 
         ipcRenderer.on('RendererRoute', (event, payload) => {
@@ -31,7 +36,7 @@ export default {
               case 'export':
               case 'import':
               case 'settings':
-                if (routename !== 'new') {
+                if (routename !== 'new' && this.$route.name !== routename) {
                   this.$router.push({ name: routename })
                 }
                 break
