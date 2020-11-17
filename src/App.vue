@@ -44,8 +44,7 @@ export default {
           }
         })
       }
-    } catch (_) {
-    }
+    } catch {}
   },
   computed: {
     routeKey () {

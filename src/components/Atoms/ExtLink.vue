@@ -19,9 +19,7 @@ export default {
         try {
           const { shell } = require('electron')
           shell.openExternal(this.url)
-        } catch (_) {
-          // noop
-        }
+        } catch {}
       } else {
         window.open(this.url, '_blank')
       }

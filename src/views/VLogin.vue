@@ -55,8 +55,8 @@ export default {
   methods: {
     PerformAuthentication () {
       this.$store.dispatch('password/Authenticate', { PasswordString: this.Password })
-        .then(() => this.$router.push({ name: 'list' }))
-        .catch(() => { this.LoginFailed = true })
+        .then(_ => this.$router.push({ name: 'list' }))
+        .catch(_ => { this.LoginFailed = true })
     }
   }
 }

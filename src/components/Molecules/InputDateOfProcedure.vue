@@ -70,8 +70,7 @@ export default {
         let inputelement
         try {
           inputelement = this.$refs.datepicker.getElementsByTagName('input')[0]
-        } catch {
-        }
+        } catch {}
         if (inputelement) {
           inputelement.tabIndex = this.tabindex
         }

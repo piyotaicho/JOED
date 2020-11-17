@@ -25,7 +25,7 @@
         <i class="el-icon-edit button-font"
          v-if="!Loading"
         @click.exact="MoveToEditView()"
-        @click.ctrl.shift="RemoveDocument()"/>
+        @click.alt="RemoveDocument()"/>
     </div>
   </div>
 </template>
@@ -56,8 +56,6 @@ export default {
           this.$nextTick()
         })
         .catch(e => e)
-    } else {
-      this.Loading = false
     }
   },
   computed: {

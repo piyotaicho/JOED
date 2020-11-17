@@ -197,14 +197,14 @@ export default {
     document.removeEventListener('keydown', this.EventListner, true)
   },
   beforeRouteUpdate (to, from, next) {
-    const goEditingSection = to.name !== 'edit'
-    this.editingSection = goEditingSection
-    if (goEditingSection) {
+    const goSection = to.name !== 'edit'
+    this.editingSection = goSection
+    if (goSection) {
       this.preservedElement = document.activeElement
     } else {
       try {
         this.preservedElement.focus()
-      } catch (_) {}
+      } catch {}
     }
     next()
   },
@@ -411,28 +411,32 @@ export default {
       if (this.editingSection || event.repeat) return
 
       if (event.ctrlKey && !event.altKey && !event.metaKey) {
-        switch (event.key) {
-          case 'w':
-            await this.CancelEditing()
-            break
-          case 'j':
+        switch (event.code) {
+          case 'KeyJ':
             await this.CancelEditing('next')
             break
-          case 'k':
+          case 'KeyK':
             await this.CancelEditing('prev')
+            break
+          case 'KeyW':
+            await this.CancelEditing()
             break
           case 'Enter':
             event.preventDefault()
             await this.CommitCase()
             break
         }
-      } else if (!event.ctrlKey && event.altKey && !event.metaKey) {
-        switch (event.key) {
-          case 'j':
+      } else if (event.altKey && !event.ctrlKey && !event.metaKey) {
+        switch (event.code) {
+          case 'KeyJ':
             await this.CommitCase('next')
             break
-          case 'k':
+          case 'KeyK':
             await this.CommitCase('prev')
+            break
+          case 'Enter':
+            event.preventDefault()
+            await this.CommitCase('new')
             break
         }
       }

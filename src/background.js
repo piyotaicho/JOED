@@ -293,18 +293,15 @@ function createDatabaseInstance () {
   // 原則としてバックアップ作成に関わるエラーは全て無視.
   try {
     fs.copyFileSync(DBfilename + '.2', DBfilename + '.3')
-  } catch (_) {
-  }
+  } catch {}
 
   try {
     fs.copyFileSync(DBfilename + '.1', DBfilename + '.2')
-  } catch (_) {
-  }
+  } catch {}
 
   try {
     fs.copyFileSync(DBfilename, DBfilename + '.1')
-  } catch (_) {
-  }
+  } catch {}
 
   try {
     return new DB({

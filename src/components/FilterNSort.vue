@@ -165,8 +165,7 @@ export default {
         await this.$store.dispatch('system/SaveCurrentView')
         Popups.information('現在の表示設定を規定として保存しました.\n環境設定から初期設定にリセットできます.')
         await this.$nextTick()
-      } catch (_) {
-      }
+      } catch {}
     },
     async Revert () {
       this.$store.commit('SetFilters', {}) // this.$store.getters['system/SavedView'].Filters)

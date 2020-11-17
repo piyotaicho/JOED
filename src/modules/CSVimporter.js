@@ -82,8 +82,7 @@ function DateOfProcedure (Record, CaseData) {
         .map(item => ('0' + item).substr(-2))
         .join('-')
       return
-    } catch {
-    }
+    } catch {}
   }
   if (Record['手術年']) {
     CaseData.DateOfProcedure = Record['手術年'] + '-01-01'

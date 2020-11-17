@@ -59,7 +59,7 @@ function makeRegex (str = '', regex = false) {
   if (regex) {
     try {
       queryRegex = new RegExp(str, 'i')
-    } catch (_) {
+    } catch {
       queryRegex = new RegExp(/^()$/)
     }
   } else {
