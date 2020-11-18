@@ -29,6 +29,7 @@ if (!instanceLock) {
   }
 }
 
+// CreateBrowserWindow
 function createWindow () {
   win = new BrowserWindow({
     width: 960,
@@ -62,10 +63,19 @@ function createWindow () {
   }
 
   win.on('closed', () => {
+    // macosでウインドウが閉じるときにメニューを初期値に戻す.
+    if (process.platform === 'darwin') {
+      const menu = Menu.getApplicationMenu()
+      menu.getMenuItemById('list-new').enabled = false
+      menu.getMenuItemById('list-import').enabled = false
+      menu.getMenuItemById('list-export').enabled = false
+      menu.getMenuItemById('setup').enabled = false
+    }
     win = null
   })
 }
 
+// app events
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
@@ -112,17 +122,8 @@ app.on('ready', async () => {
   createWindow()
 })
 
-// macosではウインドウを閉じても終了ではないのが標準.
-// dockから再度ウインドウを開くことが出来る.
+// macosではdockから再度ウインドウを開くことが出来る.
 if (process.platform === 'darwin') {
-  app.on('close', _ => {
-    const menu = Menu.getApplicationMenu()
-    menu.getMenuItemById('list-new').enabled = false
-    menu.getMenuItemById('list-import').enabled = false
-    menu.getMenuItemById('list-export').enabled = false
-    menu.getMenuItemById('setup').enabled = false
-  })
-
   app.on('activate-with-no-open-windows', _ => createWindow())
 }
 
@@ -233,20 +234,6 @@ function RendererRoute (routename, targetwindow) {
   targetwindow.webContents.send('RendererRoute', { Name: routename })
 }
 
-// ダイアログ
-ipcMain.on('messagebox', (event, payload) => {
-  event.returnValue = dialog.showMessageBoxSync(win, Object.assign({ noLink: true }, payload))
-})
-
-// // RendererからのClose抑制
-// app.preventClose = false
-// ipcMain.on('PreventCloseApp', (event, payload) => {
-//   app.preventClose = !!payload
-// })
-// win.onbeforeunload = (event) => {
-//   return !app.preventClose
-// }
-
 // route毎のメニュー操作
 ipcMain.on('menuroute', (event, payload) => {
   const menu = Menu.getApplicationMenu()
@@ -322,8 +309,7 @@ function createDatabaseInstance () {
   }
 }
 
-// 手術時間を比較する
-//
+// 手術時間同士であればそれを比較する
 const TimeStringMatch = /[1-9]\d?0分/
 const ExtractTime = /([1-9]\d?0)分(以上|未満)/
 
