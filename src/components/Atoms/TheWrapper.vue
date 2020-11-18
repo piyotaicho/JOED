@@ -14,6 +14,10 @@ export default {
         return val >= 0 && val <= 100
       },
       default: 0
+    },
+    preventClose: {
+      type: Boolean,
+      default: false
     }
   },
   created () {
@@ -44,10 +48,20 @@ export default {
       )
         .forEach(element => { element.tabIndex = -2 })
     }
+
+    // beforeUnloadの抑止をつける
+    if (this.preventClose) {
+      window.addEventListener('beforeunload', this.BeforeUnloadLister)
+    }
   },
   beforeDestroy () {
     document.getElementsByTagName('html')[0].style.overflowY = 'auto'
-    // tabIndex の復旧
+
+    // beforeUnloadの抑止を終了
+    if (this.preventClose) {
+      window.removeEventListener('beforeunload', this.BeforeUnloadLister)
+    }
+    // tabIndex の復帰
     Array.prototype.filter.call(
       document.getElementsByTagName('*'),
       element => element.tabIndex === -2
@@ -62,6 +76,11 @@ export default {
   methods: {
     Click (event) {
       this.$emit('click', event)
+    },
+    BeforeUnloadLister (event) {
+      event.preventDefault()
+      event.returnValue = ''
+      return false
     }
   }
 }
