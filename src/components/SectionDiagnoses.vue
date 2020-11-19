@@ -1,22 +1,44 @@
 <template>
-  <div class="section">
-    <span class="section-title">手術診断 ： </span>
-    <draggable handle=".handle" v-model="items">
-      <div class="section-item-list"
-        v-for="(item, index) in items"
-        :key="index">
-        <SectionItem :item="item" @remove="RemoveItem(index)" @edit="EditItem(index, item)"/>
-      </div>
-    </draggable>
-    <NewEntryButton @click="AddNewItem()" tabindex="0" />
-  </div>
+  <Section title="手術診断"
+    :container.sync="items"
+    @addnewitem="AddNewItem"
+    @edititem="EditItem"
+    @removeitem="RemoveItem">
+  </Section>
 </template>
 
 <script>
-import EditSectionMixins from '@/mixins/EditSectionMixins'
+import Section from '@/components/Section'
 
 export default {
   name: 'SectionDiagnoses',
-  mixins: [EditSectionMixins]
+  components: { Section },
+  props: {
+    container: {
+      type: Array,
+      required: true
+    }
+  },
+  computed: {
+    items: {
+      get () {
+        return this.container
+      },
+      set (value) {
+        this.$emit('update:container', value)
+      }
+    }
+  },
+  methods: {
+    AddNewItem () {
+      this.$emit('addnewitem')
+    },
+    EditItem (value) {
+      this.$emit('edititem', value)
+    },
+    RemoveItem (index) {
+      this.$emit('removeitem', index)
+    }
+  }
 }
 </script>

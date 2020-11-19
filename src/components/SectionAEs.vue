@@ -1,46 +1,64 @@
 <template>
-  <div class="section">
-    <span class="section-title">合併症 ： </span>
-    <span>
+  <Section title="合併症"
+    :draggable="false"
+    :container.sync="items"
+    @addnewitem='AddNewItem()'>
+    <template #beforeitemlist>
       <LabeledCheckbox v-model="option">合併症なし</LabeledCheckbox>
-    </span>
-    <!-- Quick hack for designs -->
-    <div class="section-item-list" style="display: none;"><div class="item-description"></div></div>
-    <div class="section-item-list"
-      v-for="(item, index) in items"
-      :key="index">
-      <el-tooltip placement="top-start" :open-delay="700">
-        <div slot="content">
-          <DescriptionOfAE :item="item"></DescriptionOfAE>
-        </div>
-        <SectionItem :item="item" @remove="RemoveItem(index)" :draggable="false" #default="slotProps">
-          <span class="w20">{{ slotProps.item.Category }}</span>
-          <span class="w30">
-            {{ (slotProps.item.Category === '出血')
-              ? (slotProps.item.BloodCount === '不明'
-                ? '出血量不明'
-                : slotProps.item.BloodCount + 'ml')
-              : ' … ' + ((slotProps.item.Title&&slotProps.item.Title[0])
-                ||(slotProps.item.Cause&&slotProps.item.Cause[0])) }}
-          </span>
-          <span class="w20">( Grade : {{slotProps.item.Grade}} )</span>
-        </SectionItem>
-      </el-tooltip>
-    </div>
-    <NewEntryButton @click="AddNewItem()" tabindex="0" />
-  </div>
+      <div class="section-item-list" style="display: none;"><div class="item-description"></div></div>
+    </template>
+    <template #default="itemprops">
+      <SectionAEItem :item="itemprops.item" @remove="RemoveItem(itemprops.index)" />
+    </template>
+  </Section>
 </template>
 
 <script>
-import EditSectionMixins from '@/mixins/EditSectionMixins'
+import Section from '@/components/Section'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
-import DescriptionOfAE from '@/components/Molecules/DescriptionOfAE'
+import SectionAEItem from '@/components/SectionAEItem'
 
 export default {
   name: 'SectionAEs',
-  mixins: [EditSectionMixins],
   components: {
-    LabeledCheckbox, DescriptionOfAE
+    Section, LabeledCheckbox, SectionAEItem
+  },
+  props: {
+    container: {
+      type: Array,
+      required: true
+    },
+    optionValue: {
+      type: Boolean,
+      required: false,
+      default: false
+    }
+  },
+  computed: {
+    items: {
+      get () {
+        return this.container
+      },
+      set (value) {
+        this.$emit('update:container', value)
+      }
+    },
+    option: {
+      get () {
+        return this.optionValue
+      },
+      set (value) {
+        this.$emit('update:optionValue', value)
+      }
+    }
+  },
+  methods: {
+    AddNewItem () {
+      this.$emit('addnewitem')
+    },
+    RemoveItem (index) {
+      this.$emit('removeitem', index)
+    }
   }
 }
 </script>

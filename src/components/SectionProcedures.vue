@@ -1,25 +1,50 @@
 <template>
-  <div>
-    <div class="section">
-      <span class="section-title">実施手術 ： </span>
-      <draggable handle=".handle" v-model="items">
-        <div class="section-item-list"
-          v-for="(item, index) in items"
-          :key="index">
-          <SectionItem :item="item" @remove="RemoveItem(index)" @edit="EditItem(index, item)"/>
-          <SectionItem :item="item.AdditionalProcedure" @click="RemoveItem(index)" v-if="item.AdditionalProcedure"/>
-        </div>
-      </draggable>
-      <NewEntryButton @click="AddNewItem()" tabindex="0" />
-    </div>
-  </div>
+  <Section title="実施手術"
+    :container.sync="items"
+    @addnewitem="AddNewItem">
+    <template #default="itemprops">
+      <SectionItem :item="itemprops.item" @remove="RemoveItem(itemprops.index)" @edit="EditItem(itemprops.index, itemprops.item)"/>
+      <SectionItem :item="itemprops.item.AdditionalProcedure" @click="RemoveItem(itemprops.index)" v-if="itemprops.item.AdditionalProcedure"/>
+    </template>
+  </Section>
 </template>
 
 <script>
-import EditSectionMixins from '@/mixins/EditSectionMixins'
+import Section from '@/components/Section'
+import SectionItem from '@/components/SectionItem'
 
 export default {
   name: 'SectionProcedures',
-  mixins: [EditSectionMixins]
+  components: { Section, SectionItem },
+  props: {
+    container: {
+      type: Array,
+      required: true
+    }
+  },
+  computed: {
+    items: {
+      get () {
+        return this.container
+      },
+      set (value) {
+        this.$emit('update:container', value)
+      }
+    }
+  },
+  methods: {
+    AddNewItem () {
+      this.$emit('addnewitem')
+    },
+    EditItem (index, item) {
+      this.$emit('edititem', {
+        ItemIndex: index,
+        ItemValue: item
+      })
+    },
+    RemoveItem (index) {
+      this.$emit('removeitem', index)
+    }
+  }
 }
 </script>
