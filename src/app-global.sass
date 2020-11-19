@@ -146,7 +146,7 @@ div.edit-dialog
   background-color: ivory
   margin-left: 48px
   margin-top: 1rem
-  padding: 1rem 1.5rem
+  padding: 1rem 1.5rem 0.4rem
   width: 800px
   display: flex
   flex-direction: column
@@ -156,10 +156,10 @@ div.section
   position: relative
   background: white
   width: 800px
-  min-height: 48px
+  min-height: 4rem
   border: 1px solid black
-  margin-top: 21px
-  padding-bottom: 4px
+  margin-top: 0.85rem
+  padding-bottom: 0.25rem
   .section-title
     margin: 4px
     font-size: 1.15rem
@@ -170,7 +170,7 @@ div.section
     div.section-item
       position: relative
       background: $--color-text-placeholder
-      border-left: $--color-text-placeholder 2px solid
+      border-left: $--color-text-placeholder 0.25rem solid
       line-height: 1.5
       padding: 0.5em
       margin-right: 48px
@@ -193,7 +193,7 @@ div.section
         margin-bottom: auto
         padding-top: 0.1rem
   div.section-item-list:first-of-type div.section-item:first-of-type
-      border-left: black 2px solid
+      border-left: black 0.25rem solid
 
 // Editビューの共通スタイル
 div.edititem
@@ -206,27 +206,25 @@ div.edititem
   margin-top: 120px
   margin-left: 50px
   margin-bottom: 1rem
-  padding: 16px
+  padding: 0.6rem 1rem 0.8rem
 div.content-title
-  padding: 8px
-  font-size: 1.15rem
+  padding: 0 0.55rem
+  font-size: 1.1rem
   font-weight: bold
-  letter-spacing: 2px
+  letter-spacing: 0.12rem
 div.flex-content
   display: flex
   flex-direction: row
-  padding-top: 0.2rem
-  padding-bottom: 0.2rem
+  margin-bottom: 0.3rem
 div.selectionbox
-  padding: 4px
-  margin: 4px 0.5rem
+  margin: 0.3rem 0.5rem
   min-height: 2rem
   line-height: 2rem
   select
     width: 100%
 div.inputbox
-  margin: 2px 16px
-  height: 40px
+  margin: 0.14rem 1.15rem
+  height: 2.85rem
   flex-direction: row
   & > div
     margin: auto 0
@@ -234,11 +232,10 @@ div.inputbox
     width: 95%
 div.content-bottom
   div.controls
-    padding-left: 8px
-    padding-right: 8px
+    padding: 0 0.55rem
     text-align: right
-    margin: 2px 0
-    height: 2.5em
+    margin: 0.14rem 0
+    height: 2.5rem
 
 // 機能画面
 div.utility
