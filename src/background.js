@@ -201,8 +201,8 @@ const MenuTemplate = [
         submenu: [
           {
             label: 'リロード',
-            role: 'reload',
-            accelerator: ''
+            accelerator: '',
+            click: (item, focusedWindow) => { focusedWindow.webContents.onbeforeunload = null; focusedWindow.reload() }
           },
           {
             label: '開発者ツール',
