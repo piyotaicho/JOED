@@ -173,7 +173,9 @@ export default {
           for (var key in this.CaseData) {
             if (casedocument !== undefined && casedocument[key] !== undefined) {
               if (toString.call(casedocument[key]) === '[object Object]') {
-                this.$set(this.CaseData, key, Object.assign(this.CaseData[key], casedocument[key]))
+                this.$set(this.CaseData, key, { ...casedocument[key] })
+              } else if (Array.isArray(casedocument[key])) {
+                this.$set(this.CaseData, key, [...casedocument[key]])
               } else {
                 this.$set(this.CaseData, key, casedocument[key])
               }
@@ -414,6 +416,15 @@ export default {
 
       if (event.ctrlKey && !event.altKey && !event.metaKey) {
         switch (event.code) {
+          case 'Digit1':
+            this.EditSection('diagnosis')
+            break
+          case 'Digit2':
+            this.EditSection('procedure')
+            break
+          case 'Digit3':
+            this.EditSection('AE')
+            break
           case 'KeyJ':
             await this.CancelEditing('next')
             break
