@@ -167,7 +167,7 @@ export async function ValidateDiagnoses (item, year) {
         if (treeList.indexOf(diagnosis.Text) >= 0) {
           resolve()
         }
-        resolve(diagnosis.Text + ' が診断マスタにありません.再入力をお願いします.')
+        resolve(diagnosis.Text + ' が診断マスタにありません.')
       }))
     }
     Promise
@@ -223,7 +223,7 @@ export async function ValidateProcedures (item, year) {
           if (treeList.indexOf(procedure.Text) >= 0) {
             resolve()
           }
-          resolve(procedure.Text + ' が術式マスタにありません.再入力をお願いします.')
+          resolve(procedure.Text + ' が術式マスタにありません.')
         })
       )
     }

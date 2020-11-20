@@ -192,8 +192,10 @@ export default {
   },
   mounted () {
     document.addEventListener('keydown', this.EventListner, true)
+    window.addEventListener('beforeunload', this.BeforeUnloadLister)
   },
   beforeDestroy () {
+    window.removeEventListener('beforeunload', this.BeforeUnloadLister)
     document.removeEventListener('keydown', this.EventListner, true)
   },
   beforeRouteUpdate (to, from, next) {
@@ -439,6 +441,25 @@ export default {
             await this.CommitCase('new')
             break
         }
+      }
+    },
+    BeforeUnloadLister (event) {
+      if (this.processing) {
+        event.preventDefault()
+        event.returnValue = ''
+        return false
+      }
+      if (this.preserve !== JSON.stringify(this.CaseData)) {
+        event.preventDefault()
+        event.returnValue = ''
+        Popups.confirmYesNo('項目が編集中ですが閉じますか?')
+          .then(result => {
+            if (result) {
+              window.removeEventListener('beforeunload', this.BeforeUnloadLister)
+              window.close()
+            }
+          })
+        return false
       }
     }
   }

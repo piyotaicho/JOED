@@ -59,7 +59,7 @@
       </div>
     </el-collapse-transition>
 
-    <TheWrapper v-if="processing"/>
+    <TheWrapper prevent-close v-if="processing"/>
     <TheWrapper v-if="showPreview" alpha="60" @click="showPreview = false">
       <div id="preview">
         画面のクリックで戻ります.
@@ -151,6 +151,7 @@ export default {
     async Process () {
       if (this.processing) return
 
+      this.processing = true
       this.processStep = 0
       this.progressCheckConsistency = 0
       this.progressCreateData = 0

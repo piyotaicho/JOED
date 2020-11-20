@@ -33,14 +33,14 @@
           </el-step>
           <el-step title="登録">
             <template #description>
-              <el-progress  v-show="Processing" :percentage="ImportProgress"></el-progress>
+              <el-progress  v-show="Processing" :percentage="ImportProgress"/>
             </template>
           </el-step>
         </el-steps>
       </div>
     </el-collapse-transition>
 
-    <TheWrapper v-if="Processing"/>
+    <TheWrapper prevent-close v-if="Processing"/>
   </div>
 </template>
 
