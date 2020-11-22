@@ -343,7 +343,7 @@ export default {
             Year: this.exportYear || 'ALL',
             NumberOfCases: exportItem.length,
             Version: this.$store.getters['system/ApplicationVersion'],
-            Plathome: process.platform + '(' + process.arch + ')',
+            Plathome: window.navigator.platform + '(' + process.arch + ')',
             hash: hash
           })
         }

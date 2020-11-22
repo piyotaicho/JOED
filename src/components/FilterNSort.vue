@@ -13,14 +13,16 @@
         </select>
       </div>
 
-      <el-switch
-        v-model="Sort.Order"
-        active-text="昇順"
-        :active-value="1"
-        active-color="var(--color-primary)"
-        inactive-text="降順"
-        :inactive-value="-1"
-        inactive-color="var(--color-primary)" />
+      <div>
+        <el-switch
+          v-model="Sort.Order"
+          active-text="昇順"
+          :active-value="1"
+          active-color="var(--color-primary)"
+          inactive-text="降順"
+          :inactive-value="-1"
+          inactive-color="var(--color-primary)" />
+      </div>
     </div>
 
     <div class="subtitle">表示する内容</div>
