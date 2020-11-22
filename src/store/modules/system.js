@@ -35,9 +35,16 @@ export default {
     VueVersion () {
       return Vue.version || 'undefined'
     },
+    Platform () {
+      return process.env.VUE_APP_ELECTRON
+        ? process.platform
+        : (window.navigator.platform.includes('Mac') ? 'darwin' : 'win32')
+    },
+
     Settings (state) {
       return state.settings
     },
+
     InstituteInformation (state) {
       return {
         InstitutionName: state.settings.InstitutionName,
@@ -54,12 +61,14 @@ export default {
     JSOGInstitutionID (state) {
       return state.settings.JSOGoncologyboardID
     },
+
     EditJSOGId (state) {
       return state.settings.EditJSOGId
     },
     EditNCDId (state) {
       return state.settings.EditNCDId
     },
+
     ShowStartupDialog (state) {
       return state.StartupDialogStatus
     },
