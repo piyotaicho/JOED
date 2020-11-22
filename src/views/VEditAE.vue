@@ -1,6 +1,8 @@
 <template>
   <TheWrapper alpha="10">
-    <div class="edititem" @keydown.ctrl.enter.prevent.capture="CommitChanges()" @keydown.ctrl.w.capture="GoBack()">
+    <div class="edititem"
+      @keydown.ctrl.enter.prevent.capture="CommitChanges()"
+      @keydown.ctrl.u.capture="GoBack()">
       <div class="flex-content">
         <div class="w20 subtitle">
           <span>合併症の内容</span>
@@ -23,7 +25,7 @@
         <div class="w20 subtitle">
           <span>発生した合併症</span>
         </div>
-        <div class="w80">
+        <div class="w80 AEcheckboxes">
           <div>
             <LabeledCheckbox v-model="AE.Title" value="皮下気腫"/>
             <LabeledCheckbox v-model="AE.Title" value="ガス塞栓(炭酸ガス)">炭酸ガス塞栓</LabeledCheckbox>
@@ -31,10 +33,7 @@
           </div>
           <div>
             <LabeledCheckbox v-model="AE.Title" value="経過観察">経過観察</LabeledCheckbox>
-            <label>
-              <input type="checkbox" v-model="AE.Title" value="水中毒"/>
-              水中毒
-            </label>
+            <LabeledCheckbox v-model="AE.Title" value="水中毒">水中毒</LabeledCheckbox>
           </div>
           <div>
             <LabeledCheckbox v-model="AE.Title" value="そのほか心臓障害"/>
@@ -50,7 +49,7 @@
         <div class="w20 subtitle">
           <span>関連する機器</span>
         </div>
-        <div class="w80">
+        <div class="w80 AEcheckboxes">
           <div>
             <LabeledCheckbox v-model="AE.Cause" value="鉗子"/>
             <LabeledCheckbox v-model="AE.Cause" value="内視鏡">内視鏡(スコープ・シース)</LabeledCheckbox>
@@ -93,7 +92,7 @@
         <div class="w20 subtitle">
           <span>発生した合併症</span>
         </div>
-        <div class="w80">
+        <div class="w80 AEcheckboxes">
           <div>
             <LabeledCheckbox v-model="AE.Title" value="臓器損傷"/>
             <LabeledCheckbox v-model="AE.Title" value="出血"/>
@@ -104,7 +103,7 @@
         <div class="w20 subtitle">
           <span>関連する薬剤</span>
         </div>
-        <div class="w80">
+        <div class="w80 AEcheckboxes">
           <div>
             <LabeledCheckbox v-model="AE.Cause" value="バソプレッシン"/>
             <LabeledCheckbox v-model="AE.Cause" value="アドレナリン"/>
@@ -121,7 +120,7 @@
         <div class="w20 subtitle">
           <span>発生した合併症</span>
         </div>
-        <div class="w80">
+        <div class="w80 AEcheckboxes">
           <LabeledCheckbox v-model="AE.Title" value="アナフィラキシー"/>
           <LabeledCheckbox v-model="AE.Title" value="心停止"/>
           <LabeledCheckbox v-model="AE.Title" value="徐脈"/>
@@ -133,7 +132,7 @@
         <div class="w20 subtitle">
           <span>遺残したもの</span>
         </div>
-        <div class="w80">
+        <div class="w80 AEcheckboxes">
           <div>
             <LabeledCheckbox v-model="AE.Cause" value="検体"/>
           </div>
@@ -155,7 +154,7 @@
         <div class="w20 subtitle">
           <span>合併症の内容</span>
         </div>
-        <div class="w80">
+        <div class="w80 AEcheckboxes">
           <div>
             <LabeledCheckbox v-model="AE.Title" value="出血"/>
             <LabeledCheckbox v-model="AE.Title" value="血腫"/>
@@ -212,7 +211,7 @@
         <div class="w20 subtitle">
           <span>発生部位</span>
         </div>
-        <div class="w80">
+        <div class="w80 AEcheckboxes">
           <div>
             <LabeledCheckbox v-model="AE.Location" value="子宮"/>
             <LabeledCheckbox v-model="AE.Location" value="卵管"/>
@@ -250,7 +249,7 @@
         <div class="w20 subtitle">
           <span>出血量</span>
         </div>
-        <div class="w80">
+        <div class="w80 AEcheckboxes">
           <div>
             <input type="text" v-model="AE.BloodCount" :disabled="unknownBloodCounts" placeholder="出血量を入力してください"/> ml
           </div>
@@ -282,7 +281,7 @@
         <div class="w80">
           <div v-show="showByGrading(0)"><i class="el-icon-more" style="transform: rotate(90deg)"></i></div>
           <div ref="grade1" v-show="showByGrading(1)">
-            <el-divider class="AE" content-position="left">Grade 1～2</el-divider>
+            <el-divider class="AEgrading-divider" content-position="left">Grade 1～2</el-divider>
             <div>
               <LabeledCheckbox v-model="AE.Course" value="経過観察">経過観察</LabeledCheckbox>
               <LabeledCheckbox v-model="AE.Course" value="周術期管理の延長">抗菌薬投与など周術期管理の延長</LabeledCheckbox>
@@ -292,7 +291,7 @@
           </div>
 
           <div ref="grade2" v-show="showByGrading(2)">
-            <el-divider class="AE" content-position="left">Grade 2</el-divider>
+            <el-divider class="AEgrading-divider" content-position="left">Grade 2</el-divider>
             <div>
               <LabeledCheckbox v-model="AE.Course" value="自己血輸血・術中回収血">輸血～自己血輸血・術中回収血</LabeledCheckbox>
               <LabeledCheckbox v-model="AE.Course" value="輸血・血液製剤">輸血・血液製剤</LabeledCheckbox>
@@ -300,8 +299,8 @@
           </div>
 
           <div ref="grade3" v-show="showByGrading(3)">
-            <el-divider class="AE" content-position="left">Grade 3</el-divider>
-            <div><span>術中の追加手術</span></div>
+            <el-divider class="AEgrading-divider" content-position="left">Grade 3</el-divider>
+            <div style="margin: 0.3rem 0;"><span>術中の追加手術</span></div>
             <div>
               <LabeledCheckbox v-model="AE.Course" value="術中の追加手術～開腹">開腹</LabeledCheckbox>
               <LabeledCheckbox v-model="AE.Course" value="術中の追加手術～腹腔鏡">腹腔鏡</LabeledCheckbox>
@@ -309,7 +308,7 @@
               <LabeledCheckbox v-model="AE.Course" value="術中の追加手術～経腟">経腟</LabeledCheckbox>
               <LabeledCheckbox v-model="AE.Course" value="術中の追加手術～その他">その他</LabeledCheckbox>
             </div>
-            <div><span>術後の再手術</span></div>
+            <div style="margin: 0.3rem 0;"><span>術後の再手術</span></div>
             <div>
               <LabeledCheckbox v-model="AE.Course" value="術後の再手術～開腹">開腹</LabeledCheckbox>
               <LabeledCheckbox v-model="AE.Course" value="術後の再手術～腹腔鏡">腹腔鏡</LabeledCheckbox>
@@ -320,14 +319,14 @@
           </div>
 
           <div ref="grade4" v-show="showByGrading(4)">
-            <el-divider class="AE" content-position="left">Grade 4</el-divider>
+            <el-divider class="AEgrading-divider" content-position="left">Grade 4</el-divider>
             <div>
               <LabeledCheckbox v-model="AE.Course" value="ICU管理">合併症管理のためのICU入室</LabeledCheckbox>
             </div>
           </div>
 
           <div ref="grade5" v-show="showByGrading(5)">
-            <el-divider class="AE" content-position="left">Grade 5</el-divider>
+            <el-divider class="AEgrading-divider" content-position="left">Grade 5</el-divider>
             <div>
               <LabeledCheckbox v-model="AE.Course" value="死亡">死亡</LabeledCheckbox>
             </div>
@@ -512,3 +511,11 @@ export default {
   }
 }
 </script>
+
+<style lang="sass">
+div.AEcheckboxes
+  div
+    padding: 0.2rem 0 0
+div.AEgrading-divider
+  margin: 1.2rem 0
+</style>

@@ -1,9 +1,9 @@
 <template>
   <div
     @keydown.up.prevent="MoveFocus(-1)"
-    @keydown.ctrl.k="MoveFocus(-1)"
+    @keydown.k="MoveFocus(-1)"
     @keydown.down.prevent="MoveFocus(+1)"
-    @keydown.ctrl.j="MoveFocus(+1)"
+    @keydown.j="MoveFocus(+1)"
   >
     <div class="itemlist">
       <DrawerButton class="open-drawer" tab-index="0" @click="OpenDrawer"/>

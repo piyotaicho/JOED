@@ -1,8 +1,9 @@
 <template>
   <div class="caseitem" :id="'doc' + uid.toString(10)" tabindex="0"
   @keypress.enter="MoveToEditView()"
+  @keypress.o="MoveToEditView()"
   @dblclick="MoveToEditView()"
-  @keydown.ctrl.x="RemoveDocument()">
+  @keydown.ctrl.d="RemoveDocument()">
     <div class="caseitem-icon">
       <CategoryIdentifier :category="Category" :notification="Notification"/>
     </div>
@@ -123,6 +124,7 @@ div.caseitem
   background-color: white
   margin-left: 59px
   margin-top: 0.6rem
+  padding: 0.12rem 0
   display: flex
   flex-direction: row
 div.caseitem-icon
