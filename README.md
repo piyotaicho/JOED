@@ -65,6 +65,7 @@ https://p4testsuite.hostingerapp.com/JOEDv5/Latest/
 - 2020-11-15 デフォルトのキーバインドを CTRL+Enter:登録 CTRL+X:削除 CTRL+W:ダイアログを閉じて前へ戻る CTRL+J:次(+SHIFTで登録して次) CTRL+K:前(+SHIFTで登録して前) に統一.
 - 2020-11-16 診断のチェックがちゃんと出来ていなかった点を修正. macosでSHIFT+CTRL+JがIM切り替えと衝突するので登録して次をalt/option+J/Kに変更, 併せてナビゲーションもalt/option+clickで登録して移動に変更. 
 - 2020-11-17 パスワード認証が機能しないのを修正. macosの操作に合わせてリストでのアイコンを使用しての削除を alt/option+clickに変更. 編集中にウインドウを閉じると確認するようにイベントハンドラを実装.
+- 2020-11-21 キーボードショートカットがmacだと大幅に衝突するので修正。リスト画面：j-次 k-前 o/enter-開く ctrl+d-削除 ctrl/cmd+n-新規 編集画面:ctrl/cmd+j-次 ctrl/cmd+k-前 ctrl+d-項目削除 ctrl/cmd+s-保存 ctrl/cmd+n-保存して新規レコード shift+ctrl/cmd+j-保存して次 shift+ctrl/cmd+k-保存して前 ctrl/cmd+u-戻る 項目編集中: ctrl+u-戻る.
 
 現時点で作成中のweb版ではデータはブラウザのストレージに保存されます.データベースの削除・修正などは https://p4testsuite.hostingerapp.com/JOEDv5/Database_Manager/ のユーティリティを使用してください.
 electron版でデータベースの削除は, Windowsでは %AppData%¥JOED5¥joed.nedb* , macosでは ~/Library/ApplicationSupport/JOED5/joed.nedb* を削除することで可能です.
