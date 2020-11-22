@@ -43,13 +43,13 @@
         v-if="isEditingExistingItem"
         :disabled="!prevUid"
         @click.exact="CancelEditing('prev')"
-        @click.alt="CommitCase('prev')" />
+        @click.shift="CommitCase('prev')" />
       <el-button icon="el-icon-caret-right" size="medium" circle id="MoveNext"
         tabindex="-1"
         v-if="isEditingExistingItem"
         :disabled="!nextUid"
         @click.exact="CancelEditing('next')"
-        @click.alt="CommitCase('next')" />
+        @click.shift="CommitCase('next')" />
 
       <!--Controls -->
       <div class="edit-controls">
@@ -414,7 +414,10 @@ export default {
     async EventListner (event) {
       if (this.editingSection || event.repeat) return
 
-      if (event.ctrlKey && !event.altKey && !event.metaKey) {
+      if (this.$store.getters['system/Platform'] === 'darwin'
+        ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey)
+        : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey)
+      ) {
         switch (event.code) {
           case 'Digit1':
             this.EditSection('diagnosis')
@@ -431,25 +434,29 @@ export default {
           case 'KeyK':
             await this.CancelEditing('prev')
             break
-          case 'KeyW':
+          case 'KeyU':
             await this.CancelEditing()
             break
+          case 'KeyN':
+            await this.CommitCase('new')
+            break
+          case 'KeyS':
           case 'Enter':
             event.preventDefault()
             await this.CommitCase()
             break
         }
-      } else if (event.altKey && !event.ctrlKey && !event.metaKey) {
+      } else if (this.$store.getters['system/Platform'] === 'darwin'
+        ? (event.metaKey && event.shiftKey && !event.ctrlKey && !event.altKey)
+        : (event.ctrlKey && event.shiftKey && !event.metaKey && !event.altKey)
+      ) {
+        console.log(event.code)
         switch (event.code) {
           case 'KeyJ':
             await this.CommitCase('next')
             break
           case 'KeyK':
             await this.CommitCase('prev')
-            break
-          case 'Enter':
-            event.preventDefault()
-            await this.CommitCase('new')
             break
         }
       }
@@ -478,6 +485,18 @@ export default {
 </script>
 
 <style lang="sass">
+div.edit-dialog
+  position: relative
+  border: 1px black solid
+  border-radius: 0.5rem
+  background-color: ivory
+  margin-left: 48px
+  margin-top: 1rem
+  padding: 1rem 1.5rem 0.4rem
+  width: 800px
+  display: flex
+  flex-direction: column
+
 div.edit-top
   padding-right: 3rem
   display: flex
@@ -509,10 +528,50 @@ div.edit-top-left
 div.edit-top-right
   width: 60%
 
+div.edititem
+  position: relative
+  display: block
+  background: white
+  width: 800px
+  border: 4px solid gray
+  border-radius: 10px
+  margin-top: 120px
+  margin-left: 50px
+  margin-bottom: 1rem
+  padding: 0.6rem 1rem 0.8rem
+div.content-title
+  padding: 0 0.55rem
+  font-size: 1.1rem
+  font-weight: bold
+  letter-spacing: 0.12rem
+div.flex-content
+  display: flex
+  flex-direction: row
+  margin-bottom: 0.3rem
+div.selectionbox
+  margin: 0.3rem 0.5rem
+  min-height: 2rem
+  line-height: 2rem
+  select
+    width: 100%
+div.inputbox
+  margin: 0.14rem 1.15rem
+  height: 2.85rem
+  flex-direction: row
+  & > div
+    margin: auto 0
+  input
+    width: 95%
+div.content-bottom
+  div.controls
+    padding: 0 0.55rem
+    text-align: right
+    margin: 0.14rem 0
+    height: 2.5rem
 div.vdp-datepicker__calendar
-  width: 300px !important
-  z-index: +10
-/* セクション系ペイン */
+  width: 20rem !important
+  z-index: +1
+
 /* コントロール */
 #MovePrev
   position: absolute

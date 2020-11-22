@@ -77,3 +77,48 @@ export default {
   }
 }
 </script>
+
+<style lang="sass">
+div.section
+  position: relative
+  background: white
+  width: 800px
+  min-height: 4rem
+  border: 1px solid black
+  margin-top: 0.85rem
+  padding-bottom: 0.35rem
+  .section-title
+    margin: 4px
+    font-size: 1.15rem
+
+  div.section-item-list
+    border: 0
+    margin: 1px 8px 2px 42px
+    div.section-item
+      position: relative
+      background: var(--color-text-placeholder)
+      border-left: var(--color-text-placeholder) 0.25rem solid
+      line-height: 1.5
+      padding: 0.5em
+      margin-right: 48px
+      margin-bottom: 2px
+      list-style: none
+      .handle
+        margin-right: 0.7rem
+      .edit-button
+        position: absolute
+        font-size: 1.25rem
+        right: 50px
+        margin-top: auto
+        margin-bottom: auto
+        padding-top: 0.1rem
+      .remove-button
+        position: absolute
+        font-size: 1.25rem
+        right: 20px
+        margin-top: auto
+        margin-bottom: auto
+        padding-top: 0.1rem
+  div.section-item-list:first-of-type div.section-item:first-of-type
+      border-left: black 0.25rem solid
+</style>
