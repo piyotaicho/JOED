@@ -1,8 +1,6 @@
 <template>
   <TheWrapper alpha="10">
-    <div class="edititem"
-      @keydown.ctrl.enter.prevent.capture="CommitChanges()"
-      @keydown.ctrl.u.capture="GoBack()">
+    <EditSection @commit="CommitChanges" @discard="GoBack">
       <ThreePaneSelections
         Pane3Title="候補病名"
         :Pane1.sync="Category" :Pane1Items="Categories"
@@ -12,8 +10,7 @@
         :Pane3.sync="SelectedItem" :Pane3Items="CandidateItems"
         @pane3change="OnCandidateSelected()"
         @pane3dblclick="CommitChanges()"
-      >
-      </ThreePaneSelections>
+      />
 
       <FreewordSection
         v-model="EditableItem"
@@ -26,7 +23,7 @@
           <el-button type="primary" @click="CommitChanges">登録</el-button>
         </div>
       </div>
-    </div>
+    </EditSection>
   </TheWrapper>
 </template>
 
@@ -37,6 +34,7 @@ import { getMatchesInDiagnoses } from '@/modules/CloseMatches'
 import * as Popups from '@/modules/Popups'
 
 import TheWrapper from '@/components/Atoms/TheWrapper'
+import EditSection from '@/components/Molecules/EditSection'
 import ThreePaneSelections from '@/components/Molecules/3PaneSelections'
 import FreewordSection from '@/components/Molecules/FreewordSection'
 
@@ -53,6 +51,7 @@ export default {
   ],
   components: {
     TheWrapper,
+    EditSection,
     ThreePaneSelections,
     FreewordSection
   },

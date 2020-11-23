@@ -1,8 +1,6 @@
 <template>
   <TheWrapper alpha="10">
-    <div class="edititem"
-      @keydown.ctrl.enter.prevent.capture="CommitChanges()"
-      @keydown.ctrl.u.capture="GoBack()">
+    <EditSection @commit="CommitChanges" @discard="GoBack">
       <ThreePaneSelections
         Pane3Title="候補術式"
         :Pane1.sync="Category" :Pane1Items="Categories"
@@ -13,8 +11,7 @@
         @pane3change="OnCandidateSelected()"
         @pane3dblclick="CommitChanges()"
         :disabled="disabled"
-      >
-      </ThreePaneSelections>
+      />
 
       <!-- 追加情報セクション -->
       <DescriptionSection
@@ -52,7 +49,7 @@
           <el-button type="primary" @click="CommitChanges" :disabled="disabled">登録</el-button>
         </div>
       </div>
-    </div>
+    </EditSection>
   </TheWrapper>
 </template>
 
@@ -63,6 +60,7 @@ import { getMatchesInProcedures } from '@/modules/CloseMatches'
 import * as Popups from '@/modules/Popups'
 
 import TheWrapper from '@/components/Atoms/TheWrapper'
+import EditSection from '@/components/Molecules/EditSection'
 import ThreePaneSelections from '@/components/Molecules/3PaneSelections'
 import DescriptionSection from '@/components/Molecules/DescriptionSection'
 import FreewordSection from '@/components/Molecules/FreewordSection'
@@ -76,6 +74,7 @@ export default {
   ],
   components: {
     TheWrapper,
+    EditSection,
     ThreePaneSelections,
     DescriptionSection,
     FreewordSection

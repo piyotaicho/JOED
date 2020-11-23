@@ -1,8 +1,6 @@
 <template>
   <TheWrapper alpha="10">
-    <div class="edititem"
-      @keydown.ctrl.enter.prevent.capture="CommitChanges()"
-      @keydown.ctrl.u.capture="GoBack()">
+    <EditSection @commit="CommitChanges" @discard="GoBack">
       <div class="flex-content">
         <div class="w20 subtitle">
           <span>合併症の内容</span>
@@ -340,13 +338,14 @@
           <el-button type="primary" @click="CommitChanges">登録</el-button>
         </div>
       </div>
-    </div>
+    </EditSection>
   </TheWrapper>
 </template>
 
 <script>
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import TheWrapper from '@/components/Atoms/TheWrapper'
+import EditSection from '@/components/Molecules/EditSection'
 
 import { ZenToHanNumbers } from '@/modules/ZenHanChars'
 import * as Popups from '@/modules/Popups'
@@ -354,6 +353,7 @@ import * as Popups from '@/modules/Popups'
 export default {
   components: {
     TheWrapper,
+    EditSection,
     LabeledCheckbox
   },
   props: {
