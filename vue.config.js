@@ -27,12 +27,13 @@ module.exports = {
     electronBuilder: {
       appId: process.env.VUP_APP_ID,
       productName: 'JOED',
-      copyright: 'Copyright (C) 2020 @piyotaicho and 日本産科婦人科内視鏡学会',
+      copyright: 'Copyright (C) 2020 Yasuhiro Yamamoto @piyotaicho and 日本産科婦人科内視鏡学会',
       nodeIntegration: true,
       buildResources: 'build/*',
       win: {
-        target: ['7z'],
-        icon: 'build/Windows.ico'
+        icon: 'build/Windows.ico',
+        target: 'nsis',
+        archs: ['x64', 'ia32']
       },
       mac: {
         target: 'dmg',
@@ -44,10 +45,11 @@ module.exports = {
         perMachine: true,
         allowToChangeInstallationDirectory: true,
         installerLanguage: 'ja_JP',
-        menuCategory: '日本産科婦人科内視鏡学会',
         license: 'build/license(sjis).txt',
         installerIcon: 'build/Windows.ico',
-        shortcutName: '日本産科婦人科内視鏡学会合併症報告'
+        createStartMenuShortcut: true,
+        menuCategory: '日本産科婦人科内視鏡学会',
+        shortcutName: '日本産科婦人科内視鏡学会 合併症報告'
       }
     }
   }

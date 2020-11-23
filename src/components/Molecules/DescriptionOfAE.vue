@@ -28,8 +28,8 @@ export default {
 <style lang="sass">
 // override element's style
 .el-tooltip__popper
-  font-size: 1rem
-  line-height: 1.35rem
+  font-size: 0.85rem
+  line-height: 1.15rem
 
 div.AE-popper
   max-width: 30rem

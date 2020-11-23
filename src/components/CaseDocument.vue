@@ -1,8 +1,9 @@
 <template>
   <div class="caseitem" :id="'doc' + uid.toString(10)" tabindex="0"
   @keypress.enter="MoveToEditView()"
+  @keypress.o="MoveToEditView()"
   @dblclick="MoveToEditView()"
-  @keydown.ctrl.x="RemoveDocument()">
+  @keydown.ctrl.d="RemoveDocument()">
     <div class="caseitem-icon">
       <CategoryIdentifier :category="Category" :notification="Notification"/>
     </div>
@@ -21,7 +22,7 @@
       </div>
     </div>
     <div class="caseitem-controller">
-        <i class="el-icon-loading" v-if="Loading"/>
+        <i class="el-icon-loading button-font" v-if="Loading"/>
         <i class="el-icon-edit button-font"
          v-if="!Loading"
         @click.exact="MoveToEditView()"
@@ -72,7 +73,7 @@ export default {
       return this.Loading
         ? {
           Id: '',
-          Name: 'Loading',
+          Name: 'データを取得中',
           Age: ''
         }
         : {
@@ -117,12 +118,13 @@ export default {
 div.caseitem
   position: relative
   width: 800px
-  height: 60px
+  height: 3.6rem
   border: black 1px solid
-  border-radius: 1.8px
+  border-radius: 2px
   background-color: white
   margin-left: 59px
-  margin-top: 9px
+  margin-top: 0.6rem
+  padding: 0.12rem 0
   display: flex
   flex-direction: row
 div.caseitem-icon
@@ -145,11 +147,11 @@ div.caseitem-controller
   text-align: center
 .caution-badge
   border-radius: 1rem
-  background-color: red
-  color: white
+  margin: 0.07rem
+  background-color: var(--color-danger)
   text-align: center
-  padding-top: 0.1rem
-  font-size: 0.9rem
+  font-size: 0.86rem
+  color: white
 .button-font
   font-size: 1.4rem
 </style>

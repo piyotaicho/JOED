@@ -1,14 +1,14 @@
 <template>
-  <div class="section-item" tabindex="0" @keydown.ctrl.x="RemoveItem">
-    <i class="handle el-icon-d-caret" v-if="draggable"></i>
+  <div class="section-item" tabindex="0" @keydown.ctrl.d="RemoveItem">
+    <i class="handle el-icon-d-caret" v-if="draggable"/>
     <slot :item="item">
       <span>{{title}}</span>
       <span v-if="description !== ''">
         ( {{description}} )
       </span>
     </slot>
-    <i class="edit-button el-icon-edit" @click="EditItem" v-if="editableItem" />
-    <i class="remove-button el-icon-delete" @click="RemoveItem" />
+    <i class="edit-button el-icon-edit" @click="EditItem" v-if="editableItem"/>
+    <i class="remove-button el-icon-delete" @click="RemoveItem"/>
   </div>
 </template>
 

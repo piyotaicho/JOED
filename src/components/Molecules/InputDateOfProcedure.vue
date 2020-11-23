@@ -11,6 +11,7 @@
         :input-class="RequiredClass"
         :language="DatepickerTranslation"
         :disabled="disabled"
+        ref="Datepicker"
         />
     </template>
   </div>
@@ -46,6 +47,8 @@ export default {
   mounted () {
     this.SetTabindex()
   },
+  beforeDestroy () {
+  },
   computed: {
     DateOfProcedure: {
       get () { return this.value },
@@ -79,3 +82,13 @@ export default {
   }
 }
 </script>
+
+<style lang="sass">
+div.vdp-datepicker__calendar
+  // 日曜日
+  span.day-header:first-child
+    color: red
+  // 土曜日
+  span.day-header:nth-child(7)
+    color: blue
+</style>

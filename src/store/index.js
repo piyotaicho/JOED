@@ -167,7 +167,7 @@ const store = new Vuex.Store({
     // DatabaseInstanceを設定する.
     // App.vue の onCreated からのみ呼ばれる.
     //
-    initDatabase (state) {
+    $initDatabase (state) {
       if (state.DatabaseInstance === undefined) {
         Vue.set(state, 'DatabaseInstance', NedbAccess.CreateInstance(
           {

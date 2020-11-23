@@ -15,7 +15,7 @@
         :required="true">
         <template #title>
           施設番号
-          <el-tooltip placement="bottom-start">
+          <el-tooltip placement="bottom-start" :tabindex="-1">
             <template #content><div>施設名称の一部や、＠に続いて都道府県名で検索してリストから選択が可能です.</div></template>
             <i class="el-icon-question" style="padding-top: 0.36rem; margin-left: 0.6rem;"/>
           </el-tooltip>
@@ -75,6 +75,7 @@
 import InputTextField from '@/components/Molecules/InputTextField'
 import * as Popups from '@/modules/Popups'
 import { InstituteIDFormat } from '@/modules/CaseValidater'
+import { ZenToHanNumbers } from '@/modules/ZenHanChars'
 
 export default {
   name: 'SettingOfInstutute',
@@ -163,6 +164,7 @@ export default {
 
     async CommitSettings () {
       if (this.InstitutionName !== '' && this.InstitutionID !== '') {
+        this.InstitutionID = ZenToHanNumbers(this.InstitutionID)
         if (this.InstitutionID.match(InstituteIDFormat) !== null) {
           this.$store.commit('system/SetPreferences',
             {
