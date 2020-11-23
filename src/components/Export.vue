@@ -61,10 +61,12 @@
 
     <TheWrapper prevent-close v-if="processing"/>
     <TheWrapper v-if="showPreview" alpha="60" @click="showPreview = false">
-      <div id="preview">
-        画面のクリックで戻ります.
-        <hr/>
-        <pre>{{exportText}}</pre>
+      <div>
+        <div id="preview">
+          画面のクリックで戻ります.
+          <hr/>
+          <pre>{{exportText}}</pre>
+        </div>
       </div>
     </TheWrapper>
   </div>
