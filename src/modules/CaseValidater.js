@@ -67,12 +67,11 @@ export async function CheckBasicInformations (item) {
     if (
       item.PatientId &&
       item.DateOfProcedure.match(DateFormat) &&
-      item.ProcedureTime &&
-      (!item.Age || (item.Age > 0 && item.Age < 130))
+      item.ProcedureTime
     ) {
       resolve()
     } else {
-      reject(new Error('患者ID・手術日・手術時間・患者年齢を確認してください.'))
+      reject(new Error('患者ID・手術日・手術時間は必須入力項目です.'))
     }
   })
 }
@@ -82,11 +81,14 @@ export async function CheckBasicInformations (item) {
 export async function ValidateAdditionalInformations (item) {
   return new Promise((resolve, reject) => {
     const errorStrings = []
+    if (item.Age && (item.Age <= 0 || item.Age > 129)) {
+      errorStrings.push('年齢の入力内容を確認してください.')
+    }
     if (item.JSOGId && item.JSOGId.match(JSOGboardCaseNoFormat) === null) {
-      errorStrings.push('日産婦腫瘍登録の患者No.の様式が不正です.')
+      errorStrings.push('日産婦腫瘍登録番号の様式が不正です.')
     }
     if (item.NCDId && item.NCDId.match(NCDIdFormat) === null) {
-      errorStrings.push('NCD症例識別コードが不正です.')
+      errorStrings.push('NCD症例識別番号の様式が不正です.')
     }
     if (errorStrings.length > 0) {
       reject(new Error(errorStrings.join('\n')))
