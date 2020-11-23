@@ -57,7 +57,6 @@ export default {
         { name: 'Vue.Draggable', href: 'https://github.com/SortableJS/Vue.Draggable', license: 'MIT' },
         { name: 'Datepicker', href: 'https://github.com/charliekassel/vuejs-datepicker', license: 'MIT' },
         { name: 'Vue-infinite-loading', href: 'https://github.com/PeachScript/vue-infinite-loading', license: 'MIT' },
-        { name: 'cross-platform-yu-gothic', href: 'https://github.com/rxon/cross-platform-yu-gothic', license: 'MIT' },
         { name: 'xxhashjs', href: 'https://github.com/pierrec/js-xxhash', license: 'MIT' },
         { name: 'Difflib.js', href: 'https://github.com/qiao/difflib.js', license: 'PSF' },
         { name: 'encoding.js', href: 'https://github.com/polygonplanet/encoding.js', license: 'MIT' },

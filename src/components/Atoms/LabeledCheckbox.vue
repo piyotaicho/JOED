@@ -56,8 +56,7 @@ export default {
 
 <style lang="sass">
 label.LabeledCheckbox
-  padding: 0.08rem
-  padding-right: 0.7rem
+  padding: 0.2rem 0.7rem 0.3rem 0rem
   margin-left: 0.3rem
   white-space: nowrap
 
@@ -72,7 +71,7 @@ input.LabeledCheckbox[type="checkbox"]
     border: 1px solid var(--border-color-base)
     border-radius: 0.15rem
     content: ''
-    top: 0.195rem
+    top: 0.03rem
     left: 0.4rem
     height: 0.8rem
     width: 0.8rem
@@ -89,7 +88,7 @@ input.LabeledCheckbox[type="checkbox"]
     border-bottom: 2px solid var(--background-color-dialog)
     border-left: 2px solid var(--background-color-dialog)
     content: ''
-    top: 0.5rem
+    top: 0.35rem
     left: 0.72rem
     height: 0.3rem
     width: 0.5rem

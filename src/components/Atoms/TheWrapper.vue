@@ -1,6 +1,6 @@
 <template>
   <div class="thewrapper" :style="Style" @click="Click" ref="wrapper">
-  <div><slot></slot></div>
+  <slot></slot>
   </div>
 </template>
 
