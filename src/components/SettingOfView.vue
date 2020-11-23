@@ -10,7 +10,7 @@
         :options="{'しない': false, 'する': true}" />
       <InputSwitchField
         v-model="revertView"
-        title="表示設定の規定値を初期設定に戻す"
+        title="リスト表示内容の規定値を初期設定に戻す"
         :options="{'しない': false, 'する': true}" />
 
       <div><div class="label"><i class="el-icon-arrow-down" style="padding-top: 0.36rem; margin-right: 0.6rem;"/>

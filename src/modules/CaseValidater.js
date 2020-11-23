@@ -11,7 +11,7 @@ export const InstituteIDFormat = /^(0[1-9]|[1-3]\d|4[0-7])\d{3}$/
 export const UniqueIDFormat = /^(0[1-9]|[1-3]\d|4[0-7])\d{3}-20\d{2}-[0-9]\d*$/
 
 // 2020年時点の日産腫瘍登録患者No.表記
-export const JSOGboardCaseNoFormat = /^(CC|EM|US|UAS|OV|VU|TS)20\d{2}-\d+$/i
+export const JSOGboardCaseNoFormat = /^(CC|EM|US|UAS|OV|VU|TS)20\d{2}-\d+$/
 
 // NCDの症例識別コード
 export const NCDIdFormat = /^\d{18}-\d{2}-\d{2}-\d{2}$/

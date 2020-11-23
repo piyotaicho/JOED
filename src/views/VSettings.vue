@@ -10,7 +10,7 @@
       <el-tab-pane label="パスワード認証の設定" name="authentication">
         <SettingOfAuthentication/>
       </el-tab-pane>
-      <el-tab-pane label="表示の設定" name="view">
+      <el-tab-pane label="表示・入力の設定" name="view">
         <SettingOfView/>
       </el-tab-pane>
       <el-tab-pane label="ライセンス表記" name="about">

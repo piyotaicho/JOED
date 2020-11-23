@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import Dashboard from '@/components/Dashboard'
+import Dashboard from '@/components/Molecules/Dashboard'
 import FilterNSort from '@/components/FilterNSort'
 import Search from '@/components/Search'
 

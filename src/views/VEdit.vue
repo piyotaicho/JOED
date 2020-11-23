@@ -382,17 +382,17 @@ export default {
 
       // テキストフィールドの整形(trimと半角英数に置換)
       newDocument.Name = newDocument.Name.trim()
-      newDocument.PatientId = ZenToHan(newDocument.PatientId.trim()).replace(/[^\d\w-&]/g, '')
+      newDocument.PatientId = ZenToHan(newDocument.PatientId.trim().replace(/[-－―ー-]/g, '-'))
 
       if (newDocument.JSOGId.trim() === '') {
         delete newDocument.JSOGId
       } else {
-        newDocument.JSOGId = ZenToHan(newDocument.JSOGId.trim())
+        newDocument.JSOGId = ZenToHan(newDocument.JSOGId.trim()).toUpperCase()
       }
       if (newDocument.NCDId.trim() === '') {
         delete newDocument.NCDId
       } else {
-        newDocument.NCDId = ZenToHan(newDocument.NCDId.trim())
+        newDocument.NCDId = ZenToHan(newDocument.NCDId.trim()).replace(/[^\d-]/g, '')
       }
 
       // AEsが空白の際は削除

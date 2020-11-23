@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import Section from '@/components/Section'
+import Section from '@/components/Molecules/Section'
 
 export default {
   name: 'SectionDiagnoses',

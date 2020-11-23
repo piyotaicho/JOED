@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import Section from '@/components/Section'
+import Section from '@/components/Molecules/Section'
 import SectionItem from '@/components/SectionItem'
 
 export default {

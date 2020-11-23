@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import Section from '@/components/Section'
+import Section from '@/components/Molecules/Section'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import SectionAEItem from '@/components/SectionAEItem'
 
