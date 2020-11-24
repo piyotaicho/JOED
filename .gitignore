@@ -22,3 +22,7 @@ yarn-error.log*
 
 #Electron-builder output
 /dist_electron
+
+#Windows batch files
+*.ps1
+*.bat
