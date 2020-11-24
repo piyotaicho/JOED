@@ -419,6 +419,9 @@ export default {
         : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey)
       ) {
         switch (event.code) {
+          case 'Digit0':
+            this.$refs.edit.getElementsByTagName('input')[0].focus()
+            break
           case 'Digit1':
             this.EditSection('diagnosis')
             break
