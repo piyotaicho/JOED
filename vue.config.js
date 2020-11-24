@@ -2,6 +2,8 @@
 const { Renderer } = require('electron')
 const path = require('path')
 
+process.env.VUE_APP_VERSION = require('./package.json').version
+
 module.exports = {
   publicPath: './',
   productionSourceMap: false,
@@ -33,7 +35,7 @@ module.exports = {
       win: {
         icon: 'build/Windows.ico',
         target: 'nsis',
-        archs: ['x64', 'ia32']
+        legalTrademarks: 'Yasuhiro Yamamoto @piyotaicho and 日本産科婦人科内視鏡学会'
       },
       mac: {
         target: 'dmg',
