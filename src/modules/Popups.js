@@ -29,7 +29,7 @@ export async function confirm (message) {
     title: '確認',
     iconClass: 'el-icon-question',
     showClose: false,
-    closeOnPressEscape: false
+    closeOnPressEscape: true
   }).then(_ => true, _ => false)
 }
 
