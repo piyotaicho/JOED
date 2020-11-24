@@ -19,7 +19,7 @@
           </select>
         </div>
       </div>
-      <div class="flex-content" v-show="showPerfusionRelated">
+      <div class="flex-content" v-if="showPerfusionRelated">
         <div class="w20 subtitle">
           <span>発生した合併症</span>
         </div>
@@ -43,7 +43,7 @@
           </div>
         </div>
       </div>
-      <div class="flex-content" v-show="showInjuriesCause">
+      <div class="flex-content" v-if="showInjuriesCause">
         <div class="w20 subtitle">
           <span>関連する機器</span>
         </div>
@@ -86,7 +86,7 @@
           </div>
         </div>
       </div>
-      <div class="flex-content" v-show="showInjuriesTitle">
+      <div class="flex-content" v-if="showInjuriesTitle">
         <div class="w20 subtitle">
           <span>発生した合併症</span>
         </div>
@@ -97,7 +97,7 @@
           </div>
         </div>
       </div>
-      <div class="flex-content" v-show="showDrugRelated">
+      <div class="flex-content" v-if="showDrugRelated">
         <div class="w20 subtitle">
           <span>関連する薬剤</span>
         </div>
@@ -114,7 +114,7 @@
           </div>
         </div>
       </div>
-      <div class="flex-content" v-show="showDrugRelated">
+      <div class="flex-content" v-if="showDrugRelated">
         <div class="w20 subtitle">
           <span>発生した合併症</span>
         </div>
@@ -126,7 +126,7 @@
           <LabeledCheckbox v-model="AE.Title" value="それ以外"/>
         </div>
       </div>
-      <div class="flex-content" v-show="showRemnunts">
+      <div class="flex-content" v-if="showRemnunts">
         <div class="w20 subtitle">
           <span>遺残したもの</span>
         </div>
@@ -148,7 +148,7 @@
           </div>
         </div>
       </div>
-      <div class="flex-content" v-show="showPostoperative">
+      <div class="flex-content" v-if="showPostoperative">
         <div class="w20 subtitle">
           <span>合併症の内容</span>
         </div>
@@ -205,7 +205,7 @@
           </div>
         </div>
       </div>
-      <div class="flex-content" v-show="showLocations">
+      <div class="flex-content" v-if="showLocations">
         <div class="w20 subtitle">
           <span>発生部位</span>
         </div>
@@ -243,7 +243,7 @@
           </div>
         </div>
       </div>
-      <div class="flex-content" v-show="showBleedings">
+      <div class="flex-content" v-if="showBleedings">
         <div class="w20 subtitle">
           <span>出血量</span>
         </div>
