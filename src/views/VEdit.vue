@@ -86,7 +86,7 @@
             </el-dropdown>
           </div>
           <div v-if="isEditingExistingItem">
-            <el-button type="danger" icon="el-icon-delete"
+            <el-button type="danger" icon="el-icon-delete" ref="RemoveButton"
               @click="RemoveCase()">
               削除
             </el-button>
@@ -311,7 +311,7 @@ export default {
     },
 
     async RemoveCase () {
-      if (this.uid > 0 && await Popups.confirmYesNo('この症例を削除します.よろしいですか?')) {
+      if (this.uid > 0 && await Popups.confirm('この症例を削除します.よろしいですか?')) {
         this.$store.dispatch('RemoveDocument', { DocumentId: this.uid })
           .then(_ => this.BackToList(0))
       }
@@ -444,6 +444,11 @@ export default {
           case 'Enter':
             event.preventDefault()
             await this.CommitCase()
+            break
+          case 'KeyD':
+            if (this.$refs.RemoveButton) {
+              this.$refs.RemoveButton.$el.focus()
+            }
             break
         }
       } else if (this.$store.getters['system/Platform'] === 'darwin'
