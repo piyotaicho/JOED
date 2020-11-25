@@ -21,12 +21,17 @@ ShowUnInstDetails show
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_LANGUAGE "Japanese"
 
-!insertmacro MUI_UNPAGE_WELCOME
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_UNPAGE_FINISH
 
 !define MUI_NOLEFTIMAGE
+
+LangString MUI_UNTEXT_CONFIRM_SUBTITLE 0 "症例登録システムのプログラムをシステムから削除します. システム設定とデータファイルは削除されません."
+LangString MUI_UNTEXT_UNINSTALLING_TITLE 0 "症例登録システムを削除しています."
+LangString MUI_UNTEXT_CONFIRM_TITLE 0 "症例登録システムのアンインストール"
+LangString MUI_UNTEXT_FINISH_TITLE 0 "症例登録システムを削除しました"
+LangString MUI_UNTEXT_FINISH_SUBTITLE 0 "症例登録システムのプログラムを削除しました. ご協力ありがとうございました."
 
 Section 
     SetOutPath "$INSTDIR"
@@ -43,12 +48,12 @@ Section
     CreateShortCut "$SMPROGRAMS\日本産科婦人科内視鏡学会\症例登録システム.lnk" "$INSTDIR\JOED5.exe" ""
     CreateShortCut "$SMPROGRAMS\日本産科婦人科内視鏡学会\アンインストール.lnk" "$INSTDIR\Uninstall.exe" ""
     # レジストリに登録
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\JOED5" "DisplayName" "日本産科婦人科内視鏡学会"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\JOED5" "UninstallString" '"$INSTDIR\Uninstall.exe"'
+    # WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\JOED5" "DisplayName" "日本産科婦人科内視鏡学会"
+    # WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\JOED5" "UninstallString" '"$INSTDIR\Uninstall.exe"'
 SectionEnd
 
-Section "Uninstall"
-    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\JOED5"
+Section "Uninstall" 
+    # DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\JOED5"
     DELETE "$SMPROGRAMS\日本産科婦人科内視鏡学会\症例登録システム.lnk"
     DELETE "$SMPROGRAMS\日本産科婦人科内視鏡学会\アンインストール.lnk"
     RMDIR "$SMPROGRAMS\日本産科婦人科内視鏡学会"
