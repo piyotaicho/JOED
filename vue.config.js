@@ -32,16 +32,19 @@ module.exports = {
       copyright: 'Copyright (C) 2020 Yasuhiro Yamamoto @piyotaicho and 日本産科婦人科内視鏡学会',
       nodeIntegration: true,
       buildResources: 'build/*',
-      aftersign: './notarize.js',
+      afterSign: './notarize.js',
       win: {
+        target: 'dir',
         icon: 'build/Windows.ico',
-        target: 'nsis',
         legalTrademarks: 'Yasuhiro Yamamoto @piyotaicho and 日本産科婦人科内視鏡学会'
       },
       mac: {
         target: 'dmg',
         category: 'public.app-category.medical',
-        icon: 'build/macos.icns'
+        hardenedRuntime: true,
+        icon: 'build/macos.icns',
+        // eslint-disable-next-line no-template-curly-in-string
+        title: '症例登録システム ${version}'
       },
       nsis: {
         oneClick: false,

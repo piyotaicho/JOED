@@ -26,3 +26,4 @@ yarn-error.log*
 #Windows batch files
 *.ps1
 *.bat
+/*.exe
