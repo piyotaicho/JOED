@@ -68,6 +68,7 @@ https://p4testsuite.hostingerapp.com/JOEDv5/Latest/
 - 2020-11-21 キーボードショートカットがmacだと大幅に衝突するので修正. リスト画面：j-次 k-前 o/enter-開く ctrl+d-削除 ctrl/cmd+n-新規 編集画面:ctrl/cmd+j-次 ctrl/cmd+k-前 ctrl+d-項目削除 ctrl/cmd+s-保存 ctrl/cmd+n-保存して新規レコード shift+ctrl/cmd+j-保存して次 shift+ctrl/cmd+k-保存して前 ctrl/cmd+u-戻る 項目編集中: ctrl+u-戻る.
 - 2020-11-22 游ゴシックのウエイト問題が解決できず. SansSerifでもうどうにでもなれ的に(動作検証済み).
 - 2020-11-24 キーバインドをもっと統一. ラベル付きチェックボックスのスタイルがmac/windowsで変わるので微調整. バージョン番号をpackage.jsonのみで設定可能に.
+- 2020-11-27 自由入力の使用をより制限. Windowsのインストーラー(nsis)用スクリプト完成(要nsis). macのdmgに背景がついた. 正真正銘の1.0 build 331としてリリース.
 
 現時点で作成中のweb版ではデータはブラウザのストレージに保存されます.データベースの削除・修正などは https://p4testsuite.hostingerapp.com/JOEDv5/Database_Manager/ のユーティリティを使用してください.
 electron版でデータベースの削除は, Windowsでは %AppData%¥JOED5¥joed.nedb* , macosでは ~/Library/ApplicationSupport/JOED5/joed.nedb* を削除することで可能です. コマンドラインから実行できる場合は JOED5 --drop-database[=all] でデータベースファイルを削除できます(実行に際して一切確認はありませんのでご注意ください).
