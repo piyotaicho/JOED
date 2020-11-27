@@ -2,10 +2,18 @@
 Unicode true
 !include MUI2.nsh
 
+!define /ifndef JOED5VERSION "1.0.0"
+
+!ifdef IA32
+!define ARCH "-ia32"
+!endif
+!define /ifndef ARCH ""
+
 Name "症例登録システム"
 Caption "日本産科婦人科内視鏡学会 症例登録システム"
-OutFile "JOED5-installer.exe"
+OutFile "JOED5-${JOED5VERSION}${ARCH}-installer.exe"
 SetCompressor lzma
+
 
 InstallDir "$LOCALAPPDATA\Programs\JOED5"
 
@@ -41,9 +49,9 @@ ShowUnInstDetails show
 Section 
     SetOutPath "$INSTDIR"
     # 64bit
-    File /r "dist_electron/win-unpacked\*.*"
+    File /r "dist_electron/win${ARCH}-unpacked\*.*"
     # 32bit
-    #File /r "dist_electron/win-ia32-unpacked\*.*"
+    # File /r "dist_electron/win-ia32-unpacked\*.*"
 
     # アンインストーラの準備
     WriteUninstaller "$INSTDIR\Uninstall.exe"
