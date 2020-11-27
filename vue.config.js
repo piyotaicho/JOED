@@ -32,7 +32,6 @@ module.exports = {
       copyright: 'Copyright (C) 2020 Yasuhiro Yamamoto @piyotaicho and 日本産科婦人科内視鏡学会',
       nodeIntegration: true,
       buildResources: 'build/*',
-      afterSign: './notarize.js',
       win: {
         target: 'dir',
         icon: 'build/Windows.ico',
