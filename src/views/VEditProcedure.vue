@@ -217,6 +217,10 @@ export default {
         if (this.IsItemEdited) {
           this.SetCandidateItemsByFreeword()
           if (this.CandidateItems.length !== 0 && await Popups.confirm('候補術式名があります,選択を優先してください.') === false) return
+          if (this.CandidateItems.indexOf(this.TrimmedEditableItem) !== -1) {
+            Popups.information('自由入力の内容が候補術式名にあります,選択してください.')
+            return
+          }
           if (await Popups.confirm('直接入力した術式の登録は可能な限り控えてください.') === false) return
 
           // ユーザ手入力の場合は選択が掛かっていないので最低限の情報のみかつフラグを必ず立てる

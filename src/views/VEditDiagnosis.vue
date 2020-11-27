@@ -102,6 +102,10 @@ export default {
       if (this.IsItemEdited) {
         this.SetCandidateItemsByFreeword()
         if (this.CandidateItems.length !== 0 && await Popups.confirm('候補診断名があります,選択を優先してください.') === false) return
+        if (this.CandidateItems.indexOf(this.TrimmedEditableItem) !== -1) {
+          Popups.information('自由入力の内容が候補診断名にあります,選択してください.')
+          return
+        }
         if (await Popups.confirm('直接入力した診断名の登録は可能な限り控えてください.') === false) return
         Object.assign(temporaryItem,
           {

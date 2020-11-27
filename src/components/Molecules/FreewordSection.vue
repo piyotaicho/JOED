@@ -2,7 +2,7 @@
   <div class="flex-content inputbox">
     <div class="w20"></div>
     <div class="w20 subtitle">
-      <div tabindex="0" @click="Toggle">
+      <div class="invisible-button" @click="Toggle">
         <span>自由入力</span>
         <span style="padding-left: 1rem;">
           <i :class="[expandInput ? 'el-icon-d-arrow-left' : 'el-icon-d-arrow-right']"/>
@@ -68,3 +68,13 @@ export default {
   }
 }
 </script>
+
+<style lang="sass">
+div.invisible-button
+  padding: 0 1rem 0 2rem
+  border: 1px solid transparent
+  border-radius: 0.2rem
+  &:hover
+    border: 1px dashed var(--border-color-base)
+    border-radius: 0.2rem
+</style>
