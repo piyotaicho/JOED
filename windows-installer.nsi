@@ -1,6 +1,5 @@
 ﻿# Unicode
 Unicode true
-# モダンUIを使用
 !include MUI2.nsh
 
 Name "症例登録システム"
@@ -14,24 +13,30 @@ RequestExecutionLevel user
 ShowInstDetails show
 ShowUnInstDetails show
 
+!define MUI_WELCOMEPAGE_TITLE "症例登録システムのセットアップへようこそ"
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "build/license.txt"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
+!define MUI_FINISHPAGE_TITLE "症例登録システムのセットアップは完了しました"
+!define MUI_FINISHPAGE_RUN "$INSTDIR\JOED5.exe"
+!define MUI_FINISHPAGE_RUN_TEXT "症例登録システムを起動する"
 !insertmacro MUI_PAGE_FINISH
-!insertmacro MUI_LANGUAGE "Japanese"
 
+!define MUI_UNCONFIRMPAGE_TEXT_TOP "症例登録システムのプログラムをシステムから削除します."
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
+!define MUI_FINISHPAGE_TITLE "症例登録システムを削除しました"
+!define MUI_FINISHPAGE_TEXT "ご協力ありがとうございました."
+!define MUI_FINISHPAGE_RUN
+!define MUI_FINISHPAGE_RUN_TEXT "設定とデータファイルも削除する場合はチェックしてください."
+!define MUI_FINISHPAGE_RUN_NOTCHECKED
+!define MUI_FINISHPAGE_RUN_FUNCTION un.DeleteDataFolder
 !insertmacro MUI_UNPAGE_FINISH
 
 !define MUI_NOLEFTIMAGE
 
-LangString MUI_UNTEXT_CONFIRM_SUBTITLE 0 "症例登録システムのプログラムをシステムから削除します. システム設定とデータファイルは削除されません."
-LangString MUI_UNTEXT_UNINSTALLING_TITLE 0 "症例登録システムを削除しています."
-LangString MUI_UNTEXT_CONFIRM_TITLE 0 "症例登録システムのアンインストール"
-LangString MUI_UNTEXT_FINISH_TITLE 0 "症例登録システムを削除しました"
-LangString MUI_UNTEXT_FINISH_SUBTITLE 0 "症例登録システムのプログラムを削除しました. ご協力ありがとうございました."
+!insertmacro MUI_LANGUAGE "Japanese"
 
 Section 
     SetOutPath "$INSTDIR"
@@ -47,7 +52,6 @@ Section
     CreateDirectory "$SMPROGRAMS\日本産科婦人科内視鏡学会"
     CreateShortCut "$SMPROGRAMS\日本産科婦人科内視鏡学会\症例登録システム.lnk" "$INSTDIR\JOED5.exe" ""
     CreateShortCut "$SMPROGRAMS\日本産科婦人科内視鏡学会\アンインストール.lnk" "$INSTDIR\Uninstall.exe" ""
-    # レジストリに登録
     # WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\JOED5" "DisplayName" "日本産科婦人科内視鏡学会"
     # WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\JOED5" "UninstallString" '"$INSTDIR\Uninstall.exe"'
 SectionEnd
@@ -61,3 +65,7 @@ Section "Uninstall"
     RMDIR /r "$INSTDIR"
 SectionEnd
 
+Function un.DeleteDataFolder
+    RMDIR /r "$APPDATA\JOED5"
+    MessageBox MB_ICONINFORMATION|MB_OK "設定とデータファイル等を削除しました."
+FunctionEnd
