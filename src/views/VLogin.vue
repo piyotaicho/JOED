@@ -42,7 +42,8 @@ export default {
   computed: {
     Title () {
       return [
-        '日本産科婦人科内視鏡学会 症例登録システム',
+        '日本産科婦人科内視鏡学会',
+        '症例登録システム ' +
         this.$store.getters['system/ApplicationName'] +
         ' version ' +
         this.$store.getters['system/ApplicationVersion']
