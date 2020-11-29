@@ -54,7 +54,7 @@ module.exports = {
         installerIcon: 'build/Windows.ico',
         createStartMenuShortcut: true,
         menuCategory: '日本産科婦人科内視鏡学会',
-        shortcutName: '日本産科婦人科内視鏡学会 合併症報告'
+        shortcutName: '症例登録システム '
       }
     }
   }
