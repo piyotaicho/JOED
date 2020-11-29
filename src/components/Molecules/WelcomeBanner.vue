@@ -4,7 +4,7 @@
     <div id="welcome-banner-dialog">
       <div id="welcome-banner-title">JOED5へようこそ</div>
       <div id="welcome-banner-text">
-        症例合併症登録にご協力頂きありがとうございます.<br/>
+        症例・合併症登録にご協力頂きありがとうございます.<br/>
         症例登録は、右上の<span class="welcome-banner-elementIcon">&#xe6d9;</span>ボタンを押して開始して下さい.<br/>
         リストのソート・初期設定など各種機能は左上の<span class="welcome-banner-elementIcon">&#xe798;</span>ボタンからご利用いただけます.<br/>
         <br />
