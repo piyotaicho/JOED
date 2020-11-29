@@ -21,9 +21,7 @@
 
 ## 配布
 
-- Windows x64 https://p4testsuite.hostingerapp.com/JOEDv5/Release/JOED5-1.0.331-installer.exe
-- Windows 32bit(非推奨) https://p4testsuite.hostingerapp.com/JOEDv5/Release/JOED5-ia32-1.0.331-installer.exe
-- macos https://p4testsuite.hostingerapp.com/JOEDv5/Release/JOED5-1.0.331.dmg
+- Windows x64, Windows 32bit(非推奨), macos(ia64) ～ <a href="https://github.com/piyotaicho/JOED/releases">Releases</a>よりご利用ください.
 - webアプリ(非推奨) https://p4testsuite.hostingerapp.com/JOEDv5/Release/web/
 
 ### アプリケーション版での注意事項
@@ -36,7 +34,8 @@ Webアプリの動作は動作検証もアプリ版より遅れますまた, Goo
 データベースはブラウザのローカルDBに保存されます.データベースの削除・修正などは https://p4testsuite.hostingerapp.com/JOEDv5/Database_Manager/ のユーティリティを使用してください.
 
 ## 変更履歴
-2020-11-28 リリースビルドを公開 1.0.331
+- 2020-11-29 表示に修正を加えて, githubのリリース(v1.0.333)を作成.
+- 2020-11-28 リリースビルドを公開 1.0.331
 <a href="Changelog.md">Changelog</a>
 
 ## データの仕様
