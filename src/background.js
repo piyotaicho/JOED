@@ -184,6 +184,30 @@ const MenuTemplate = [
         ])
     ]
   },
+  // macosでは編集メニューがないとコピーアンドペーストができない
+  ...(
+    process.platform === 'darwin'
+      ? [
+        {
+          role: 'editMenu'
+        /*
+          label: '編集',
+          submenu: [
+            { role: 'undo' },
+            { role: 'redo' },
+            { type: 'separator' },
+            { role: 'cut' },
+            { role: 'copy' },
+            { role: 'paste' },
+            { role: 'delete' },
+            { type: 'separator' },
+            { role: 'selectALL' }
+          ]
+        */
+        }
+      ]
+      : []
+  ),
   ...(
     process.platform === 'win32'
       ? [{
