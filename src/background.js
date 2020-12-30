@@ -189,34 +189,16 @@ const MenuTemplate = [
     process.platform === 'darwin'
       ? [
         {
-<<<<<<< HEAD
           label: '編集',
           submenu: [
-            { label: '取り消す', role: 'undo' },
-            { label: 'やり直す', role: 'redo' },
+            { label: '取り消す', role: 'undo', accelerator: 'Command+Z' },
+            { label: 'やり直す', role: 'redo', accelerator: 'Command+Shift+Z' },
             { type: 'separator' },
-            { label: 'カット', role: 'cut' },
-            { label: 'コピー', role: 'copy' },
-            { label: 'ペースト', role: 'paste' },
-            { label: 'すべてを選択', role: 'selectALL' }
+            { label: 'カット', role: 'cut', accelerator: 'Command+X' },
+            { label: 'コピー', role: 'copy', accelerator: 'Command+C' },
+            { label: 'ペースト', role: 'paste', accelerator: 'Command+V' },
+            { label: 'すべてを選択', role: 'selectALL', accelerator: 'Command+A' }
           ]
-=======
-          role: 'editMenu'
-        /*
-          label: '編集',
-          submenu: [
-            { role: 'undo' },
-            { role: 'redo' },
-            { type: 'separator' },
-            { role: 'cut' },
-            { role: 'copy' },
-            { role: 'paste' },
-            { role: 'delete' },
-            { type: 'separator' },
-            { role: 'selectALL' }
-          ]
-        */
->>>>>>> d3f110d46dc0de5ba87e5904136a7b0f9c14fc2f
         }
       ]
       : []
