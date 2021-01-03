@@ -76,22 +76,17 @@ export default {
       const newValue = this.SelectedItem
       if (newValue) {
         this.EditableItem = newValue
-
-        if (!this.TargetOrgan) {
-          const searchByName = DiagnosesTree.findItemByName(newValue, this.year)
-          this.TargetOrgan = searchByName.Chain[1]
-        }
       }
     },
 
     SetCandidateItemsBySelection () {
-      this.CandidateItems = DiagnosesTree.Candidates(this.Category, this.TargetOrgan, this.year)
+      this.CandidateItems = DiagnosesTree.ItemTitles(this.Category, this.TargetOrgan, this.year)
       this.SelectedItem = ''
       this.$nextTick()
     },
     SetCandidateItemsByFreeword () {
       if (this.EditableItem && this.UserEditingAllowed) {
-        const flatten = DiagnosesTree.getItemsInCategory(this.Category, this.year)
+        const flatten = DiagnosesTree.ItemTitles(this.Category, '', this.year)
         const arr = getMatchesInDiagnoses(this.EditableItem, flatten)
         this.CandidateItems.splice(0, this.CandidateItems.length, ...arr)
         this.$nextTick()

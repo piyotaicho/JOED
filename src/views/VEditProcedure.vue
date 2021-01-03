@@ -127,14 +127,14 @@ export default {
   },
   methods: {
     SetCandidateItemsBySelection () {
-      this.CandidateItems = ProceduresTree.Candidates(this.Category, this.TargetOrgan, this.year)
+      this.CandidateItems = ProceduresTree.ItemTitles(this.Category, this.TargetOrgan, this.year)
       this.SelectedItem = ''
       this.$set(this.Description, 'Title', '')
       this.$set(this.AdditionalProcedure, 'Title', '')
     },
     SetCandidateItemsByFreeword () {
       if (this.EditableItem && this.UserEditingAllowed) {
-        const flatten = ProceduresTree.getItemsInCategory(this.Category, this.year)
+        const flatten = ProceduresTree.ItemTitles(this.Category, '', this.year)
         const arr = getMatchesInProcedures(this.EditableItem, flatten)
 
         this.CandidateItems.splice(0, this.CandidateItems.length, ...arr)
@@ -150,12 +150,7 @@ export default {
       if (newValue) {
         this.EditableItem = newValue
 
-        if (!this.TargetOrgan) {
-          const searchByName = ProceduresTree.findItemByName(newValue, this.year)
-          this.TargetOrgan = searchByName.Chain[1]
-        }
-
-        const selectedItem = ProceduresTree.getItemByName(this.Category, this.TargetOrgan, newValue, this.year)
+        const selectedItem = ProceduresTree.getItemByName(newValue, this.Category, this.TargetOrgan, newValue, this.year)
         this.setDescriptionSection(selectedItem)
         this.setAdditionalProcedureSection(selectedItem)
         this.$nextTick()
@@ -167,7 +162,7 @@ export default {
       if (additionalProcedure) {
         this.$set(this.AdditionalProcedure, 'Title', additionalProcedure)
 
-        const additionalItem = ProceduresTree.getItemByName(this.Category, this.TargetOrgan, additionalProcedure, this.year)
+        const additionalItem = ProceduresTree.getItemByName(additionalProcedure, this.Category, this.TargetOrgan, this.year)
         // this.setDescriptionSection(additionalItem)
         this.$set(this.AdditionalProcedure.Description, 'Title', ProcedureMaster.getDescriptionTitle(additionalItem))
         this.$set(this.AdditionalProcedure.Description, 'Multi', ProcedureMaster.isDescriptionMultiple(additionalItem))
@@ -237,7 +232,7 @@ export default {
           // 選択されたものには適切な付随情報を収納
           temporaryItem.Chain = [this.Category, this.TargetOrgan]
 
-          const dittos = ProcedureMaster.getDittos(ProceduresTree.getItemByName(...temporaryItem.Chain, temporaryItem.Text, this.year))
+          const dittos = ProcedureMaster.getDittos(ProceduresTree.getItemByName(temporaryItem.Text, ...temporaryItem.Chain, this.year))
           if (dittos) {
             temporaryItem.Ditto = [...dittos]
           }

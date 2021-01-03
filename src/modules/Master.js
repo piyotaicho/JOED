@@ -1,15 +1,30 @@
+/*
+  診断・術式マスタオブジェクト
+  new Master ()
+  @param {object} 基本となるオブジェクトツリー
+  @param {string} オブジェクトツリーの日付シリアル - 最初の4文字は年号を示す
+*/
+
 export default class Master {
   constructor (initialTree = {}, Year = '') {
-    Object.assign(this, initialTree)
+    // マスタ年次の設定
     if (/^20[0-9]{2}/.test(Year)) {
-      Object.defineProperty(this, '_Year', { value: Year.substr(0, 4) })
+      Object.defineProperty(this, 'YearofMaster', { value: Year.substr(0, 4) })
     } else {
-      throw Error('マスターセットの日付シリアルに問題があります.')
+      throw Error('マスターの日付シリアル指定に問題があります.')
+    }
+
+    // 列挙可能変更不可プロパティとして initialTree への参照を設定
+    for (const keyname of Object.keys(initialTree)) {
+      Object.defineProperty(this, keyname, {
+        value: initialTree[keyname],
+        enumerable: true
+      })
     }
   }
 
   Year () {
-    return this._Year
+    return this.YearofMaster
   }
 
   /*
@@ -23,92 +38,91 @@ export default class Master {
         Text: '項目名'
 
         Notification: 'お知らせメッセージ'
+        VaildFrom: '使用開始年'
+        ValidTo: '使用終了年'
 
-        *** ProcedureItem ***
-        Ditto: [同時入力できない同一手技]
-        AdditionalProcedure: '同時展開される手技' // 原則的に同一カテゴリ・対象
-        Description: { 補助情報のタイトル: [...候補] } //候補に $MULTI$ があるときは複数選択 $で終わる候補は選択しても登録されない（主たる術式の場合は選択不可）
-
-        *** DiagnosisItem ***
+        // *** 診断 ***
         Procedure: '強制展開される手技' // 同一カテゴリ・対象であることが必須
+
+        // *** 術式 ***
+        Ditto: [同時入力できない同一手技]
+        AdditionalProcedure: '同時展開される術式' // 同一カテゴリに限定
+        Description: { 補助情報のタイトル: [...候補] } // メンバに $MULTI$ があるときは複数選択, $で終わる候補は選択しても登録されない（主たる術式の場合は選択不可）
       }
     }
   }
   */
+
+  // カテゴリのarrayを取得
+  //
   Categories () {
     return Object.keys(this)
   }
 
+  // 対象臓器のarrayを取得
+  //
+  // @param {string} カテゴリ
   Targets (category = '') {
     return category !== '' ? Object.keys(this[category]) : []
   }
 
-  Candidates (category = '', target = '', $year = this._Year) {
-    if ($year < 2019) $year = this._Year
-    return (category !== '' && target !== '')
-      ? this[category][target].map(item => Master.parseItem(item, 'Text', $year)).filter(item => item !== undefined)
-      : []
-  }
-
-  getItemByIndex (category = '', target = '', index = -1) {
-    return (category !== '' && target !== '' && index >= 0)
-      ? this[category][target][index]
-      : undefined
-  }
-
-  getItemByName (category = '', target = '', name = '', $year = this._Year) {
-    if ($year < 2019) $year = this._Year
-    return this[category][target].find(item => Master.parseItem(item, 'Text', $year) === name)
-  }
-
-  // 指定カテゴリで平坦化したリスト項目を取得する
+  // カテゴリ・対象臓器に該当するアイテム(名)のarrayを取得
   //
   // @param {string} カテゴリ
-  // @param {string} データセットの参照年指定(デフォルトは最新)
-  getItemsInCategory (category = '', $year = this._Year) {
-    if ($year < 2019) $year = this._Year
+  // @param {string} 対象続器 - 空白もしくはundefinedの場合はカテゴリ内すべて
+  // @param {number/string} データセットの参照年指定(デフォルトはマスタの年次=最新)
+  ItemTitles (category = '', target, year = this.YearofMaster) {
+    if (year < 2019) {
+      year = 2019
+    }
+
     const temporaryArray = []
-    for (const key of Object.keys(this)) {
-      if (category === '' || key === category) {
-        for (const target of Object.keys(this[key])) {
-          for (const item of this[key][target]) {
-            temporaryArray.push(Master.parseItem(item, 'Text', $year))
-          }
-        }
-      }
+
+    if (!category) {
+      return temporaryArray
     }
-    return temporaryArray.filter(item => item)
+
+    for (const targetname of (target ? [target] : this.Targets(category))) {
+      temporaryArray.push(...this[category][targetname]
+        .map(item => Master.parseItem(item, 'Text', year))
+        .filter(item => item)
+      )
+    }
+    return temporaryArray.filter((item, index, self) => self.indexOf(item) === index)
   }
 
-  // カテゴリ・対象臓器ツリーを検索して列挙する
+  // カテゴリ・対象続器・アイテム名称に合致するアイテムを取得
   //
-  // @param {string} 対象
-  // @param {string} データセットの参照年指定(デフォルトは最新)
-  findItemByName (name, $year = this._Year) {
-    for (const category of Object.keys(this)) {
-      for (const target of Object.keys(this[category])) {
-        for (const item of this[category][target]) {
-          if (Master.parseItem(item, 'Text', $year) === name) {
-            return { Text: name, Chain: [category, target] }
-          }
-        }
-      }
+  // @param {string} アイテム名
+  // @param {string} カテゴリ
+  // @param {number/string} データセットの参照年指定(デフォルトはマスタの年次=最新)
+  getItemByName (name = '', category = '', target, year = this.YearofMaster) {
+    if (year < 2019) {
+      year = 2019
     }
-    return undefined
+
+    if (!name || !category) {
+      return {}
+    }
+
+    for (const targetname of (target ? [target] : this.Targets(category))) {
+      return this[category][targetname].find(item => Master.parseItem(item, 'Text', year) === name)
+    }
   }
 
-  // 選択ツリーの３層目の値を取得する
+  // 与えられた選択ツリーの３層目の情報を取得する オブジェクトならば指定のプロパティ値 stringの場合はその値
+  // データセットの対象以外、もしくは該当プロパティが無い場合は undefined
   //
-  // @param {object, sting} ３層目の値
-  // @param {string}  Text, Ditto, など
+  // @param {any} ３層目の値
+  // @param {string}  プロパティ名 デフォルトはText
   // @param {string}  データセットの参照年指定
-  static parseItem (item, $attribute = 'Text', $year = '') {
+  static parseItem (item, $attribute = 'Text', year = '') {
     if (typeof item === 'object') {
-      if ($year !== '') {
-        if (item.VaildTo && $year > item.VaildTo) {
+      if (year !== '') {
+        if (item.VaildTo && year > item.VaildTo) {
           return undefined
         }
-        if (item.VaildFrom && $year < item.VaildFrom) {
+        if (item.VaildFrom && year < item.VaildFrom) {
           return undefined
         }
       }
