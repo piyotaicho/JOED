@@ -8,8 +8,14 @@ export default class DiagnosisMaster extends Master {
     super({
       腹腔鏡: {
         子宮: [
-          '子宮筋腫',
-          '子宮腺筋症',
+          {
+            Text: '子宮筋腫',
+            ICD10: ['D250', 'D251', 'D259']
+          },
+          {
+            Text: '子宮腺筋症',
+            ICD10: ['N800']
+          },
           '骨盤臓器脱',
           // 2020 表記変更 子宮内膜症(チョコレート嚢胞含む) -> 子宮内膜症(子宮内膜症性嚢胞含む)
           {
@@ -18,7 +24,8 @@ export default class DiagnosisMaster extends Master {
           },
           {
             Text: '子宮内膜症(子宮内膜症性嚢胞含む)',
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            ICD10: ['N801', 'N802', 'N803', 'N805', 'N809']
           },
           // 2020 表記変更 付属器癒着 -> 子宮付属器癒着
           {
@@ -27,27 +34,32 @@ export default class DiagnosisMaster extends Master {
           },
           {
             Text: '子宮付属器癒着',
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            ICD10: ['N736']
           },
           // 2020 新規
           {
             Text: '子宮頸部上皮内腫瘍(CIN1-3,CIS,AIS含む)',
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            ICD10: ['D060', 'D061', 'D069', 'R876', 'N879']
           },
           // 2020 新規
           {
             Text: '子宮頸部嚢胞性腫瘍(LEGH等)',
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            ICD10: ['D390', 'N879']
           },
           // 2020 新規
           {
             Text: '子宮内膜増殖症・異型増殖症',
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            ICD10: ['N850', 'N851']
           },
           // 2020 新規
           {
             Text: '子宮体部腫瘍(APAM,STUMP等)',
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            ICD10: ['D175', 'D282', 'D390']
           },
           // 2020 新規
           {
@@ -61,15 +73,23 @@ export default class DiagnosisMaster extends Master {
           },
           {
             Text: '異所性妊娠',
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            ICD10: ['O008']
           },
-          '機能性不妊症(腹腔内検査)',
-          '子宮奇形',
+          {
+            Text: '機能性不妊症(腹腔内検査)',
+            ICD10: ['N972', 'N973', 'N979']
+          },
+          {
+            Text: '子宮奇形',
+            ICD10: ['Q512', 'Q513', 'Q514', 'Q518']
+          },
           '骨盤腹膜炎',
           // 2020 新規
           {
             Text: '性同一性障害',
-            ValidFrom: '2020'
+            ValidFrom: '2020',
+            ICD10: ['F649']
           },
           // 2020 新規
           {
@@ -79,7 +99,8 @@ export default class DiagnosisMaster extends Master {
           // 2020 新規
           {
             Text: '予防的内性器摘出術の適応',
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            ICD10: ['C809', 'R798']
           }
         ],
         付属器: [
@@ -356,3 +377,5 @@ export default class DiagnosisMaster extends Master {
     defaultReference)
   }
 }
+
+const MEDISdiagnoses = {}

@@ -511,3 +511,5 @@ export default class ProcedureMaster extends Master {
     return this.getDescriptionObject(item).Values.findIndex(value => value === '$MULTI$') >= 0
   }
 }
+
+const MEDISprocedures = {}
