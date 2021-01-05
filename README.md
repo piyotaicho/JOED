@@ -133,7 +133,7 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |名称                        |タイプ  |解説
 |:--------------------------|:-----:|:--|
 |Diagnosis                  |string |診断名|
-|ICD10                      |string |ICD-10コード(未実装)
+|ICD10                      |string |ICD-10コード|
 |Category                   |array  |関連手技 ["腹腔鏡","ロボット支援下","子宮鏡","卵管鏡"]|
 |Target                     |array  |部位 ["子宮","付属器","その他"]|
 |Notification               |string |入力時に表示されるおしらせ(未実装)|
@@ -158,6 +158,7 @@ DiagnosisMasterから作成される
 |:--------------------------|:-----:|:--|
 |Procedure                  |string |手技名|
 |STEM7                      |string |STEM7コード(未実装)|
+|Kcode|string|対応する社保Kコード(Kxxx-0x-0x形式)|
 |Category                   |array  |良悪性分類 ["腹腔鏡","腹腔鏡悪性","ロボット","ロボット悪性","子宮鏡","卵管鏡"]|
 |Target                     |array  |部位 ["子宮","付属器","その他"]|
 |VaildFrom                  |string |適用可能年開始|
