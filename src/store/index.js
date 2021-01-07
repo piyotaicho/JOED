@@ -348,9 +348,10 @@ const store = new Vuex.Store({
     //
     // @param {Object} オブジェクトCase
     InsertDocument (context, payload) {
-      const ErrorAutonumberFailed = 'データベースエラーです. AUTO-NUMBERING FAILED'
+      const ErrorAutonumberFailed = '連番付与に失敗しました.'
 
       return new Promise((resolve, reject) => {
+        // 重複入力の確認
         context.dispatch('dbCount', {
           Query: {
             PatientId: payload.PatientId,
@@ -359,13 +360,16 @@ const store = new Vuex.Store({
         })
           .then(
             count => {
-              if (count > 0) reject(new Error('同一日に同一IDの症例は登録できません.'))
+              if (count > 0) {
+                reject(new Error('同一日に同一IDの症例は登録できません.'))
+              }
               resolve()
             },
             error => reject(error)
           )
       })
         .then(_ => {
+          // 仮登録
           payload.DocumentId = '__autoid__'
           return context.dispatch('dbInsert', {
             Document: payload
@@ -374,7 +378,7 @@ const store = new Vuex.Store({
         .then(_ => {
           return new Promise((resolve, reject) => {
             let newid = 0
-            // 連番付与
+            // 連番取得
             context.dispatch('dbFindOne', {
               Query: { sequence: 'maindb' }
             })
@@ -392,7 +396,7 @@ const store = new Vuex.Store({
               .catch(_ => reject(new Error(ErrorAutonumberFailed)))
           })
             .then(newid => {
-              // 登録
+              // 登録の確定
               context.dispatch('dbUpdate', {
                 Query: { DocumentId: '__autoid__' },
                 Update: { $set: { DocumentId: newid } },
@@ -416,9 +420,9 @@ const store = new Vuex.Store({
               })
             })
         })
-        .catch(_ => {
+        .catch(error => {
           // Insertに失敗
-          return Promise.reject(new Error('データベースエラーです.'))
+          return Promise.reject(new Error('データベースエラーです.\n' + error.message))
         })
     },
 
