@@ -59,7 +59,7 @@ const store = new Vuex.Store({
     NumberOfCases (state) {
       return state.DocumentIds.List.length
     },
-    // 現在queryで設定されているドキュメントの数を返す.
+    // データベースが保持しているドキュメントの数を返す.
     //
     TotalNumberOfCases (state) {
       return state.DocumentIds.TotalCount
