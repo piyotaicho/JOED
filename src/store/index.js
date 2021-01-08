@@ -513,7 +513,7 @@ const store = new Vuex.Store({
       const CountByYear = {}
       for (const document of documents) {
         const year = document.DateOfProcedure.substring(0, 4)
-        CountByYear[year] = (CountByYear[year] === undefined) ? 0 : CountByYear[year] + 1
+        CountByYear[year] = (CountByYear[year] === undefined) ? 1 : CountByYear[year] + 1
       }
       return CountByYear
     }
