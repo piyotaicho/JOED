@@ -1,22 +1,40 @@
 // elementダイアログ
 import { MessageBox } from 'element-ui'
 
-export function alert (message) {
-  MessageBox.alert(message, {
+// messageに改行があったらelementを返す
+function messageVNode (message, caller) {
+  if (caller && message.includes('\n')) {
+    // const elem = MessageBox.$createElement
+    const lines = message.split('\n')
+    const elements = []
+    for (const line of lines) {
+      elements.push(line)
+      elements.push(caller.$createElement('br', null))
+    }
+    elements.pop(1)
+
+    return caller.$createElement('p', null, elements)
+  } else {
+    return message
+  }
+}
+
+export function alert (message, caller = null) {
+  MessageBox.alert(messageVNode(message, caller), {
     iconClass: 'el-icon-message-solid',
     showClose: false
   })
 }
 
-export function error (message) {
-  MessageBox.alert(message, {
+export function error (message, caller = null) {
+  MessageBox.alert(messageVNode(message, caller), {
     iconClass: 'el-icon-error',
     showClose: false
   })
 }
 
-export function information (message) {
-  MessageBox.alert(message, {
+export function information (message, caller = null) {
+  MessageBox.alert(messageVNode(message, caller), {
     title: '通知',
     iconClass: 'el-icon-info',
     closeOnClickModal: false,
@@ -24,8 +42,8 @@ export function information (message) {
   })
 }
 
-export async function confirm (message) {
-  return await MessageBox.confirm(message, {
+export async function confirm (message, caller = null) {
+  return await MessageBox.confirm(messageVNode(message, caller), {
     title: '確認',
     iconClass: 'el-icon-question',
     showClose: false,
@@ -34,7 +52,7 @@ export async function confirm (message) {
 }
 
 export async function confirmYesNo (message) {
-  return await MessageBox.confirm(message, {
+  return await MessageBox.confirm(messageVNode(message), {
     title: '確認',
     iconClass: 'el-icon-question',
     showClose: false,

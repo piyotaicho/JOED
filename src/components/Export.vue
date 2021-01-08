@@ -123,7 +123,7 @@ export default {
         return this.exportAllFields
       },
       async set (newvalue) {
-        if (newvalue && await Popups.confirm('不用意に全てのフィールドのデータを出力するのは,個人情報保護の観点からお薦め出来ません.\nそれでも出力しますか?')) {
+        if (newvalue && await Popups.confirm('不用意に全てのフィールドのデータを出力するのは,個人情報保護の観点からお薦め出来ません.\nそれでも出力しますか?', this)) {
           this.exportAllFields = true
         } else {
           this.exportAllFields = false
@@ -177,7 +177,7 @@ export default {
         this.processStep++
       } catch (error) {
         await this.$nextTick()
-        Popups.error(error.message)
+        Popups.error(error.message, this)
       } finally {
         await this.$nextTick()
         this.processing = false
@@ -187,7 +187,7 @@ export default {
     async Download () {
       if (!this.exportAllFields ||
         (
-          await Popups.confirmYesNo('保存されるデータにはID番号・氏名・年齢などの個人情報が含まれている可能性があります.\n\n処理を続行しますか?') &&
+          await Popups.confirmYesNo('保存されるデータにはID番号・氏名・年齢などの個人情報が含まれている可能性があります.\n処理を続行しますか?', this) &&
           await Popups.confirm('出力されたファイルの取り扱いは厳重行ってください.')
         )
       ) {
@@ -233,7 +233,7 @@ export default {
           }
       })
       if (count > 0) {
-        throw new Error('未確認の読み込み症例が ' + count + ' 症例あります.\n\n確認を御願いします.')
+        throw new Error('未確認の読み込み症例が ' + count + ' 症例あります.\n確認を御願いします.')
       }
     },
     // Step 3 - データの妥当性検証
@@ -261,7 +261,7 @@ export default {
           .filter((item, index, self) => self.indexOf(item) !== index)
 
         if (dupcheck.length > 0) {
-          throw new Error('同一日付に同一IDの登録があります.重複登録の可能性があります.\n\n' + dupcheck.join(',\n'))
+          throw new Error('同一日付に同一IDの登録があります.重複登録の可能性があります.\n' + dupcheck.join(',\n'))
         }
       }
 
