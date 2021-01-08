@@ -233,7 +233,7 @@ export default {
           }
       })
       if (count > 0) {
-        throw new Error('未確認の読み込み症例が ' + count + ' 症例あります.\n確認を御願いします.')
+        throw new Error('未確認の読み込み症例が ' + count + ' 症例あります.\n\n確認を御願いします.')
       }
     },
     // Step 3 - データの妥当性検証
@@ -244,16 +244,29 @@ export default {
     async CheckConsistency () {
       this.progressCheckConsistency = 0
 
-      const documentIds = (
+      // 対象の有無と重複のチェック
+      const querydocuments = (
         await this.$store.dispatch('dbFind',
           {
             Query: this.baseQuery,
-            Projection: { DocumentId: 1, _id: 0 }
+            Projection: { DocumentId: 1, PatientId: 1, DateOfProcedure: 1, _id: 0 }
           }) ||
         []
-      ).map(item => item.DocumentId)
-      if (documentIds.length === 0) throw new Error('エクスポートの対象症例がありません.')
+      )
+      if (querydocuments.length === 0) {
+        throw new Error('エクスポートの対象がありません.')
+      } else {
+        const dupcheck = querydocuments
+          .map(item => item.DateOfProcedure + ' ~ ' + item.PatientId)
+          .filter((item, index, self) => self.indexOf(item) !== index)
 
+        if (dupcheck.length > 0) {
+          throw new Error('同一日付に同一IDの登録があります.重複登録の可能性があります.\n\n' + dupcheck.join(',\n'))
+        }
+      }
+
+      // 各登録の妥当性検証
+      const documentIds = querydocuments.map(item => item.DocumentId)
       let errorCount = 0
 
       for (const index in documentIds) {
