@@ -378,4 +378,5 @@ export default class DiagnosisMaster extends Master {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 const MEDISdiagnoses = {}

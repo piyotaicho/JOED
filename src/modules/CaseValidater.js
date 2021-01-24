@@ -2,7 +2,8 @@ import DaignosisMaster from '@/modules/Masters/DiagnosisItemList'
 import ProcedureMaster from '@/modules/Masters/ProcedureItemList'
 
 // 日付の表記
-export const DateFormat = /^20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/
+export const DateFormatPattern = '^20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$'
+export const DateFormat = new RegExp(DateFormatPattern)
 
 // 施設番号の表記
 export const InstituteIDFormat = /^(0[1-9]|[1-3]\d|4[0-7])\d{3}$/

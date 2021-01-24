@@ -512,4 +512,5 @@ export default class ProcedureMaster extends Master {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 const MEDISprocedures = {}

@@ -32,7 +32,6 @@ export default {
     this.SelectedTabName = this.$route.name
   },
   beforeRouteUpdate (to, from, next) {
-    console.log('DUDE', from.name, to.name)
     if (to.name !== from.name) {
       this.SelectedTabName = to.name
       next()
