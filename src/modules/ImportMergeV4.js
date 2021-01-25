@@ -20,6 +20,9 @@ export function CreateDocument (record) {
     console.warn(error.message)
   }
 
+  // 2019年マスターからの単純置換を置換
+  Migrate2019to2020(CaseData)
+
   return CaseData
 }
 
@@ -268,4 +271,53 @@ function handleUserTyped (category, item, typeditem) {
       Text: typeditem,
       UserTyped: true
     }
+}
+
+function Migrate2019to2020 (CaseData) {
+  if (CaseData.DateOfProcedure.substr(0, 4) > '2019') {
+    // 術後診断の置換
+    const DiagnosisReplacer = {
+      '子宮内膜症(チョコレート嚢胞含む)': '子宮内膜症(子宮内膜症性嚢胞含む)',
+      付属器癒着: '子宮付属器癒着',
+      '異所性妊娠(子宮外妊娠)': '異所性妊娠',
+      '卵管閉塞,卵管留水(血)症': '卵管閉塞・卵管留水(血)症',
+      予防的内性器摘出術適応: '予防的内性器摘出術の適応',
+      '卵巣癌(卵管癌・腹膜癌含む)': '卵巣癌(卵管癌,腹膜癌含む)',
+      子宮体部前癌病変: '子宮内膜増殖症・異型増殖症',
+      帝王切開瘢痕部症候群: '帝王切開瘢痕症候群'
+    }
+    for (let index = 0; index < CaseData.Diagnoses.length; index++) {
+      if (CaseData.Diagnoses[index].UserTyped) {
+        continue
+      }
+      if (DiagnosisReplacer[CaseData.Diagnoses[index].Text]) {
+        CaseData.Diagnoses[index].Text = DiagnosisReplacer[CaseData.Diagnoses[index].Text]
+      }
+    }
+    // 実施手術の置換
+    const ProcedureReplacer = {
+      '子宮付属器嚢胞摘出術(チョコレート嚢胞)': '子宮付属器嚢胞摘出術(子宮内膜症性嚢胞)',
+      '子宮付属器切除術(チョコレート嚢胞)': '子宮付属器切除術(子宮内膜症性嚢胞)',
+      チョコレート嚢胞エタノール固定術: '卵巣嚢腫エタノール固定術(子宮内膜症性嚢胞含む)',
+      '異所性(子宮外)妊娠手術(卵管摘出術)': '異所性妊娠手術(卵管摘出術)',
+      '異所性(子宮外)妊娠手術(卵管線状切開術)': '異所性妊娠手術(卵管線状切開術)',
+      '異所性(子宮外)妊娠手術(その他)': '異所性妊娠手術(その他)',
+      '卵管鏡下卵管形成術(単独)': '卵管鏡下卵管形成術',
+      '卵管鏡下卵管形成術(腹腔鏡併用)': '卵管鏡下卵管形成術'
+    }
+    for (let index = 0; index < CaseData.Procedures.length; index++) {
+      if (CaseData.Procedures[index].UserTyped) {
+        continue
+      }
+      if (ProcedureReplacer[CaseData.Procedures[index].Text]) {
+        if (CaseData.Procedures[index].Text === '卵管鏡下卵管形成術(単独)') {
+          CaseData.Procedures[index].Description = '卵管鏡単独'
+        }
+        if (CaseData.Procedures[index].Text === '卵管鏡下卵管形成術(腹腔鏡併用)') {
+          CaseData.Procedures[index].Description = '腹腔鏡併用'
+        }
+        CaseData.Procedures[index].Text = ProcedureReplacer[CaseData.Procedures[index].Text]
+      }
+    }
+  }
 }
