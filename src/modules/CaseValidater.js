@@ -8,9 +8,6 @@ export const DateFormat = new RegExp(DateFormatPattern)
 // 施設番号の表記
 export const InstituteIDFormat = /^(0[1-9]|[1-3]\d|4[0-7])\d{3}$/
 
-// UniqueIDの表記
-export const UniqueIDFormat = /^(0[1-9]|[1-3]\d|4[0-7])\d{3}-20\d{2}-[0-9]\d*$/
-
 // 2020年時点の日産腫瘍登録患者No.表記
 export const JSOGboardCaseNoFormat = /^(CC|EM|US|UAS|OV|VU|TS)20\d{2}-\d+$/
 
