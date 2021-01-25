@@ -312,8 +312,7 @@ function createDatabaseInstance () {
   try {
     return new DB({
       filename: DBfilename,
-      autoload: true,
-      compareStrings: function (a, b) { return StringCompare(a, b) }
+      autoload: true
     })
   } catch (error) {
     // 致命的エラーなのでダイアログを出して終了する
@@ -325,22 +324,6 @@ function createDatabaseInstance () {
     })
     app.quit()
     return undefined
-  }
-}
-
-// 手術時間同士であればそれを比較する
-const TimeStringMatch = /[1-9]\d?0分/
-const ExtractTime = /([1-9]\d?0)分(以上|未満)/
-
-function StringCompare (stringA = '', stringB = '') {
-  if (TimeStringMatch.test(stringA) && TimeStringMatch.test(stringB)) {
-    const matchA = ExtractTime.exec(stringA)
-    const valueA = Number(matchA[1]) - ((matchA[2] || '以上') === '未満' ? 1 : 0)
-    const matchB = ExtractTime.exec(stringB)
-    const valueB = Number(matchB[1]) - ((matchB[2] || '以上') === '未満' ? 1 : 0)
-    return valueA === valueB ? 0 : valueA < valueB ? -1 : 1
-  } else {
-    return stringA.localeCompare(stringB)
   }
 }
 
