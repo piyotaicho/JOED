@@ -232,8 +232,8 @@ export default {
     }
   },
   methods: {
-    BackToList (uid = Number(this.uid)) {
-      if (uid === 0) {
+    BackToList (uid) {
+      if (Number(uid) === 0) {
         this.$router.push({ name: 'list' })
       } else {
         this.$router.push({ name: 'list', hash: ('#doc' + uid) })
@@ -243,6 +243,9 @@ export default {
       if (uid > 0) {
         this.$router.push({ name: 'edit', params: { uid: uid } })
       }
+      // HACK:
+      // 新規(uid = '0')→新規(uid = '0')ではApp.vueで定義したRouterKeyが重複するための quick hack.
+      // uid = '00' も uid > 0 がfalseで新規扱いになるのでそれを利用する.
       if (uid === 0) {
         this.$router.push({ name: 'edit', params: { uid: (this.uid === '0') ? '00' : '0' } })
       }
@@ -321,9 +324,6 @@ export default {
       if (this.processing || this.editingSection) {
         return
       }
-      // HACK:
-      // 新規(uid = '0')→新規(uid = '0')ではApp.vueで定義したRouterKeyが重複するための quick hack.
-      // uid = '00' も uid > 0 がfalseで新規扱いになるのでそれを利用する.
       await this.StoreCase()
         .then(() => {
           switch (to) {
@@ -337,7 +337,7 @@ export default {
               if (this.nextUid !== 0) this.AnotherEdit(this.nextUid)
               break
             default:
-              this.BackToList()
+              this.BackToList(Number(this.uid))
           }
         })
         .catch(e => Popups.alert(
@@ -362,7 +362,7 @@ export default {
             if (this.nextUid !== 0) this.AnotherEdit(this.nextUid)
             break
           default:
-            this.BackToList(this.uid)
+            this.BackToList(Number(this.uid))
         }
       }
     },

@@ -123,7 +123,7 @@ export default {
         return this.exportAllFields
       },
       async set (newvalue) {
-        if (newvalue && await Popups.confirm('不用意に全てのフィールドのデータを出力するのは,個人情報保護の観点からお薦め出来ません.\nそれでも出力しますか?')) {
+        if (newvalue && await Popups.confirm('不用意に全てのフィールドのデータを出力するのは,個人情報保護の観点からお薦め出来ません.\nそれでも出力しますか?', this)) {
           this.exportAllFields = true
         } else {
           this.exportAllFields = false
@@ -177,7 +177,7 @@ export default {
         this.processStep++
       } catch (error) {
         await this.$nextTick()
-        Popups.error(error.message)
+        Popups.error(error.message, this)
       } finally {
         await this.$nextTick()
         this.processing = false
@@ -187,7 +187,7 @@ export default {
     async Download () {
       if (!this.exportAllFields ||
         (
-          await Popups.confirmYesNo('保存されるデータにはID番号・氏名・年齢などの個人情報が含まれている可能性があります.\n\n処理を続行しますか?') &&
+          await Popups.confirmYesNo('保存されるデータにはID番号・氏名・年齢などの個人情報が含まれている可能性があります.\n処理を続行しますか?', this) &&
           await Popups.confirm('出力されたファイルの取り扱いは厳重行ってください.')
         )
       ) {
@@ -244,16 +244,29 @@ export default {
     async CheckConsistency () {
       this.progressCheckConsistency = 0
 
-      const documentIds = (
+      // 対象の有無と重複のチェック
+      const querydocuments = (
         await this.$store.dispatch('dbFind',
           {
             Query: this.baseQuery,
-            Projection: { DocumentId: 1, _id: 0 }
+            Projection: { DocumentId: 1, PatientId: 1, DateOfProcedure: 1, _id: 0 }
           }) ||
         []
-      ).map(item => item.DocumentId)
-      if (documentIds.length === 0) throw new Error('エクスポートの対象症例がありません.')
+      )
+      if (querydocuments.length === 0) {
+        throw new Error('エクスポートの対象がありません.')
+      } else {
+        const dupcheck = querydocuments
+          .map(item => item.DateOfProcedure + ' ~ ' + item.PatientId)
+          .filter((item, index, self) => self.indexOf(item) !== index)
 
+        if (dupcheck.length > 0) {
+          throw new Error('同一日付に同一IDの登録があります.重複登録の可能性があります.\n' + dupcheck.join(',\n'))
+        }
+      }
+
+      // 各登録の妥当性検証
+      const documentIds = querydocuments.map(item => item.DocumentId)
       let errorCount = 0
 
       for (const index in documentIds) {

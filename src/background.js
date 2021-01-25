@@ -184,6 +184,25 @@ const MenuTemplate = [
         ])
     ]
   },
+  // macosでは編集メニューがないとコピーアンドペーストができない
+  ...(
+    process.platform === 'darwin'
+      ? [
+        {
+          label: '編集',
+          submenu: [
+            { label: '取り消す', role: 'undo', accelerator: 'Command+Z' },
+            { label: 'やり直す', role: 'redo', accelerator: 'Command+Shift+Z' },
+            { type: 'separator' },
+            { label: 'カット', role: 'cut', accelerator: 'Command+X' },
+            { label: 'コピー', role: 'copy', accelerator: 'Command+C' },
+            { label: 'ペースト', role: 'paste', accelerator: 'Command+V' },
+            { label: 'すべてを選択', role: 'selectALL', accelerator: 'Command+A' }
+          ]
+        }
+      ]
+      : []
+  ),
   ...(
     process.platform === 'win32'
       ? [{
