@@ -19,7 +19,7 @@
             <option value="DiagnosesMain">手術診断 (主たる診断のみ)</option>
             <option value="Procedures">実施手術</option>
             <option value="ProceduresMain">実施手術 (主たる手術のみ)</option>
-            <!-- <option value="QID">問い合わせ番号</option> -->
+            <option value="Hash">問い合わせレコード識別子</option>
           </select>
         </div>
       </div>
@@ -52,7 +52,6 @@
 
 <script>
 import InputSwitchField from '@/components/Molecules/InputSwitchField'
-import { UniqueIDFormat } from '@/modules/CaseValidater'
 
 function makeRegex (str = '', regex = false) {
   let queryRegex
@@ -152,16 +151,13 @@ const SearchSetting = {
       }
     }
   },
-  QID: {
-    title: '問い合わせ番号',
+  Hash: {
+    title: '問い合わせレコード識別子',
     regexp: false,
-    multiple: true,
+    multiple: false,
     createquery: (query) => {
-      const queryRegex = new RegExp(UniqueIDFormat)
-      const queries = query.split(/[\s,，]+/).filter(query => queryRegex.test(query))
-
-      if (queries.length > 0) {
-        return { UniqueID: { $in: [...queries] } }
+      if (query.trim().length > 0) {
+        return { Hash: query.trim() }
       } else {
         return undefined
       }

@@ -1,3 +1,5 @@
+import HHX from 'xxhashjs'
+
 const _Database = require('nedb')
 
 export function CreateInstance (payload) {
@@ -65,6 +67,37 @@ export function FindOne (payload, DatabaseInstance) {
           reject(error)
         } else {
           resolve(founddocument)
+        }
+      })
+  })
+}
+
+// FindOneByHash
+//
+// @param{object}
+//   .Hash - ドキュメントハッシュ文字列
+//   .SALT - ハッシュキー(Number)
+//
+// return - promise(uid)
+export function FindOneByHash (payload, DatabaseInstance) {
+  const HHX64 = HHX.h64(payload.SALT)
+  const hashvalue = parseInt(payload.Hash, 36)
+
+  return new Promise((resolve, reject) => {
+    DatabaseInstance
+      .findOne({
+        $where: function () {
+          delete this._id
+          const hash = HHX64.update(JSON.stringify(this)).digest().toNumber()
+          return hash === hashvalue
+        }
+      })
+      .projection({ DocumentId: 1 })
+      .exec((error, founddocument) => {
+        if (error) {
+          reject(error)
+        } else {
+          resolve(founddocument !== null ? founddocument.DocumentId : undefined)
         }
       })
   })

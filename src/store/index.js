@@ -277,6 +277,12 @@ const store = new Vuex.Store({
     dbFindOne (context, payload) {
       return NedbAccess.FindOne(payload, context.state.DatabaseInstance)
     },
+    // Find a document by hash
+    // @Param {String} Hash
+    // @Param {Number} SALT
+    dbFindOneByHash (context, payload) {
+      return NedbAccess.FindOneByHash(payload, context.state.DatabaseInstance)
+    },
     // Count matched documents
     // @Param {Object} Query
     dbCount (context, payload) {
@@ -301,42 +307,56 @@ const store = new Vuex.Store({
         const Projection = { DocumentId: 1, _id: 0 }
         let documents = []
 
-        // 手術時間でのソートは負荷が高いのでデータベースではなくこのfunction内で返り値に対してソートを行う
-        if (context.getters.ViewQuery.Sort.ProcedureTime === undefined) {
-          documents = await context.dispatch('dbFind',
+        // 通常のFind
+        if (context.getters.ViewQuery.Query.Hash === undefined) {
+          // 手術時間でのソートは負荷が高いのでデータベースではなく返り値に対してソートを行う
+          if (context.getters.ViewQuery.Sort.ProcedureTime === undefined) {
+            documents = await context.dispatch('dbFind',
+              {
+                Query: context.getters.ViewQuery.Query,
+                Sort: context.getters.ViewQuery.Sort,
+                Projection: Projection
+              }
+            )
+          } else {
+            // 手術時間でのソート
+            const querySort = Object.assign({}, context.getters.ViewQuery.Sort)
+            const direction = querySort.ProcedureTime
+            delete querySort.ProcedureTime
+
+            // ソートのためProcedureTimeも読み込む
+            Projection.ProcedureTime = 1
+
+            const ExtractTime = /([1-9]\d?0)分(以上|未満)/
+
+            documents = (await context.dispatch('dbFind',
+              {
+                Query: context.getters.ViewQuery.Query,
+                Sort: querySort,
+                Projection: Projection
+              }
+            )).sort((a, b) => {
+              // undefinedに対しては 30分未満を設定する.
+              const stringA = a.ProcedureTime || '30分未満'
+              const stringB = b.ProcedureTime || '30分未満'
+              const matchA = ExtractTime.exec(stringA)
+              const valueA = Number(matchA[1]) - ((matchA[2] || '以上') === '未満' ? 1 : 0)
+              const matchB = ExtractTime.exec(stringB)
+              const valueB = Number(matchB[1]) - ((matchB[2] || '以上') === '未満' ? 1 : 0)
+              return valueA === valueB ? 0 : valueA < valueB ? -1 * direction : 1 * direction
+            })
+          }
+        } else {
+          // Hashを対象としたFindを実行
+          const documentId = await context.dispatch('dbFindOneByHash',
             {
-              Query: context.getters.ViewQuery.Query,
-              Sort: context.getters.ViewQuery.Sort,
-              Projection: Projection
+              Hash: context.getters.ViewQuery.Query.Hash,
+              SALT: context.getters['system/SALT']
             }
           )
-        } else {
-          // 手術時間でのソート
-          const ExtractTime = /([1-9]\d?0)分(以上|未満)/
-
-          const querySort = Object.assign({}, context.getters.ViewQuery.Sort)
-          const direction = querySort.ProcedureTime
-          delete querySort.ProcedureTime
-
-          // ProcedureTimeも読み込むようにしないと意味がない.
-          Projection.ProcedureTime = 1
-
-          documents = (await context.dispatch('dbFind',
-            {
-              Query: context.getters.ViewQuery.Query,
-              Sort: querySort,
-              Projection: Projection
-            }
-          )).sort((a, b) => {
-            // undefinedに対しては 30分未満を設定する.
-            const stringA = a.ProcedureTime || '30分未満'
-            const stringB = b.ProcedureTime || '30分未満'
-            const matchA = ExtractTime.exec(stringA)
-            const valueA = Number(matchA[1]) - ((matchA[2] || '以上') === '未満' ? 1 : 0)
-            const matchB = ExtractTime.exec(stringB)
-            const valueB = Number(matchB[1]) - ((matchB[2] || '以上') === '未満' ? 1 : 0)
-            return valueA === valueB ? 0 : valueA < valueB ? -1 * direction : 1 * direction
-          })
+          if (documentId !== undefined) {
+            documents = [{ DocumentId: documentId }]
+          }
         }
 
         context.commit('SetDocumentIds',

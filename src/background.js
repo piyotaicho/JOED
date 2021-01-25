@@ -5,6 +5,7 @@
 import { app, protocol, BrowserWindow, Menu, ipcMain, dialog } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
+import HHX from 'xxhashjs'
 const isDevelopment = process.env.NODE_ENV !== 'production'
 const path = require('path')
 
@@ -403,6 +404,32 @@ ipcMain.handle('FindOne', (_, payload) => {
   })
 })
 
+// FindOneByHash
+// @Object.Query : Object
+// @Object.Projection : Object
+ipcMain.handle('FineOneByHash', (_, payload) => {
+  const HHX64 = HHX.h64(payload.SALT)
+  const hashvalue = parseInt(payload.Hash, 36)
+
+  return new Promise((resolve, reject) => {
+    app.DatabaseInstance
+      .findOne({
+        $where: function () {
+          delete this._id
+          const hash = HHX64.update(JSON.stringify(this)).digest().toNumber()
+          return hash === hashvalue
+        }
+      })
+      .projection({ DocumentId: 1 })
+      .exec((error, founddocument) => {
+        if (error) {
+          reject(error)
+        } else {
+          resolve(founddocument !== null ? founddocument.DocumentId : undefined)
+        }
+      })
+  })
+})
 // Count
 // @Object.Query : Object
 ipcMain.handle('Count', (_, payload) => {
