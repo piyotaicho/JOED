@@ -58,6 +58,11 @@ export default {
       ProgressBar: 0
     })
   },
+  watch: {
+    ImportMode () {
+      this.ResetState()
+    }
+  },
   computed: {
     StepCommit () {
       if (this.CreatedDocument.length === 0) {
@@ -120,6 +125,8 @@ export default {
         Popups.information(message)
       }
 
+      this.CreatedDocument.splice(0)
+      this.$nextTick()
       // ステータスをリセットする
       // this.ResetState()
     }
