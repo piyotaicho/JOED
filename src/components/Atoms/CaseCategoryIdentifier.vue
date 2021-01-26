@@ -9,7 +9,6 @@ export default {
   name: 'CaseCategoryIdentifier',
   props: {
     category: {
-      type: String,
       required: true
     },
     notification: {
