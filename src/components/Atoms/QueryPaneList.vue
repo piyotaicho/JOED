@@ -58,6 +58,7 @@ export default {
 
 <style lang="sass">
 div.QueryPaneList
-  height: 14rem
+  height: 11.8rem
   overflow-y: auto
+  flex-grow: 1
 </style>

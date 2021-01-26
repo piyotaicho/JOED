@@ -86,8 +86,9 @@ export default {
 
 <style lang="sass">
 div.QueryPane
+  height: 95%
+  margin: 0.5rem 0.3rem 0.5rem 0.3rem
+  padding-bottom: 1rem
   display: flex
   flex-direction: column
-  div
-    overflow-y: auto
 </style>

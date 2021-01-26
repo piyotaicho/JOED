@@ -1,36 +1,33 @@
 <template>
   <div>
-    <div>
-      Excelなどから出力したCSVファイルから症例データの雛型として読み込むことが出来ます.<br/>
-      全ての項目を入力することは出来ませんが, CSVファイルのフィールドを指定の項目に割り当てて読み込みます.<br/>
+    <div style="padding-bottom: 1rem;">
+      Excelなどから出力したCSVファイルからデータの雛型を読み込むことが出来ます.<br/>
+      全ての項目を完全に入力することは出来ませんが, CSVファイルのフィールドや定数を指定の項目に割り当てて読み込みます.<br/>
       手術実施日と患者IDは重複入力確認のため必須入力です.<br/>
       完全な入力は原理的に不可能ですので,全ての入力に編集と確認の操作が必要になります.<br/>
     </div>
-    <div>
+    <div style="padding-bottom: 1rem;" v-show="records.length > 0">
       <div>
         <LabeledCheckbox v-model="CSVhasTitle" :value="true">CSVファイルの先頭行はフィールド名</LabeledCheckbox>
       </div>
       <QueryBuilder
       :records="recordTitle"
       :functions="functions"
-      :CSV="previewCSV"
+      :CSV="CSV"
       :CSVhasTitleRow="CSVhasTitle"
+      @change="SetRuleset"
       />
-    </div>
-    <div>
-      <LabeledCheckbox v-model="ReplaceStrings" :value="false">診断名称・手術名称に対して基本的な置換操作を行う</LabeledCheckbox>
-      <el-tooltip placement="top-start">
+      <LabeledCheckbox v-model="ReplaceStrings" :value="false">診断名称・実施手術の入力に対して基本的な置換操作を行う</LabeledCheckbox>
+      <el-tooltip placement="top-start" :tabindex="-1">
         <template #content><div>チョコレート嚢胞→子宮内膜症性嚢胞, 子宮外妊娠→異所性妊娠 など<br/>2019年以前の登録で利用されていた内容のうち表記変更のあったものを一律に置換します.</div></template>
         <i class="el-icon-question" style="padding-top: 0.36rem; margin-left: 0.6rem;"/>
       </el-tooltip>
+    </div>
+    <div style="padding-bottom: 1rem;">
       <br/>
       <el-button type="primary" :disabled="disabled" @click="ProcessStream">上記ルールに則ってデータを変換</el-button>
     </div>
     <div class="progress-views">
-      <step-indicator :step="0" :stepcount="Processing" icon="el-icon-odometer" description="件数の確認"></step-indicator>
-      <step-indicator :step="1" :stepcount="Processing" icon="el-icon-search" description="入力ファイル確認"></step-indicator>
-      <step-indicator :step="2" :stepcount="Processing" icon="el-icon-cpu" description="フィールドの割り当てとレコードの検証"></step-indicator>
-
       <Reports :report="LogMessages.join('\n')" v-show="LogMessages.length > 0"/>
     </div>
   </div>
@@ -39,16 +36,15 @@
 <script>
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import QueryBuilder from '@/components/Molecules/QueryBuilder'
-import StepIndicator from '@/components/Molecules/StepIndicator'
 import Reports from '@/components/Atoms/Reports'
 import { parseCSV } from '@/modules/CSV'
-import { CreateDocument } from '@/modules/ImportCSV.js'
+import { CreateDocument, Migrate } from '@/modules/ImportCSV.js'
 import { DateFormatPattern } from '@/modules/CaseValidater'
 import * as Popups from '@/modules/Popups'
 
 export default {
   name: 'ImportCSV',
-  components: { LabeledCheckbox, QueryBuilder, StepIndicator, Reports },
+  components: { LabeledCheckbox, QueryBuilder, Reports },
   props: {
     disabled: {
       type: Boolean,
@@ -65,7 +61,7 @@ export default {
       LogMessages: [],
       CSVhasTitle: true,
       ReplaceStrings: false,
-      Query: {},
+      RuleSet: {},
       records: []
     })
   },
@@ -81,13 +77,18 @@ export default {
         '患者名', '年齢', '腫瘍登録番号', 'NCD症例識別コード',
         '手術時間',
         '合併症の有無',
-        '手術診断1', '手術診断1カテゴリ', '手術診断1良性/悪性',
-        '手術診断2', '手術診断2カテゴリ', '手術診断2良性/悪性',
-        '手術診断3', '手術診断3カテゴリ', '手術診断3良性/悪性',
 
+        '手術診断1', '手術診断1カテゴリ', '手術診断1良性/悪性',
         '実施手術1', '実施手術1カテゴリ', '実施手術1良性/悪性',
+
+        '手術診断2', '手術診断2カテゴリ', '手術診断2良性/悪性',
         '実施手術2', '実施手術2カテゴリ', '実施手術2良性/悪性',
-        '実施手術3', '実施手術3カテゴリ', '実施手術3良性/悪性'
+
+        '手術診断3', '手術診断3カテゴリ', '手術診断3良性/悪性',
+        '実施手術3', '実施手術3カテゴリ', '実施手術3良性/悪性',
+
+        '手術診断4', '手術診断4カテゴリ', '手術診断4良性/悪性',
+        '実施手術4', '実施手術4カテゴリ', '実施手術4良性/悪性'
       ]
     },
     functions () {
@@ -108,8 +109,8 @@ export default {
         '定数 - 悪性': { constants: '悪性' }
       }
     },
-    previewCSV () {
-      return this.records.length > 0 ? this.records[0] : []
+    CSV () {
+      return this.records.length > 0 ? this.records : [[]]
     }
   },
   methods: {
@@ -117,51 +118,52 @@ export default {
       this.Processing = -1
       this.LogMessages.splice(0)
       this.records.splice(0)
-      this.records.splice(0, 0, parseCSV(this.stream))
+      try {
+        this.records.splice(0, 0, ...parseCSV(this.stream))
+      } catch (error) {
+        Popups.alert(error.message)
+      }
+      this.SetRuleset({})
     },
-    CreateQuery (queryobj) {
-      this.$set(this, 'Query', queryobj)
+    SetRuleset (rule) {
+      this.$set(this, 'RuleSet', rule)
     },
     async ProcessStream () {
       this.LogMessages.splice(0)
       const ImportedDocuments = []
       try {
         this.ProcessStep = 0
-        // mergeファイル(quoted, titled CSV)の読み込み
-        // 不正なCSVファイル(フィールド数が違うなど)では例外を発生する.
-        const records = parseCSV(this.stream)
-        // 読み込むデータの有無を確認
-        if (records.length === 0) {
-          throw new Error('ファイルに有効なレコードが含まれていません.')
-        } else {
-          this.LogMessages.push(`ファイル中に${records.length}件のレコードが含まれています.`)
-        }
+        this.LogMessages.push('ファイルにはタイトル行を含めて' + this.records.length + '件のレコードがあります.')
 
         this.ProcessStep++
-        // 内部ID, 手術時間, 手術年 で正規入力されたものかを判別
-        if (records[0]['内部ID'] && records[0]['手術時間'] && records[0]['手術年']) {
-          if (!records[0].ID) {
-            this.LogMessages.push('指定されたファイルは提出用データです.患者IDは自動生成されます.')
-          }
-          if (!records[0]['手術日']) {
-            this.LogMessages.push('指定されたファイルは手術日の設定のない提出用データです.仮の手術日を手術年から自動生成します.')
-          }
-        } else {
-          throw new Error('指定されたファイルは 症例登録システムJOE-D version 4 で適切に入力・出力されたmergeファイル(.mer)ではありません.')
-        }
+        this.$nextTick()
 
-        this.ProcessStep++
         // レコード毎にドキュメントを作成
-        for (const record of records) {
+        for (
+          let index = this.CSVhasTitle ? 1 : 0;
+          index < this.records.length;
+          index++
+        ) {
+          const record = this.records[index]
           try {
-            ImportedDocuments.push(CreateDocument(record))
+            const newdocument = CreateDocument(record, this.RuleSet)
+
+            if (!this.ReplaceStrings) {
+              ImportedDocuments.push(newdocument)
+            } else {
+              // 2019以前の登録で使用されていたルールのうち単純置換のものを置換する
+              // ただしDateOfProcedure > 2019に限る
+              ImportedDocuments.push(Migrate(newdocument))
+            }
           } catch (error) {
-            if (!(await Popups.confirm('指定されたファイル中に不適切なレコードがあります.\n残りの処理を続行しますか?'))) {
-              throw new Error('不適切なレコード\n', record.map(field => '"' + field + '"').join(','))
+            console.warn(`On line ${index + 1} - ${error.message}.`)
+
+            if (!(await Popups.confirmYesNo('指定されたファイル中に不適切なフィールドが認められました.\n残りの処理を続行しますか?'))) {
+              throw new Error(`${index + 1}行目の不適切なフィールドにより変換を中止しました.`)
             }
           }
         }
-        this.LogMessages.push(`${ImportedDocuments.length}件のレコードが登録用に準備でされました.`)
+        this.LogMessages.push(`${ImportedDocuments.length}件のレコードが変換されました.`)
 
         this.ProcessStep++
         // 作成したドキュメントを親に送る

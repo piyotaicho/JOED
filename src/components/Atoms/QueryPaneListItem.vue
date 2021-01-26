@@ -73,13 +73,19 @@ export default {
 div.QueryPaneListItem
   display: flex
   flex-direction: row
+  justify-content: space-between
   background: white
   height: 2rem
   border: 1px solid grey
   border-radius: 0.18rem
   margin: 0.2rem
+  &:nth-child(odd)
+    background: var(--background-color-list)
+  &:nth-child(even)
+    background: var(--background-color-dialog)
+
 div.QueryPaneListItemLabel
-  width: 85%
+  width: 100%
   margin: auto 0.4rem
   text-align: left
   white-space: nowrap
@@ -88,21 +94,24 @@ div.QueryPaneListItemLabel
 div.QueryPaneListItemLabelContents
   display: flex
   flex-direction: row
-  div
-    min-width: 45%
-    margin-right: 0.6rem
+  & div
+    flex-grow: 1
     text-align: left
     white-space: nowrap
     overflow-x: hidden
     text-overflow: ellipsis
+    &:nth-child(2)
+      text-align: right
 div.QueryPaneListItemEraseButton
   position: relative
   width: 0.8rem
   height: 0.8rem
-  margin: auto
+  flex-grow: 0
+  margin: auto 0.8rem
   padding: 0
   border: 1px solid grey
   background: white
+  overflow: hidden
   &::after
     position: absolute
     top: -0.32rem

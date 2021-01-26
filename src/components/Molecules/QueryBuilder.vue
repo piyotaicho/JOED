@@ -1,6 +1,6 @@
 <template>
   <div class="QueryBuilder">
-    <div class="w45">
+    <div style="min-width: 300px; flex-grow: 1;">
       <QueryPane title="登録項目"
         :container="this.listRecord"
         :erasable="true"
@@ -8,14 +8,17 @@
         @item-dropped="itemDropped"
         />
     </div>
-    <div class="w50">
+    <div style="min-width: 300px; flex-grow: 1;">
       <QueryPane
         :draggable="true"
         :container="this.listContainer"
         @item-dragged="CSVitemDragged"
         v-show="source === 'CSV'">
         <template #title>
-          <span @click="ToggleSource">CSVファイルのフィールド &#x25b6;</span>
+          <span @click="ToggleSource">&#x1f5d8; CSVファイルのフィールド</span>
+          <span @click="CSVcursor('prev')">&#x229f;</span>
+          <span @click="CSVcursor('home')">&#x1f56e;</span>
+          <span @click="CSVcursor('next')">&#x229e;</span>
         </template>
       </QueryPane>
       <QueryPane
@@ -24,7 +27,7 @@
         @item-dragged="functionalitemDragged"
         v-show="source === 'functions'">
         <template #title>
-          <span @click="ToggleSource">&#x25c0; 生成データ</span>
+          <span @click="ToggleSource">&#x1f5d8; 生成値</span>
         </template>
       </QueryPane>
     </div>
@@ -35,29 +38,14 @@
 import QueryPane from '@/components/Atoms/QueryPane'
 import { prompt } from '@/modules/Popups'
 
-const rowlabel = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 function encodeRowName (value) {
+  const rowlabel = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
   if (value >= rowlabel.length) {
     const prefix = encodeRowName(((value / rowlabel.length) | 0) - 1)
     return prefix + rowlabel[value % rowlabel.length]
   } else {
     return rowlabel[value]
   }
-}
-
-// eslint-disable-next-line no-unused-vars
-function decodeRowName (str) {
-  if (!str) {
-    return undefined
-  }
-  let decodedvalue = 0
-  for (let index = 0; index < str.length; index++) {
-    const value = rowlabel.indexOf(str[index])
-    if (value > -1) {
-      decodedvalue = decodedvalue * rowlabel.length + value + 1
-    }
-  }
-  return --decodedvalue
 }
 
 export default {
@@ -85,12 +73,13 @@ export default {
   data () {
     return {
       recordAssignment: {},
-      source: 'CSV'
+      source: 'CSV',
+      previewIndex: -1
     }
   },
   watch: {
     recordAssignment () {
-      this.$emit('changed', this.recordAssignment)
+      this.$emit('change', this.recordAssignment)
     }
   },
   computed: {
@@ -98,6 +87,13 @@ export default {
       return Object.keys(this.functions)
     },
     listContainer () {
+      if (this.previewIndex === -1) {
+        return this.listContainerTitle
+      } else {
+        return this.CSV[this.previewIndex]
+      }
+    },
+    listContainerTitle () {
       if (this.CSVhasTitleRow) {
         return this.CSV[0]
       } else {
@@ -113,7 +109,7 @@ export default {
           } else {
             let labelvalue = ''
             if (assignedvalue.column !== undefined) {
-              labelvalue = '"' + this.listContainer[assignedvalue.column] + '"'
+              labelvalue = '"' + this.listContainerTitle[assignedvalue.column] + '"'
             }
             if (assignedvalue.constants !== undefined) {
               labelvalue = assignedvalue.title ? assignedvalue.title : assignedvalue.constants
@@ -129,6 +125,15 @@ export default {
   methods: {
     ToggleSource () {
       this.source = this.source === 'CSV' ? 'functions' : 'CSV'
+    },
+    CSVcursor (vector) {
+      if (vector === 'home') {
+        this.previewIndex = -1
+      } else {
+        const nextindex = this.previewIndex + (vector === 'prev' ? -1 : 1)
+        this.previewIndex = nextindex < 0 ? 0 : (nextindex >= this.CSV.length ? this.CSV.length - 1 : nextindex)
+      }
+      this.$nextTick()
     },
     removeAssignment (index) {
       if (this.recordAssignment[this.records[index]]) {
@@ -181,12 +186,16 @@ export default {
 
 <style lang="sass">
 div.QueryBuilder
-  border: 1px solid black
+  border: 1px solid var(--color-text-regular)
   border-radius: 0.3rem
-  margin: 0.2rem
-  padding: 0.3rem
-  height: 16rem
+  width: 700px
+  margin: 0.2rem 0.5rem 0.2rem 0.2rem
+  padding: 0.3rem 0.3rem
+  min-height: 31rem
+  resize: vertical
+  overflow-y: hidden
   display: flex
-  flex-direction: row
-  justify-content: space-between
+  justify-content: space-space-around
+  flex-direction: column
+  // flex-wrap: wrap
 </style>

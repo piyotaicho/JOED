@@ -1,9 +1,11 @@
 import ProcedureTimeSelections from '@/modules/ProcedureTimes'
 import { DateFormat } from '@/modules/CaseValidater'
+import { CharacterReplacer, Migrate2019to2020 } from '@/modules/ImportMergeV4'
 
 let internalcounter = 0
 
 export function CreateDocument (record = [], assignrule = {}) {
+  console.log(record)
   // インポートデータのフラグとメッセージ
   const CaseData = {
     Imported: true,
@@ -51,7 +53,7 @@ function DateOfProcedure (CaseData, record, assignrule) {
   // CSVのフィールドから読み込み いろいろな日付フォーマットに一応対応 - HARDCODED
   if (ruleofField.column !== undefined) {
     const value = record[ruleofField.column].trim()
-    const datefields = value.match(/20(?<year>[2-9][0-9])[年/-](?<month>0{0,1}[1-9]|1[0-2])[月/-](?<day>0{0,1}[1-9]|[12][0-9]|3[01])$/)
+    const datefields = value.match(/20(?<year>[0-9]{2})[年/-](?<month>0{0,1}[1-9]|1[0-2])[月/-](?<day>0{0,1}[1-9]|[12][0-9]|3[01])$/)
     if (datefields === null) {
       throw new Error('ファイル中の日付の指定(' + value + ')が無効です.')
     }
@@ -123,68 +125,89 @@ function ProcedureTime (CaseData, record, assignrule) {
 function DiagnosesAndProcedures (CaseData, record, assignrule) {
   CaseData.Diagnoses = []
   CaseData.Procedures = []
-  const diagnosisFields = ['手術診断1', '手術診断2', '手術診断3']
-  const procedureFields = ['実施手術1', '実施手術2', '実施手術3']
+  const diagnosisFields = ['手術診断1', '手術診断2', '手術診断3', '手術診断4']
+  const procedureFields = ['実施手術1', '実施手術2', '実施手術3', '実施手術4']
 
   for (const field of diagnosisFields) {
     const diagnosis = getvalueByRule(field, record, assignrule)
-    if (diagnosis !== undefined) {
-      const diagnosisRecord = { Text: diagnosis }
+    if (diagnosis) {
+      const temporaryfield = { Text: CharacterReplacer(diagnosis) }
 
       const benignormalignancy = getvalueByRule(field + '良性/悪性', record, assignrule)
-      const category = getvalueByRule(field + 'カテゴリ', record, assignrule)
-      if (category === undefined) {
+
+      // 診断のカテゴリにロボットはなく腹腔鏡に集約している
+      const category = (
+        getvalueByRule(field + 'カテゴリ', record, assignrule) ||
+        ''
+      ).replace('ロボット', '腹腔鏡')
+      if (category === '') {
         throw new Error(field + 'に対するカテゴリの指定が必要です.')
       }
-      if (benignormalignancy !== undefined) {
-        if (benignormalignancy.includes('悪性')) {
-          if (category.includes('悪性') || category.includes('子宮鏡')) {
-            diagnosisRecord.Chain = [category]
-          } else {
-            if (category.includes('ロボット')) {
-              diagnosisRecord.Chain = ['ロボット悪性']
-            } else {
-              diagnosisRecord.Chain = ['腹腔鏡悪性']
-            }
-          }
-        } else {
-          diagnosisRecord.Chain = [category]
-        }
+
+      // 良悪性のフィールドが利用されていない もしくは
+      // 非悪性の場合はカテゴリをそのまま採用
+      if (
+        benignormalignancy === undefined ||
+        !benignormalignancy.includes('悪性')
+      ) {
+        temporaryfield.Chain = [category]
       } else {
-        diagnosisRecord.Chain = [category]
+        // 悪性が別フィールドで保持されている場合に対応
+
+        // すでにカテゴリに悪性が含まれている場合はそのまま通過
+        // 卵管鏡・子宮鏡に悪性を設定している可能性も考慮
+        if (
+          category.includes('悪性') ||
+          category === '子宮鏡' ||
+          category === '卵管鏡'
+        ) {
+          temporaryfield.Chain = [category]
+        } else {
+          temporaryfield.Chain = ['腹腔鏡悪性']
+        }
       }
-      CaseData.Diagnoses.push(diagnosisRecord)
+      CaseData.Diagnoses.push(temporaryfield)
     }
   }
 
   for (const field of procedureFields) {
     const procedure = getvalueByRule(field, record, assignrule)
-    if (procedure !== undefined) {
-      const procedureRecord = { Text: procedure }
+    if (procedure) {
+      const temporaryfield = { Text: CharacterReplacer(procedure) }
 
       const benignormalignancy = getvalueByRule(field + '良性/悪性', record, assignrule)
       const category = getvalueByRule(field + 'カテゴリ', record, assignrule)
       if (category === undefined) {
         throw new Error(field + 'に対するカテゴリの指定が必要です.')
       }
-      if (benignormalignancy !== undefined) {
-        if (benignormalignancy.includes('悪性')) {
-          if (category.includes('悪性') || category.includes('子宮鏡')) {
-            procedureRecord.Chain = [category]
-          } else {
-            if (category.includes('ロボット')) {
-              procedureRecord.Chain = ['ロボット悪性']
-            } else {
-              procedureRecord.Chain = ['腹腔鏡悪性']
-            }
-          }
-        } else {
-          procedureRecord.Chain = [category]
-        }
+      // 良悪性のフィールドが利用されていない もしくは
+      // 非悪性の場合はカテゴリをそのまま採用
+      if (
+        benignormalignancy === undefined ||
+        !benignormalignancy.includes('悪性')
+      ) {
+        temporaryfield.Chain = [category]
       } else {
-        procedureRecord.Chain = [category]
+        // 悪性が別フィールドで保持されている場合に対応
+
+        // すでにカテゴリに悪性が含まれている場合はそのまま通過
+        // 卵管鏡・子宮鏡に悪性を設定している可能性も考慮
+        if (
+          category.includes('悪性') ||
+          category === '子宮鏡' ||
+          category === '卵管鏡'
+        ) {
+          temporaryfield.Chain = [category]
+        } else {
+          // ロボット悪性 or 腹腔鏡悪性
+          if (category.includes('ロボット')) {
+            temporaryfield.Chain = ['ロボット悪性']
+          } else {
+            temporaryfield.Chain = ['腹腔鏡悪性']
+          }
+        }
       }
-      CaseData.Procedures.push(procedureRecord)
+      CaseData.Procedures.push(temporaryfield)
     }
   }
 
@@ -197,11 +220,18 @@ function DiagnosesAndProcedures (CaseData, record, assignrule) {
 function AEs (CaseData, record, assignrule) {
   const hasAE = getvalueByRule('合併症の有無', record, assignrule)
   if (hasAE !== undefined) {
-    if (hasAE === 'なし' || hasAE === '無し' || hasAE === '合併症無し' || hasAE === '') {
+    if (
+      /(合併症|)[無な]し/.test(hasAE) ||
+      /no/i.test(hasAE)
+    ) {
       CaseData.PresentAE = false
     } else {
       CaseData.PresentAE = true
-      CaseData.Notification = (CaseData.Notification || '') + '合併症の再入力が必要です.\n'
+      CaseData.Notification = (CaseData.Notification || '') + '合併症の詳細は再入力が必要です.\n'
     }
   }
+}
+
+export function Migrate (CaseData) {
+  return Migrate2019to2020(CaseData)
 }

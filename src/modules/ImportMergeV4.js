@@ -1,10 +1,24 @@
 import ProcedureTimeSelections from '@/modules/ProcedureTimes'
 
+export function ValidateRecords (records) {
+  if (!Array.isArray(records)) {
+    throw new Error('内部呼び出しのエラーです.')
+  }
+  const length = records.length
+  if (length === 0) {
+    throw new Error('ファイルに有効なレコードが含まれていません.')
+  }
+  if (!(records[0]['合併症有無'] && records[0]['手術時間'] && records[0]['手術年'])) {
+    throw new Error('指定されたファイルは 症例登録システムJOE-D version 4 で適切に入力・出力されたmergeファイル(.mer)ではありません.')
+  }
+  return length
+}
+
 export function CreateDocument (record) {
   // インポートデータのフラグとメッセージ
   const CaseData = {
     Imported: true,
-    Notification: '症例登録システムversion4から読み込まれたデータです.確認と保存が必要です.\n'
+    Notification: '症例登録システムJOE-D version 4から読み込まれたデータです.確認と保存が必要です.\n'
   }
 
   // DateOfProcedue と ID はレコード構成の最低限必須項目
@@ -20,7 +34,7 @@ export function CreateDocument (record) {
     console.warn(error.message)
   }
 
-  // 2019年マスターからの単純置換を置換
+  // 2019年マスターからの単純置換(2020～のみ)
   Migrate2019to2020(CaseData)
 
   return CaseData
@@ -38,11 +52,12 @@ function DateOfProcedure (CaseData, record) {
       return
     } catch {}
   }
+  // 日付フォーマットの問題などがあったら日付を自動生成
   if (record['手術年']) {
     CaseData.DateOfProcedure = record['手術年'] + '-01-01'
     return
   }
-  throw new Error('手術日もしくは手術年がありません.')
+  throw new Error('レコード中に手術日もしくは手術年の項目がありません.')
 }
 
 function BasicInformation (CaseData, record) {
@@ -199,7 +214,8 @@ function AEs (CaseData, record) {
     throw new Error('合併症の有無の入力がありません.')
   }
 }
-function CharacterReplacer (str = '') {
+
+export function CharacterReplacer (str = '') {
   const replaceTable = {
     '（': '(',
     '）': ')',
@@ -273,7 +289,7 @@ function handleUserTyped (category, item, typeditem) {
     }
 }
 
-function Migrate2019to2020 (CaseData) {
+export function Migrate2019to2020 (CaseData) {
   if (CaseData.DateOfProcedure.substr(0, 4) > '2019') {
     // 術後診断の置換
     const DiagnosisReplacer = {
