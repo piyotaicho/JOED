@@ -16,7 +16,7 @@
     <!-- Importerセクション -->
     <import-CSV v-if="ImportMode === 'csv'" :stream="FileStream" :disabled="!FileStream" @done="Processed"/>
     <import-merge-v4 v-if="ImportMode === 'merge'" :stream="FileStream" :disabled="!FileStream" @done="Processed"/>
-    <!-- <import-json v-if="ImportMode === 'json'" :stream="FileStream" :disabled="!FileStream" @done="Processed"/> -->
+    <import-JSON v-if="ImportMode === 'json'" :stream="FileStream" :disabled="!FileStream" @done="Processed"/>
 
     <div>
       <el-button type="primary" :disabled="CreatedDocument.length === 0 || Committing > 0" @click="CommitImported">変換したデータの登録</el-button>
@@ -36,12 +36,13 @@ import InputFile from '@/components/Molecules/InputFile'
 import StepIndicator from '@/components/Molecules/StepIndicator'
 import ImportMergeV4 from '@/components/ImportMergeV4'
 import ImportCSV from '@/components/ImportCSV'
+import ImportJSON from '@/components/ImportJSON'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import * as Popups from '@/modules/Popups'
 
 export default {
   name: 'Import',
-  components: { InputFile, StepIndicator, ImportMergeV4, ImportCSV, TheWrapper },
+  components: { InputFile, StepIndicator, ImportMergeV4, ImportCSV, ImportJSON, TheWrapper },
   data () {
     return ({
       Processing: false,
