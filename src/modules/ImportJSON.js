@@ -30,8 +30,8 @@ export function ValidateRecords (records) {
     if (
       record.ProcedureTime &&
       record.PresentAE !== undefined &&
-      !!record.Diagnoses &&
-      !!record.Procedures
+      record.Diagnoses &&
+      record.Procedures
     ) {
       if (record.PatientId === undefined) {
         anonymised = true
