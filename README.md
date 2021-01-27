@@ -21,8 +21,7 @@
 
 ## 配布
 
-- Windows x64, Windows 32bit(非推奨), macos(ia64) ～ <a href="https://github.com/piyotaicho/JOED/releases">Releases</a>よりご利用ください.
-- webアプリ(非推奨) https://p4testsuite.hostingerapp.com/JOEDv5/Release/web/
+- Version1.1 preview https://p4testsuite.hostingerapp.com/JOEDv5/1.1preview/ (不定期更新)
 
 ### アプリケーション版での注意事項
 Windowsではデータをユーザのデータフォルダに格納するのでインストールもユーザフォルダとなります. 現時点ではスタートメニュー内のアイコン右クリックで表示されるアンインストールではアンインストール出来ません.
