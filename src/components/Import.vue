@@ -32,17 +32,17 @@
 </template>
 
 <script>
-import InputFile from '@/components/Molecules/InputFile'
-import StepIndicator from '@/components/Molecules/StepIndicator'
-import ImportMergeV4 from '@/components/ImportMergeV4'
-import ImportCSV from '@/components/ImportCSV'
-import ImportJSON from '@/components/ImportJSON'
-import TheWrapper from '@/components/Atoms/TheWrapper'
 import * as Popups from '@/modules/Popups'
+import InputFile from '@/components/Molecules/InputFile'
+import ImportJSON from '@/components/Molecules/ImportJSON'
+import ImportCSV from '@/components/Molecules/ImportCSV'
+import ImportMergeV4 from '@/components/Molecules/ImportMergeV4'
+import StepIndicator from '@/components/Molecules/StepIndicator'
+import TheWrapper from '@/components/Atoms/TheWrapper'
 
 export default {
   name: 'Import',
-  components: { InputFile, StepIndicator, ImportMergeV4, ImportCSV, ImportJSON, TheWrapper },
+  components: { InputFile, StepIndicator, ImportJSON, ImportCSV, ImportMergeV4, TheWrapper },
   data () {
     return ({
       Processing: false,
@@ -128,8 +128,6 @@ export default {
 
       this.CreatedDocument.splice(0)
       this.$nextTick()
-      // ステータスをリセットする
-      // this.ResetState()
     }
   }
 }
