@@ -33,8 +33,9 @@ Webアプリの動作は動作検証もアプリ版より遅れますまた, Goo
 データベースはブラウザのローカルDBに保存されます.データベースの削除・修正などは https://p4testsuite.hostingerapp.com/JOEDv5/Database_Manager/ のユーティリティを使用してください.
 
 ## 変更履歴
+- 2021-01-28 診断・術式入力の内部処理を変更. 自由入力欄はあくまで主たる目的は検索という部分を強化. そのほか大幅にコンポーネントの名称や階層を整理.
 - 2021-01-27 [Version1.1] JSONでのデータベースインポートを実装.
-- 2021-01-26 [Version1.1] generic CSVのインポートを実装.
+- 2021-01-26 [Version1.1] generic CSVのインポートを実装. ハッシュでの検索の実装と,手術時間での検索方法を変更.
 - 2021-01-08 重複入力チェックの不具合を解消, エクスポート時に重複入力チェックを実装. エラーメッセージ中で改行出来るように機能強化.
 - 2021-01-05 診断・術式の表記変更については自動置換するように仕様追加. (カテゴリをまたぐ変換は影響が大きいので見送り)
 - 2020-12-30 [macos] コピーアンドペーストのため, 編集メニューを設置.
@@ -99,7 +100,7 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |名称                        |タイプ  |フォーマット規則|必須項目|エクスポート対象|解説|
 |:--------------------------|:-----:|:--:|:--:|:--:|:--|
 |Text                       |string | |X|X|診断名マスタから引用|
-|Chain                      |array  | | | |選択ツリー[Category, Target]|
+|Chain                      |array  | | | |選択ツリー[category, Target]|
 |Description                |string | | |X|補足情報(将来の拡張用)|
 |UserTyped                  |boolean| | |X|手入力情報|
 
@@ -109,7 +110,7 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |名称                        |タイプ  |フォーマット規則|必須項目|エクスポート対象|解説|
 |:--------------------------|:-----:|:--:|:--:|:--:|:--|
 |Text                       |string | |X|X|術式名、術式マスタから引用
-|Chain                      |array  | | | |選択ツリー[Category, Target]
+|Chain                      |array  | | | |選択ツリー[category, Target]
 |Description                |array  | | |x|付随情報
 |AdditionalProcedure        |object | | |x|併施術式 - これも同じ構造を取る
 |Ditto                      |array  | | | |重複確認の対象となる術式名
@@ -118,7 +119,7 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 ### オブジェクト:AE
 |名称                        |タイプ  |フォーマット規則|必須項目|エクスポート対象|解説|
 |:--------------------------|:-----:|:--:|:--:|:--:|:--|
-|Category                   |string | |X|X|合併症の発生カテゴリ
+|category                   |string | |X|X|合併症の発生カテゴリ
 |Title                      |string | |X|X|合併症の名称
 |Cause                      |array  | | |X|合併症の原因
 |Location                   |array  | | |X|合併症の発生部位
@@ -138,7 +139,7 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |:--------------------------|:-----:|:--|
 |Diagnosis                  |string |診断名|
 |ICD10                      |string |ICD-10コード|
-|Category                   |array  |関連手技 ["腹腔鏡","ロボット支援下","子宮鏡","卵管鏡"]|
+|category                   |array  |関連手技 ["腹腔鏡","ロボット支援下","子宮鏡","卵管鏡"]|
 |Target                     |array  |部位 ["子宮","付属器","その他"]|
 |Notification               |string |入力時に表示されるおしらせ(未実装)|
 |Procedure                  |string |1:1で紐付けられた術式(未実装)|
@@ -149,7 +150,7 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 DiagnosisMasterから作成される
 ```javascript
 {
-    'Category': {
+    'category': {
         'Target': {
             'Diagnosis'
         }
@@ -163,7 +164,7 @@ DiagnosisMasterから作成される
 |Procedure                  |string |手技名|
 |STEM7                      |string |STEM7コード(未実装)|
 |Kcode|string|対応する社保Kコード(Kxxx-0x-0x形式)|
-|Category                   |array  |良悪性分類 ["腹腔鏡","腹腔鏡悪性","ロボット","ロボット悪性","子宮鏡","卵管鏡"]|
+|category                   |array  |良悪性分類 ["腹腔鏡","腹腔鏡悪性","ロボット","ロボット悪性","子宮鏡","卵管鏡"]|
 |Target                     |array  |部位 ["子宮","付属器","その他"]|
 |VaildFrom                  |string |適用可能年開始|
 |VaildTo                    |string |適用可能年終了<br/>これより後の年次ではこの術式はこの区分は無効かつ登録出来ない|
@@ -176,7 +177,7 @@ DiagnosisMasterから作成される
 ProcedureMasterから作成される
 ```javascript
 {
-    'Category': {
+    'category': {
         'Target': {
             'Procedure', // なにも付随情報が無い場合
             {
