@@ -1,9 +1,9 @@
 <template>
     <div class="new-entry-button"
       :tabindex="tabindex"
-      @click="onClick"
-      @keydown.enter="onClick"
-      @keydown.space="onClick"
+      @click="Click"
+      @keydown.enter="Click"
+      @keydown.space="Click"
       :accesskey="accesskey">
     </div>
 </template>
@@ -21,7 +21,7 @@ export default {
     }
   },
   methods: {
-    onClick (event) {
+    Click (event) {
       this.$emit('click', event)
     }
   }
