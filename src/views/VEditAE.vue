@@ -331,21 +331,14 @@
           </div>
         </div>
       </div>
-
-      <div class="content-bottom">
-        <div class="controls">
-          <el-button type="primary" @click="GoBack">取り消し</el-button>
-          <el-button type="primary" @click="CommitChanges">登録</el-button>
-        </div>
-      </div>
     </EditSection>
   </TheWrapper>
 </template>
 
 <script>
-import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import EditSection from '@/components/Molecules/EditSection'
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 
 import { ZenToHanNumbers } from '@/modules/ZenHanChars'
 import * as Popups from '@/modules/Popups'

@@ -3,47 +3,44 @@
     <EditSection @commit="CommitChanges" @discard="GoBack">
       <ThreePaneSelections
         Pane3Title="候補病名"
-        :Pane1.sync="Category" :Pane1Items="Categories"
+        :Pane1.sync="category" :Pane1Items="Categories"
         @pane1change="CategoryIsChanged()"
-        :Pane2.sync="TargetOrgan" :Pane2Items="TargetOrgans"
+        :Pane2.sync="target" :Pane2Items="TargetOrgans"
         @pane2change="SetCandidateItemsBySelection()"
-        :Pane3.sync="SelectedItem" :Pane3Items="CandidateItems"
+        :Pane3.sync="selectedItem" :Pane3Items="candidates"
         @pane3change="OnCandidateSelected()"
         @pane3dblclick="CommitChanges()"
       />
 
       <FreewordSection
-        v-model="EditableItem"
+        v-model="freewordText"
         :disabled="!UserEditingAllowed"
         @click-search="SetCandidateItemsByFreeword"/>
-
-      <div class="content-bottom">
-        <div class="controls">
-          <el-button type="primary" @click="GoBack">取り消し</el-button>
-          <el-button type="primary" @click="CommitChanges">登録</el-button>
-        </div>
-      </div>
     </EditSection>
   </TheWrapper>
 </template>
 
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
-import DiagnosisMaster from '@/modules/Masters/DiagnosisItemList'
+import Master from '@/modules/Masters/DiagnosisItemList'
 import { getMatchesInDiagnoses } from '@/modules/CloseMatches'
 import * as Popups from '@/modules/Popups'
 
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import EditSection from '@/components/Molecules/EditSection'
 import ThreePaneSelections from '@/components/Molecules/3PaneSelections'
-import FreewordSection from '@/components/Molecules/FreewordSection'
+import FreewordSection from '@/components/Molecules/EditSectionFreeword'
 
-const DiagnosesTree = new DiagnosisMaster()
+const DiagnosesTree = new Master()
 
 export default {
   data () {
     return {
-      CandidateItems: []
+      category: '',
+      target: '',
+      candidates: [],
+      selectedItem: '',
+      freewordText: ''
     }
   },
   mixins: [
@@ -57,9 +54,9 @@ export default {
   },
   created () {
     if (this.ItemValue.UserTyped && this.ItemValue.UserTyped === true) {
-      this.Category = this.ItemValue.Chain[0]
-      this.TargetOrgan = this.ItemValue.Chain[1] ? this.ItemValue.Chain[1] : ''
-      this.EditableItem = this.ItemValue.Text
+      this.category = this.ItemValue.Chain[0]
+      this.target = this.ItemValue.Chain[1] ? this.ItemValue.Chain[1] : ''
+      this.freewordText = this.ItemValue.Text
       this.$nextTick()
     }
   },
@@ -68,60 +65,68 @@ export default {
       return DiagnosesTree.Categories()
     },
     TargetOrgans () {
-      return DiagnosesTree.Targets(this.Category)
+      return DiagnosesTree.Targets(this.category)
     }
   },
   methods: {
     OnCandidateSelected () {
-      const newValue = this.SelectedItem
+      const newValue = this.selectedItem
       if (newValue) {
-        this.EditableItem = newValue
+        this.freewordText = newValue
       }
     },
 
     SetCandidateItemsBySelection () {
-      this.CandidateItems = DiagnosesTree.ItemTitles(this.Category, this.TargetOrgan, this.year)
-      this.SelectedItem = ''
+      this.candidates = DiagnosesTree.ItemTitles(this.category, this.target, this.year)
+      this.selectedItem = ''
       this.$nextTick()
     },
     SetCandidateItemsByFreeword () {
-      if (this.EditableItem && this.UserEditingAllowed) {
-        const flatten = DiagnosesTree.ItemTitles(this.Category, '', this.year)
-        const arr = getMatchesInDiagnoses(this.EditableItem, flatten)
-        this.CandidateItems.splice(0, this.CandidateItems.length, ...arr)
+      if (this.freewordText && this.UserEditingAllowed) {
+        const flatten = DiagnosesTree.ItemTitles(this.category, '', this.year)
+        const arr = getMatchesInDiagnoses(this.freewordText, flatten)
+        this.candidates.splice(0, this.candidates.length, ...arr)
         this.$nextTick()
       }
     },
     async CommitChanges () {
       const temporaryItem = {}
-      if (this.IsItemEdited) {
-        this.SetCandidateItemsByFreeword()
-        if (this.CandidateItems.length !== 0 && await Popups.confirm('候補診断名があります,選択を優先してください.') === false) return
-        if (this.CandidateItems.indexOf(this.TrimmedEditableItem) !== -1) {
-          Popups.information('自由入力の内容が候補診断名にあります,選択してください.')
-          return
-        }
-        if (await Popups.confirm('直接入力した診断名の登録は可能な限り控えてください.') === false) return
-        Object.assign(temporaryItem,
-          {
-            Text: this.TrimmedEditableItem,
-            Chain: [this.Category],
-            UserTyped: true
-          }
-        )
+      if (this.selectedItem !== '') {
+        // 選択された内容が最優先
+        // 選択されたものには適切な付随情報を収納
+        temporaryItem.Text = this.selectedItem
+        temporaryItem.Chain = [this.category, ...(this.target !== '' ? [this.target] : [])]
       } else {
-        if (!this.SelectedItem) {
-          return
-        }
-        Object.assign(temporaryItem,
-          {
-            Text: this.SelectedItem,
-            Chain: [this.Category, this.TargetOrgan]
+        if (this.freewordText.trim() !== '') {
+          // 自由入力は兎にも角にも候補入力を優先させる.
+          this.SetCandidateItemsByFreeword()
+          if (
+            this.candidates.length !== 0 &&
+            await Popups.confirm('候補診断があります,選択を優先してください.') === false
+          ) {
+            return
           }
-        )
+          // 候補に入力と同じものがある場合は何が何でも選択させる.
+          if (this.candidates.indexOf(this.freewordText.trim()) !== -1) {
+            await Popups.information('自由入力の内容が選択候補にありますので選択してください.')
+            return
+          }
+          // 最終確認
+          if (await Popups.confirm('直接入力した診断の登録は可能な限り控えてください.') === false) {
+            return
+          }
+
+          // ユーザ手入力の場合は選択が掛かっていないので最低限の情報のみかつフラグを必ず立てる
+          temporaryItem.Text = this.freewordText.trim()
+          temporaryItem.Chain = [this.category]
+          temporaryItem.UserTyped = true
+        }
       }
-      this.$emit('data-upsert', 'Diagnoses', this.ItemIndex, temporaryItem)
-      this.GoBack()
+      // 新しいレコードが作成されていたら登録, そうでなければなにもしない.
+      if (temporaryItem.Text) {
+        this.$emit('data-upsert', 'Diagnoses', this.ItemIndex, temporaryItem)
+        this.GoBack()
+      }
     }
   }
 }
