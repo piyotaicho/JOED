@@ -1,4 +1,4 @@
-import Master from '@/modules/Master'
+import Master from '@/modules/Masters/Master'
 
 export const LastUpdate = '2020-10-23'
 const defaultReference = '2020'

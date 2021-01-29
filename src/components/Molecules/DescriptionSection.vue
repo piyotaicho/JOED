@@ -2,16 +2,18 @@
   <div class="flex-content">
     <div class="w30"></div>
     <div class="w20 selectionbox">
-      <div class="subtitle">
+      <div>
         <span>{{Container.Title}}</span>
       </div>
     </div>
     <div class="w40 selectionbox">
       <template v-if="IsMultipleSelection">
         <template v-for="item of Source">
-          <LabeledCheckbox v-model="SelectedValue" :value="item" :key="item">
-            {{spliceMarker(item)}}
-          </LabeledCheckbox><br :key="item"/>
+          <div :key="item">
+            <LabeledCheckbox v-model="SelectedValue" :value="item" :key="item">
+              {{spliceMarker(item)}}
+            </LabeledCheckbox>
+          </div>
         </template>
       </template>
       <template v-else>
