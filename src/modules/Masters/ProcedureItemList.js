@@ -1,6 +1,6 @@
 import Master from '@/modules/Masters/Master'
 
-export const LastUpdate = '2020-10-23'
+export const LastUpdate = '2021-02-02'
 const defaultReference = '2020'
 
 // Description の Values: [] のフォーマット
@@ -15,8 +15,14 @@ export default class ProcedureMaster extends Master {
     super({
       腹腔鏡: {
         子宮: [
-          '子宮内膜症病巣除去術',
-          '子宮付属器癒着剥離術',
+          {
+            Text: '子宮内膜症病巣除去術',
+            Kcode: ['K863']
+          },
+          {
+            Text: '子宮付属器癒着剥離術',
+            Kcode: ['K886-00-02']
+          },
           // 2020 表記変更 異所性(子宮外)妊娠手術(その他) -> 異所性妊娠手術(その他)
           {
             Text: '異所性(子宮外)妊娠手術(その他)',
@@ -25,31 +31,42 @@ export default class ProcedureMaster extends Master {
           {
             Text: '異所性妊娠手術(その他)',
             Ditto: ['異所性妊娠手術(卵管摘出術)', '異所性妊娠手術(卵管線状切開術)'],
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            Kcode: ['K912-00-02']
           },
           {
             Text: '腟式子宮全摘出術(LAVH)',
             Ditto: ['子宮腟上部切断術(腹腔鏡下)', '腹腔鏡下単純子宮全摘出術',
-              '腹腔鏡下準広汎子宮全摘出術', '腹腔鏡下広汎子宮全摘出術']
+              '腹腔鏡下準広汎子宮全摘出術', '腹腔鏡下広汎子宮全摘出術'],
+            Kcode: ['K877-02']
           },
-          '子宮腟上部切断術(腹腔鏡下)',
+          {
+            Text: '子宮腟上部切断術(腹腔鏡下)',
+            Kcode: ['K876-02']
+          },
           {
             Text: '子宮全摘出術(TLH,LH)',
             Ditto: ['腟式子宮全摘出術(LAVH)', '腹腔鏡下単純子宮全摘出術',
-              '腹腔鏡下準広汎子宮全摘出術', '腹腔鏡下広汎子宮全摘出術']
+              '腹腔鏡下準広汎子宮全摘出術', '腹腔鏡下広汎子宮全摘出術'],
+            Kcode: ['K877-02']
           },
           {
             Text: '子宮筋腫核出術(腹腔鏡下)',
-            Ditto: ['子宮筋腫核出術(腹腔鏡補助下)']
+            Ditto: ['子宮筋腫核出術(腹腔鏡補助下)'],
+            Kcode: ['K872-02', 'K878-02']
           },
           {
             Text: '子宮筋腫核出術(腹腔鏡補助下)',
-            Ditto: ['子宮筋腫核出術(腹腔鏡下)']
+            Ditto: ['子宮筋腫核出術(腹腔鏡下)'],
+            Kcode: ['K872-02', 'K878-02']
           },
           '子宮腺筋症病巣除去術(腹腔鏡下)',
           '腹腔内観察',
           '骨盤臓器脱修復術',
-          '仙骨腟固定術',
+          {
+            Text: '仙骨腟固定術',
+            Kcode: ['K865-02']
+          },
           {
             Text: '他の悪性疾患の予防的切除術',
             Description: {
@@ -64,7 +81,8 @@ export default class ProcedureMaster extends Master {
               Text: '実施内容',
               Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術', '$MULTI$']
             },
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            Kcode: ['K888-00-02']
           },
           '術後合併症の修復術',
           // 2020 新規
@@ -74,7 +92,10 @@ export default class ProcedureMaster extends Master {
           }
         ],
         付属器: [
-          '子宮内膜症病巣除去術',
+          {
+            Text: '子宮内膜症病巣除去術',
+            Kcode: ['K863-00-00']
+          },
           // 2020 表記変更 子宮付属器嚢胞摘出術(チョコレート嚢胞) -> 子宮付属器嚢胞摘出術(子宮内膜症性嚢胞)
           {
             Text: '子宮付属器嚢胞摘出術(チョコレート嚢胞)',
@@ -82,9 +103,13 @@ export default class ProcedureMaster extends Master {
           },
           {
             Text: '子宮付属器嚢胞摘出術(子宮内膜症性嚢胞)',
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            Kcode: ['K863', 'K887-00-02', 'K888-00-02']
           },
-          '子宮付属器嚢胞摘出術(その他)',
+          {
+            Text: '子宮付属器嚢胞摘出術(その他)',
+            Kcode: ['K887-00-02', 'K888-00-02']
+          },
           // 2020 表記変更 子宮付属器切除術(チョコレート嚢胞) -> 子宮付属器切除術(子宮内膜症性嚢胞)
           {
             Text: '子宮付属器切除術(チョコレート嚢胞)',
@@ -92,13 +117,29 @@ export default class ProcedureMaster extends Master {
           },
           {
             Text: '子宮付属器切除術(子宮内膜症性嚢胞)',
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            Kcode: ['K863-00-00', 'K888-00-02']
           },
-          '子宮付属器切除術(その他)',
-          '子宮付属器癒着剥離術',
-          '卵巣多孔術(開孔術)',
-          '卵管結紮術',
-          '卵管形成術',
+          {
+            Text: '子宮付属器切除術(その他)',
+            Kcode: ['K888-00-02', 'K913-02-02']
+          },
+          {
+            Text: '子宮付属器癒着剥離術',
+            Kcode: ['K886-00-02']
+          },
+          {
+            Text: '卵巣多孔術(開孔術)',
+            Kcode: ['K887-04-00']
+          },
+          {
+            Text: '卵管結紮術',
+            Kcode: ['K887-02-02']
+          },
+          {
+            Text: '卵管形成術',
+            Kcode: ['K887-03-02', 'K888-02-02', 'K890-03-00']
+          },
           // 2020 表記変更 異所性(子宮外)妊娠手術(卵管摘出術) -> 異所性妊娠手術(卵管摘出術)
           {
             Text: '異所性(子宮外)妊娠手術(卵管摘出術)',
@@ -108,7 +149,8 @@ export default class ProcedureMaster extends Master {
           {
             Text: '異所性妊娠手術(卵管摘出術)',
             Ditto: ['異所性妊娠手術(卵管線状切開術)', '異所性妊娠手術(その他)'],
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            Kcode: ['K912-00-02', 'K888-02-02', 'K887-03-02']
           },
           // 2020 表記変更 異所性(子宮外)妊娠手術(卵管摘出術) -> 異所性妊娠手術(卵管摘出術)
           {
@@ -119,7 +161,8 @@ export default class ProcedureMaster extends Master {
           {
             Text: '異所性妊娠手術(卵管線状切開術)',
             Ditto: ['異所性妊娠手術(卵管摘出術)', '異所性妊娠手術(その他)'],
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            Kcode: ['K912-00-02', 'K888-02-02']
           },
           // 2020 表記変更 異所性(子宮外)妊娠手術(その他) -> 異所性妊娠手術(その他)
           {
@@ -129,11 +172,18 @@ export default class ProcedureMaster extends Master {
           {
             Text: '異所性妊娠手術(その他)',
             Ditto: ['異所性妊娠手術(卵管摘出術)', '異所性妊娠手術(卵管線状切開術)'],
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            Kcode: ['K912-00-02']
           },
-          '卵管切除術',
+          {
+            Text: '卵管切除術',
+            Kcode: ['K888-02-02']
+          },
           '腹腔内観察',
-          '上記以外の付属器手術',
+          {
+            Text: '上記以外の付属器手術',
+            Kcode: ['K913-02-02']
+          },
           // 2020 表記変更 チョコレート嚢胞エタノール固定術 -> 卵巣嚢腫エタノール固定術(子宮内膜症性嚢胞含む)
           {
             Text: 'チョコレート嚢胞エタノール固定術',
@@ -141,7 +191,8 @@ export default class ProcedureMaster extends Master {
           },
           {
             Text: '卵巣嚢腫エタノール固定術(子宮内膜症性嚢胞含む)',
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            Kcode: ['J017-00-00']
           },
           // 2020 新規
           {
@@ -150,7 +201,8 @@ export default class ProcedureMaster extends Master {
               Text: '実施内容',
               Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術', '$MULTI$']
             },
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            Kcode: ['K877-02-00', 'K888-00-02', 'K888-02-02']
           },
           // 2020 新規
           {
@@ -159,7 +211,8 @@ export default class ProcedureMaster extends Master {
               Text: '実施内容',
               Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術', '$MULTI$']
             },
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            Kcode: ['K888-00-02']
           },
           // 2020 新規
           {
@@ -174,8 +227,14 @@ export default class ProcedureMaster extends Master {
           }
         ],
         その他: [
-          '子宮内膜症病巣除去術',
-          '子宮付属器癒着剥離術',
+          {
+            Text: '子宮内膜症病巣除去術',
+            Kcode: ['K863-00-00']
+          },
+          {
+            Text: '子宮付属器癒着剥離術',
+            Kcode: ['K886-00-02']
+          },
           // 2020 表記変更 異所性(子宮外)妊娠手術(その他) -> 異所性妊娠手術(その他)
           {
             Text: '異所性(子宮外)妊娠手術(その他)',
@@ -186,10 +245,19 @@ export default class ProcedureMaster extends Master {
             Ditto: ['異所性妊娠手術(卵管摘出術)', '異所性妊娠手術(卵管線状切開術)'],
             VaildFrom: '2020'
           },
-          '造腟術',
-          '腹腔内観察',
+          {
+            Text: '造腟術',
+            Kcode: ['K859-02-00']
+          },
+          {
+            Text: '腹腔内観察',
+            Kcode: ['D314-00-00', 'K636-03-00']
+          },
           '骨盤臓器脱修復術',
-          '仙骨腟固定術',
+          {
+            Text: '仙骨腟固定術',
+            Kcode: ['K865-02']
+          },
           '術後合併症の修復術'
         ]
       },
@@ -199,19 +267,22 @@ export default class ProcedureMaster extends Master {
             Text: '腹腔鏡下単純子宮全摘出術',
             AdditionalProcedure: '腹腔鏡下リンパ節生検・郭清',
             Ditto: ['腟式子宮全摘出術(LAVH)', '子宮全摘出術(TLH,LH)',
-              '腹腔鏡下準広汎子宮全摘出術', '腹腔鏡下広汎子宮全摘出術']
+              '腹腔鏡下準広汎子宮全摘出術', '腹腔鏡下広汎子宮全摘出術'],
+            Kcode: ['K879-02-00']
           },
           {
             Text: '腹腔鏡下準広汎子宮全摘出術',
             AdditionalProcedure: '腹腔鏡下リンパ節生検・郭清',
             Ditto: ['腟式子宮全摘出術(LAVH)', '子宮全摘出術(TLH,LH)',
-              '腹腔鏡下広汎子宮全摘出術', '腹腔鏡下単純子宮全摘出術']
+              '腹腔鏡下広汎子宮全摘出術', '腹腔鏡下単純子宮全摘出術'],
+            Kcode: ['K879-02-00']
           },
           {
             Text: '腹腔鏡下広汎子宮全摘出術',
             AdditionalProcedure: '腹腔鏡下リンパ節生検・郭清',
             Ditto: ['腟式子宮全摘出術(LAVH)', '子宮全摘出術(TLH,LH)',
-              '腹腔鏡下準広汎子宮全摘出術', '腹腔鏡下単純子宮全摘出術']
+              '腹腔鏡下準広汎子宮全摘出術', '腹腔鏡下単純子宮全摘出術'],
+            Kcode: ['K879-02-00']
           },
           {
             Text: '腹腔鏡下子宮頸部摘出術',
@@ -222,7 +293,8 @@ export default class ProcedureMaster extends Master {
             Description: {
               Text: 'リンパ節郭清の範囲',
               Values: ['なし(センチネル生検なし)$', 'なし(センチネル生検あり)', 'PLN', 'PLN+PAN', 'PAN']
-            }
+            },
+            Kcode: ['K627-02-01', 'K627-02-02', 'K627-02-03']
           },
           // 2020 削除
           {
@@ -234,12 +306,14 @@ export default class ProcedureMaster extends Master {
             Description: {
               Text: '実施内容',
               Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術', '$MULTI$']
-            }
+            },
+            Kcode: ['K877-02-00', 'K888-00-02', 'K888-02-02']
           },
           // 2020 新規
           {
             Text: '婦人科以外の悪性疾患による子宮全摘出術',
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            Kcode: ['K877-02-00']
           },
           // 2020 新規
           {
@@ -253,7 +327,8 @@ export default class ProcedureMaster extends Master {
               Text: '組織生検',
               Values: ['[生検]あり', '[生検]なし']
             },
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            Kcode: ['D314-00-00', 'K636-03-00', 'K636-04-00']
           },
           // 2020 新規
           {
@@ -275,14 +350,16 @@ export default class ProcedureMaster extends Master {
               Text: '組織生検',
               Values: ['[生検]あり', '[生検]なし']
             },
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            Kcode: ['D314-00-00', 'K636-03-00', 'K636-04-00']
           },
           {
             Text: '腹腔鏡下付属器摘出術',
             Description: {
               Text: '大網切除・生検',
               Values: ['[大網切除・生検]あり', '[大網切除・生検]なし']
-            }
+            },
+            Kcode: ['K888-00-02', 'K642-02-00']
           },
           {
             Text: '腹腔鏡下リンパ節生検・郭清',
@@ -316,7 +393,8 @@ export default class ProcedureMaster extends Master {
               Text: '実施内容',
               Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術', '$MULTI$']
             },
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            Kcode: ['K888-00-02']
           },
           // 2020 新規
           {
@@ -329,7 +407,8 @@ export default class ProcedureMaster extends Master {
             Description: {
               Text: '大網切除・生検',
               Values: ['[大網切除・生検]あり', '[大網切除・生検]なし']
-            }
+            },
+            Kcode: ['K888-00-02']
           },
           // 2020 新規
           {
@@ -350,7 +429,8 @@ export default class ProcedureMaster extends Master {
               Text: '組織生検',
               Values: ['[生検]あり', '[生検]なし']
             },
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            Kcode: ['D314-00-00', 'K636-03-00', 'K636-04-00']
           },
           // 2020 新規
           {
@@ -373,7 +453,10 @@ export default class ProcedureMaster extends Master {
       },
       ロボット: {
         子宮: [
-          '子宮全摘出術(ロボット支援下)',
+          {
+            Text: '子宮全摘出術(ロボット支援下)',
+            Kcode: ['K877-002-000']
+          },
           '骨盤臓器脱修復術(ロボット支援下)',
           'ロボット支援下その他'
         ],
@@ -382,7 +465,10 @@ export default class ProcedureMaster extends Master {
         ],
         その他: [
           '骨盤臓器脱修復術(ロボット支援下)',
-          '仙骨腟固定術(ロボット支援下)',
+          {
+            Text: '仙骨腟固定術(ロボット支援下)',
+            Kcode: ['K865-002-000']
+          },
           'ロボット支援下その他'
         ]
       },
@@ -391,17 +477,20 @@ export default class ProcedureMaster extends Master {
           {
             Text: 'ロボット支援下単純子宮全摘出術',
             AdditionalProcedure: 'ロボット支援下リンパ節生検・郭清',
-            Ditto: ['ロボット支援下準広汎子宮全摘出術', 'ロボット支援下広汎子宮全摘出術']
+            Ditto: ['ロボット支援下準広汎子宮全摘出術', 'ロボット支援下広汎子宮全摘出術'],
+            Kcode: ['K879-02-00']
           },
           {
             Text: 'ロボット支援下準広汎子宮全摘出術',
             AdditionalProcedure: 'ロボット支援下リンパ節生検・郭清',
-            Ditto: ['ロボット支援下単純子宮全摘出術', 'ロボット支援下広汎子宮全摘出術']
+            Ditto: ['ロボット支援下単純子宮全摘出術', 'ロボット支援下広汎子宮全摘出術'],
+            Kcode: ['K879-02-00']
           },
           {
             Text: 'ロボット支援下広汎子宮全摘出術',
             AdditionalProcedure: 'ロボット支援下リンパ節生検・郭清',
-            Ditto: ['ロボット支援下単純子宮全摘出術', 'ロボット支援下準広汎子宮全摘出術']
+            Ditto: ['ロボット支援下単純子宮全摘出術', 'ロボット支援下準広汎子宮全摘出術'],
+            Kcode: ['K879-02-00']
           },
           {
             Text: 'ロボット支援下子宮頸部摘出術',
@@ -424,27 +513,52 @@ export default class ProcedureMaster extends Master {
           // 2020 新規
           {
             Text: '婦人科以外の悪性疾患によるロボット支援下子宮全摘出術',
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            Kcode: ['K877-02-00']
           }
         ]
       },
       子宮鏡: {
         子宮: [
-          '子宮筋腫摘出術',
-          '子宮内膜ポリープ摘出術',
-          '子宮内腔癒着剥離術',
-          '子宮鏡下子宮中隔切除術',
+          {
+            Text: '子宮筋腫摘出術',
+            Kcode: ['K872-03-01', 'K872-03-02', 'K873-00-01', 'K873-00-02']
+          },
+          {
+            Text: '子宮内膜ポリープ摘出術',
+            Kcode: ['K872-03-01', 'K872-03-02']
+          },
+          {
+            Text: '子宮内腔癒着剥離術',
+            Kcode: ['K863-02-00']
+          },
+          {
+            Text: '子宮鏡下子宮中隔切除術',
+            Kcode: ['K863-02-00']
+          },
           '子宮形成術',
-          '子宮内膜焼灼術',
-          '胎盤ポリープ・胎盤遺残摘出術',
+          {
+            Text: '子宮内膜焼灼術',
+            Kcode: ['K863-03-00']
+          },
+          {
+            Text: '胎盤ポリープ・胎盤遺残摘出術',
+            Kcode: ['K861-00-00', 'K872-03-01', 'K872-03-02']
+          },
           // 2020 新規
           {
             Text: '帝王切開瘢痕症候群創部切除術',
             VaildFrom: '2020'
           },
-          '子宮鏡検査・内膜剥爬術',
+          {
+            Text: '子宮鏡検査・内膜剥爬術',
+            Kcode: ['D320-00-00', 'D322-00-00', 'K861-00-00']
+          },
           '異物除去術',
-          '子宮頸管ポリープ切除術',
+          {
+            Text: '子宮頸管ポリープ切除術',
+            Kcode: ['K866-00-00']
+          },
           '上記以外の子宮体部腫瘍切除術'
         ]
       },
@@ -466,7 +580,8 @@ export default class ProcedureMaster extends Master {
               Text: '実施形態',
               Values: ['卵管鏡単独', '腹腔鏡併用']
             },
-            VaildFrom: '2020'
+            VaildFrom: '2020',
+            Kcode: ['K890-02-00']
           }
         ]
       }
@@ -493,6 +608,33 @@ export default class ProcedureMaster extends Master {
 
   static getDescriptionObject (item) {
     return this.parseItem(item, 'Description')
+  }
+
+  static getCode (item) {
+    return this.parseItem(item, 'Kcode')
+  }
+
+  static matchCode (item, value) {
+    const codes = this.getCode(item)
+    if (codes === undefined) {
+      return false
+    }
+    // matches $1 - code $3 - subcode $5 - subcode2
+    const codebreaker = /^([A-Z]\d{3})(-0{0,1}(\d)){0,1}(-0{0,1}(\d)){0,1}/i
+    const valuegroups = (value.toLocaleUpperCase() + '-0-0').match(codebreaker)
+    if (valuegroups !== null) {
+      for (const code of codes) {
+        const breakedcode = code.match(codebreaker)
+        if (
+          valuegroups[1] === breakedcode[1] &&
+          valuegroups[3] === breakedcode[3] &&
+          valuegroups[5] === breakedcode[5]
+        ) {
+          return true
+        }
+      }
+    }
+    return false
   }
 
   static getDescriptionTitle (item) {
