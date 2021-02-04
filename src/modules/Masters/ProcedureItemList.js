@@ -1,4 +1,5 @@
 import Master from '@/modules/Masters/Master'
+import { ZenToHan } from '@/modules/ZenHanChars'
 
 export const LastUpdate = '2021-02-02'
 const defaultReference = '2020'
@@ -656,3 +657,58 @@ export default class ProcedureMaster extends Master {
 
 // eslint-disable-next-line no-unused-vars
 const MEDISprocedures = {}
+
+const ruleset1 = {
+  // 修飾語の除去
+  緊急: '',
+  // 一般的なゆらぎの内容
+  附属器: '付属器',
+  膣: '腟',
+  頚: '頸',
+  瘤: '脱',
+  下垂: '脱',
+  がん: '癌'
+}
+
+const ruleset2 = {
+  '(のう|嚢)(腫|胞)': '嚢胞',
+  '傍?(卵巣|卵管)': '卵巣 卵管 附属器',
+  'T?LA?M': '子宮筋腫核出術',
+  癌: '癌 摘出',
+  チョコレート: '子宮内膜症',
+  // 子宮内膜症: '子宮内膜症 チョコレート',
+  トラケレクトミー: '頸部摘出術',
+  セカンドルック: 'SecondLookOperation',
+  補助下: ' ',
+  腫瘍: '腫瘍 嚢胞',
+  切除: '切除 摘出',
+  剔出: '摘出',
+  全摘出: '全摘',
+  子宮亜全摘: '子宮腟上部切断',
+  核出: '摘出',
+
+  'D&C': '剥爬術',
+  アブレーション: '焼灼術',
+  IUD: '異物',
+  LSC: '骨盤臓器脱修復術',
+  MEA: '子宮内膜焼灼術',
+  SO: '付属器切除術',
+  TLC: '嚢胞摘出術',
+  TCR: '摘出術'
+}
+
+export function translation (str = '') {
+  // 型変換と余白の削除
+  let value = str.toString().trim()
+  if (value === '') {
+    return ''
+  }
+  // 全角英数の半角変換
+  value = ZenToHan(value)
+
+  // 連結文字列の検索、連結が発見されたら例外を発生させる
+  if (/[ ,.()､、｡。\t]+/.test(value)) {
+    throw new Error('区切り文字で区切られた複数項目からなる入力はできません.')
+  }
+  return value
+}

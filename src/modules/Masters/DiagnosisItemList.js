@@ -1,4 +1,5 @@
 import Master from '@/modules/Masters/Master'
+import { ZenToHan } from '@/modules/ZenHanChars'
 
 export const LastUpdate = '2021-02-02'
 const defaultReference = '2020'
@@ -62,7 +63,7 @@ export default class DiagnosisMaster extends Master {
           {
             Text: '子宮体部腫瘍(APAM,STUMP等)',
             VaildFrom: '2020',
-            ICD10: ['D175', 'D282', 'D390']
+            ICD10: ['D175', 'D282']
           },
           // 2020 新規
           {
@@ -90,7 +91,7 @@ export default class DiagnosisMaster extends Master {
           },
           {
             Text: '骨盤腹膜炎',
-            ICD10: ['N701', 'N719', 'N734', 'N735', 'O85']
+            ICD10: ['K670', 'N701', 'N719', 'N734', 'N735', 'O85']
           },
           // 2020 新規
           {
@@ -244,7 +245,7 @@ export default class DiagnosisMaster extends Master {
           },
           {
             Text: '骨盤腹膜炎',
-            ICD10: ['N701', 'N719', 'N734', 'N735', 'O85']
+            ICD10: ['K670', 'N701', 'N719', 'N734', 'N735', 'O85']
           },
           // 2020 新規
           {
@@ -419,7 +420,10 @@ export default class DiagnosisMaster extends Master {
             Text: '子宮頸管ポリープ',
             ICD10: ['N841']
           },
-          '上記以外の子宮頸部腫瘍',
+          {
+            Text: '上記以外の子宮頸部腫瘍',
+            ICD10: ['N840', 'N888', 'C53*']
+          },
           {
             Text: '過多月経',
             ICD10: ['N92*']
@@ -451,7 +455,7 @@ export default class DiagnosisMaster extends Master {
           },
           {
             Text: '子宮腟異物',
-            ICD10: ['T193']
+            ICD10: ['T192', 'T193']
           }
         ]
       },
@@ -493,23 +497,99 @@ export default class DiagnosisMaster extends Master {
     if (icd10format.test(value)) {
       const uppercasedvalue = value.toLocaleUpperCase()
       for (const code of codes) {
-        const wildcard = code.indexOf('*')
-        // 全一致
-        if (wildcard === -1) {
-          if (code === uppercasedvalue) {
-            return true
-          }
-        } else {
-          // 先頭一致
-          if (code.substr(0, wildcard) === uppercasedvalue.substr(0, wildcard)) {
-            return true
-          }
+        if (compareCode(code, uppercasedvalue)) {
+          return true
         }
       }
     }
     return false
   }
+} // class DiagnosisMaster おわり
+
+function compareCode (str1 = 'A', str2 = 'B') {
+  const wildcard1 = str1.indexOf('*')
+  const wildcard2 = str2.indexOf('*')
+  const comparelength = wildcard1 === -1
+    ? (wildcard2 === -1 ? 4 : wildcard2)
+    : (wildcard2 === -1 ? wildcard1 : Math.min(wildcard1, wildcard2))
+
+  return str1.substr(0, comparelength) === str2.substr(0, comparelength)
 }
 
 // eslint-disable-next-line no-unused-vars
 const MEDISdiagnoses = {}
+
+// 表記の統一のためのruleset g フラグつきで検索・置換する
+const ruleset1 = {
+  // 修飾語の除去
+  '([右左両片]側?性?|傍|(亜?急|慢|([特原続]発)|難治)性|[再多]発性?|部分|(不|完|不完)全|(高度)?変性|巨大|有茎性|破裂|捻転': '',
+  // 一般的なゆらぎの内容
+  附属器: '付属器',
+  膣: '腟',
+  頚: '頸',
+  がん: '癌',
+  閉鎖: '閉塞',
+  '(のう|嚢)(腫|胞)': '嚢$2',
+  // 疾患にありそうな表記の集約
+  '(悪性腺腫|((粘液|漿液)性?腺?|腺)癌)': '癌',
+  '(粘液|漿液|充実|孤立|繊維|多房|単発)性?': ''
+}
+
+// 一般的によくある表現をexact matchにもってゆくための検索式
+const ruleset2 = {
+  // 病名の置換～病名 (コメントにコードを記載)
+  チョコレート: 'N809',
+  '卵巣((成熟)?(嚢胞性)?奇形腫|(デルモイド|皮様)(腫瘍|嚢胞|嚢腫)?)': 'D27',
+  卵巣境界悪性腫瘍: 'D391',
+  '(子宮外|(卵管(角|峡|狭|間質|膨大)部|間質部|瘢痕部?)妊娠': 'O009',
+  '子宮(平滑)筋腫': 'D259',
+  '子宮頸部(軽|中等|高)度異形成': 'N879',
+  '(子宮頸部|)上皮内癌': 'N789',
+  '.+(炎|膿瘍)': 'N735',
+
+  子宮頸部悪性腫瘍: 'C539',
+  '子宮((癌|腺|平滑筋|脂肪|)肉腫|体部悪性腫瘍)': 'C549',
+  '卵巣(未熟|)奇形腫(悪性転化|)': 'C56',
+  '((乳|胃|大腸)癌|(悪性|)リンパ腫)': '婦人科以外の悪性腫瘍',
+  '.*(奇胎|トロホブラスト).*': 'D392',
+
+  '(IUD|(子宮内|)(避妊具|リング))': 'T193',
+  '(子宮|膀胱|腟|直腸)(脱|下垂|瘤)': 'N819',
+  '粘膜下(子宮)?筋腫(分娩)?': 'D250',
+
+  '([AC]IS|CIN(-|)[123])': 'N879',
+  'AEH((-|)C|)': 'N850',
+
+  GTD: 'F649',
+  FTM: 'F649',
+  MTF: 'F649',
+  DIE: 'N809',
+  ESS: 'C541',
+  FHCS: 'K670',
+  LEGH: 'D390',
+  LMS: 'C542',
+  PID: 'N735',
+  POP: 'N819',
+  POI: '上記以外の付属器良性疾患',
+  RRSO: '予防的内性器摘出術の適応',
+  リンチ症候群: '予防的内性器摘出術の適応',
+  HNPCC: '予防的内性器摘出術の適応',
+  STD: 'N735'
+}
+
+export function * translation (str = '') {
+  // 型変換と余白の削除
+  let value = str.toString().trim()
+  if (value === '') {
+    return ''
+  }
+  // 全角英数の半角変換
+  value = ZenToHan(value)
+
+  // 連結文字列の検索、連結が発見されたら例外を発生させる
+  if (/[ ,.()､、｡。\t]+/.test(value)) {
+    throw new Error('区切り文字で区切られた複数項目からなる入力は許容されません.')
+  }
+
+  return value
+}

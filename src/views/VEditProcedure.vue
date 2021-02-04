@@ -115,14 +115,14 @@ export default {
   },
   methods: {
     SetCandidateItemsBySelection () {
-      this.candidates = ProceduresTree.ItemTitles(this.category, this.target, this.year)
+      this.candidates = ProceduresTree.ItemTexts(this.category, this.target, this.year)
       this.selectedItem = ''
       this.$set(this.description, 'Title', '')
       this.$set(this.additionalProcedure, 'Title', '')
     },
     SetCandidateItemsByFreeword () {
       if (this.freewordText && this.UserEditingAllowed) {
-        const flatten = ProceduresTree.ItemTitles(this.category, '', this.year)
+        const flatten = ProceduresTree.ItemTexts(this.category, '', this.year)
         const arr = getMatchesInProcedures(this.freewordText, flatten)
 
         this.candidates.splice(0, this.candidates.length, ...arr)
@@ -136,7 +136,7 @@ export default {
     OnCandidateSelected () {
       const newValue = this.selectedItem
       if (newValue) {
-        const selectedItem = ProceduresTree.getItemByName(newValue, this.category, this.target, newValue, this.year)
+        const selectedItem = ProceduresTree.getItem(newValue, this.category, this.target, newValue, this.year)
         this.setDescriptionSection(selectedItem)
         this.setAdditionalProcedureSection(selectedItem)
         this.$nextTick()
@@ -148,7 +148,7 @@ export default {
       if (additionalProcedure) {
         this.$set(this.additionalProcedure, 'Title', additionalProcedure)
 
-        const additionalItem = ProceduresTree.getItemByName(additionalProcedure, this.category, this.target, this.year)
+        const additionalItem = ProceduresTree.getItem(additionalProcedure, this.category, this.target, this.year)
 
         this.$set(this.additionalProcedure.description, 'Title', Master.getDescriptionTitle(additionalItem))
         this.$set(this.additionalProcedure.description, 'Multi', Master.isDescriptionMultiple(additionalItem))
@@ -191,7 +191,7 @@ export default {
         temporaryItem.Text = this.selectedItem
         temporaryItem.Chain = [this.category, ...(this.target !== '' ? [this.target] : [])]
 
-        const ditto = Master.getDittos(ProceduresTree.getItemByName(temporaryItem.Text, ...temporaryItem.Chain, this.year))
+        const ditto = Master.getDittos(ProceduresTree.getItem(temporaryItem.Text, ...temporaryItem.Chain, this.year))
         if (ditto) {
           temporaryItem.Ditto = [...ditto]
         }

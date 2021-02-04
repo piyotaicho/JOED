@@ -66,12 +66,37 @@ export default class Master {
     return category !== '' ? Object.keys(this[category]) : []
   }
 
-  // カテゴリ・対象臓器に該当するアイテム(名)のarrayを取得
+  // カテゴリ・対象臓器に該当するアイテムのarrayを取得
   //
   // @param {string} カテゴリ
   // @param {string} 対象続器 - 空白もしくはundefinedの場合はカテゴリ内すべて
   // @param {number/string} データセットの参照年指定(デフォルトはマスタの年次=最新)
-  ItemTitles (category = '', target, year = this.YearofMaster) {
+  Items (category = '', target, year = this.YearofMaster) {
+    if ((year).toString() === '') {
+      year = this.YearofMaster
+    }
+    if (year < 2019) {
+      year = 2019
+    }
+
+    const temporaryArray = []
+
+    if (!category) {
+      return temporaryArray
+    }
+
+    for (const targetname of (target ? [target] : this.Targets(category))) {
+      temporaryArray.push(...this[category][targetname])
+    }
+    return temporaryArray
+  }
+
+  // カテゴリ・対象臓器に該当するアイテム名(.Textもしくはキー))のarrayを取得
+  //
+  // @param {string} カテゴリ
+  // @param {string} 対象続器 - 空白もしくはundefinedの場合はカテゴリ内すべて
+  // @param {number/string} データセットの参照年指定(デフォルトはマスタの年次=最新)
+  ItemTexts (category = '', target, year = this.YearofMaster) {
     if ((year).toString() === '') {
       year = this.YearofMaster
     }
@@ -96,20 +121,20 @@ export default class Master {
 
   // カテゴリ・対象続器・アイテム名称に合致するアイテムを取得
   //
-  // @param {string} アイテム名
+  // @param {string} アイテム名(.Text)
   // @param {string} カテゴリ
   // @param {number/string} データセットの参照年指定(デフォルトはマスタの年次=最新)
-  getItemByName (name = '', category = '', target, year = this.YearofMaster) {
+  getItem (text = '', category = '', target, year = this.YearofMaster) {
     if (year < 2019) {
       year = 2019
     }
 
-    if (!name || !category) {
+    if (!text || !category) {
       return {}
     }
 
     for (const targetname of (target ? [target] : this.Targets(category))) {
-      return this[category][targetname].find(item => Master.parseItem(item, 'Text', year) === name)
+      return this[category][targetname].find(item => Master.parseItem(item, 'Text', year) === text)
     }
   }
 

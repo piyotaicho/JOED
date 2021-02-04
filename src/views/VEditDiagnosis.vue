@@ -77,13 +77,13 @@ export default {
     },
 
     SetCandidateItemsBySelection () {
-      this.candidates = DiagnosesTree.ItemTitles(this.category, this.target, this.year)
+      this.candidates = DiagnosesTree.ItemTexts(this.category, this.target, this.year)
       this.selectedItem = ''
       this.$nextTick()
     },
     SetCandidateItemsByFreeword () {
       if (this.freewordText && this.UserEditingAllowed) {
-        const flatten = DiagnosesTree.ItemTitles(this.category, '', this.year)
+        const flatten = DiagnosesTree.ItemTexts(this.category, '', this.year)
         const arr = getMatchesInDiagnoses(this.freewordText, flatten)
         this.candidates.splice(0, this.candidates.length, ...arr)
         this.$nextTick()
