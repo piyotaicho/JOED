@@ -522,7 +522,7 @@ const MEDISdiagnoses = {}
 // 表記の統一のためのruleset g フラグつきで検索・置換する
 const ruleset1 = {
   // 修飾語の除去
-  '([右左両片]側?性?|傍|(亜?急|慢|([特原続]発)|難治)性|[再多]発性?|部分|(不|完|不完)全|(高度)?変性|巨大|有茎性|破裂|捻転': '',
+  '[右左両片]側?性?|傍|(亜?急|慢|([特原続]発)|難治)性|[再多]発性?|部分|(不|完|不完)全|(高度)?変性|巨大|有茎性|破裂|捻転': '',
   // 一般的なゆらぎの内容
   附属器: '付属器',
   膣: '腟',
@@ -537,21 +537,21 @@ const ruleset1 = {
 
 // 一般的によくある表現をexact matchにもってゆくための検索式
 const ruleset2 = {
-  // 病名の置換～病名 (コメントにコードを記載)
+  // 病名の置換～病名
   チョコレート: 'N809',
   '卵巣((成熟)?(嚢胞性)?奇形腫|(デルモイド|皮様)(腫瘍|嚢胞|嚢腫)?)': 'D27',
-  卵巣境界悪性腫瘍: 'D391',
-  '(子宮外|(卵管(角|峡|狭|間質|膨大)部|間質部|瘢痕部?)妊娠': 'O009',
+  '(卵巣|境界悪性){2}腫瘍': 'D391',
+  '(子宮外|(卵管(角|峡|狭|間質|膨大)部|間質部|瘢痕部?))妊娠': 'O009',
   '子宮(平滑)筋腫': 'D259',
   '子宮頸部(軽|中等|高)度異形成': 'N879',
   '(子宮頸部|)上皮内癌': 'N789',
   '.+(炎|膿瘍)': 'N735',
 
-  子宮頸部悪性腫瘍: 'C539',
+  '子宮頸部(悪性腫瘍|癌)': 'C539',
   '子宮((癌|腺|平滑筋|脂肪|)肉腫|体部悪性腫瘍)': 'C549',
-  '卵巣(未熟|)奇形腫(悪性転化|)': 'C56',
+  悪性転化: 'C56',
   '((乳|胃|大腸)癌|(悪性|)リンパ腫)': '婦人科以外の悪性腫瘍',
-  '.*(奇胎|トロホブラスト).*': 'D392',
+  '(奇胎|トロホブラスト)': 'D392',
 
   '(IUD|(子宮内|)(避妊具|リング))': 'T193',
   '(子宮|膀胱|腟|直腸)(脱|下垂|瘤)': 'N819',
@@ -568,6 +568,7 @@ const ruleset2 = {
   FHCS: 'K670',
   LEGH: 'D390',
   LMS: 'C542',
+  MDA: 'C539',
   PID: 'N735',
   POP: 'N819',
   POI: '上記以外の付属器良性疾患',
@@ -577,19 +578,33 @@ const ruleset2 = {
   STD: 'N735'
 }
 
-export function * translation (str = '') {
+export function translation (str = '') {
   // 型変換と余白の削除
-  let value = str.toString().trim()
-  if (value === '') {
+  let searchstring = str.toString().trim()
+  if (searchstring === '') {
     return ''
   }
   // 全角英数の半角変換
-  value = ZenToHan(value)
+  searchstring = ZenToHan(searchstring)
 
   // 連結文字列の検索、連結が発見されたら例外を発生させる
-  if (/[ ,.()､、｡。\t]+/.test(value)) {
+  if (/[ ,.()､、｡。\t]+/.test(searchstring)) {
     throw new Error('区切り文字で区切られた複数項目からなる入力は許容されません.')
   }
 
-  return value
+  // 置換1 - 文字列の全置換
+  for (const rule of Object.keys(ruleset1)) {
+    const regex = new RegExp(rule, 'g')
+    searchstring = searchstring.replace(regex, ruleset1[rule])
+  }
+
+  // 置換2 - 文字列からの検索して置き換え
+  for (const rule of Object.keys(ruleset2)) {
+    const regex = new RegExp(rule)
+    if (regex.test(searchstring)) {
+      searchstring = ruleset2[rule]
+    }
+  }
+
+  return searchstring
 }

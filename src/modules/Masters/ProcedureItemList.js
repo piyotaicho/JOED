@@ -661,29 +661,29 @@ const MEDISprocedures = {}
 const ruleset1 = {
   // 修飾語の除去
   緊急: '',
+  補助下: '',
   // 一般的なゆらぎの内容
   附属器: '付属器',
   膣: '腟',
   頚: '頸',
   瘤: '脱',
   下垂: '脱',
-  がん: '癌'
+  がん: '癌',
+  '傍?(卵巣|卵管)': '卵巣 卵管 附属器',
+  '(のう|嚢)(腫|胞)': '嚢胞',
+  剔出: '摘出',
+  全摘出: '全摘'
 }
 
 const ruleset2 = {
-  '(のう|嚢)(腫|胞)': '嚢胞',
-  '傍?(卵巣|卵管)': '卵巣 卵管 附属器',
   'T?LA?M': '子宮筋腫核出術',
   癌: '癌 摘出',
   チョコレート: '子宮内膜症',
   // 子宮内膜症: '子宮内膜症 チョコレート',
   トラケレクトミー: '頸部摘出術',
   セカンドルック: 'SecondLookOperation',
-  補助下: ' ',
   腫瘍: '腫瘍 嚢胞',
   切除: '切除 摘出',
-  剔出: '摘出',
-  全摘出: '全摘',
   子宮亜全摘: '子宮腟上部切断',
   核出: '摘出',
 
@@ -699,16 +699,31 @@ const ruleset2 = {
 
 export function translation (str = '') {
   // 型変換と余白の削除
-  let value = str.toString().trim()
-  if (value === '') {
+  let searchstring = str.toString().trim()
+  if (searchstring === '') {
     return ''
   }
   // 全角英数の半角変換
-  value = ZenToHan(value)
+  searchstring = ZenToHan(searchstring)
 
   // 連結文字列の検索、連結が発見されたら例外を発生させる
-  if (/[ ,.()､、｡。\t]+/.test(value)) {
-    throw new Error('区切り文字で区切られた複数項目からなる入力はできません.')
+  if (/[ ,.()､、｡。\t]+/.test(searchstring)) {
+    throw new Error('区切り文字で区切られた複数項目からなる入力は許容されません.')
   }
-  return value
+
+  // 置換1 - 文字列の全置換
+  for (const rule of Object.keys(ruleset1)) {
+    const regex = new RegExp(rule, 'g')
+    searchstring = searchstring.replace(regex, ruleset1[rule])
+  }
+
+  // 置換2 - 文字列からの検索して置き換え
+  for (const rule of Object.keys(ruleset2)) {
+    const regex = new RegExp(rule)
+    if (regex.test(searchstring)) {
+      searchstring = ruleset2[rule]
+    }
+  }
+
+  return searchstring
 }
