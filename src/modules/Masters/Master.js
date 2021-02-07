@@ -86,7 +86,11 @@ export default class Master {
     }
 
     for (const targetname of (target ? [target] : this.Targets(category))) {
-      temporaryArray.push(...this[category][targetname])
+      for (const item of this[category][targetname]) {
+        if (Master.parseItem(item, 'Text', year)) {
+          temporaryArray.push(item)
+        }
+      }
     }
     return temporaryArray
   }
@@ -162,5 +166,12 @@ export default class Master {
         return undefined
       }
     }
+  }
+
+  // 3層目オブジェクトの題目を取得 - parseItemのラッパー
+  //
+  // @param {any} ３層目の値
+  getText (item) {
+    return Master.parseItem(item, 'Text')
   }
 }

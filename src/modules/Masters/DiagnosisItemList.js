@@ -1,5 +1,6 @@
 import Master from '@/modules/Masters/Master'
 import { ZenToHan } from '@/modules/ZenHanChars'
+import { getCloseMatches } from 'difflib'
 
 export const LastUpdate = '2021-02-02'
 const defaultReference = '2020'
@@ -484,27 +485,56 @@ export default class DiagnosisMaster extends Master {
     defaultReference)
   }
 
-  static getCode (item) {
+  static getCodes (item) {
     return this.parseItem(item, 'ICD10')
   }
 
-  static matchCode (item, value) {
-    const codes = this.getCode(item)
-    if (codes === undefined) {
-      return false
+  // CloseMatch
+  Matches (text, category = '', target = '', year = this.YearofMaster) {
+    const source = translation(text)
+    if (source === '') {
+      return []
     }
-    const icd10format = /^([A-Z][0-9]{2,3})$/i
-    if (icd10format.test(value)) {
-      const uppercasedvalue = value.toLocaleUpperCase()
-      for (const code of codes) {
-        if (compareCode(code, uppercasedvalue)) {
-          return true
-        }
+    const flattenitems = this.Items(category, target, year)
+    const matcheditemtitles = []
+    // ステップ1 ～正規化しての完全一致
+    // これで一致するものがあったら重複を排除して返す
+    for (const item of flattenitems) {
+      if (
+        source === this.getText(item) ||
+        matchCode(DiagnosisMaster.getCodes(item), source)
+      ) {
+        matcheditemtitles.push(this.getText(item))
       }
     }
-    return false
+    if (matcheditemtitles.length > 0) {
+      return matcheditemtitles.filter((item, index, self) => self.indexOf(item) === index)
+    }
+    // ステップ2 ～closematch
+    console.log(source, flattenitems.map(item => this.getText(item)))
+    return getCloseMatches(
+      source,
+      flattenitems.map(item => this.getText(item)),
+      12, 0.34 // cut and tryでの適応値
+    ).filter((item, index, self) => self.indexOf(item) === index)
   }
 } // class DiagnosisMaster おわり
+
+function matchCode (codes, value) {
+  if (codes === undefined) {
+    return false
+  }
+  const icd10format = /^([A-Z][0-9]{2,3})$/i
+  if (icd10format.test(value)) {
+    const uppercasedvalue = value.toLocaleUpperCase()
+    for (const code of codes) {
+      if (compareCode(code, uppercasedvalue)) {
+        return true
+      }
+    }
+  }
+  return false
+}
 
 function compareCode (str1 = 'A', str2 = 'B') {
   const wildcard1 = str1.indexOf('*')
@@ -578,7 +608,7 @@ const ruleset2 = {
   STD: 'N735'
 }
 
-export function translation (str = '') {
+function translation (str = '') {
   // 型変換と余白の削除
   let searchstring = str.toString().trim()
   if (searchstring === '') {
@@ -600,7 +630,7 @@ export function translation (str = '') {
 
   // 置換2 - 文字列からの検索して置き換え
   for (const rule of Object.keys(ruleset2)) {
-    const regex = new RegExp(rule)
+    const regex = new RegExp(rule, 'i')
     if (regex.test(searchstring)) {
       searchstring = ruleset2[rule]
     }

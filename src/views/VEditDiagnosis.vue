@@ -23,7 +23,7 @@
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
 import Master from '@/modules/Masters/DiagnosisItemList'
-import { getMatchesInDiagnoses } from '@/modules/CloseMatches'
+// import { getMatchesInDiagnoses } from '@/modules/CloseMatches'
 import * as Popups from '@/modules/Popups'
 
 import TheWrapper from '@/components/Atoms/TheWrapper'
@@ -83,8 +83,8 @@ export default {
     },
     SetCandidateItemsByFreeword () {
       if (this.freewordText && this.UserEditingAllowed) {
-        const flatten = DiagnosesTree.ItemTexts(this.category, '', this.year)
-        const arr = getMatchesInDiagnoses(this.freewordText, flatten)
+        // const flatten = DiagnosesTree.Items(this.category, this.target || '', this.year)
+        const arr = DiagnosesTree.Matches(this.freewordText, this.category, this.target || '', this.year) // getMatchesInDiagnoses(this.freewordText, flatten)
         this.candidates.splice(0, this.candidates.length, ...arr)
         this.$nextTick()
       }

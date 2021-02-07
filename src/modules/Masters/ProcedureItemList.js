@@ -1,5 +1,6 @@
 import Master from '@/modules/Masters/Master'
 import { ZenToHan } from '@/modules/ZenHanChars'
+import * as difflib from 'difflib'
 
 export const LastUpdate = '2021-02-02'
 const defaultReference = '2020'
@@ -456,7 +457,7 @@ export default class ProcedureMaster extends Master {
         子宮: [
           {
             Text: '子宮全摘出術(ロボット支援下)',
-            Kcode: ['K877-002-000']
+            Kcode: ['K877-02-00']
           },
           '骨盤臓器脱修復術(ロボット支援下)',
           'ロボット支援下その他'
@@ -468,7 +469,7 @@ export default class ProcedureMaster extends Master {
           '骨盤臓器脱修復術(ロボット支援下)',
           {
             Text: '仙骨腟固定術(ロボット支援下)',
-            Kcode: ['K865-002-000']
+            Kcode: ['K865-02-00']
           },
           'ロボット支援下その他'
         ]
@@ -594,11 +595,8 @@ export default class ProcedureMaster extends Master {
   // ProcedureMasterのstaticメソッド
   // itemは術式への参照
   // - parseItemはMasterからの継承
-
-  static getTitle (item) {
-    return this.parseItem(item)
-  }
-
+  // - 該当項目がなければ undefined を返す
+  // @param {object/string} 第三層の項目
   static getAdditioninalProcedure (item) {
     return this.parseItem(item, 'AdditionalProcedure')
   }
@@ -611,31 +609,8 @@ export default class ProcedureMaster extends Master {
     return this.parseItem(item, 'Description')
   }
 
-  static getCode (item) {
+  static getCodes (item) {
     return this.parseItem(item, 'Kcode')
-  }
-
-  static matchCode (item, value) {
-    const codes = this.getCode(item)
-    if (codes === undefined) {
-      return false
-    }
-    // matches $1 - code $3 - subcode $5 - subcode2
-    const codebreaker = /^([A-Z]\d{3})(-0{0,1}(\d)){0,1}(-0{0,1}(\d)){0,1}/i
-    const valuegroups = (value.toLocaleUpperCase() + '-0-0').match(codebreaker)
-    if (valuegroups !== null) {
-      for (const code of codes) {
-        const breakedcode = code.match(codebreaker)
-        if (
-          valuegroups[1] === breakedcode[1] &&
-          valuegroups[3] === breakedcode[3] &&
-          valuegroups[5] === breakedcode[5]
-        ) {
-          return true
-        }
-      }
-    }
-    return false
   }
 
   static getDescriptionTitle (item) {
@@ -653,6 +628,35 @@ export default class ProcedureMaster extends Master {
   static isDescriptionMultiple (item) {
     return this.getDescriptionObject(item).Values.findIndex(value => value === '$MULTI$') >= 0
   }
+
+  // CloseMatch
+  Matches (text, category = '', target = '', year = this.YearofMaster) {
+    const source = translation(text)
+    if (source === '') {
+      return []
+    }
+    const flattenitems = this.Items(category, target, year)
+    const matcheditemtitles = []
+    // ステップ1 ～正規化しての完全一致
+    // これで一致するものがあったら重複を排除して返す
+    for (const item of flattenitems) {
+      if (
+        source === this.getText(item) ||
+        matchCode(item, source)
+      ) {
+        matcheditemtitles.push(this.getText(item))
+      }
+    }
+    if (matcheditemtitles.length > 0) {
+      return matcheditemtitles.filter((item, index, self) => self.indexOf(item) === index)
+    }
+    // ステップ2 ～closematch
+    return difflib.getCloseMatches(
+      source,
+      flattenitems.map(item => this.getText(item)),
+      12, 0.34 // cut and tryでの適応値
+    ).filter((item, index, self) => self.indexOf(item) === index)
+  }
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -661,43 +665,43 @@ const MEDISprocedures = {}
 const ruleset1 = {
   // 修飾語の除去
   緊急: '',
-  補助下: '',
+  補助: '',
   // 一般的なゆらぎの内容
   附属器: '付属器',
   膣: '腟',
   頚: '頸',
-  瘤: '脱',
-  下垂: '脱',
+  '(瘤|下垂)': '脱',
   がん: '癌',
-  '傍?(卵巣|卵管)': '卵巣 卵管 附属器',
-  '(のう|嚢)(腫|胞)': '嚢胞',
+  チョコレート: '子宮内膜症性',
   剔出: '摘出',
+  '(のう|嚢)(腫|胞)': '嚢$2',
+  '(嚢(腫|胞))核出': '$1摘出',
   全摘出: '全摘'
 }
 
 const ruleset2 = {
-  'T?LA?M': '子宮筋腫核出術',
-  癌: '癌 摘出',
-  チョコレート: '子宮内膜症',
-  // 子宮内膜症: '子宮内膜症 チョコレート',
-  トラケレクトミー: '頸部摘出術',
+  '全?腹腔鏡下子宮全摘': 'K877-02-00',
+  'T?LA?M': 'K872-02-00',
+  '(子宮外|(卵管(角|峡|狭|間質|膨大)部|間質部|瘢痕部?))妊娠': '異所性妊娠',
+  エタノール固定: 'J017-00-00',
+  トラケレクトミー: '腹腔鏡下子宮頸部摘出術',
   セカンドルック: 'SecondLookOperation',
-  腫瘍: '腫瘍 嚢胞',
-  切除: '切除 摘出',
   子宮亜全摘: '子宮腟上部切断',
-  核出: '摘出',
 
   'D&C': '剥爬術',
-  アブレーション: '焼灼術',
-  IUD: '異物',
-  LSC: '骨盤臓器脱修復術',
-  MEA: '子宮内膜焼灼術',
+  アブレーション: 'K863-03-00',
+  IUD: '異物除去術',
+  LSC: '仙骨腟固定術',
+  MEA: 'K863-03-00',
   SO: '付属器切除術',
   TLC: '嚢胞摘出術',
-  TCR: '摘出術'
+  'TCR-?P': 'K872-03-02',
+  'TCRis-?P': 'K872-03-01',
+  'TCR-?M': 'K873-00-02',
+  'TCRis-?M': 'K873-00-01'
 }
 
-export function translation (str = '') {
+function translation (str = '') {
   // 型変換と余白の削除
   let searchstring = str.toString().trim()
   if (searchstring === '') {
@@ -719,11 +723,34 @@ export function translation (str = '') {
 
   // 置換2 - 文字列からの検索して置き換え
   for (const rule of Object.keys(ruleset2)) {
-    const regex = new RegExp(rule)
+    const regex = new RegExp(rule, 'i')
     if (regex.test(searchstring)) {
       searchstring = ruleset2[rule]
     }
   }
 
   return searchstring
+}
+
+function matchCode (item, value) {
+  const codes = this.getCodes(item)
+  if (codes === undefined) {
+    return false
+  }
+  // matches $1 - code $3 - subcode $5 - subcode2
+  const codebreaker = /^([A-Z]\d{3})(-0{0,1}(\d)){0,1}(-0{0,1}(\d)){0,1}/i
+  const valuegroups = (value.toLocaleUpperCase() + '-0-0').match(codebreaker)
+  if (valuegroups !== null) {
+    for (const code of codes) {
+      const breakedcode = code.match(codebreaker)
+      if (
+        valuegroups[1] === breakedcode[1] &&
+        valuegroups[3] === breakedcode[3] &&
+        valuegroups[5] === breakedcode[5]
+      ) {
+        return true
+      }
+    }
+  }
+  return false
 }
