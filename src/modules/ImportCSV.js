@@ -5,7 +5,6 @@ import { CharacterReplacer, Migrate2019to2020 } from '@/modules/ImportMergeV4'
 let internalcounter = 0
 
 export function CreateDocument (record = [], assignrule = {}) {
-  console.log(record)
   // インポートデータのフラグとメッセージ
   const CaseData = {
     Imported: true,

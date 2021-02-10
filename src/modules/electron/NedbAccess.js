@@ -18,7 +18,7 @@ export function FindOne (payload) {
 }
 
 export function FindOneByHash (payload) {
-  return ipcRenderer.invoke('FindOneByHash', payload)
+  return ipcRenderer.invoke('FineOneByHash', payload)
 }
 
 export function Count (payload) {

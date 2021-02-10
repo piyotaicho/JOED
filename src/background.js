@@ -240,7 +240,7 @@ Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate))
 app.setAboutPanelOptions({
   applicationName: app.getName(),
   applicationVersion: process.env.VUE_APP_VERSION,
-  copyright: 'Copyright 2020 JSGOE',
+  copyright: 'Copyright 2020-2021 JSGOE',
   credits: '@piyotaicho https://github.com/piyotaicho/JOED/',
   iconPath: '../public/icon.png'
 })
@@ -405,19 +405,17 @@ ipcMain.handle('FindOne', (_, payload) => {
 })
 
 // FindOneByHash
-// @Object.Query : Object
-// @Object.Projection : Object
+// @Object.Hash : String
+// @Object.SALT : Integer
 ipcMain.handle('FineOneByHash', (_, payload) => {
   const HHX64 = HHX.h64(payload.SALT)
-  const hashvalue = parseInt(payload.Hash, 36)
-
   return new Promise((resolve, reject) => {
     app.DatabaseInstance
       .findOne({
         $where: function () {
           delete this._id
-          const hash = HHX64.update(JSON.stringify(this)).digest().toNumber()
-          return hash === hashvalue
+          const hash = HHX64.update(JSON.stringify(this)).digest().toString(36)
+          return payload.Hash === hash
         }
       })
       .projection({ DocumentId: 1 })
