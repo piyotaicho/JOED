@@ -50,7 +50,6 @@
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
 import Master from '@/modules/Masters/ProcedureItemList'
-import { getMatchesInProcedures } from '@/modules/CloseMatches'
 import * as Popups from '@/modules/Popups'
 
 import TheWrapper from '@/components/Atoms/TheWrapper'
@@ -122,14 +121,13 @@ export default {
     },
     SetCandidateItemsByFreeword () {
       if (this.freewordText && this.UserEditingAllowed) {
-        const flatten = ProceduresTree.ItemTexts(this.category, '', this.year)
-        const arr = getMatchesInProcedures(this.freewordText, flatten)
-
+        const arr = ProceduresTree.Matches(this.freewordText, this.category, this.target || '', this.year)
         this.candidates.splice(0, this.candidates.length, ...arr)
 
         this.selectedItem = ''
         this.$set(this.description, 'Title', '')
         this.$set(this.additionalProcedure, 'Title', '')
+        this.$nextTick()
       }
     },
 

@@ -2,7 +2,7 @@ import Master from '@/modules/Masters/Master'
 import { ZenToHan } from '@/modules/ZenHanChars'
 import { getCloseMatches } from 'difflib'
 
-export const LastUpdate = '2021-02-02'
+export const LastUpdate = '2021-02-10'
 const defaultReference = '2020'
 
 export default class DiagnosisMaster extends Master {
@@ -497,11 +497,11 @@ export default class DiagnosisMaster extends Master {
     }
     const flattenitems = this.Items(category, target, year)
     const matcheditemtitles = []
-    // ステップ1 ～正規化しての完全一致
+    // ステップ1 ～正規化しての部分一致
     // これで一致するものがあったら重複を排除して返す
     for (const item of flattenitems) {
       if (
-        source === this.getText(item) ||
+        this.getText(item).includes(source) ||
         matchCode(DiagnosisMaster.getCodes(item), source)
       ) {
         matcheditemtitles.push(this.getText(item))
@@ -511,17 +511,16 @@ export default class DiagnosisMaster extends Master {
       return matcheditemtitles.filter((item, index, self) => self.indexOf(item) === index)
     }
     // ステップ2 ～closematch
-    console.log(source, flattenitems.map(item => this.getText(item)))
     return getCloseMatches(
       source,
       flattenitems.map(item => this.getText(item)),
-      12, 0.34 // cut and tryでの適応値
+      12, 0.34 // cut and tryでの類似度がこれ
     ).filter((item, index, self) => self.indexOf(item) === index)
   }
 } // class DiagnosisMaster おわり
 
 function matchCode (codes, value) {
-  if (codes === undefined) {
+  if (codes === undefined || Array.isArray(codes) === false) {
     return false
   }
   const icd10format = /^([A-Z][0-9]{2,3})$/i
@@ -545,9 +544,6 @@ function compareCode (str1 = 'A', str2 = 'B') {
 
   return str1.substr(0, comparelength) === str2.substr(0, comparelength)
 }
-
-// eslint-disable-next-line no-unused-vars
-const MEDISdiagnoses = {}
 
 // 表記の統一のためのruleset g フラグつきで検索・置換する
 const ruleset1 = {
@@ -618,7 +614,7 @@ function translation (str = '') {
   searchstring = ZenToHan(searchstring)
 
   // 連結文字列の検索、連結が発見されたら例外を発生させる
-  if (/[ ,.()､、｡。\t]+/.test(searchstring)) {
+  if (/[ ,.､、｡。\t]+/.test(searchstring)) {
     throw new Error('区切り文字で区切られた複数項目からなる入力は許容されません.')
   }
 

@@ -83,7 +83,6 @@ export default {
     },
     SetCandidateItemsByFreeword () {
       if (this.freewordText && this.UserEditingAllowed) {
-        // const flatten = DiagnosesTree.Items(this.category, this.target || '', this.year)
         const arr = DiagnosesTree.Matches(this.freewordText, this.category, this.target || '', this.year) // getMatchesInDiagnoses(this.freewordText, flatten)
         this.candidates.splice(0, this.candidates.length, ...arr)
         this.$nextTick()

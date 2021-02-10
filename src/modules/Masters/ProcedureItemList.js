@@ -2,7 +2,7 @@ import Master from '@/modules/Masters/Master'
 import { ZenToHan } from '@/modules/ZenHanChars'
 import * as difflib from 'difflib'
 
-export const LastUpdate = '2021-02-02'
+export const LastUpdate = '2021-02-10'
 const defaultReference = '2020'
 
 // Description の Values: [] のフォーマット
@@ -19,7 +19,7 @@ export default class ProcedureMaster extends Master {
         子宮: [
           {
             Text: '子宮内膜症病巣除去術',
-            Kcode: ['K863']
+            Kcode: ['K863-00-00']
           },
           {
             Text: '子宮付属器癒着剥離術',
@@ -40,34 +40,34 @@ export default class ProcedureMaster extends Master {
             Text: '腟式子宮全摘出術(LAVH)',
             Ditto: ['子宮腟上部切断術(腹腔鏡下)', '腹腔鏡下単純子宮全摘出術',
               '腹腔鏡下準広汎子宮全摘出術', '腹腔鏡下広汎子宮全摘出術'],
-            Kcode: ['K877-02']
+            Kcode: ['K877-02-00']
           },
           {
             Text: '子宮腟上部切断術(腹腔鏡下)',
-            Kcode: ['K876-02']
+            Kcode: ['K876-02-00']
           },
           {
             Text: '子宮全摘出術(TLH,LH)',
             Ditto: ['腟式子宮全摘出術(LAVH)', '腹腔鏡下単純子宮全摘出術',
               '腹腔鏡下準広汎子宮全摘出術', '腹腔鏡下広汎子宮全摘出術'],
-            Kcode: ['K877-02']
+            Kcode: ['K877-02-00']
           },
           {
             Text: '子宮筋腫核出術(腹腔鏡下)',
             Ditto: ['子宮筋腫核出術(腹腔鏡補助下)'],
-            Kcode: ['K872-02', 'K878-02']
+            Kcode: ['K872-02-00']
           },
           {
             Text: '子宮筋腫核出術(腹腔鏡補助下)',
             Ditto: ['子宮筋腫核出術(腹腔鏡下)'],
-            Kcode: ['K872-02', 'K878-02']
+            Kcode: ['K872-02-00']
           },
           '子宮腺筋症病巣除去術(腹腔鏡下)',
           '腹腔内観察',
           '骨盤臓器脱修復術',
           {
             Text: '仙骨腟固定術',
-            Kcode: ['K865-02']
+            Kcode: ['K865-02-00']
           },
           {
             Text: '他の悪性疾患の予防的切除術',
@@ -106,7 +106,7 @@ export default class ProcedureMaster extends Master {
           {
             Text: '子宮付属器嚢胞摘出術(子宮内膜症性嚢胞)',
             VaildFrom: '2020',
-            Kcode: ['K863', 'K887-00-02', 'K888-00-02']
+            Kcode: ['K863-00-00', 'K887-00-02', 'K888-00-02']
           },
           {
             Text: '子宮付属器嚢胞摘出術(その他)',
@@ -637,12 +637,12 @@ export default class ProcedureMaster extends Master {
     }
     const flattenitems = this.Items(category, target, year)
     const matcheditemtitles = []
-    // ステップ1 ～正規化しての完全一致
+    // ステップ1 ～正規化しての部分一致
     // これで一致するものがあったら重複を排除して返す
     for (const item of flattenitems) {
       if (
-        source === this.getText(item) ||
-        matchCode(item, source)
+        this.getText(item).includes(source) ||
+        matchCode(ProcedureMaster.getCodes(item), source)
       ) {
         matcheditemtitles.push(this.getText(item))
       }
@@ -654,18 +654,37 @@ export default class ProcedureMaster extends Master {
     return difflib.getCloseMatches(
       source,
       flattenitems.map(item => this.getText(item)),
-      12, 0.34 // cut and tryでの適応値
+      12, 0.34 // cut and tryでの類似度がこれ
     ).filter((item, index, self) => self.indexOf(item) === index)
   }
+} // class ProcedureMaster おわり
+
+function matchCode (codes, value) {
+  if (codes === undefined || Array.isArray(codes) === false) {
+    return false
+  }
+  // matches $1 - code $3 - subcode $5 - subcode2
+  const codebreaker = /^([A-Z]\d{3})(-0?(\d))?(-0?(\d))?/
+  const valuegroups = (value.toLocaleUpperCase() + '-0-0').match(codebreaker)
+  if (valuegroups !== null) {
+    for (const code of codes) {
+      const breakedcode = code.match(codebreaker)
+      if (
+        valuegroups[1] === breakedcode[1] &&
+        Number(valuegroups[3]) === Number(breakedcode[3]) &&
+        Number(valuegroups[5]) === Number(breakedcode[5])
+      ) {
+        return true
+      }
+    }
+  }
+  return false
 }
 
-// eslint-disable-next-line no-unused-vars
-const MEDISprocedures = {}
-
+// 表現の揺らぎなど g フラグ付きで検索・置換する
 const ruleset1 = {
   // 修飾語の除去
-  緊急: '',
-  補助: '',
+  '緊急|右|左': '',
   // 一般的なゆらぎの内容
   附属器: '付属器',
   膣: '腟',
@@ -676,13 +695,15 @@ const ruleset1 = {
   剔出: '摘出',
   '(のう|嚢)(腫|胞)': '嚢$2',
   '(嚢(腫|胞))核出': '$1摘出',
-  全摘出: '全摘'
+  '全摘出?': '全摘出'
 }
 
+// exact matchにむけての置換 ルールにマッチしたら文字列を完全に置き換える
 const ruleset2 = {
   '全?腹腔鏡下子宮全摘': 'K877-02-00',
-  'T?LA?M': 'K872-02-00',
-  '(子宮外|(卵管(角|峡|狭|間質|膨大)部|間質部|瘢痕部?))妊娠': '異所性妊娠',
+  LAM: '子宮筋腫核出術(腹腔鏡補助下)',
+  'T?LM': '子宮筋腫核出術(腹腔下)',
+  '(子宮外|(卵管(角|峡|狭|間質|膨大)部|間質部|瘢痕部?))妊娠': '異所性妊娠手術',
   エタノール固定: 'J017-00-00',
   トラケレクトミー: '腹腔鏡下子宮頸部摘出術',
   セカンドルック: 'SecondLookOperation',
@@ -711,7 +732,7 @@ function translation (str = '') {
   searchstring = ZenToHan(searchstring)
 
   // 連結文字列の検索、連結が発見されたら例外を発生させる
-  if (/[ ,.()､、｡。\t]+/.test(searchstring)) {
+  if (/[ ,.､、｡。\t]+/.test(searchstring)) {
     throw new Error('区切り文字で区切られた複数項目からなる入力は許容されません.')
   }
 
@@ -730,27 +751,4 @@ function translation (str = '') {
   }
 
   return searchstring
-}
-
-function matchCode (item, value) {
-  const codes = this.getCodes(item)
-  if (codes === undefined) {
-    return false
-  }
-  // matches $1 - code $3 - subcode $5 - subcode2
-  const codebreaker = /^([A-Z]\d{3})(-0{0,1}(\d)){0,1}(-0{0,1}(\d)){0,1}/i
-  const valuegroups = (value.toLocaleUpperCase() + '-0-0').match(codebreaker)
-  if (valuegroups !== null) {
-    for (const code of codes) {
-      const breakedcode = code.match(codebreaker)
-      if (
-        valuegroups[1] === breakedcode[1] &&
-        valuegroups[3] === breakedcode[3] &&
-        valuegroups[5] === breakedcode[5]
-      ) {
-        return true
-      }
-    }
-  }
-  return false
 }
