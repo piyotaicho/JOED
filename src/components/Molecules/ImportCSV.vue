@@ -133,7 +133,7 @@ export default {
       const ImportedDocuments = []
       try {
         this.ProcessStep = 0
-        this.LogMessages.push('ファイルにはタイトル行を含めて' + this.records.length + '件のレコードがあります.')
+        this.LogMessages.push('ファイルにはタイトル行を含めて' + this.records.length + '行の情報があります.')
 
         this.ProcessStep++
         this.$nextTick()
@@ -147,14 +147,12 @@ export default {
           const record = this.records[index]
           try {
             const newdocument = CreateDocument(record, this.RuleSet)
-
-            if (!this.ReplaceStrings) {
-              ImportedDocuments.push(newdocument)
-            } else {
+            if (this.ReplaceStrings) {
               // 2019以前の登録で使用されていたルールのうち単純置換のものを置換する
               // ただしDateOfProcedure > 2019に限る
-              ImportedDocuments.push(Migrate(newdocument))
+              Migrate(newdocument)
             }
+            ImportedDocuments.push(newdocument)
           } catch (error) {
             console.warn(`On line ${index + 1} - ${error.message}.`)
 

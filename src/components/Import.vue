@@ -50,7 +50,7 @@ export default {
       ImportMode: 'merge',
       FileExtentions: {
         json: '.json',
-        csv: '.csv',
+        csv: '.csv,.mer',
         merge: '.mer'
       },
       FileStream: '',
