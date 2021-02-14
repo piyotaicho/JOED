@@ -16,9 +16,11 @@
         v-show="source === 'CSV'">
         <template #title>
           <span @click="ToggleSource">&#x1f5d8; CSVファイルのフィールド</span>
-          <span @click="CSVcursor('prev')">&#x229f;</span>
-          <span @click="CSVcursor('home')">&#x1f56e;</span>
-          <span @click="CSVcursor('next')">&#x229e;</span>
+          <div style="display: inline-block; margin-left: 1rem; letter-spacing: 0.3rem;">
+            <span @click="CSVcursor('prev')">&#x229f;</span>
+            <span @click="CSVcursor('home')">&#x1f56e;</span>
+            <span @click="CSVcursor('next')">&#x229e;</span>
+          </div>
         </template>
       </QueryPane>
       <QueryPane
@@ -117,7 +119,7 @@ export default {
             if (assignedvalue.compute !== undefined) {
               labelvalue = assignedvalue.title
             }
-            return { [item]: '\u21fd ' + labelvalue }
+            return { [item]: '\u25C0 ' + labelvalue }
           }
         })
     }

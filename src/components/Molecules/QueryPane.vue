@@ -1,6 +1,6 @@
 <template>
   <div class="QueryPane">
-    <div><slot name="title">{{title}}</slot></div>
+    <div class="QueryPaneTitle"><slot name="title">{{title}}</slot></div>
     <div class="QueryPaneList">
       <list-item v-for="(item, index) in container"
         :key="index"
@@ -58,12 +58,14 @@ export default {
 <style lang="sass">
 div.QueryPane
   height: 95%
-  margin: 0.5rem 0.3rem 0.5rem 0.3rem
+  // margin: 0.5rem 0.3rem 0.5rem 0.3rem
   padding-bottom: 1rem
   display: flex
   flex-direction: column
+div.QueryPaneTitle
+  font-weight: 600
 div.QueryPaneList
-  height: 11.8rem
+  height: 12.4rem
   overflow-y: auto
   flex-grow: 1
 </style>

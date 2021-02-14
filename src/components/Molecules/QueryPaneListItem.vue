@@ -1,7 +1,9 @@
 <template>
   <div class="QueryPaneListItem"
+    ref="item"
     :draggable="draggable"
-    @dragover.prevent
+    @dragover.prevent="changeStyle(true)"
+    @dragleave.prevent="changeStyle(false)"
     @dragenter.prevent
     @dragstart="dragged($event)"
     @drop="dropped($event)"
@@ -13,7 +15,7 @@
         </div>
       </slot>
     </div>
-    <div class="QueryPaneListItemEraseButton" v-if="erasable" @click="erase" />
+    <div class="QueryPaneListItemEraseButton" v-if="erasable" @click="erase"/>
   </div>
 </template>
 
@@ -63,7 +65,17 @@ export default {
       this.$emit('dragged', event)
     },
     dropped (event) {
+      this.changeStyle(false)
       this.$emit('dropped', event)
+    },
+    changeStyle (status) {
+      if (status) {
+        // true - dragoverの状態
+        this.$refs.item.classList.add('ondrag')
+      } else {
+        // false - dragoverが何らかの要因(drop, leave)で解除
+        this.$refs.item.classList.remove('ondrag')
+      }
     }
   }
 }
@@ -74,15 +86,16 @@ div.QueryPaneListItem
   display: flex
   flex-direction: row
   justify-content: space-between
-  background: white
   height: 2rem
-  border: 1px solid grey
+  border: 0.15rem solid var(--border-color-base)
   border-radius: 0.18rem
-  margin: 0.2rem
+  margin: 0.14rem
   &:nth-child(odd)
     background: var(--background-color-list)
   &:nth-child(even)
     background: var(--background-color-dialog)
+  &.ondrag
+    border-color: var(--color-warning)
 
 div.QueryPaneListItemLabel
   width: 100%
