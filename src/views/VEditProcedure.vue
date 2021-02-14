@@ -134,7 +134,7 @@ export default {
     OnCandidateSelected () {
       const newValue = this.selectedItem
       if (newValue) {
-        const selectedItem = ProceduresTree.getItem(newValue, this.category, this.target, newValue, this.year)
+        const selectedItem = ProceduresTree.getItem(newValue, this.category, this.target, this.year)
         this.setDescriptionSection(selectedItem)
         this.setAdditionalProcedureSection(selectedItem)
         this.$nextTick()
@@ -189,7 +189,7 @@ export default {
         temporaryItem.Text = this.selectedItem
         temporaryItem.Chain = [this.category, ...(this.target !== '' ? [this.target] : [])]
 
-        const ditto = Master.getDittos(ProceduresTree.getItem(temporaryItem.Text, ...temporaryItem.Chain, this.year))
+        const ditto = Master.getDittos(ProceduresTree.getItem(temporaryItem.Text, temporaryItem.Chain[0], temporaryItem.Chain[1], this.year))
         if (ditto) {
           temporaryItem.Ditto = [...ditto]
         }

@@ -44,6 +44,10 @@ export default {
 
       await this.$nextTick()
 
+      if (this.candidates) {
+        this.candidates.splice(0)
+      }
+
       // 対象臓器が1つだけのときはそれを選択する
       if (this.TargetOrgans.length === 1) {
         this.target = this.TargetOrgans[0]

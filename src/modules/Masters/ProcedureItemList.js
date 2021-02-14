@@ -650,6 +650,7 @@ export default class ProcedureMaster extends Master {
     if (matcheditemtitles.length > 0) {
       return matcheditemtitles.filter((item, index, self) => self.indexOf(item) === index)
     }
+
     // ステップ2 ～closematch
     return difflib.getCloseMatches(
       source,
@@ -702,7 +703,7 @@ const ruleset1 = {
 const ruleset2 = {
   '全?腹腔鏡下子宮全摘': 'K877-02-00',
   LAM: '子宮筋腫核出術(腹腔鏡補助下)',
-  'T?LM': '子宮筋腫核出術(腹腔下)',
+  'T?LM': '子宮筋腫核出術(腹腔鏡下)',
   '(子宮外|(卵管(角|峡|狭|間質|膨大)部|間質部|瘢痕部?))妊娠': '異所性妊娠手術',
   エタノール固定: 'J017-00-00',
   トラケレクトミー: '腹腔鏡下子宮頸部摘出術',
@@ -714,7 +715,7 @@ const ruleset2 = {
   IUD: '異物除去術',
   LSC: '仙骨腟固定術',
   MEA: 'K863-03-00',
-  SO: '付属器切除術',
+  '[LRB]?SO': '付属器切除術',
   TLC: '嚢胞摘出術',
   'TCR-?P': 'K872-03-02',
   'TCRis-?P': 'K872-03-01',
