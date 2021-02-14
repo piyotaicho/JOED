@@ -2,7 +2,7 @@ import ProcedureTimeSelections from '@/modules/ProcedureTimes'
 import { DateFormat } from '@/modules/CaseValidater'
 import { CharacterReplacer, Migrate2019to2020 } from '@/modules/ImportMergeV4'
 
-let internalcounter = 0
+let staticCount = 0
 
 export function CreateDocument (record = [], assignrule = {}) {
   // インポートデータのフラグとメッセージ
@@ -82,7 +82,7 @@ function BasicInformation (CaseData, record, assignrule) {
       if (compute !== 'ID') {
         throw new Error(fieldname + 'にはID以外の自動生成は設定できません.')
       }
-      return 'I-' + ('000000' + (++internalcounter).toString(10)).substr(-6)
+      return 'I-' + ('000000' + (++staticCount).toString(10)).substr(-6)
     }
   )
   if (ID !== undefined) {
