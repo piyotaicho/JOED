@@ -1,10 +1,10 @@
 <template>
-    <div class="open-drawer-button"
-      :tabindex="tabindex"
-      @click="onClick"
-      @keydown.enter="onClick"
-      :accesskey="accesskey">
-    </div>
+  <div class="open-drawer-button"
+    :tabindex="tabindex"
+    @click="Click"
+    @keydown.enter="Click"
+    :accesskey="accesskey">
+  </div>
 </template>
 
 <script>
@@ -19,7 +19,7 @@ export default {
     }
   },
   methods: {
-    onClick (event) {
+    Click (event) {
       this.$emit('click', event)
     }
   }

@@ -1,84 +1,50 @@
 import ProcedureTimeSelections from '@/modules/ProcedureTimes'
 
-const RecordError = new Error('レコードの様式が不適合です.')
-
-function phraseCSV (loadeddocument) {
-  const rows = []
-
-  // 改行コードを確認して切り出し
-  const rs = (loadeddocument.indexOf('\r\n') < 0) ? (loadeddocument.indexOf('\r') < 0 ? '\n' : '\r') : '\r\n'
-  const lines = loadeddocument.split(rs)
-
-  for (let i = 0; i < lines.length; i++) {
-    const len = lines[i].length
-    const row = []
-    for (let j = 0; j < len; j++) {
-      let k
-      // 各フィールド毎に切り出してゆく
-      if (lines[i].charAt(j) === '"') {
-        // ダブルクォートでのクオートあり閉じをさがす
-        for (k = j + 1; k < len; k++) {
-          k = ((k = lines[i].indexOf('"', k)) < 0) ? len : k
-          if (lines[i].charAt(++k) !== '"') {
-            // クオートのエスケープでなければ切り出しへ
-            break
-          }
-        }
-        row.push(lines[i].substring(j + 1, k - 1).replace(/""/g, '"'))
-      } else {
-        // クオート無し カンマを探す
-        k = (k = lines[i].indexOf(',', j)) < 0 ? len : k
-        row.push(lines[i].substring(j, k))
-      }
-      j = k
-    }
-    // 空白行は無視する
-    if (row.length > 0) {
-      rows.push(row)
-    }
+export function ValidateRecords (records) {
+  if (!Array.isArray(records)) {
+    throw new Error('内部呼び出しのエラーです.')
   }
-  return (rows)
-}
-
-export function phraseTitledCSV (loadeddocument) {
-  const doc = phraseCSV(loadeddocument)
-
-  const header = doc.slice(0, 1).flat()
-
-  return doc.slice(1).map(line => {
-    const record = {}
-    for (const index in line) {
-      // 余りに半角スペースだけのフィールドが目立つのでここで処理
-      record[header[index]] = line[index].trim()
-    }
-    return record
-  })
+  const length = records.length
+  if (length === 0) {
+    throw new Error('ファイルに有効なレコードが含まれていません.')
+  }
+  if (!(records[0]['合併症有無'] && records[0]['手術時間'] && records[0]['手術年'])) {
+    throw new Error('指定されたファイルは 症例登録システムJOE-D version 4 で適切に入力・出力されたmergeファイル(.mer)ではありません.')
+  }
+  return length
 }
 
 export function CreateDocument (record) {
   // インポートデータのフラグとメッセージ
   const CaseData = {
     Imported: true,
-    Notification: '外部から変換・読み込まれたデータです.確認と保存が必要です.\n'
+    Notification: '症例登録システムJOE-D version 4から読み込まれたデータです.確認と保存が必要です.\n'
   }
 
-  DateOfProcedure(record, CaseData)
-  BasicInformation(record, CaseData)
-  ProcedureTime(record, CaseData)
-  DiagnosesAndProceduresPrimary(record, CaseData)
-  DiagnosesAndProceduresSecondary(record, CaseData)
-  AEs(record, CaseData)
+  // DateOfProcedue と ID はレコード構成の最低限必須項目
+  DateOfProcedure(CaseData, record)
+  BasicInformation(CaseData, record)
+  // 以下からの例外については欠損項目として処理
+  try {
+    ProcedureTime(CaseData, record)
+    DiagnosesAndProceduresPrimary(CaseData, record)
+    DiagnosesAndProceduresSecondary(CaseData, record)
+    AEs(CaseData, record)
+  } catch (error) {
+    console.warn(error.message)
+  }
 
+  // 2019年マスターからの単純置換(2020～のみ)
   Migrate2019to2020(CaseData)
 
   return CaseData
 }
 
-function DateOfProcedure (Record, CaseData) {
-  if (Record['手術日']) {
+function DateOfProcedure (CaseData, record) {
+  if (record['手術日']) {
     try {
       CaseData.DateOfProcedure = '20' +
-      Record['手術日']
+      record['手術日']
         .match(/^20([0-9]{2})[/-](0{0,1}[1-9]|1[0-2])[/-](0{0,1}[1-9]|[12][0-9]|3[01])$/)
         .splice(1, 3)
         .map(item => ('0' + item).substr(-2))
@@ -86,34 +52,35 @@ function DateOfProcedure (Record, CaseData) {
       return
     } catch {}
   }
-  if (Record['手術年']) {
-    CaseData.DateOfProcedure = Record['手術年'] + '-01-01'
+  // 日付フォーマットの問題などがあったら日付を自動生成
+  if (record['手術年']) {
+    CaseData.DateOfProcedure = record['手術年'] + '-01-01'
     return
   }
-  throw new Error('手術日もしくは手術年がありません.')
+  throw new Error('レコード中に手術日もしくは手術年の項目がありません.')
 }
 
-function BasicInformation (Record, CaseData) {
+function BasicInformation (CaseData, record) {
   // 非必須フィールドの設定
-  if (Record['氏名']) { CaseData.Name = Record['氏名'] }
-  if (Record['年齢']) { CaseData.Age = Record['年齢'] }
-  if (Record['症例別腫瘍登録番号']) { CaseData.JSOGId = Record['症例別腫瘍登録番号'] }
+  if (record['氏名']) { CaseData.Name = record['氏名'] }
+  if (record['年齢']) { CaseData.Age = record['年齢'] }
+  if (record['症例別腫瘍登録番号']) { CaseData.JSOGId = record['症例別腫瘍登録番号'] }
 
   // 患者IDを設定もしくは生成
-  if (Record.ID) {
-    CaseData.PatientId = Record.ID
+  if (record.ID) {
+    CaseData.PatientId = record.ID
     return
   }
-  if (Record['内部ID']) {
-    CaseData.PatientId = CaseData.DateOfProcedure.substr(0, 4) + Record['内部ID'].substr(5)
+  if (record['内部ID']) {
+    CaseData.PatientId = CaseData.DateOfProcedure.substr(0, 4) + record['内部ID'].substr(5)
     return
   }
   CaseData.PatientId = 'I-' + Number(new Date()).toString().substr(-8)
 }
 
-function ProcedureTime (Record, CaseData) {
-  if (Record['手術時間']) {
-    const timestrmatches = Record['手術時間']
+function ProcedureTime (CaseData, record) {
+  if (record['手術時間']) {
+    const timestrmatches = record['手術時間']
       .match(/\s*(\d+)(分{0,1}(以上|(未満|まで))){0,1}/)
     if (timestrmatches) {
       const timevalue = Number(timestrmatches[1]) - (timestrmatches[4] !== undefined ? 1 : 0)
@@ -124,49 +91,56 @@ function ProcedureTime (Record, CaseData) {
   throw new Error('手術時間の様式が不正です.')
 }
 
-function DiagnosesAndProceduresPrimary (Record, CaseData) {
+function DiagnosesAndProceduresPrimary (CaseData, record) {
   CaseData.Diagnoses = []
   CaseData.Procedures = []
 
   if ([
-    Record['腹腔鏡術後診断'],
-    Record['子宮鏡術後診断'],
-    Record['卵管鏡術後診断']
-  ].filter(item => item).length !== 1) throw RecordError
-  if ([
-    Record['腹腔鏡施行手術'],
-    Record['子宮鏡施行手術'],
-    Record['卵管鏡施行手術']
-  ].filter(item => item).length !== 1) throw RecordError
+    record['腹腔鏡術後診断'],
+    record['子宮鏡術後診断'],
+    record['卵管鏡術後診断']
+  ].filter(item => item).length !== 1) {
+    throw new Error('手術診断の入力がありません.')
+  }
 
-  if (Record['腹腔鏡術後診断']) {
+  if ([
+    record['腹腔鏡施行手術'],
+    record['子宮鏡施行手術'],
+    record['卵管鏡施行手術']
+  ].filter(item => item).length !== 1) {
+    throw new Error('実施手術の入力がありません.')
+  }
+
+  if (record['腹腔鏡術後診断']) {
     CaseData.Diagnoses.push(handleUserTyped(
-      Record['良性悪性_病名'] === '良性' ? '腹腔鏡' : '腹腔鏡悪性',
-      Record['腹腔鏡術後診断'], Record['腹腔鏡術後診断その他'])
+      record['良性悪性_病名'] === '良性' ? '腹腔鏡' : '腹腔鏡悪性',
+      record['腹腔鏡術後診断'], record['腹腔鏡術後診断その他'])
     )
 
     CaseData.Procedures.push(
       laparoProcedure(
-        Record['腹腔鏡施行手術'], Record['腹腔鏡施行手術その他'],
-        Record['良性悪性_病名'] === '良性' ? '' : '悪性',
-        Record['リンパ節郭清'], Record['大網生検']
+        record['腹腔鏡施行手術'], record['腹腔鏡施行手術その他'],
+        record['良性悪性_病名'] === '良性' ? '' : '悪性',
+        record['リンパ節郭清'], record['大網生検']
       )
     )
   }
-  if (Record['子宮鏡術後診断']) {
+
+  if (record['子宮鏡術後診断']) {
     CaseData.Diagnoses.push(handleUserTyped(
-      '子宮鏡', Record['子宮鏡術後診断'], Record['子宮鏡術後診断その他']
+      '子宮鏡', record['子宮鏡術後診断'], record['子宮鏡術後診断その他']
     ))
     CaseData.Procedures.push(handleUserTyped(
-      '子宮鏡', Record['子宮鏡施行手術'], Record['子宮鏡施行手術その他']
+      '子宮鏡', record['子宮鏡施行手術'], record['子宮鏡施行手術その他']
     ))
   }
-  if (Record['卵管鏡術後診断']) {
+
+  if (record['卵管鏡術後診断']) {
     CaseData.Diagnoses.push(handleUserTyped(
-      '卵管鏡', Record['卵管鏡術後診断'], Record['卵管鏡術後診断その他']
+      '卵管鏡', record['卵管鏡術後診断'], record['卵管鏡術後診断その他']
     ))
     CaseData.Procedures.push(handleUserTyped(
-      '卵管鏡', Record['卵管鏡施行手術'], Record['卵管鏡施行手術その他']
+      '卵管鏡', record['卵管鏡施行手術'], record['卵管鏡施行手術その他']
     ))
   }
 
@@ -174,73 +148,74 @@ function DiagnosesAndProceduresPrimary (Record, CaseData) {
   try {
     CaseData.TypeOfProcedure = CaseData.Procedures[0].Chain[0]
   } catch (e) {
-    throw RecordError
+    throw new Error('実施術式カテゴリの抽出に失敗しました.')
   }
 }
 
-function DiagnosesAndProceduresSecondary (Record, CaseData) {
-  if (Record['腹腔鏡併施手術_術後診断1']) {
-    if (Record['腹腔鏡併施手術_術後診断1'] !== Record['腹腔鏡術後診断'] || Record['腹腔鏡併施手術_術後診断1'] === 'その他') {
+function DiagnosesAndProceduresSecondary (CaseData, record) {
+  if (record['腹腔鏡併施手術_術後診断1']) {
+    if (record['腹腔鏡併施手術_術後診断1'] !== record['腹腔鏡術後診断'] || record['腹腔鏡併施手術_術後診断1'] === 'その他') {
       CaseData.Diagnoses.push(handleUserTyped(
-        Record['併施手術1_良性悪性_病名'] === '良性' ? '腹腔鏡' : '腹腔鏡悪性',
-        Record['腹腔鏡併施手術_術後診断1'], Record['腹腔鏡併施手術_術後診断1その他']
+        record['併施手術1_良性悪性_病名'] === '良性' ? '腹腔鏡' : '腹腔鏡悪性',
+        record['腹腔鏡併施手術_術後診断1'], record['腹腔鏡併施手術_術後診断1その他']
       ))
     }
   }
-  if (Record['腹腔鏡併施手術_術後診断2']) {
-    if (Record['腹腔鏡併施手術_術後診断2'] !== Record['腹腔鏡術後診断'] || Record['腹腔鏡併施手術_術後診断2'] === 'その他') {
+  if (record['腹腔鏡併施手術_術後診断2']) {
+    if (record['腹腔鏡併施手術_術後診断2'] !== record['腹腔鏡術後診断'] || record['腹腔鏡併施手術_術後診断2'] === 'その他') {
       CaseData.Diagnoses.push(handleUserTyped(
-        Record['併施手術2_良性悪性_病名'] === '良性' ? '腹腔鏡' : '腹腔鏡悪性',
-        Record['腹腔鏡併施手術_術後診断2'], Record['腹腔鏡併施手術_術後診断2その他']
+        record['併施手術2_良性悪性_病名'] === '良性' ? '腹腔鏡' : '腹腔鏡悪性',
+        record['腹腔鏡併施手術_術後診断2'], record['腹腔鏡併施手術_術後診断2その他']
       ))
     }
   }
-  if (Record['子宮鏡併施手術_術後診断']) {
-    if (Record['子宮鏡併施手術_術後診断'] !== Record['子宮鏡術後診断'] || Record['子宮鏡併施手術_術後診断'] === 'その他') {
+  if (record['子宮鏡併施手術_術後診断']) {
+    if (record['子宮鏡併施手術_術後診断'] !== record['子宮鏡術後診断'] || record['子宮鏡併施手術_術後診断'] === 'その他') {
       CaseData.Diagnoses.push(handleUserTyped(
-        '子宮鏡', Record['子宮鏡併施手術_術後診断'], Record['子宮鏡併施手術_術後診断その他']
+        '子宮鏡', record['子宮鏡併施手術_術後診断'], record['子宮鏡併施手術_術後診断その他']
       ))
     }
   }
 
-  if (Record['腹腔鏡併施手術_施行手術1']) {
+  if (record['腹腔鏡併施手術_施行手術1']) {
     const item = laparoProcedure(
-      Record['腹腔鏡併施手術_施行手術1'], Record['腹腔鏡併施手術_施行手術1その他'],
-      Record['併施手術1_良性悪性_術式'] === '良性' ? '' : '悪性',
-      Record['併施手術1_リンパ節郭清'], Record['併施手術1_大網生検']
+      record['腹腔鏡併施手術_施行手術1'], record['腹腔鏡併施手術_施行手術1その他'],
+      record['併施手術1_良性悪性_術式'] === '良性' ? '' : '悪性',
+      record['併施手術1_リンパ節郭清'], record['併施手術1_大網生検']
     )
     if (item) CaseData.Procedures.push(item)
   }
-  if (Record['腹腔鏡併施手術_施行手術2']) {
+  if (record['腹腔鏡併施手術_施行手術2']) {
     const item = laparoProcedure(
-      Record['腹腔鏡併施手術_施行手術2'], Record['腹腔鏡併施手術_施行手術2その他'],
-      Record['併施手術2_良性悪性_術式'] === '良性' ? '' : '悪性',
-      Record['併施手術2_リンパ節郭清'], Record['併施手術2_大網生検']
+      record['腹腔鏡併施手術_施行手術2'], record['腹腔鏡併施手術_施行手術2その他'],
+      record['併施手術2_良性悪性_術式'] === '良性' ? '' : '悪性',
+      record['併施手術2_リンパ節郭清'], record['併施手術2_大網生検']
     )
     if (item) CaseData.Procedures.push(item)
   }
-  if (Record['子宮鏡併施手術_施行手術']) {
-    if (Record['子宮鏡併施手術_施行手術'] !== Record['子宮鏡施行手術'] || Record['子宮鏡併施手術_施行手術'] === 'その他') {
+  if (record['子宮鏡併施手術_施行手術']) {
+    if (record['子宮鏡併施手術_施行手術'] !== record['子宮鏡施行手術'] || record['子宮鏡併施手術_施行手術'] === 'その他') {
       CaseData.Procedures.push(handleUserTyped(
-        '子宮鏡', Record['子宮鏡併施手術_施行手術'], Record['子宮鏡併施手術_施行手術その他']
+        '子宮鏡', record['子宮鏡併施手術_施行手術'], record['子宮鏡併施手術_施行手術その他']
       ))
     }
   }
 }
 
-function AEs (Record, CaseData) {
-  if (Record['合併症有無'] !== undefined) {
-    if (Record['合併症有無'] === 'なし') {
+function AEs (CaseData, record) {
+  if (record['合併症有無'] !== undefined) {
+    if (record['合併症有無'] === 'なし') {
       CaseData.PresentAE = false
     } else {
       CaseData.PresentAE = true
       CaseData.Notification = (CaseData.Notification || '') + '合併症の再入力が必要です.\n'
     }
   } else {
-    throw RecordError
+    throw new Error('合併症の有無の入力がありません.')
   }
 }
-function CharacterReplacer (str = '') {
+
+export function CharacterReplacer (str = '') {
   const replaceTable = {
     '（': '(',
     '）': ')',
@@ -314,7 +289,7 @@ function handleUserTyped (category, item, typeditem) {
     }
 }
 
-function Migrate2019to2020 (CaseData) {
+export function Migrate2019to2020 (CaseData) {
   if (CaseData.DateOfProcedure.substr(0, 4) > '2019') {
     // 術後診断の置換
     const DiagnosisReplacer = {

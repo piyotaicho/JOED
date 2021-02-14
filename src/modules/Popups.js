@@ -61,3 +61,18 @@ export async function confirmYesNo (message) {
     confirmButtonText: 'はい'
   }).then(_ => true, _ => false)
 }
+
+export async function prompt (message, rule = undefined) {
+  const options = {
+    title: '入力',
+    confirmButtonText: 'OK',
+    cancelButtonText: 'キャンセル'
+  }
+
+  if (rule !== undefined) {
+    options.inputPattern = new RegExp(rule)
+    options.inputErrorMessage = '入力規則に合致しません.'
+  }
+  return await MessageBox.prompt(message, options)
+    .then(value => value.value, _ => null)
+}

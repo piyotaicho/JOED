@@ -29,7 +29,7 @@ module.exports = {
     electronBuilder: {
       appId: process.env.VUP_APP_ID,
       productName: 'JOED',
-      copyright: 'Copyright (C) 2020 Yasuhiro Yamamoto @piyotaicho and 日本産科婦人科内視鏡学会',
+      copyright: 'Copyright (C) 2020-2021 Yasuhiro Yamamoto @piyotaicho and 日本産科婦人科内視鏡学会',
       nodeIntegration: true,
       buildResources: 'build/*',
       win: {

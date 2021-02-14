@@ -9,7 +9,6 @@ export default {
   name: 'CaseCategoryIdentifier',
   props: {
     category: {
-      type: String,
       required: true
     },
     notification: {
@@ -26,7 +25,7 @@ export default {
         子宮鏡: '#00BBFF',
         卵管鏡: '#FFD000'
       }
-      return { backgroundColor: colorTable[this.category] }
+      return { backgroundColor: colorTable[this.category] || '#DDDDDD' }
     },
     NotificationClass () {
       return this.notification ? 'has-notification' : ''

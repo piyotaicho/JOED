@@ -5,6 +5,7 @@
 import { app, protocol, BrowserWindow, Menu, ipcMain, dialog } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
+import HHX from 'xxhashjs'
 const isDevelopment = process.env.NODE_ENV !== 'production'
 const path = require('path')
 
@@ -239,7 +240,7 @@ Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate))
 app.setAboutPanelOptions({
   applicationName: app.getName(),
   applicationVersion: process.env.VUE_APP_VERSION,
-  copyright: 'Copyright 2020 JSGOE',
+  copyright: 'Copyright 2020-2021 JSGOE',
   credits: '@piyotaicho https://github.com/piyotaicho/JOED/',
   iconPath: '../public/icon.png'
 })
@@ -312,8 +313,7 @@ function createDatabaseInstance () {
   try {
     return new DB({
       filename: DBfilename,
-      autoload: true,
-      compareStrings: function (a, b) { return StringCompare(a, b) }
+      autoload: true
     })
   } catch (error) {
     // 致命的エラーなのでダイアログを出して終了する
@@ -325,22 +325,6 @@ function createDatabaseInstance () {
     })
     app.quit()
     return undefined
-  }
-}
-
-// 手術時間同士であればそれを比較する
-const TimeStringMatch = /[1-9]\d?0分/
-const ExtractTime = /([1-9]\d?0)分(以上|未満)/
-
-function StringCompare (stringA = '', stringB = '') {
-  if (TimeStringMatch.test(stringA) && TimeStringMatch.test(stringB)) {
-    const matchA = ExtractTime.exec(stringA)
-    const valueA = Number(matchA[1]) - ((matchA[2] || '以上') === '未満' ? 1 : 0)
-    const matchB = ExtractTime.exec(stringB)
-    const valueB = Number(matchB[1]) - ((matchB[2] || '以上') === '未満' ? 1 : 0)
-    return valueA === valueB ? 0 : valueA < valueB ? -1 : 1
-  } else {
-    return stringA.localeCompare(stringB)
   }
 }
 
@@ -420,6 +404,30 @@ ipcMain.handle('FindOne', (_, payload) => {
   })
 })
 
+// FindOneByHash
+// @Object.Hash : String
+// @Object.SALT : Integer
+ipcMain.handle('FineOneByHash', (_, payload) => {
+  const HHX64 = HHX.h64(payload.SALT)
+  return new Promise((resolve, reject) => {
+    app.DatabaseInstance
+      .findOne({
+        $where: function () {
+          delete this._id
+          const hash = HHX64.update(JSON.stringify(this)).digest().toString(36)
+          return payload.Hash === hash
+        }
+      })
+      .projection({ DocumentId: 1 })
+      .exec((error, founddocument) => {
+        if (error) {
+          reject(error)
+        } else {
+          resolve(founddocument !== null ? founddocument.DocumentId : undefined)
+        }
+      })
+  })
+})
 // Count
 // @Object.Query : Object
 ipcMain.handle('Count', (_, payload) => {

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="dashboard">
-      <CloseButton @close="Close"></CloseButton>
+      <CloseButton @click="Close"/>
       <div class="dashboard-title" ref="title">{{InstituteName}}</div>
       <div class="dashboard-row">
         <span>{{YearOfMaster}}年版マスタ</span>

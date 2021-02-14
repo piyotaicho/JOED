@@ -2,13 +2,11 @@ import DaignosisMaster from '@/modules/Masters/DiagnosisItemList'
 import ProcedureMaster from '@/modules/Masters/ProcedureItemList'
 
 // 日付の表記
-export const DateFormat = /^20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/
+export const DateFormatPattern = '^20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$'
+export const DateFormat = new RegExp(DateFormatPattern)
 
 // 施設番号の表記
 export const InstituteIDFormat = /^(0[1-9]|[1-3]\d|4[0-7])\d{3}$/
-
-// UniqueIDの表記
-export const UniqueIDFormat = /^(0[1-9]|[1-3]\d|4[0-7])\d{3}-20\d{2}-[0-9]\d*$/
 
 // 2020年時点の日産腫瘍登録患者No.表記
 export const JSOGboardCaseNoFormat = /^(CC|EM|US|UAS|OV|VU|TS)20\d{2}-\d+$/
@@ -165,7 +163,7 @@ export async function ValidateDiagnoses (item, year) {
         if (diagnosis.UserTyped === true) {
           resolve()
         }
-        const treeList = tree.getItemsInCategory(diagnosis.Chain[0], year)
+        const treeList = tree.ItemTexts(diagnosis.Chain[0], '', year)
         if (treeList.indexOf(diagnosis.Text) >= 0) {
           resolve()
         }
@@ -221,7 +219,7 @@ export async function ValidateProcedures (item, year) {
           if (procedure.UserTyped === true) {
             resolve()
           }
-          const treeList = tree.getItemsInCategory(procedure.Chain[0], year)
+          const treeList = tree.ItemTexts(procedure.Chain[0], '', year)
           if (treeList.indexOf(procedure.Text) >= 0) {
             resolve()
           }

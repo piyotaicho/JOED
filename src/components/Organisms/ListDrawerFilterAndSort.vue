@@ -76,7 +76,7 @@ import { CategoryTranslation } from '@/modules/CaseValidater'
 import * as Popups from '@/modules/Popups'
 
 export default {
-  name: 'FilterNSort',
+  name: 'FilterAndSort',
   components: { LabeledCheckbox },
   data () {
     return ({
@@ -170,8 +170,8 @@ export default {
       } catch {}
     },
     async Revert () {
-      this.$store.commit('SetFilters', {}) // this.$store.getters['system/SavedView'].Filters)
-      this.$store.commit('SetSort', {}) // this.$store.getters['system/SavedView'].Sort)
+      this.$store.commit('SetFilters', {})
+      this.$store.commit('SetSort', {})
       await this.DisableSearch()
       this.$emit('changed')
       this.ImportSettings()

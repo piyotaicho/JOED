@@ -12,7 +12,7 @@
 
       <el-collapse accordion @change="CollapseChanged" :value="view">
         <el-collapse-item title="表示の設定" name="view">
-          <FilterNSort @changed="UpdateView"/>
+          <FilterAndSort @changed="UpdateView"/>
         </el-collapse-item>
 
         <el-collapse-item name="search">
@@ -32,13 +32,13 @@
 
 <script>
 import Dashboard from '@/components/Molecules/Dashboard'
-import FilterNSort from '@/components/FilterNSort'
-import Search from '@/components/Search'
+import FilterAndSort from '@/components/Organisms/ListDrawerFilterAndSort'
+import Search from '@/components/Organisms/ListDrawerSearch'
 
 export default {
   name: 'Drawer',
   components: {
-    Dashboard, FilterNSort, Search
+    Dashboard, FilterAndSort, Search
   },
   props: {
     visible: {

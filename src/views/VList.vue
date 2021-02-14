@@ -26,9 +26,9 @@
 <script>
 import DrawerButton from '@/components/Atoms/DrawerButton.vue'
 import NewEntryButton from '@/components/Atoms/NewEntryButton'
-import CaseDocument from '@/components/CaseDocument'
-import Drawer from '@/components/Drawer'
-import WelcomeBanner from '@/components/Molecules/WelcomeBanner'
+import CaseDocument from '@/components/Organisms/CaseDocument'
+import Drawer from '@/components/Organisms/ListDrawer'
+import WelcomeBanner from '@/components/Organisms/WelcomeBanner'
 import InfiniteLoading from 'vue-infinite-loading'
 
 export default {

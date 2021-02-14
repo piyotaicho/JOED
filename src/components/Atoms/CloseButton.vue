@@ -1,5 +1,5 @@
 <template>
-    <div class="closebutton" @keypress.enter="Close" @click="Close" :tabindex="this.tabindex">&#xe6db;</div>
+  <div class="closebutton" @keypress.enter="Click" @click="Click" :tabindex="this.tabindex">&#xe6db;</div>
 </template>
 
 <script>
@@ -11,8 +11,8 @@ export default {
     }
   },
   methods: {
-    Close () {
-      this.$emit('close')
+    Click () {
+      this.$emit('click')
     }
   }
 }

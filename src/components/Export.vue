@@ -279,7 +279,7 @@ export default {
               })
           )
         } catch (error) {
-          console.log(error.message)
+          console.error(error.message)
           this.$store.dispatch('dbUpdate',
             {
               Query: { DocumentId: documentIds[index] },
@@ -296,7 +296,7 @@ export default {
       if (errorCount > 0) {
         throw new Error(
           'データ検証で' + errorCount + '件のエラーが確認されました.\n' +
-          '修正を御願いします.'
+          '確認と修正を御願いします.'
         )
       }
 

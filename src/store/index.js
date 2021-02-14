@@ -277,6 +277,12 @@ const store = new Vuex.Store({
     dbFindOne (context, payload) {
       return NedbAccess.FindOne(payload, context.state.DatabaseInstance)
     },
+    // Find a document by hash
+    // @Param {String} Hash
+    // @Param {Number} SALT
+    dbFindOneByHash (context, payload) {
+      return NedbAccess.FindOneByHash(payload, context.state.DatabaseInstance)
+    },
     // Count matched documents
     // @Param {Object} Query
     dbCount (context, payload) {
@@ -299,13 +305,60 @@ const store = new Vuex.Store({
     async ReloadDocumentList (context) {
       try {
         const Projection = { DocumentId: 1, _id: 0 }
+        let documents = []
 
-        const documents = await context.dispatch('dbFind',
-          {
-            Query: context.getters.ViewQuery.Query,
-            Sort: context.getters.ViewQuery.Sort,
-            Projection: Projection
-          })
+        // 通常のFind
+        if (context.getters.ViewQuery.Query.Hash === undefined) {
+          // 手術時間でのソートは負荷が高いのでデータベースではなく返り値に対してソートを行う
+          if (context.getters.ViewQuery.Sort.ProcedureTime === undefined) {
+            documents = await context.dispatch('dbFind',
+              {
+                Query: context.getters.ViewQuery.Query,
+                Sort: context.getters.ViewQuery.Sort,
+                Projection: Projection
+              }
+            )
+          } else {
+            // 手術時間でのソート
+            const querySort = Object.assign({}, context.getters.ViewQuery.Sort)
+            const direction = querySort.ProcedureTime
+            delete querySort.ProcedureTime
+
+            // ソートのためProcedureTimeも読み込む
+            Projection.ProcedureTime = 1
+
+            const ExtractTime = /([1-9]\d?0)分(以上|未満)/
+
+            documents = (await context.dispatch('dbFind',
+              {
+                Query: context.getters.ViewQuery.Query,
+                Sort: querySort,
+                Projection: Projection
+              }
+            )).sort((a, b) => {
+              // undefinedに対しては 30分未満を設定する.
+              const stringA = a.ProcedureTime || '30分未満'
+              const stringB = b.ProcedureTime || '30分未満'
+              const matchA = ExtractTime.exec(stringA)
+              const valueA = Number(matchA[1]) - ((matchA[2] || '以上') === '未満' ? 1 : 0)
+              const matchB = ExtractTime.exec(stringB)
+              const valueB = Number(matchB[1]) - ((matchB[2] || '以上') === '未満' ? 1 : 0)
+              return valueA === valueB ? 0 : valueA < valueB ? -1 * direction : 1 * direction
+            })
+          }
+        } else {
+          // Hashを対象としたFindを実行
+          const documentId = await context.dispatch('dbFindOneByHash',
+            {
+              Hash: context.getters.ViewQuery.Query.Hash,
+              SALT: context.getters['system/SALT']
+            }
+          )
+          if (documentId !== undefined) {
+            documents = [{ DocumentId: documentId }]
+          }
+        }
+
         context.commit('SetDocumentIds',
           {
             DocumentIds: documents.map(doc => doc.DocumentId)
@@ -323,7 +376,8 @@ const store = new Vuex.Store({
     },
 
     // ドキュメントのキャッシュへの取得. ドキュメント内容自体はgettersを経由する
-    // $store.dispatch('FetchDocument', { DocumentId: foo }).then(_ => $store.getters.CaseDocument( foo ) )
+    // await $store.dispatch('FetchDocument', { DocumentId: foo })
+    // document = $store.getters.CaseDocument( foo )
     //
     // @Param {Object} DocumentIdのみのオブジェクト
     async FetchDocument (context, payload) {
@@ -372,7 +426,7 @@ const store = new Vuex.Store({
           Document: payload
         })
 
-        // 仮想トランザクション
+        // 疑似トランザクション
         try {
           // 連番取得
           const sequencerow = await context.dispatch('dbFindOne', {
@@ -393,7 +447,7 @@ const store = new Vuex.Store({
             Options: {}
           })
         } catch (error) {
-          // 連番付与登録に失敗した場合rollback, 連番はそのまま放置
+          // 連番付与登録に失敗した場合rollback, 連番についてはrollbackせずそのまま放置
           await context.dispatch('dbRemove', {
             Query: {
               DocumentId: '__autoid__'
@@ -404,7 +458,7 @@ const store = new Vuex.Store({
           })
           throw error
         }
-        // 仮想トランザクション終了
+        // 疑似トランザクション終了
 
         // レコード操作をしたら必ずキャッシュをリロード
         await context.dispatch('ReloadDocumentList')

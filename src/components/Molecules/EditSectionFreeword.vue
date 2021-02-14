@@ -77,4 +77,7 @@ div.invisible-button
   &:hover
     border: 1px dashed var(--border-color-base)
     border-radius: 0.2rem
+div.inputbox
+  input[type="text"][disabled]
+    cursor: not-allowed
 </style>

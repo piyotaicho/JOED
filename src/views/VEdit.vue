@@ -458,7 +458,6 @@ export default {
         ? (event.metaKey && event.shiftKey && !event.ctrlKey && !event.altKey)
         : (event.ctrlKey && event.shiftKey && !event.metaKey && !event.altKey)
       ) {
-        console.log(event.code)
         switch (event.code) {
           case 'KeyJ':
             await this.CommitCase('next')
