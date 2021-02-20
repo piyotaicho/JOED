@@ -97,10 +97,60 @@ export default {
     })
   },
   created () {
-    if (this.ItemValue && this.ItemValue.UserTyped === true) {
-      this.category = this.ItemValue.Chain[0]
-      this.target = this.ItemValue.Chain[1] ? this.ItemValue.Chain[1] : ''
-      this.freewordText = this.ItemValue.Text
+    if (this.ItemIndex > -1) {
+      // ItemIndex != -1 の場合は再編集
+      // Chainの解釈
+      if (this.ItemValue.Chain) {
+        if (this.ItemValue.Chain[0]) {
+          this.category = this.ItemValue.Chain[0]
+          if (this.ItemValue.Chain[1]) {
+            this.target = this.ItemValue.Chain[1]
+          }
+        }
+      }
+      // Textはmountedで解釈する
+    }
+  },
+  mounted () {
+    if (this.catgegory !== '' && this.target !== '') {
+      // カテゴリと対象が選択されているので選択リストの展開
+      this.SetCandidateItemsBySelection()
+
+      const text = this.ItemValue.Text
+      if (text !== '') {
+        if (this.candidates.includes(text)) {
+          // 選択肢に該当項目がある場合選択する
+          this.selectedItem = text
+          // 選択肢に付随術式などの情報がある場合展開する
+          this.OnCandidateSelected()
+          this.$nextTick().then(_ => {
+            // 付随情報を設定する
+            if (this.ItemValue.Description &&
+              this.ItemValue.Description.length > 0
+            ) {
+              this.description.Value.splice(0)
+              let indexcount = 0
+              for (const element of this.ItemValue.Description) {
+                this.$set(this.description.Value, indexcount++, element)
+              }
+            }
+            // 標準併施手術についての付随情報を設定する
+            if (this.ItemValue.AdditionalProcedure &&
+              this.ItemValue.AdditionalProcedure.Description &&
+              this.ItemValue.AdditionalProcedure.Description.length > 0
+            ) {
+              this.additionalProcedure.description.Value.splice(0)
+              let indexcount = 0
+              for (const element of this.ItemValue.AdditionalProcedure.Description) {
+                this.$set(this.additionalProcedure.description.Value, indexcount++, element)
+              }
+            }
+          })
+        } else {
+          // 選択肢に入力されている項目がなければ自由入力に展開される
+          this.freewordText = text
+        }
+      }
       this.$nextTick()
     }
   },
@@ -118,7 +168,9 @@ export default {
       this.selectedItem = ''
       this.$set(this.description, 'Title', '')
       this.$set(this.additionalProcedure, 'Title', '')
+      this.$nextTick()
     },
+
     SetCandidateItemsByFreeword () {
       if (this.freewordText && this.UserEditingAllowed) {
         const arr = ProceduresTree.Matches(this.freewordText, this.category, this.target || '', this.year)

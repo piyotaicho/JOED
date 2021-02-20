@@ -7,7 +7,7 @@
         ( {{description}} )
       </span>
     </slot>
-    <i class="edit-button el-icon-edit" @click="EditItem" v-if="editableItem"/>
+    <i class="edit-button el-icon-edit" @click="EditItem" v-if="editable"/>
     <i class="remove-button el-icon-delete" @click="RemoveItem"/>
   </div>
 </template>
@@ -25,6 +25,10 @@ export default {
     draggable: {
       type: Boolean,
       default: true
+    },
+    editable: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -38,9 +42,6 @@ export default {
           : this.item.Description[0].replace(/[[\]]/g, '')
       }
       return ''
-    },
-    editableItem () {
-      return this.item.UserTyped === true
     }
   },
   methods: {
@@ -48,9 +49,7 @@ export default {
       this.$emit('remove')
     },
     EditItem () {
-      if (this.editableItem) {
-        this.$emit('edit')
-      }
+      this.$emit('edit')
     }
   }
 }

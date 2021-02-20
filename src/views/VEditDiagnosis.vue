@@ -53,10 +53,35 @@ export default {
     FreewordSection
   },
   created () {
-    if (this.ItemValue.UserTyped && this.ItemValue.UserTyped === true) {
-      this.category = this.ItemValue.Chain[0]
-      this.target = this.ItemValue.Chain[1] ? this.ItemValue.Chain[1] : ''
-      this.freewordText = this.ItemValue.Text
+    if (this.ItemIndex > -1) {
+      // ItemIndex != -1 の場合は再編集
+      // Chainの解釈
+      if (this.ItemValue.Chain) {
+        if (this.ItemValue.Chain[0]) {
+          this.category = this.ItemValue.Chain[0]
+          if (this.ItemValue.Chain[1]) {
+            this.target = this.ItemValue.Chain[1]
+          }
+        }
+      }
+      // Textはmountedで解釈する
+    }
+  },
+  mounted () {
+    if (this.catgegory !== '' && this.target !== '') {
+      // カテゴリと対象が選択されているので選択リストの展開
+      this.SetCandidateItemsBySelection()
+
+      const text = this.ItemValue.Text
+      if (text !== '') {
+        if (this.candidates.includes(text)) {
+          // 選択肢に該当項目がある場合選択する
+          this.selectedItem = text
+        } else {
+          // 選択肢に入力されている項目がなければ自由入力に展開する
+          this.freewordText = text
+        }
+      }
       this.$nextTick()
     }
   },
@@ -70,10 +95,7 @@ export default {
   },
   methods: {
     OnCandidateSelected () {
-      const newValue = this.selectedItem
-      if (newValue) {
-        this.freewordText = newValue
-      }
+      // this.freewordText = ''
     },
 
     SetCandidateItemsBySelection () {
