@@ -1,9 +1,14 @@
 import DaignosisMaster from '@/modules/Masters/DiagnosisItemList'
 import ProcedureMaster from '@/modules/Masters/ProcedureItemList'
 
+import ProcedureTimeSelections from '@/modules/ProcedureTimes'
+
 // 日付の表記
 export const DateFormatPattern = '^20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$'
 export const DateFormat = new RegExp(DateFormatPattern)
+
+// 手術時間の表記
+export const ProcedureTimeFormat = /^\d+0分(以上|未満)( － \d+0分未満)?$/
 
 // 施設番号の表記
 export const InstituteIDFormat = /^(0[1-9]|[1-3]\d|4[0-7])\d{3}$/
@@ -27,112 +32,110 @@ export const CategoryTranslation = {
 // 症例データの検証
 //
 // @Param Object １症例分のドキュメントオブジェクト
-export async function ValidateCase (item = {}) {
+export async function ValidateCase (item = {}, temporary = false) {
+  // 一時保存でも患者IDと手術日は最低限の必須入力項目
   await CheckBasicInformations(item)
-  await ValidateAdditionalInformations(item)
-  await CheckSections(item)
-  await ValidateCategoryMatch(item)
+  if (!temporary) {
+    await CheckProcedureTime(item)
+    await ValidateAdditionalInformations(item)
+    await CheckSections(item)
+    await ValidateCategoryMatch(item)
 
-  const Year = item.DateOfProcedure.substr(0, 4)
-  // ES2020が使えるようになったらPromise.allSettledへ置き換える
-  const warningMessages = (await Promise.all([
-    new Promise(resolve => {
-      ValidateDiagnoses(item, Year)
-        .then(_ => resolve(), e => resolve(e))
-    }),
-    new Promise(resolve => {
-      ValidateProcedures(item, Year)
-        .then(_ => resolve(), e => resolve(e))
-    }),
-    new Promise(resolve => {
-      ValidateAEs(item)
-        .then(_ => resolve(), e => resolve(e))
-    })
-  ]))
-    .filter(value => value)
-    .map(item => item.message)
-    .join('\n')
+    const Year = item.DateOfProcedure.substr(0, 4)
+    // ES2020が使えるようになったらPromise.allSettledへ置き換える
+    const warningMessages = (await Promise.all([
+      new Promise(resolve => {
+        ValidateDiagnoses(item, Year)
+          .then(_ => resolve(), e => resolve(e))
+      }),
+      new Promise(resolve => {
+        ValidateProcedures(item, Year)
+          .then(_ => resolve(), e => resolve(e))
+      }),
+      new Promise(resolve => {
+        ValidateAEs(item)
+          .then(_ => resolve(), e => resolve(e))
+      })
+    ]))
+      .filter(value => value)
+      .map(item => item.message)
+      .join('\n')
 
-  if (warningMessages) {
-    throw new Error(warningMessages)
+    if (warningMessages) {
+      throw new Error(warningMessages)
+    }
   }
 }
 
 // 必須基本情報の有無
 //
 export async function CheckBasicInformations (item) {
-  return new Promise((resolve, reject) => {
-    if (
-      item.PatientId &&
-      item.DateOfProcedure.match(DateFormat) &&
-      item.ProcedureTime
-    ) {
-      resolve()
-    } else {
-      reject(new Error('患者ID・手術日・手術時間は必須入力項目です.'))
-    }
-  })
+  if (
+    !item.PatientId ||
+    !DateFormat.test(item.DateOfProcedure)
+  ) {
+    throw new Error('患者ID・手術日は最低限の必須入力項目です.')
+  }
 }
 
+// 手術時間の入力を確認
+//
+export async function CheckProcedureTime (item) {
+  if (!item.ProcedureTime) {
+    throw new Error('手術時間は必須入力項目です.')
+  }
+  let procedureTimeString = item.ProcedureTime
+
+  if (/^\d+$/.test(procedureTimeString)) {
+    procedureTimeString = ProcedureTimeSelections(Number(procedureTimeString))
+  }
+  if (!ProcedureTimeFormat.test(procedureTimeString)) {
+    throw new Error('手術時間の入力様式が違います.')
+  }
+}
 // 補足登録情報の検証
 //
 export async function ValidateAdditionalInformations (item) {
-  return new Promise((resolve, reject) => {
-    const errorStrings = []
-    if (item.Age && (item.Age <= 0 || item.Age > 129)) {
-      errorStrings.push('年齢の入力内容を確認してください.')
-    }
-    if (item.JSOGId && item.JSOGId.match(JSOGboardCaseNoFormat) === null) {
-      errorStrings.push('日産婦腫瘍登録番号の様式が不正です.')
-    }
-    if (item.NCDId && item.NCDId.match(NCDIdFormat) === null) {
-      errorStrings.push('NCD症例識別番号の様式が不正です.')
-    }
-    if (errorStrings.length > 0) {
-      reject(new Error(errorStrings.join('\n')))
-    }
-    resolve()
-  })
+  const errorStrings = []
+  if (item.Age && (item.Age <= 0 || item.Age > 129)) {
+    errorStrings.push('年齢の入力内容を確認してください.')
+  }
+  if (item.JSOGId && item.JSOGId.match(JSOGboardCaseNoFormat) === null) {
+    errorStrings.push('日産婦腫瘍登録番号の様式が不正です.')
+  }
+  if (item.NCDId && item.NCDId.match(NCDIdFormat) === null) {
+    errorStrings.push('NCD症例識別番号の様式が不正です.')
+  }
+  if (errorStrings.length > 0) {
+    throw new Error(errorStrings.join('\n'))
+  }
 }
 
 // 登録情報の有無
 //
 export async function CheckSections (item) {
-  return new Promise((resolve, reject) => {
-    Promise
-      .all([
-        new Promise((resolve) => {
-          resolve(item.Diagnoses.length === 0 ? '手術診断の入力がありません.' : undefined)
-        }),
-        new Promise((resolve) => {
-          resolve(item.Procedures.length === 0 ? '実施手術の入力がありません.' : undefined)
-        }),
-        new Promise((resolve) => {
-          resolve(item.PresentAE === true && (!item.AEs || item.AEs.length === 0) ? '合併症の入力がありません.' : undefined)
-        })
-      ])
-      .then(
-        (resolvevalues) => {
-          const errors = resolvevalues.filter(item => item)
-          if (errors.length > 0) {
-            reject(new Error(errors.join('\n')))
-          }
-          resolve()
-        }
-      )
-  })
+  const errorStrings = []
+  if (item.Diagnoses.length === 0) {
+    errorStrings.push('手術診断の入力がありません.')
+  }
+  if (item.Procedures.length === 0) {
+    errorStrings.push('実施手術の入力がありません.')
+  }
+  if (item.PresentAE === true && (!item.AEs || item.AEs.length === 0)) {
+    errorStrings.push('合併症の入力がありません.')
+  }
+  if (errorStrings.length > 0) {
+    throw new Error(errorStrings.join('\n'))
+  }
 }
+
 // 主たる術後診断・実施術式のカテゴリの一致の検証
 //
 export async function ValidateCategoryMatch (item) {
-  return new Promise((resolve, reject) => {
-    if (CategoryTranslation[item.Diagnoses[0].Chain[0]] ===
-      CategoryTranslation[item.Procedures[0].Chain[0]]) {
-      resolve()
-    } else {
-      reject(new Error('主たる手術診断と主たる実施術式のカテゴリが一致していません.'))
-    }
-  })
+  if (CategoryTranslation[item.Diagnoses[0].Chain[0]] !==
+    CategoryTranslation[item.Procedures[0].Chain[0]]) {
+    throw new Error('主たる手術診断と主たる実施術式のカテゴリが一致していません.')
+  }
 }
 
 // 術後診断の重複の有無
@@ -152,7 +155,7 @@ export async function CheckDupsInDiagnoses (item) {
 // 術後診断の重複確認と年次ツリーとの整合性検証
 //
 export async function ValidateDiagnoses (item, year) {
-  const tree = new DaignosisMaster()
+  const master = new DaignosisMaster()
   return new Promise((resolve, reject) => {
     const promiseArray = [new Promise(resolve => {
       CheckDupsInDiagnoses(item)
@@ -163,7 +166,7 @@ export async function ValidateDiagnoses (item, year) {
         if (diagnosis.UserTyped === true) {
           resolve()
         }
-        const treeList = tree.ItemTexts(diagnosis.Chain[0], '', year)
+        const treeList = master.ItemTexts(diagnosis.Chain[0], '', year)
         if (treeList.indexOf(diagnosis.Text) >= 0) {
           resolve()
         }
@@ -206,7 +209,7 @@ export async function CheckDupsInProcedures (item) {
 // 実施手術名の重複確認と年次ツリーとの整合性検証
 //
 export async function ValidateProcedures (item, year) {
-  const tree = new ProcedureMaster()
+  const master = new ProcedureMaster()
 
   return new Promise((resolve, reject) => {
     const promiseArray = [new Promise(resolve => {
@@ -219,7 +222,7 @@ export async function ValidateProcedures (item, year) {
           if (procedure.UserTyped === true) {
             resolve()
           }
-          const treeList = tree.ItemTexts(procedure.Chain[0], '', year)
+          const treeList = master.ItemTexts(procedure.Chain[0], '', year)
           if (treeList.indexOf(procedure.Text) >= 0) {
             resolve()
           }
