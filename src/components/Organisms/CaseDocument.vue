@@ -3,7 +3,7 @@
   @keypress.enter="MoveToEditView()"
   @keydown.o="MoveToEditView()"
   @dblclick="MoveToEditView()"
-  @keydown.ctrl.d="RemoveDocument()">
+  @keydown.x="RemoveDocumentKeypress($event)">
     <div class="caseitem-icon">
       <CategoryIdentifier :category="Category" :notification="Notification"/>
     </div>
@@ -98,6 +98,16 @@ export default {
     MoveToEditView () {
       if (!this.Loading) {
         this.$router.push({ name: 'edit', params: { uid: this.uid } })
+      }
+    },
+    RemoveDocumentKeypress (event) {
+      if (!event.repeat) {
+        if (this.$store.getters['system/Platform'] === 'darwin'
+          ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) // macOS - command
+          : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) // Windows - Ctrl
+        ) {
+          this.RemoveDocument()
+        }
       }
     },
     async RemoveDocument () {

@@ -31,6 +31,7 @@
       />
 
       <SectionAEs
+        ref="sectionAEs"
         :container.sync="CaseData.AEs"
         :optionValue.sync="isNoAEs"
         @addnewitem="EditSection('AE')"
@@ -412,11 +413,13 @@ export default {
     },
 
     async EventListner (event) {
-      if (this.editingSection || event.repeat) return
+      if (this.editingSection || event.repeat) {
+        return
+      }
 
       if (this.$store.getters['system/Platform'] === 'darwin'
-        ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey)
-        : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey)
+        ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) // macOS - command
+        : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) // Windows - Ctrl
       ) {
         switch (event.code) {
           case 'Digit0':
@@ -448,17 +451,18 @@ export default {
             event.preventDefault()
             await this.CommitCase()
             break
-          case 'KeyD':
-            if (this.$refs.RemoveButton) {
-              this.$refs.RemoveButton.$el.focus()
-            }
+          case 'KeyX':
+            await this.RemoveCase()
             break
         }
       } else if (this.$store.getters['system/Platform'] === 'darwin'
-        ? (event.metaKey && event.shiftKey && !event.ctrlKey && !event.altKey)
-        : (event.ctrlKey && event.shiftKey && !event.metaKey && !event.altKey)
+        ? (event.metaKey && event.shiftKey && !event.ctrlKey && !event.altKey) // macOS - command + shift
+        : (event.ctrlKey && event.shiftKey && !event.metaKey && !event.altKey) // Windows - Ctrl + Shift
       ) {
         switch (event.code) {
+          case 'Digit3':
+            this.$refs.sectionAEs.$el.getElementsByTagName('label')[0].focus()
+            break
           case 'KeyJ':
             await this.CommitCase('next')
             break
