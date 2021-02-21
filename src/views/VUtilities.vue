@@ -31,6 +31,12 @@ export default {
   created () {
     this.SelectedTabName = this.$route.name
   },
+  mounted () {
+    document.addEventListener('keydown', this.EventLister, true)
+  },
+  beforeDestroy () {
+    document.removeEventListener('keydown', this.EventLister, true)
+  },
   beforeRouteUpdate (to, from, next) {
     if (to.name !== from.name) {
       this.SelectedTabName = to.name
@@ -49,6 +55,16 @@ export default {
     }
   },
   methods: {
+    EventLister (event) {
+      if (this.$store.getters['system/Platform'] === 'darwin'
+        ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) // macOS - command
+        : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) // Windows - Ctrl
+      ) {
+        if (event.code === 'KeyU') {
+          this.goBack()
+        }
+      }
+    },
     goBack () {
       this.$router.push({ name: 'list' })
     }

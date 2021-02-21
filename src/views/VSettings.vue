@@ -36,10 +36,27 @@ export default {
       SelectedTab: 'institute'
     })
   },
+  mounted () {
+    document.addEventListener('keydown', this.EventLister, true)
+  },
+  beforeDestroy () {
+    document.removeEventListener('keydown', this.EventLister, true)
+  },
   methods: {
-    TabClick (tab, event) {
+    EventLister (event) {
+      if (this.$store.getters['system/Platform'] === 'darwin'
+        ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) // macOS - command
+        : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) // Windows - Ctrl
+      ) {
+        if (event.code === 'KeyU') {
+          this.TabClick({ index: 0 })
+        }
+      }
+    },
+    TabClick (tab) {
+      console.log(tab)
       // 左端のタブは戻る
-      if (tab.index === '0') {
+      if (Number(tab.index) === 0) {
         this.$router.push({ name: 'list' })
       }
     }
