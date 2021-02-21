@@ -8,7 +8,7 @@
           v-for="(item, index) in items"
           :key="index">
           <slot :item="item" :index="index">
-            <SectionItem :item="item" @remove="RemoveItem(index)" @edit="EditItem(index, item)"/>
+            <SectionItem :item="item" @remove="RemoveItem(index)" @edit="EditItem(index, item)" editable/>
           </slot>
         </div>
       </draggable>
