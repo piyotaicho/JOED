@@ -82,6 +82,7 @@
                   <el-dropdown-item command="prev" :disabled="!prevUid">保存して前へ</el-dropdown-item>
                 </template>
                 <el-dropdown-item command="new">保存して新規作成</el-dropdown-item>
+                <el-dropdown-item command="temporary">一時保存して新規作成</el-dropdown-item>
               </el-dropdown-menu>
 
             </el-dropdown>
@@ -246,9 +247,9 @@ export default {
       }
       // HACK:
       // 新規(uid = '0')→新規(uid = '0')ではApp.vueで定義したRouterKeyが重複するための quick hack.
-      // uid = '00' も uid > 0 がfalseで新規扱いになるのでそれを利用する.
+      // uid = '00' も uid > 0 がjavascriptの型変換ではfalseで新規扱いになるのでそれを利用する.
       if (uid === 0) {
-        this.$router.push({ name: 'edit', params: { uid: (this.uid === '0') ? '00' : '0' } })
+        this.$router.push({ name: 'edit', params: { uid: (this.uid === '00') ? '0' : '00' } })
       }
     },
 
@@ -284,11 +285,13 @@ export default {
         this.$set(this.CaseData, 'PresentAE', this.CaseData.AEs.length > 0)
       }
     },
+
     RemoveListItem (target, index) {
       if (this.editingSection) return
 
       this.EditListItem(target, index, '')
     },
+
     UpdateList (list, index, value) {
       const IsObjectEmpty = value =>
         (
@@ -325,10 +328,12 @@ export default {
       if (this.processing || this.editingSection) {
         return
       }
-      await this.StoreCase()
+
+      await this.StoreCase(to === 'temporary')
         .then(() => {
           switch (to) {
             case 'new':
+            case 'temporary':
               this.AnotherEdit(0)
               break
             case 'prev':
@@ -341,14 +346,9 @@ export default {
               this.BackToList(Number(this.uid))
           }
         })
-        .catch(e => Popups.alert(
-          this.$createElement('div', null,
-            e.message
-              .split('\n')
-              .map(line => this.$createElement('p', null, line))
-          ))
-        )
+        .catch(e => Popups.alert(e.message))
     },
+
     async CancelEditing (to = '') {
       if (this.processing || this.editingSection) {
         return
@@ -368,7 +368,7 @@ export default {
       }
     },
 
-    async StoreCase () {
+    async StoreCase (temporary = false) {
       this.processing = true
 
       // データベース登録に用いるドキュメントを生成
@@ -380,6 +380,11 @@ export default {
 
       // 警告の削除
       delete newDocument.Notification
+
+      // 一次保存のメッセージ
+      if (temporary) {
+        newDocument.Notification = '一時保存したデータです.\n編集終了後に確定保存して下さい.'
+      }
 
       // テキストフィールドの整形(trimと半角英数に置換)
       newDocument.Name = newDocument.Name.trim()
@@ -399,13 +404,19 @@ export default {
       // AEsが空白の際は削除
       if (newDocument.AEs.length === 0) {
         delete newDocument.AEs
+        // AEsが空白なのに PresentAEがtrue=無編集 の場合はPresentAEも削除
+        if (newDocument.PresentAE) {
+          delete newDocument.PresentAE
+        }
       }
 
       // 区分コードの抽出
-      newDocument.TypeOfProcedure = newDocument.Procedures[0] && newDocument.Procedures[0].Chain[0]
+      if (newDocument.Procedures && newDocument.Procedures[0]) {
+        newDocument.TypeOfProcedure = newDocument.Procedures[0].Chain[0]
+      }
 
       try {
-        await ValidateCase(newDocument)
+        await ValidateCase(newDocument, temporary)
         await this.$store.dispatch('UpsertDocument', newDocument)
       } finally {
         this.processing = false
