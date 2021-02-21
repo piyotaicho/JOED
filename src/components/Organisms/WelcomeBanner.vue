@@ -6,7 +6,8 @@
       <div id="welcome-banner-text">
         症例・合併症登録にご協力頂きありがとうございます.<br/>
         症例登録は、右上の<span class="welcome-banner-elementIcon">&#xe6d9;</span>ボタンを押して開始して下さい.<br/>
-        リストのソート・初期設定など各種機能は左上の<span class="welcome-banner-elementIcon">&#xe798;</span>ボタンからご利用いただけます.<br/>
+        リストのソートなど各種機能は左上の<span class="welcome-banner-elementIcon">&#xe798;</span>ボタンからご利用いただけます.<br/>
+        初期設定やファイルの入出力はメニューから利用して下さい.<br/>
         <br />
         お問い合わせは学会の症例登録ページからおねがいいたします.<br />
       </div>
