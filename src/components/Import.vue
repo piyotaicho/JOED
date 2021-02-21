@@ -35,7 +35,7 @@
 import * as Popups from '@/modules/Popups'
 import InputFile from '@/components/Molecules/InputFile'
 import ImportJSON from '@/components/Molecules/ImportJSON'
-import ImportCSV from '@/components/Molecules/ImportCSV'
+import ImportCSV from '@/components/Organisms/ImportCSV'
 import ImportMergeV4 from '@/components/Molecules/ImportMergeV4'
 import StepIndicator from '@/components/Molecules/StepIndicator'
 import TheWrapper from '@/components/Atoms/TheWrapper'

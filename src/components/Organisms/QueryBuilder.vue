@@ -70,6 +70,9 @@ export default {
     CSVhasTitleRow: {
       type: Boolean,
       default: false
+    },
+    ruleset: {
+      type: Object
     }
   },
   data () {
@@ -77,6 +80,14 @@ export default {
       recordAssignment: {},
       source: 'CSV',
       previewIndex: -1
+    }
+  },
+  created () {
+    // デフォルトルールセットを設定
+    if (Object.keys(this.ruleset).length > 0) {
+      for (const key of Object.keys(this.ruleset)) {
+        this.recordAssignment[key] = Object.assign({}, this.ruleset[key])
+      }
     }
   },
   watch: {

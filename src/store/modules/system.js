@@ -18,6 +18,7 @@ export default {
           DocumentId: -1
         }
       },
+      CSVruleset: '{}',
       ShowStartupDialog: true
     },
     StartupDialogStatus: true
@@ -75,6 +76,14 @@ export default {
 
     SavedView (state) {
       return state.settings.View
+    },
+
+    SavedCSVrule (state) {
+      if (state.settings.CSVruleset !== '{}') {
+        return JSON.parse(state.settings.CSVruleset)
+      } else {
+        return {}
+      }
     }
   },
   mutations: {

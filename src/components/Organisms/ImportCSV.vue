@@ -15,6 +15,7 @@
       :functions="functions"
       :CSV="CSV"
       :CSVhasTitleRow="CSVhasTitle"
+      :ruleset="RuleSet"
       @change="SetRuleset"
       />
       <LabeledCheckbox v-model="ReplaceStrings" :value="false">診断名称・実施手術の入力に対して基本的な置換操作を行う</LabeledCheckbox>
@@ -26,6 +27,7 @@
     <div style="padding-bottom: 1rem;">
       <br/>
       <el-button type="primary" :disabled="disabled" @click="ProcessStream">上記ルールに則ってデータを変換</el-button>
+      <el-button type="primary" :disabled="disabled" @click="StoreRuleset">ルールを保存</el-button>
     </div>
     <div class="progress-views">
       <Reports :report="LogMessages.join('\n')" v-show="LogMessages.length > 0"/>
@@ -64,6 +66,14 @@ export default {
       RuleSet: {},
       records: []
     })
+  },
+  created () {
+    const preservedRule = this.$store.getters['system/SavedCSVrule']
+    if (Object.keys(preservedRule).length > 0) {
+      for (const key of Object.keys(preservedRule)) {
+        this.RuleSet[key] = Object.assign({}, preservedRule[key])
+      }
+    }
   },
   watch: {
     stream () {
@@ -169,6 +179,10 @@ export default {
       } catch (error) {
         Popups.alert(error.message)
       }
+    },
+    StoreRuleset () {
+      this.$store.commit('system/SetPreferences', { CSVruleset: JSON.stringify(this.RuleSet) })
+      this.$store.dispatch('system/SavePreferences')
     }
   }
 }
