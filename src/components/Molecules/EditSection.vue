@@ -26,9 +26,13 @@ export default {
     KeyboardEventhandler (event) {
       if (event.repeat) return
 
-      if (this.$store.getters['system/Platform'] === 'darwin'
-        ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey)
-        : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey)
+      const platform = process.env.VUE_APP_ELECTRON
+        ? process.platform
+        : (window.navigator.platform.includes('Mac') ? 'darwin' : 'win32')
+
+      if (platform === 'darwin'
+        ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) // macOS - command
+        : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) // Windows - Ctrl
       ) {
         switch (event.code) {
           case 'KeyU':
