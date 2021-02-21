@@ -4,7 +4,7 @@
       <DescriptionOfAE :item="item"/>
     </div>
 
-    <div class="section-item" tabindex="0" @keydown.ctrl.x="RemoveItem">
+    <div class="section-item" tabindex="0" @keydown.delete="RemoveItem">
       <span class="w20">{{ item.Category }}</span>
       <span class="w30">
         {{ (item.Category === '出血')
