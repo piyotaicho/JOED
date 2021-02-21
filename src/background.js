@@ -8,7 +8,10 @@ import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 import HHX from 'xxhashjs'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
+
 const path = require('path')
+const fs = require('fs')
+
 const ElectronStore = require('electron-store')
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -61,12 +64,11 @@ function createWindow () {
       })
   } else {
     createProtocol('app')
-    // Load the index.html when not in development
     win.loadURL('app://./index.html')
   }
 
   win.on('closed', () => {
-    // macosでウインドウが閉じるときにメニューを初期値に戻す.
+    // macosでウインドウが閉じるときにメニューは「JOED5について」しか利用出来ない.
     if (process.platform === 'darwin') {
       const menu = Menu.getApplicationMenu()
       menu.getMenuItemById('list-new').enabled = false
@@ -78,105 +80,31 @@ function createWindow () {
   })
 }
 
-// app events
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
-
+//
+// app イベントの処理
+//
 app.on('activate', () => {
   if (win === null) {
     createWindow()
   }
 })
 
+// window-all-closed : Windowsではここで終了処理を行う
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit()
+  }
+})
+
+app.on('quit', () => {
+  removeLockfile()
+})
+
 // アプリケーションの起動
 app.on('ready', async () => {
-  // コマンドラインオプションの処理
+  parseCommandlineoptions()
 
-  // --datadir : データの保存ディレクトリの設定
-  if (app.commandLine.hasSwitch('datadir')) {
-    try {
-      const fs = require('fs')
-      const datadirarg = app.commandLine.getSwitchValue('datadir')
-      if (fs.statSync(datadirarg).isDirectory()) {
-        // 指定のフォルダがなければ例外
-        app.setPath('documents', datadirarg)
-      } else {
-        // 指定ファイルがディレクトリで無い場合も例外
-        throw new Error()
-      }
-    } catch {
-      dialog.showMessageBoxSync({ title: 'JOED5', message: 'データ保存先として指定されたパスが不正です.' })
-      app.exit(-1)
-    }
-  } else {
-    // デフォルト path の documents を userData でオーバーライド
-    app.setPath('documents', app.getPath('userData'))
-  }
-
-  // --config : 設定の保存ファイル/ディレクトリを指定
-  const configSetting = {}
-  if (app.commandLine.hasSwitch('config')) {
-    const fs = require('fs')
-    const configarg = app.commandLine.getSwitchValue('config')
-    const configpath = path.parse(configarg)
-    if (configpath.ext[0] === '.') {
-      configpath.ext = configpath.ext.substr(1)
-    }
-
-    try {
-      if (fs.statSync(configpath.dir).isDirectory()) {
-        // 指定パスの1つ上の階層が存在する 存在しなければ例外
-        if (fs.existsSync(configarg)) {
-          // 指定パスが存在する
-          if (fs.statSync(configarg).isDirectory()) {
-            // 指定パスはディレクトリ
-            configSetting.cwd = configarg
-            // 以下は electron-store のデフォルト
-            // configSetting.name = 'config'
-            // configSetting.fileExtension = 'json'
-          } else {
-            // 指定パスはファイル
-            configSetting.cwd = configpath.dir
-            configSetting.name = configpath.name
-            configSetting.fileExtension = configpath.ext
-          }
-        } else {
-          // 指定パス自体は存在しないので新規ファイルとして扱う
-          configSetting.cwd = configpath.dir
-          configSetting.name = configpath.name
-          configSetting.fileExtension = configpath.ext
-        }
-      }
-    } catch {
-      dialog.showMessageBoxSync({ title: 'JOED5', message: '設定ファイルに指定されたパスが不正です.' })
-      app.exit(-1)
-    }
-  }
-
-  // drop-database : データベースファイルの削除 (=all でバックアップも削除)
-  if (app.commandLine.hasSwitch('drop-database')) {
-    const fs = require('fs')
-    const DBfilename = path.join(app.getPath('documents'), 'joed.nedb')
-    try {
-      fs.unlinkSync(DBfilename)
-    } catch {}
-
-    try {
-      if (app.commandLine.getSwitchValue('drop-database').toLowerCase() === 'all') {
-        fs.unlinkSync(DBfilename + '.3')
-        fs.unlinkSync(DBfilename + '.2')
-        fs.unlinkSync(DBfilename + '.1')
-      }
-    } catch {}
-
-    dialog.showMessageBoxSync({ title: 'JOED5', message: 'データベースファイルを削除しました.' })
-    app.exit()
-  }
-
-  app.ConfigStore = new ElectronStore(configSetting)
+  app.ConfigStore = new ElectronStore(app.configSetting)
   app.DatabaseInstance = createDatabaseInstance()
 
   // ウインドウの作成
@@ -212,7 +140,96 @@ if (isDevelopment) {
 }
 
 //
-// メニュー
+// コマンドラインオプションの処理
+//
+function parseCommandlineoptions () {
+  // --datadir : データの保存ディレクトリの設定
+  app.enableLocking = false
+  if (app.commandLine.hasSwitch('datadir')) {
+    try {
+      const datadirarg = app.commandLine.getSwitchValue('datadir')
+      if (fs.statSync(datadirarg).isDirectory()) {
+        // 指定のフォルダがなければ例外
+        app.setPath('documents', datadirarg)
+        app.enableLocking = true
+      } else {
+        // 指定ファイルがディレクトリで無い場合も例外
+        throw new Error()
+      }
+    } catch {
+      dialog.showMessageBoxSync({ title: 'JOED5', message: 'データ保存先として指定されたパスが不正です.' })
+      app.exit(-1)
+    }
+  } else {
+    // デフォルト path の documents を userData でオーバーライド
+    app.setPath('documents', app.getPath('userData'))
+  }
+
+  // --config : 設定の保存ファイル/ディレクトリを指定
+  app.configSetting = {}
+  if (app.commandLine.hasSwitch('config')) {
+    const configarg = app.commandLine.getSwitchValue('config')
+    const configpath = path.parse(configarg)
+    if (configpath.ext[0] === '.') {
+      configpath.ext = configpath.ext.substr(1)
+    }
+
+    try {
+      if (fs.statSync(configpath.dir).isDirectory()) {
+        // 指定パスの1つ上の階層が存在する 存在しなければ例外
+        if (fs.existsSync(configarg)) {
+          // 指定パスが存在する
+          if (fs.statSync(configarg).isDirectory()) {
+            // 指定パスはディレクトリ
+            app.configSetting.cwd = configarg
+            // 以下は electron-store のデフォルト
+            // configSetting.name = 'config'
+            // configSetting.fileExtension = 'json'
+          } else {
+            // 指定パスはファイル
+            app.configSetting.cwd = configpath.dir
+            app.configSetting.name = configpath.name
+            app.configSetting.fileExtension = configpath.ext
+          }
+        } else {
+          // 指定パス自体は存在しないので新規ファイルとして扱う
+          app.configSetting.cwd = configpath.dir
+          app.configSetting.name = configpath.name
+          app.configSetting.fileExtension = configpath.ext
+        }
+      }
+    } catch {
+      dialog.showMessageBoxSync({ title: 'JOED5', message: '設定ファイルに指定されたパスが不正です.' })
+      app.exit(-1)
+    }
+  }
+
+  // drop-database : データベースファイルの削除 (=all でバックアップも削除, =lock で消し忘れたロックファイルのみ削除)
+  if (app.commandLine.hasSwitch('drop-database')) {
+    const DBfilename = path.join(app.getPath('documents'), 'joed.nedb')
+    if (app.commandLine.getSwitchValue('drop-database').toLowerCase() === 'lock') {
+      removeLockfile()
+    } else {
+      try {
+        fs.unlinkSync(DBfilename)
+      } catch {}
+    }
+
+    try {
+      if (app.commandLine.getSwitchValue('drop-database').toLowerCase() === 'all') {
+        fs.unlinkSync(DBfilename + '.3')
+        fs.unlinkSync(DBfilename + '.2')
+        fs.unlinkSync(DBfilename + '.1')
+      }
+    } catch {}
+
+    dialog.showMessageBoxSync({ title: 'JOED5', message: 'ファイルを削除しました.' })
+    app.exit()
+  }
+}
+
+//
+// メニューの設定
 //
 const MenuTemplate = [
   // アプリケーションメニュー
@@ -357,11 +374,32 @@ ipcMain.on('menuroute', (event, payload) => {
   }
 })
 
-// nedb
+//
+// ロックファイル制御
+//
+function createLockfile () {
+  if (app.enableLocking) {
+    const fd = fs.openSync(path.join(app.getPath('documents'), 'joed.nedb.lock'), 'wx')
+    fs.closeSync(fd)
+  }
+}
+
+function removeLockfile () {
+  if (app.enableLocking) {
+    try {
+      fs.unlinkSync(path.join(app.getPath('documents'), 'joed.nedb.lock'))
+    } catch {}
+  }
+}
+
+//
+// データベースの設定
+//
 const DB = require('nedb')
 
+// createDatabaseInstance
+//
 function createDatabaseInstance () {
-  const fs = require('fs')
   // appPath documents はデフォルトでは app.on ready で userData にオーバーライドされている.
   const DBfilename = path.join(app.getPath('documents'), 'joed.nedb')
 
@@ -380,6 +418,13 @@ function createDatabaseInstance () {
   } catch {}
 
   try {
+    createLockfile()
+  } catch (error) {
+    dialog.showMessageBoxSync({ title: 'JOED5', message: '他のユーザがデータベースファイルを使用中のため起動を中止します.' })
+    app.quit()
+  }
+
+  try {
     return new DB({
       filename: DBfilename,
       autoload: true
@@ -388,16 +433,19 @@ function createDatabaseInstance () {
     // 致命的エラーなのでダイアログを出して終了する
     isDevelopment && console.log(error)
     dialog.showMessageBoxSync(win, {
+      title: 'JOED5',
       type: 'error',
       buttons: ['OK'],
       message: 'データベースファイルの操作に失敗しました, アプリケーションを起動できません.\n以下の情報を添えて学会までお問い合わせください.\n\n' + error.message
     })
-    app.quit()
+    app.quit(-1)
     return undefined
   }
 }
 
-//  データベースAPIラッパー
+//
+// IPCとデータベースのAPIラッパー
+//
 
 // Insert
 // @Object.Document : Object
@@ -495,6 +543,7 @@ ipcMain.handle('FineOneByHash', (_, payload) => {
       })
   })
 })
+
 // Count
 // @Object.Query : Object
 ipcMain.handle('Count', (_, payload) => {
@@ -549,7 +598,9 @@ ipcMain.handle('Remove', (_, payload) => {
   })
 })
 
-// データベースというかローカルjsonとしての Config
+//
+// アプリケーション設定 electron-store
+//
 
 // LoadConfig
 // @Object.Key : String
