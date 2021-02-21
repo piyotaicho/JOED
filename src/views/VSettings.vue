@@ -54,8 +54,6 @@ export default {
       }
     },
     TabClick (tab) {
-      console.log(tab)
-      // 左端のタブは戻る
       if (Number(tab.index) === 0) {
         this.$router.push({ name: 'list' })
       }
