@@ -86,8 +86,8 @@ export default {
       Years: {},
       Conditions: {
         合併症あり: { Field: 'PresentAE', Value: true },
-        未確認: { Field: 'Imported', Value: true },
-        エラーあり: { Field: 'Notification', Value: { $exists: true } }
+        読み込み症例: { Field: 'Imported', Value: true },
+        情報あり: { Field: 'Notification', Value: { $exists: true } }
       },
       FilterItems: [],
       Sort: {
