@@ -72,7 +72,7 @@
           </div>
           <div>
             <el-dropdown split-button type="primary"
-              @click="CommitCase()"
+              @click.exact="CommitCase()" @click.shift="CommitCase('temporary')"
               @command="CommitCase">
               編集内容を保存 <i class="el-icon-loading" v-show="processing"/>
 
@@ -82,7 +82,7 @@
                   <el-dropdown-item command="prev" :disabled="!prevUid">保存して前へ</el-dropdown-item>
                 </template>
                 <el-dropdown-item command="new">保存して新規作成</el-dropdown-item>
-                <el-dropdown-item command="temporary">一時保存して新規作成</el-dropdown-item>
+                <el-dropdown-item command="temporarynew">一時保存して新規作成</el-dropdown-item>
               </el-dropdown-menu>
 
             </el-dropdown>
@@ -329,11 +329,11 @@ export default {
         return
       }
 
-      await this.StoreCase(to === 'temporary')
+      await this.StoreCase(to.includes('temporary'))
         .then(() => {
           switch (to) {
             case 'new':
-            case 'temporary':
+            case 'temporarynew':
               this.AnotherEdit(0)
               break
             case 'prev':
@@ -479,6 +479,9 @@ export default {
             break
           case 'KeyK':
             await this.CommitCase('prev')
+            break
+          case 'KeyS':
+            await this.CommitCase('temporary')
             break
         }
       }
