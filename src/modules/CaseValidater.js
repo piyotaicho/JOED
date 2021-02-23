@@ -14,7 +14,7 @@ export const ProcedureTimeFormat = /^\d+0分(以上|未満)( － \d+0分未満)?
 export const InstituteIDFormat = /^(0[1-9]|[1-3]\d|4[0-7])\d{3}$/
 
 // 2020年時点の日産腫瘍登録患者No.表記
-export const JSOGboardCaseNoFormat = /^(CC|EM|US|UAS|OV|VU|TS)20\d{2}-\d+$/
+export const JSOGboardCaseNoFormat = /^(CC|EM|US|UAS|OV|VU|VA|TD)20\d{2}-\d+$/i
 
 // NCDの症例識別コード
 export const NCDIdFormat = /^\d{18}-\d{2}-\d{2}-\d{2}$/
