@@ -4,7 +4,7 @@
     @addnewitem="AddNewItem">
     <template #default="itemprops">
       <SectionItem :item="itemprops.item" @remove="RemoveItem(itemprops.index)" @edit="EditItem(itemprops.index, itemprops.item)" editable/>
-      <SectionItem :item="itemprops.item.AdditionalProcedure" @click="RemoveItem(itemprops.index)" v-if="itemprops.item.AdditionalProcedure"/>
+      <SectionItem :item="itemprops.item.AdditionalProcedure" @remove="RemoveItem(itemprops.index)" v-if="itemprops.item.AdditionalProcedure"/>
     </template>
   </Section>
 </template>
