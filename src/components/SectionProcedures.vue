@@ -4,7 +4,7 @@
     @addnewitem="AddNewItem">
     <template #default="itemprops">
       <SectionItem :item="itemprops.item" @remove="RemoveItem(itemprops.index)" @edit="EditItem(itemprops.index, itemprops.item)" editable/>
-      <SectionItem :item="itemprops.item.AdditionalProcedure" @remove="RemoveItem(itemprops.index)" v-if="itemprops.item.AdditionalProcedure"/>
+      <SectionItem :item="itemprops.item.AdditionalProcedure" @remove="RemoveAdditionalItem(itemprops.index)" v-if="itemprops.item.AdditionalProcedure"/>
     </template>
   </Section>
 </template>
@@ -12,6 +12,7 @@
 <script>
 import Section from '@/components/Molecules/Section'
 import SectionItem from '@/components/SectionItem'
+import { confirmYesNo } from '@/modules/Popups'
 
 export default {
   name: 'SectionProcedures',
@@ -44,6 +45,11 @@ export default {
     },
     RemoveItem (index) {
       this.$emit('removeitem', index)
+    },
+    async RemoveAdditionalItem (index) {
+      if (await confirmYesNo('付随する手術も併せて削除されます.')) {
+        this.RemoveItem(index)
+      }
     }
   }
 }
