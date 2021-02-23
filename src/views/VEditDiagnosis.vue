@@ -2,7 +2,7 @@
   <TheWrapper alpha="10">
     <EditSection @commit="CommitChanges" @discard="GoBack">
       <ThreePaneSelections
-        Pane3Title="候補病名"
+        Pane3Title="手術診断の候補"
         :Pane1.sync="category" :Pane1Items="Categories"
         @pane1change="CategoryIsChanged()"
         :Pane2.sync="target" :Pane2Items="TargetOrgans"
@@ -123,17 +123,17 @@ export default {
           this.SetCandidateItemsByFreeword()
           if (
             this.candidates.length !== 0 &&
-            await Popups.confirm('候補診断があります,選択を優先してください.') === false
+            await Popups.confirm('手術診断の候補があります,選択を優先してください.') === false
           ) {
             return
           }
           // 候補に入力と同じものがある場合は何が何でも選択させる.
           if (this.candidates.indexOf(this.freewordText.trim()) !== -1) {
-            await Popups.information('自由入力の内容が選択候補にありますので選択してください.')
+            await Popups.information('自由入力の内容が候補にありますのでそれを選択してください.')
             return
           }
           // 最終確認
-          if (await Popups.confirm('直接入力した診断の登録は可能な限り控えてください.') === false) {
+          if (await Popups.confirm('直接入力した手術診断の登録は可能な限り控えてください.') === false) {
             return
           }
 

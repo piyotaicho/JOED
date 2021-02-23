@@ -30,7 +30,7 @@
       <div><LabeledCheckbox v-model="isFilterItemsEmpty">全て表示する</LabeledCheckbox></div>
 
       <div>
-        <div>カテゴリー</div>
+        <div>カテゴリ</div>
         <div>
           <template v-for="(value, category) in Categories">
             <LabeledCheckbox :key="category" v-model="FilterItems" :value="category"></LabeledCheckbox>

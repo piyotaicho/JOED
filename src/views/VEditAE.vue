@@ -3,7 +3,7 @@
     <EditSection @commit="CommitChanges" @discard="GoBack">
       <div class="flex-content">
         <div class="w20 subtitle">
-          <span>合併症の内容</span>
+          <span>合併症の分類</span>
         </div>
         <div class="w80">
           <select v-model="Category" @change="CategoryChanged()" ref="firstelement">
@@ -30,7 +30,6 @@
             <LabeledCheckbox v-model="AE.Title" value="ガス塞栓(空気)">空気塞栓</LabeledCheckbox>
           </div>
           <div>
-            <LabeledCheckbox v-model="AE.Title" value="経過観察">経過観察</LabeledCheckbox>
             <LabeledCheckbox v-model="AE.Title" value="水中毒">水中毒</LabeledCheckbox>
           </div>
           <div>
