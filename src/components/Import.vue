@@ -14,7 +14,7 @@
     </div>
 
     <!-- Importerセクション -->
-    <import-CSV v-if="ImportMode === 'csv'" :stream="FileStream" :disabled="!FileStream" @done="Processed"/>
+    <import-CSV v-if="ImportMode === 'csv'" :stream="FileStream" :disabled="!FileStream" :preserved-rule="CSVruleset" @done="Processed" @store="storeCSVruleset"/>
     <import-merge-v4 v-if="ImportMode === 'merge'" :stream="FileStream" :disabled="!FileStream" @done="Processed"/>
     <import-JSON v-if="ImportMode === 'json'" :stream="FileStream" :disabled="!FileStream" @done="Processed"/>
 
@@ -35,7 +35,7 @@
 import * as Popups from '@/modules/Popups'
 import InputFile from '@/components/Molecules/InputFile'
 import ImportJSON from '@/components/Molecules/ImportJSON'
-import ImportCSV from '@/components/Organisms/ImportCSV'
+import ImportCSV from '@/components/Molecules/ImportCSV'
 import ImportMergeV4 from '@/components/Molecules/ImportMergeV4'
 import StepIndicator from '@/components/Molecules/StepIndicator'
 import TheWrapper from '@/components/Atoms/TheWrapper'
@@ -74,6 +74,15 @@ export default {
       } else {
         return 1
       }
+    },
+    CSVruleset: {
+      get () {
+        return this.$store.getters['system/SavedCSVrule']
+      },
+      set (value) {
+        this.$store.commit('system/SetPreferences', { CSVruleset: value })
+        this.$store.dispatch('system/SavePreferences')
+      }
     }
   },
   methods: {
@@ -94,6 +103,9 @@ export default {
     Processed (newdocuments) {
       this.CreatedDocument.splice(0)
       this.CreatedDocument.splice(0, 0, ...newdocuments)
+    },
+    storeCSVruleset (value) {
+      this.CSVruleset = value
     },
     async CommitImported () {
       if (this.CreatedDocument.length === 0) {

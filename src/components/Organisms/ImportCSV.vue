@@ -55,6 +55,10 @@ export default {
     stream: {
       type: String,
       required: true
+    },
+    preservedRule: {
+      type: String,
+      default: '{}'
     }
   },
   data () {
@@ -68,10 +72,10 @@ export default {
     })
   },
   created () {
-    const preservedRule = this.$store.getters['system/SavedCSVrule']
-    if (Object.keys(preservedRule).length > 0) {
-      for (const key of Object.keys(preservedRule)) {
-        this.RuleSet[key] = Object.assign({}, preservedRule[key])
+    const preload = JSON.parse(this.preservedRule)
+    if (Object.keys(preload).length > 0) {
+      for (const key of Object.keys(preload)) {
+        this.RuleSet[key] = Object.assign({}, preload[key])
       }
     }
   },
@@ -181,8 +185,7 @@ export default {
       }
     },
     StoreRuleset () {
-      this.$store.commit('system/SetPreferences', { CSVruleset: JSON.stringify(this.RuleSet) })
-      this.$store.dispatch('system/SavePreferences')
+      this.$emit('store', JSON.stringify(this.RuleSet))
     }
   }
 }

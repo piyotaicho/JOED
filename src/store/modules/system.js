@@ -79,11 +79,7 @@ export default {
     },
 
     SavedCSVrule (state) {
-      if (state.settings.CSVruleset !== '{}') {
-        return JSON.parse(state.settings.CSVruleset)
-      } else {
-        return {}
-      }
+      return state.settings.CSVruleset
     }
   },
   mutations: {
