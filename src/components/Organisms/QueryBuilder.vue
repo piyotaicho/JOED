@@ -1,38 +1,34 @@
 <template>
   <div class="QueryBuilder">
-    <div style="min-width: 300px; flex-grow: 1;">
-      <QueryPane title="登録項目"
-        :container="this.listRecord"
-        :erasable="true"
-        @erase="removeAssignment"
-        @dropped="itemDropped"
-        />
-    </div>
-    <div style="min-width: 300px; flex-grow: 1;">
-      <QueryPane
-        :draggable="true"
-        :container="this.listContainer"
-        @dragged="CSVitemDragged"
-        v-show="source === 'CSV'">
-        <template #title>
-          <span @click="ToggleSource">&#x1f5d8; CSVファイルのフィールド</span>
-          <div style="display: inline-block; margin-left: 1rem; letter-spacing: 0.3rem;">
-            <span @click="CSVcursor('prev')">&#x229f;</span>
-            <span @click="CSVcursor('home')">&#x1f56e;</span>
-            <span @click="CSVcursor('next')">&#x229e;</span>
-          </div>
-        </template>
-      </QueryPane>
-      <QueryPane
-        :draggable="true"
-        :container="listFunctions"
-        @dragged="functionalitemDragged"
-        v-show="source === 'functions'">
-        <template #title>
-          <span @click="ToggleSource">&#x1f5d8; 生成値</span>
-        </template>
-      </QueryPane>
-    </div>
+    <QueryPane title="登録項目"
+      :container="this.listRecord"
+      :erasable="true"
+      @erase="removeAssignment"
+      @dropped="itemDropped"
+      />
+    <QueryPane
+      :draggable="true"
+      :container="this.listContainer"
+      @dragged="CSVitemDragged"
+      v-show="source === 'CSV'">
+      <template #title>
+        <span @click="ToggleSource">&#x1f5d8; CSVファイルのフィールド</span>
+        <div style="display: inline-block; margin-left: 1rem; letter-spacing: 0.3rem;">
+          <span @click="CSVcursor('prev')">&#x229f;</span>
+          <span @click="CSVcursor('home')">&#x1f56e;</span>
+          <span @click="CSVcursor('next')">&#x229e;</span>
+        </div>
+      </template>
+    </QueryPane>
+    <QueryPane
+      :draggable="true"
+      :container="listFunctions"
+      @dragged="functionalitemDragged"
+      v-show="source === 'functions'">
+      <template #title>
+        <span @click="ToggleSource">&#x1f5d8; 生成値</span>
+      </template>
+    </QueryPane>
   </div>
 </template>
 
@@ -202,13 +198,13 @@ div.QueryBuilder
   border: 1px solid var(--color-text-regular)
   border-radius: 0.3rem
   width: 700px
+  min-height: 31rem
   margin: 0.2rem 0.5rem 0.2rem 0.2rem
   padding: 0.3rem 0.3rem
-  min-height: 31rem
+  display: flex
+  flex-direction: column
+  justify-content: space-between
+  align-content: stretch
   resize: vertical
   overflow-y: hidden
-  display: flex
-  justify-content: space-space-around
-  flex-direction: column
-  // flex-wrap: wrap
 </style>

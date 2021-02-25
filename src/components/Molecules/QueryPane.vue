@@ -2,15 +2,17 @@
   <div class="QueryPane">
     <div class="QueryPaneTitle"><slot name="title">{{title}}</slot></div>
     <div class="QueryPaneList">
-      <list-item v-for="(item, index) in container"
-        :key="index"
-        :item="item"
-        :erasable="erasable"
-        @erase="erase(index)"
-        :draggable="draggable"
-        @dragged="dragged(index, $event)"
-        @dropped="dropped(index, $event)"
-      />
+      <div>
+        <list-item v-for="(item, index) in container"
+          :key="index"
+          :item="item"
+          :erasable="erasable"
+          @erase="erase(index)"
+          :draggable="draggable"
+          @dragged="dragged(index, $event)"
+          @dropped="dropped(index, $event)"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -57,15 +59,26 @@ export default {
 
 <style lang="sass">
 div.QueryPane
-  height: 95%
-  // margin: 0.5rem 0.3rem 0.5rem 0.3rem
-  padding-bottom: 1rem
   display: flex
   flex-direction: column
+  justify-content: flex-start
+  height: 50%
+  margin-bottom: 1rem
 div.QueryPaneTitle
   font-weight: 600
+  margin: 0 1rem
+  height: 1.4rem
 div.QueryPaneList
-  height: 12.4rem
-  overflow-y: auto
-  flex-grow: 1
+  position: relative
+  min-height: 190.4px
+  height: 100%
+  div
+    position: absolute
+    top: 0
+    left: 0
+    bottom: 0
+    right: 0
+    overflow-y: auto
+    div
+      position: relative
 </style>
