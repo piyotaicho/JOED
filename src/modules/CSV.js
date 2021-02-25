@@ -1,13 +1,17 @@
-export function parseCSV (loadeddocument) {
+export function parseCSV (container) {
   // 改行コードを確認して切り出し
-  const newline = (loadeddocument.indexOf('\r\n') < 0) ? (loadeddocument.indexOf('\r') < 0 ? '\n' : '\r') : '\r\n'
-  const lines = loadeddocument.split(newline)
+  const newline = (container.indexOf('\r\n') < 0) ? (container.indexOf('\r') < 0 ? '\n' : '\r') : '\r\n'
+  const lines = container.split(newline)
 
   // CSVのパース
   const rows = []
   const columncounts = {}
   for (const line of lines) {
     const row = []
+    if (line.length === 0) {
+      continue
+    }
+
     for (let start = 0; start < line.length; start++) {
       let end
       // 各フィールド毎に切り出してゆく
@@ -28,20 +32,23 @@ export function parseCSV (loadeddocument) {
       }
       start = end
     }
-    // 空白行は無視する
-    if (row.length > 0) {
-      rows.push(row)
-      columncounts[row.length] = null
+
+    if (line.charAt(line.length - 1) === ',') {
+      // Broken CSVに対応
+      row.push('')
     }
+
+    rows.push(row)
+    columncounts[row.length] = null
   }
   if (Object.keys(columncounts).length > 1) {
-    throw new Error('ファイルのレコード数が不定です.不正なCSVファイルです.')
+    throw new Error('ファイルのレコード中のフィールド数が一定ではありません.不正なCSVファイルです.')
   }
   return (rows)
 }
 
-export function phraseTitledCSV (loadeddocument) {
-  const doc = parseCSV(loadeddocument)
+export function phraseTitledCSV (container) {
+  const doc = parseCSV(container)
 
   const header = doc.slice(0, 1).flat()
 
