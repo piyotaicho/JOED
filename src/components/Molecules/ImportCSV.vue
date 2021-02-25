@@ -26,7 +26,7 @@
     </div>
     <div style="padding-bottom: 1rem;">
       <br/>
-      <el-button type="primary" :disabled="disabled" @click="ProcessStream">上記ルールに則ってデータを変換</el-button>
+      <el-button type="primary" :disabled="disableProcess" @click="ProcessStream">上記ルールに則ってデータを変換</el-button>
       <el-button type="primary" :disabled="disabled" @click="StoreRuleset">ルールを保存</el-button>
     </div>
     <div class="progress-views">
@@ -75,7 +75,7 @@ export default {
     const preload = JSON.parse(this.preservedRule)
     if (Object.keys(preload).length > 0) {
       for (const key of Object.keys(preload)) {
-        this.RuleSet[key] = Object.assign({}, preload[key])
+        this.$set(this.RuleSet, key, Object.assign({}, preload[key]))
       }
     }
   },
@@ -125,6 +125,16 @@ export default {
     },
     CSV () {
       return this.records.length > 0 ? this.records : [[]]
+    },
+    disableProcess () {
+      if (
+        !this.disabled &&
+        this.records.length > 0
+      ) {
+        return false
+      } else {
+        return true
+      }
     }
   },
   methods: {
@@ -151,6 +161,21 @@ export default {
 
         this.ProcessStep++
         this.$nextTick()
+
+        // ルールセットの確認
+        if (this.RuleSet['手術日 (必須)'] && this.RuleSet['ID (必須)']) {
+          for (const title of ['手術診断', '実施手術']) {
+            for (const index of ['1', '2', '3', '4']) {
+              if (this.RuleSet[title + index]) {
+                if (!this.RuleSet[title + index + 'カテゴリ']) {
+                  throw new Error(title + index + 'に対応するカテゴリの割り当てがありません.')
+                }
+              }
+            }
+          }
+        } else {
+          throw new Error('手術日とIDへの割り当ては必須です.')
+        }
 
         // レコード毎にドキュメントを作成
         for (
