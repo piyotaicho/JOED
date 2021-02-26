@@ -160,11 +160,13 @@
             <LabeledCheckbox v-model="AE.Title" value="創部感染"/>
             <LabeledCheckbox v-model="AE.Title" value="創離開"/>
             <LabeledCheckbox v-model="AE.Title" value="腟断端部離開"/>
+            <LabeledCheckbox v-model="AE.Title" value="メッシュ露出" v-if="year >= '2021'"/>
           </div>
           <div>
             <LabeledCheckbox v-model="AE.Title" value="腹膜炎"/>
             <LabeledCheckbox v-model="AE.Title" value="子宮感染"/>
             <LabeledCheckbox v-model="AE.Title" value="卵管・卵巣感染"/>
+            <LabeledCheckbox v-model="AE.Title" value="メッシュ感染" v-if="year >= '2021'"/>
           </div>
           <div>
             <LabeledCheckbox v-model="AE.Title" value="イレウス">イレウス(腸管麻痺)</LabeledCheckbox>
@@ -220,8 +222,13 @@
             <LabeledCheckbox v-model="AE.Location" value="尿管"/>
             <LabeledCheckbox v-model="AE.Location" value="後腹膜"/>
           </div>
-          <div>
+          <div v-if="year < '2021'">
             <LabeledCheckbox v-model="AE.Location" value="消化管" />
+          </div>
+          <div v-if="year >= '2021'">
+            <LabeledCheckbox v-model="AE.Location" value="直腸">消化管(直腸)</LabeledCheckbox>
+            <LabeledCheckbox v-model="AE.Location" value="結腸">消化管(結腸)</LabeledCheckbox>
+            <LabeledCheckbox v-model="AE.Location" value="消化管">消化管(その他)</LabeledCheckbox>
           </div>
           <div>
             <LabeledCheckbox v-model="AE.Location" value="腹壁" />
@@ -236,6 +243,7 @@
           </div>
           <div>
             <LabeledCheckbox v-model="AE.Location" value="神経" />
+            <LabeledCheckbox v-model="AE.Location" value="骨格系" v-if="year >='2021'">骨・骨膜・軟骨</LabeledCheckbox>
           </div>
           <div>
             <LabeledCheckbox v-model="AE.Location" value="上記にない部位" />
@@ -355,6 +363,10 @@ export default {
     },
     ItemValue: {
       type: Object
+    },
+    year: {
+      type: String,
+      default: ''
     }
   },
   data () {
