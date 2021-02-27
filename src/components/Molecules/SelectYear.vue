@@ -26,7 +26,7 @@ export default {
   mounted () {
     this.$store.dispatch('GetYears')
       .then(CountByYear => {
-        for (const year of Object.keys(CountByYear)) {
+        for (const year in CountByYear) {
           this.$set(this.Selections, year, CountByYear[year])
         }
       })

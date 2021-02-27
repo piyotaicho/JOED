@@ -15,7 +15,7 @@ export default class Master {
     }
 
     // 列挙可能変更不可プロパティとして initialTree への参照を設定
-    for (const keyname of Object.keys(initialTree)) {
+    for (const keyname in initialTree) {
       Object.defineProperty(this, keyname, {
         value: initialTree[keyname],
         enumerable: true

@@ -620,13 +620,13 @@ function translation (str = '') {
   }
 
   // 置換1 - 文字列の全置換
-  for (const rule of Object.keys(ruleset1)) {
+  for (const rule in ruleset1) {
     const regex = new RegExp(rule, 'g')
     searchstring = searchstring.replace(regex, ruleset1[rule])
   }
 
   // 置換2 - 文字列からの検索して置き換え
-  for (const rule of Object.keys(ruleset2)) {
+  for (const rule in ruleset2) {
     const regex = new RegExp(rule, 'i')
     if (regex.test(searchstring)) {
       searchstring = ruleset2[rule]
