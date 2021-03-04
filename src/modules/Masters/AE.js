@@ -291,7 +291,7 @@ export default class AEmaster {
         // 合併症設計のコンポーネント毎に入力があるか検証
         for (const component of category.Components) {
           const key = this.Components[component].Element
-          if (AE[key].length === 0) {
+          if (AE[key] === undefined || AE[key].length === 0) {
             if (component === category.Option) {
               // 必須入力ではないもの以降は検証しない
               break
@@ -317,7 +317,7 @@ export default class AEmaster {
     }
 
     // グレードと転帰の確認 - 最高グレードに相当する転帰が選択されている
-    if (AE.Grade && AE.Course.length > 0) {
+    if (AE?.Grade && AE?.Course?.length > 0) {
       if (!/^([1245]|3[ab])$/i.test(AE.Grade)) {
         throw Error('Gradeの指定が不正です.')
       }
@@ -334,7 +334,7 @@ export default class AEmaster {
         if (courseelement === undefined) {
           throw Error('転帰(' + course + ')が合併症マスタにありません.')
         } else {
-          min = min < courseelement.Min ? min : courseelement.Min
+          min = min < courseelement.Min ? courseelement.Min : min
           max = max < courseelement.Max ? courseelement.Max : max
         }
       }
