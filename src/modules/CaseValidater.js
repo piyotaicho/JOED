@@ -143,9 +143,8 @@ export async function ValidateDiagnoses (item, year) {
   )
     .then(results => {
       throw Error(results
-        .map(result => result?.reason)
-        .filter(result => result)
-        .map(result => result.message)
+        .filter(result => result.reason)
+        .map(result => result.reason.message)
         .join('\n')
       )
     })
@@ -188,9 +187,8 @@ export async function ValidateProcedures (item, year) {
   )
     .then(results => {
       throw Error(results
-        .map(result => result?.reason)
-        .filter(result => result)
-        .map(result => result.message)
+        .filter(result => result.reason)
+        .map(result => result.reason.message)
         .join('\n')
       )
     })
@@ -232,9 +230,8 @@ export async function ValidateAEs (item, year) {
   await Promise.allSettled(item?.AEs.map(record => Master.validate(record)))
     .then(results => {
       throw Error(results
-        .map(result => result?.reason)
-        .filter(result => result)
-        .map(result => result.message)
+        .filter(result => result.reason)
+        .map(result => result.reason.message)
         .join('\n')
       )
     })
