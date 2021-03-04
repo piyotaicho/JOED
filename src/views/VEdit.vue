@@ -346,7 +346,7 @@ export default {
               this.BackToList(Number(this.uid))
           }
         })
-        .catch(e => Popups.alert(e.message))
+        .catch(e => Popups.alert(e.message, this))
     },
 
     async CancelEditing (to = '') {

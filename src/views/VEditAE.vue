@@ -187,7 +187,7 @@ export default {
       try {
         this.master.validate(documentAEItem)
       } catch (e) {
-        alert(e.message)
+        alert(e.message, this)
         return
       }
 
