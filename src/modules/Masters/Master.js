@@ -120,7 +120,7 @@ export default class Master {
         .filter(item => item)
       )
     }
-    return temporaryArray.filter((item, index, self) => self.indexOf(item) === index)
+    return Array.from(new Set(temporaryArray))
   }
 
   // カテゴリ・対象続器・アイテム名称に合致するアイテムを取得

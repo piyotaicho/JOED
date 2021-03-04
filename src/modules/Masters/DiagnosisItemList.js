@@ -508,14 +508,14 @@ export default class DiagnosisMaster extends Master {
       }
     }
     if (matcheditemtitles.length > 0) {
-      return matcheditemtitles.filter((item, index, self) => self.indexOf(item) === index)
+      return Array.from(new Set(matcheditemtitles))
     }
     // ステップ2 ～closematch
-    return getCloseMatches(
+    return Array.from(new Set(getCloseMatches(
       source,
       flattenitems.map(item => this.getText(item)),
       12, 0.34 // cut and tryでの類似度がこれ
-    ).filter((item, index, self) => self.indexOf(item) === index)
+    )))
   }
 } // class DiagnosisMaster おわり
 
