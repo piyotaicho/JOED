@@ -15,13 +15,13 @@
         v-model="exportRaw"
         :disabled="!exportAllFields"
         title="データ形式"
-        :options="{生データ: true, 処理データ: false}"/>
+        :options="{処理データ: false, 生データ: true}"/>
 
       <InputSwitchField
         v-model="addHeader"
         :disabled="!(exportAllFields && exportRaw)"
         title="ヘッダの生成"
-        :options="{しない: false, する: true}"/>
+        :options="{する: true, しない: false}"/>
 
       <InputSwitchField
         v-model="RawValidation"
@@ -96,9 +96,9 @@ export default {
     return ({
       exportYear: '',
       exportAllFields: false,
-      exportRaw: true,
+      exportRaw: false,
       RawValidation: true,
-      addHeader: false,
+      addHeader: true,
 
       exportText: '',
 
@@ -138,8 +138,16 @@ export default {
       async set (newvalue) {
         if (newvalue && await Popups.confirm('不用意に全てのフィールドのデータを出力するのは,個人情報保護の観点からお薦め出来ません.\nそれでも出力しますか?', this)) {
           this.exportAllFields = true
+          this.exportRaw = true
+          this.addHeader = false
+          this.RawValidation = false
         } else {
           this.exportAllFields = false
+        }
+        if (newvalue === false) {
+          this.exportAllFields = false
+          this.exportRaw = false
+          this.addHeader = true
         }
       }
     },
