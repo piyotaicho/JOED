@@ -86,11 +86,10 @@ export default class Master {
     }
 
     for (const targetname of (target ? [target] : this.Targets(category))) {
-      for (const item of this[category][targetname]) {
-        if (Master.parseItem(item, 'Text', year)) {
-          temporaryArray.push(item)
-        }
-      }
+      temporaryArray.push(
+        ...this[category][targetname]
+          .filter(item => Master.parseItem(item, 'Text', year))
+      )
     }
     return temporaryArray
   }
