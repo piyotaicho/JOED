@@ -39,20 +39,14 @@ export async function ValidateCase (item = {}, temporary = false) {
   if (!temporary) {
     const Year = item.DateOfProcedure.substr(0, 4)
 
-    await Promise.allSettled([
+    await allSettled([
       CheckProcedureTime(item),
       ValidateAdditionalInformations(item),
       CheckCategoryMatch(item),
       ValidateDiagnoses(item, Year),
       ValidateProcedures(item, Year),
       ValidateAEs(item, Year)
-    ]).then(results => {
-      throw Error(results
-        .filter(result => result.reason)
-        .map(result => result.reason.message)
-        .join('\n')
-      )
-    })
+    ])
   }
 }
 
@@ -103,8 +97,8 @@ export async function ValidateAdditionalInformations (item) {
 // 主たる術後診断・実施術式のカテゴリの一致の検証
 //
 export async function CheckCategoryMatch (item) {
-  const categoryDiagnosis = item?.Diagnoses[0]?.Chain[0]
-  const categoryProcedure = item?.Procedures[0]?.Chain[0]
+  const categoryDiagnosis = item?.Diagnoses?.[0]?.Chain?.[0]
+  const categoryProcedure = item?.Procedures?.[0]?.Chain?.[0]
   // Diagnoses, Proceduresが未設定については別でチェックされる
   if (categoryDiagnosis && categoryProcedure &&
     CategoryTranslation[categoryDiagnosis] !== CategoryTranslation[categoryProcedure]) {
@@ -131,23 +125,20 @@ export async function ValidateDiagnoses (item, year) {
   await CheckDupsInDiagnoses(item)
 
   const master = new DaignosisMaster()
-  await Promise.allSettled(
+  await allSettled(
     item.Diagnoses.map(record => new Promise((resolve, reject) => {
-      if (record?.UserTyped !== true) {
-        if (master.ItemTexts(record.Chain[0], '', year).indexOf(record.Text) === -1) {
-          reject(Error(record.Text + ' が術式マスタにありません.'))
+      if (!record.Text) {
+        reject(Error('空白の手術診断レコードです.'))
+      } else {
+        if (record.UserTyped !== true) {
+          if (master.ItemTexts(record?.Chain?.[0], '', year).indexOf(record.Text) === -1) {
+            reject(Error(record.Text + ' が診断マスタにありません.'))
+          }
         }
+        resolve()
       }
-      resolve()
     }))
   )
-    .then(results => {
-      throw Error(results
-        .filter(result => result.reason)
-        .map(result => result.reason.message)
-        .join('\n')
-      )
-    })
 }
 
 // 実施手術の重複の有無
@@ -175,23 +166,20 @@ export async function ValidateProcedures (item, year) {
   await CheckDupsInProcedures(item)
 
   const master = new ProcedureMaster()
-  await Promise.allSettled(
+  await allSettled(
     item.Procedures.map(record => new Promise((resolve, reject) => {
-      if (record?.UserTyped !== true) {
-        if (master.ItemTexts(record.Chain[0], '', year).indexOf(record.Text) === -1) {
-          reject(Error(record.Text + ' が術式マスタにありません.'))
+      if (!record.Text) {
+        reject(Error('空白の実施手術レコードです.'))
+      } else {
+        if (record.UserTyped !== true) {
+          if (master.ItemTexts(record?.Chain?.[0], '', year).indexOf(record.Text) === -1) {
+            reject(Error(record.Text + ' が術式マスタにありません.'))
+          }
         }
+        resolve()
       }
-      resolve()
     }))
   )
-    .then(results => {
-      throw Error(results
-        .filter(result => result.reason)
-        .map(result => result.reason.message)
-        .join('\n')
-      )
-    })
 }
 
 // 合併症の重複と整合性確認
@@ -227,12 +215,23 @@ export async function ValidateAEs (item, year) {
 
   // 登録内容の整合性確認
   const Master = new AEmaster(year)
-  await Promise.allSettled(item?.AEs.map(record => Master.validate(record)))
+  await allSettled(item?.AEs.map(record => Master.validate(record)))
+}
+
+// Promise.allSettledのラッパー
+// エラーメッセージを連結してthrowする
+//
+// @param{Array} promiseの配列オブジェクト
+function allSettled (promises) {
+  return Promise.allSettled(promises)
     .then(results => {
-      throw Error(results
-        .filter(result => result.reason)
+      console.log(results)
+      const messages = results
+        .filter(result => result?.reason)
         .map(result => result.reason.message)
         .join('\n')
-      )
+      if (messages !== '') {
+        throw Error(messages)
+      }
     })
 }
