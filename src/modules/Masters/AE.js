@@ -129,7 +129,7 @@ export default class AEmaster {
             Items: [
               ['子宮', '卵管', '卵巣', '腟'],
               ['膀胱', '尿管', '後腹膜'],
-              ...(this.YearofMaster >= '2021'
+              (this.YearofMaster >= '2021'
                 ? [
                   { Text: '消化管(直腸)', Value: '直腸' },
                   { Text: '消化管(結腸)', Value: '結腸' },
