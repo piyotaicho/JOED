@@ -27,17 +27,24 @@ export function ValidateRecords (records) {
       continue
     }
     // 症例レコードの最低限構成レコードがあるかを確認
-    if (
-      record.ProcedureTime &&
-      record.PresentAE !== undefined &&
-      record.Diagnoses &&
-      record.Procedures
-    ) {
-      if (record.PatientId === undefined) {
-        anonymised = true
-      }
+    // Idと日付だけの一時保存を含むパターン
+    if (record.PatientId && record.DateOfProcedure) {
       // 症例レコードの数をカウントアップ
       numberofCase++
+    } else {
+      // 提出データに準ずる必要条件を満たしているパターン
+      if (
+        record.ProcedureTime &&
+        record.PresentAE !== undefined &&
+        record.Diagnoses &&
+        record.Procedures
+      ) {
+        if (record.PatientId === undefined) {
+          anonymised = true
+        }
+        // 症例レコードの数をカウントアップ
+        numberofCase++
+      }
     }
   }
 

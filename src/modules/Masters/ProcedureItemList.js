@@ -704,15 +704,15 @@ export default class ProcedureMaster extends Master {
       }
     }
     if (matcheditemtitles.length > 0) {
-      return matcheditemtitles.filter((item, index, self) => self.indexOf(item) === index)
+      return Array.from(new Set(matcheditemtitles))
     }
 
     // ステップ2 ～closematch
-    return difflib.getCloseMatches(
+    return Array.from(new Set(difflib.getCloseMatches(
       source,
       flattenitems.map(item => this.getText(item)),
       12, 0.34 // cut and tryでの類似度がこれ
-    ).filter((item, index, self) => self.indexOf(item) === index)
+    )))
   }
 } // class ProcedureMaster おわり
 
@@ -794,13 +794,13 @@ function translation (str = '') {
   }
 
   // 置換1 - 文字列の全置換
-  for (const rule of Object.keys(ruleset1)) {
+  for (const rule in ruleset1) {
     const regex = new RegExp(rule, 'g')
     searchstring = searchstring.replace(regex, ruleset1[rule])
   }
 
   // 置換2 - 文字列からの検索して置き換え
-  for (const rule of Object.keys(ruleset2)) {
+  for (const rule in ruleset2) {
     const regex = new RegExp(rule, 'i')
     if (regex.test(searchstring)) {
       searchstring = ruleset2[rule]

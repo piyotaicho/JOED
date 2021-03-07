@@ -1,5 +1,6 @@
 import DaignosisMaster from '@/modules/Masters/DiagnosisItemList'
 import ProcedureMaster from '@/modules/Masters/ProcedureItemList'
+import AEmaster from '@/modules/Masters/AE'
 
 import ProcedureTimeSelections from '@/modules/ProcedureTimes'
 
@@ -36,34 +37,16 @@ export async function ValidateCase (item = {}, temporary = false) {
   // 一時保存でも患者IDと手術日は最低限の必須入力項目
   await CheckBasicInformations(item)
   if (!temporary) {
-    await CheckProcedureTime(item)
-    await ValidateAdditionalInformations(item)
-    await CheckSections(item)
-    await ValidateCategoryMatch(item)
-
     const Year = item.DateOfProcedure.substr(0, 4)
-    // ES2020が使えるようになったらPromise.allSettledへ置き換える
-    const warningMessages = (await Promise.all([
-      new Promise(resolve => {
-        ValidateDiagnoses(item, Year)
-          .then(_ => resolve(), e => resolve(e))
-      }),
-      new Promise(resolve => {
-        ValidateProcedures(item, Year)
-          .then(_ => resolve(), e => resolve(e))
-      }),
-      new Promise(resolve => {
-        ValidateAEs(item)
-          .then(_ => resolve(), e => resolve(e))
-      })
-    ]))
-      .filter(value => value)
-      .map(item => item.message)
-      .join('\n')
 
-    if (warningMessages) {
-      throw new Error(warningMessages)
-    }
+    await allSettled([
+      CheckProcedureTime(item),
+      ValidateAdditionalInformations(item),
+      CheckCategoryMatch(item),
+      ValidateDiagnoses(item, Year),
+      ValidateProcedures(item, Year),
+      ValidateAEs(item, Year)
+    ])
   }
 }
 
@@ -74,7 +57,7 @@ export async function CheckBasicInformations (item) {
     !item.PatientId ||
     !DateFormat.test(item.DateOfProcedure)
   ) {
-    throw new Error('患者ID・手術日は最低限の必須入力項目です.')
+    throw Error('患者ID・手術日は最低限の必須入力項目です.')
   }
 }
 
@@ -82,7 +65,7 @@ export async function CheckBasicInformations (item) {
 //
 export async function CheckProcedureTime (item) {
   if (!item.ProcedureTime) {
-    throw new Error('手術時間は必須入力項目です.')
+    throw Error('手術時間は必須入力項目です.')
   }
   let procedureTimeString = item.ProcedureTime
 
@@ -90,183 +73,165 @@ export async function CheckProcedureTime (item) {
     procedureTimeString = ProcedureTimeSelections(Number(procedureTimeString))
   }
   if (!ProcedureTimeFormat.test(procedureTimeString)) {
-    throw new Error('手術時間の入力様式が違います.')
+    throw Error('手術時間の入力様式が違います.')
   }
 }
 // 補足登録情報の検証
 //
 export async function ValidateAdditionalInformations (item) {
-  const errorStrings = []
+  const errorMessages = []
   if (item.Age && (item.Age <= 0 || item.Age > 129)) {
-    errorStrings.push('年齢の入力内容を確認してください.')
+    errorMessages.push('年齢の入力内容を確認してください.')
   }
   if (item.JSOGId && item.JSOGId.match(JSOGboardCaseNoFormat) === null) {
-    errorStrings.push('日産婦腫瘍登録番号の様式が不正です.')
+    errorMessages.push('日産婦腫瘍登録番号の様式が不正です.')
   }
   if (item.NCDId && item.NCDId.match(NCDIdFormat) === null) {
-    errorStrings.push('NCD症例識別番号の様式が不正です.')
+    errorMessages.push('NCD症例識別番号の様式が不正です.')
   }
-  if (errorStrings.length > 0) {
-    throw new Error(errorStrings.join('\n'))
-  }
-}
-
-// 登録情報の有無
-//
-export async function CheckSections (item) {
-  const errorStrings = []
-  if (item.Diagnoses.length === 0) {
-    errorStrings.push('手術診断の入力がありません.')
-  }
-  if (item.Procedures.length === 0) {
-    errorStrings.push('実施手術の入力がありません.')
-  }
-  if (item.PresentAE === true && (!item.AEs || item.AEs.length === 0)) {
-    errorStrings.push('合併症の入力がありません.')
-  }
-  if (errorStrings.length > 0) {
-    throw new Error(errorStrings.join('\n'))
+  if (errorMessages.length > 0) {
+    throw Error(errorMessages.join('\n'))
   }
 }
 
 // 主たる術後診断・実施術式のカテゴリの一致の検証
 //
-export async function ValidateCategoryMatch (item) {
-  if (CategoryTranslation[item.Diagnoses[0].Chain[0]] !==
-    CategoryTranslation[item.Procedures[0].Chain[0]]) {
-    throw new Error('主たる手術診断と主たる実施術式のカテゴリが一致していません.')
+export async function CheckCategoryMatch (item) {
+  const categoryDiagnosis = item?.Diagnoses?.[0]?.Chain?.[0]
+  const categoryProcedure = item?.Procedures?.[0]?.Chain?.[0]
+  // Diagnoses, Proceduresが未設定については別でチェックされる
+  if (categoryDiagnosis && categoryProcedure &&
+    CategoryTranslation[categoryDiagnosis] !== CategoryTranslation[categoryProcedure]) {
+    throw Error('主たる手術診断と主たる実施術式のカテゴリが一致していません.')
   }
 }
 
 // 術後診断の重複の有無
 //
 export async function CheckDupsInDiagnoses (item) {
-  return new Promise((resolve, reject) => {
-    if (item.Diagnoses.map(item => item.Text)
-      .filter((item, index, self) => self.indexOf(item) !== self.lastIndexOf(item))
-      .length <= 0) {
-      resolve()
-    } else {
-      reject(new Error('手術診断に重複があります.'))
-    }
-  })
+  const itemTexts = item.Diagnoses.map(item => item.Text)
+  if (itemTexts.length > (new Set(itemTexts)).size) {
+    throw Error('手術診断に重複があります.')
+  }
 }
 
 // 術後診断の重複確認と年次ツリーとの整合性検証
 //
 export async function ValidateDiagnoses (item, year) {
+  if (!(item?.Diagnoses?.length > 0)) {
+    throw Error('手術診断の入力がありません.')
+  }
+
+  await CheckDupsInDiagnoses(item)
+
   const master = new DaignosisMaster()
-  return new Promise((resolve, reject) => {
-    const promiseArray = [new Promise(resolve => {
-      CheckDupsInDiagnoses(item)
-        .then(_ => resolve(), error => resolve(error.message))
-    })]
-    for (const diagnosis of item.Diagnoses) {
-      promiseArray.push(new Promise(resolve => {
-        if (diagnosis.UserTyped === true) {
-          resolve()
-        }
-        const treeList = master.ItemTexts(diagnosis.Chain[0], '', year)
-        if (treeList.indexOf(diagnosis.Text) >= 0) {
-          resolve()
-        }
-        resolve(diagnosis.Text + ' が診断マスタにありません.')
-      }))
-    }
-    Promise
-      .all(promiseArray)
-      .then(errors => {
-        const realerrors = errors.filter(item => item)
-        if (realerrors.length > 0) {
-          reject(new Error(realerrors.join('\n')))
+  await allSettled(
+    item.Diagnoses.map(record => new Promise((resolve, reject) => {
+      if (!record.Text) {
+        reject(Error('空白の手術診断レコードです.'))
+      } else {
+        if (record.UserTyped !== true) {
+          if (master.ItemTexts(record?.Chain?.[0], '', year).indexOf(record.Text) === -1) {
+            reject(Error(record.Text + ' が診断マスタにありません.'))
+          }
         }
         resolve()
-      })
-  })
+      }
+    }))
+  )
 }
 
 // 実施手術の重複の有無
 //
 export async function CheckDupsInProcedures (item) {
-  return new Promise((resolve, reject) => {
-    if (item.Procedures.map(
-      item => [
-        item.Text,
-        (item.AdditionalProcedure ? item.AdditionalProcedure.Text : []),
-        (item.Ditto ? item.Ditto : [])
-      ]
-    )
-      .flat(2)
-      .filter((item, index, self) => self.indexOf(item) !== self.lastIndexOf(item))
-      .length <= 0) {
-      resolve()
-    } else {
-      reject(new Error('実施手術の内容に重複があります.'))
-    }
-  })
+  const itemTexts = item.Procedures
+    .map(item => [
+      item.Text,
+      (item.AdditionalProcedure ? item.AdditionalProcedure.Text : []),
+      (item.Ditto ? item.Ditto : [])
+    ])
+    .flat(2)
+  if (itemTexts.length > (new Set(itemTexts)).size) {
+    throw Error('実施手術の内容に重複があります.')
+  }
 }
 
 // 実施手術名の重複確認と年次ツリーとの整合性検証
 //
 export async function ValidateProcedures (item, year) {
-  const master = new ProcedureMaster()
+  if (!(item?.Procedures?.length > 0)) {
+    throw Error('実施手術の入力がありません.')
+  }
 
-  return new Promise((resolve, reject) => {
-    const promiseArray = [new Promise(resolve => {
-      CheckDupsInProcedures(item)
-        .then(_ => resolve(), error => resolve(error.message))
-    })]
-    for (const procedure of item.Procedures) {
-      promiseArray.push(
-        new Promise(resolve => {
-          if (procedure.UserTyped === true) {
-            resolve()
+  await CheckDupsInProcedures(item)
+
+  const master = new ProcedureMaster()
+  await allSettled(
+    item.Procedures.map(record => new Promise((resolve, reject) => {
+      if (!record.Text) {
+        reject(Error('空白の実施手術レコードです.'))
+      } else {
+        if (record.UserTyped !== true) {
+          if (master.ItemTexts(record?.Chain?.[0], '', year).indexOf(record.Text) === -1) {
+            reject(Error(record.Text + ' が術式マスタにありません.'))
           }
-          const treeList = master.ItemTexts(procedure.Chain[0], '', year)
-          if (treeList.indexOf(procedure.Text) >= 0) {
-            resolve()
-          }
-          resolve(procedure.Text + ' が術式マスタにありません.')
-        })
-      )
-    }
-    Promise
-      .all(promiseArray)
-      .then(errors => {
-        const realerrors = errors.filter(item => item)
-        if (realerrors.length > 0) {
-          reject(new Error(realerrors.join('\n')))
-        } else {
-          resolve()
         }
-      })
-  })
+        resolve()
+      }
+    }))
+  )
 }
 
 // 合併症の重複と整合性確認
 //
-export async function ValidateAEs (item) {
-  return new Promise((resolve, reject) => {
-    Promise.all([
-      new Promise((resolve) => {
-        const AEs = item.AEs ? item.AEs.map(AE => [AE.Category, ...(AE.Title || []), ...(AE.Cause || [])].join(':')) : []
-        if (AEs.filter((value, index, self) => self.indexOf(value) !== self.lastIndexOf(value)).length <= 0) {
-          resolve()
-        }
-        resolve('合併症の登録に重複があります.')
-      }),
-      new Promise((resolve) => {
-        if (item.PresentAE === false && (item.AEs && item.AEs.length > 0)) {
-          resolve('合併症の有無と合併症の入力との整合がとれません.')
-        }
-        resolve()
-      })
-    ]).then(errors => {
-      const realerrors = errors.filter(item => item)
-      if (realerrors.length > 0) {
-        reject(new Error(realerrors.join('\n')))
+export async function ValidateAEs (item, year) {
+  if (item?.PresentAE === undefined && item?.AEs?.length === undefined) {
+    throw Error('合併症の入力がありません.')
+  }
+
+  // PresentAEとAEsの整合確認
+  if (
+    (item.PresentAE === false && (item?.AEs?.length > 0)) ||
+    (item.PresentAE === true && !(item?.AEs?.length > 0))
+  ) {
+    throw Error('合併症の有無と合併症の入力との整合がとれません.')
+  }
+
+  if (item.PresentAE === false) {
+    return
+  }
+
+  // 重複確認～BloodCount,Grade,Courseを除いた部分で評価
+  const values = item?.AEs
+    .map(record => [record.Category,
+      ...record?.Title || [],
+      ...record?.Cause || [],
+      ...record?.Location || []
+    ].join(','))
+
+  if (values.length !== (new Set(values)).size) {
+    throw Error('合併症の登録内容に重複があります.')
+  }
+
+  // 登録内容の整合性確認
+  const Master = new AEmaster(year)
+  await allSettled(item?.AEs.map(record => Master.validate(record)))
+}
+
+// Promise.allSettledのラッパー
+// エラーメッセージを連結してthrowする
+//
+// @param{Array} promiseの配列オブジェクト
+function allSettled (promises) {
+  return Promise.allSettled(promises)
+    .then(results => {
+      console.log(results)
+      const messages = results
+        .filter(result => result?.reason)
+        .map(result => result.reason.message)
+        .join('\n')
+      if (messages !== '') {
+        throw Error(messages)
       }
-      resolve()
     })
-  })
 }

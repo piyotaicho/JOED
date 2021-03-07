@@ -15,7 +15,7 @@ export default class Master {
     }
 
     // 列挙可能変更不可プロパティとして initialTree への参照を設定
-    for (const keyname of Object.keys(initialTree)) {
+    for (const keyname in initialTree) {
       Object.defineProperty(this, keyname, {
         value: initialTree[keyname],
         enumerable: true
@@ -86,11 +86,10 @@ export default class Master {
     }
 
     for (const targetname of (target ? [target] : this.Targets(category))) {
-      for (const item of this[category][targetname]) {
-        if (Master.parseItem(item, 'Text', year)) {
-          temporaryArray.push(item)
-        }
-      }
+      temporaryArray.push(
+        ...this[category][targetname]
+          .filter(item => Master.parseItem(item, 'Text', year))
+      )
     }
     return temporaryArray
   }
@@ -120,7 +119,7 @@ export default class Master {
         .filter(item => item)
       )
     }
-    return temporaryArray.filter((item, index, self) => self.indexOf(item) === index)
+    return Array.from(new Set(temporaryArray))
   }
 
   // カテゴリ・対象続器・アイテム名称に合致するアイテムを取得

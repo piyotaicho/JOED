@@ -8,6 +8,9 @@ function messageVNode (message, caller) {
     const lines = message.split('\n')
     const elements = []
     for (const line of lines) {
+      if (line === '') {
+        continue
+      }
       elements.push(line)
       elements.push(caller.$createElement('br', null))
     }

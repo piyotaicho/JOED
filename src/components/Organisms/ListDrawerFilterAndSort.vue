@@ -140,7 +140,7 @@ export default {
               case 'DateOfProcedure':
                 return filter.Value + '年'
               default:
-                for (const condition of Object.keys(this.Conditions)) {
+                for (const condition in this.Conditions) {
                   if (this.Conditions[condition].Field === filter.Field) {
                     return condition
                   }

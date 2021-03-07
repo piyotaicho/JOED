@@ -346,7 +346,9 @@ export default {
               this.BackToList(Number(this.uid))
           }
         })
-        .catch(e => Popups.alert(e.message))
+        .catch(e => {
+          Popups.alert(e.message, this)
+        })
     },
 
     async CancelEditing (to = '') {
@@ -411,7 +413,7 @@ export default {
       }
 
       // 区分コードの抽出
-      if (newDocument.Procedures && newDocument.Procedures[0]) {
+      if (newDocument.Procedures?.[0].Chain[0]) {
         newDocument.TypeOfProcedure = newDocument.Procedures[0].Chain[0]
       }
 

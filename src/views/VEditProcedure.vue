@@ -98,7 +98,7 @@ export default {
   },
   created () {
     if (this.ItemIndex > -1) {
-      // ItemIndex != -1 の場合は再編集
+      // ItemIndex != -1 の場合は新規ではなく再編集
       // Chainの解釈
       if (this.ItemValue.Chain) {
         if (this.ItemValue.Chain[0]) {
@@ -108,49 +108,61 @@ export default {
           }
         }
       }
-      // Textはmountedで解釈する
+
+      if (this.catgegory !== '') {
+        // カテゴリと対象が選択されているので選択リストの展開
+        this.SetCandidateItemsBySelection()
+
+        const text = this.ItemValue.Text
+        if (text !== '') {
+          if (this.candidates.includes(text)) {
+            // 選択肢に該当項目がある場合選択する
+            this.selectedItem = text
+          } else {
+            // 選択肢に入力されている項目がなければ自由入力に展開される
+            this.freewordText = text
+          }
+        }
+      }
     }
   },
   mounted () {
-    if (this.catgegory !== '' && this.target !== '') {
-      // カテゴリと対象が選択されているので選択リストの展開
-      this.SetCandidateItemsBySelection()
-
-      const text = this.ItemValue.Text
-      if (text !== '') {
-        if (this.candidates.includes(text)) {
-          // 選択肢に該当項目がある場合選択する
-          this.selectedItem = text
-          // 選択肢に付随術式などの情報がある場合展開する
-          this.OnCandidateSelected()
-          this.$nextTick().then(_ => {
-            // 付随情報を設定する
-            if (this.ItemValue.Description &&
-              this.ItemValue.Description.length > 0
-            ) {
-              this.description.Value.splice(0)
-              let indexcount = 0
-              for (const element of this.ItemValue.Description) {
-                this.$set(this.description.Value, indexcount++, element)
-              }
-            }
-            // 標準併施手術についての付随情報を設定する
-            if (this.ItemValue.AdditionalProcedure &&
-              this.ItemValue.AdditionalProcedure.Description &&
-              this.ItemValue.AdditionalProcedure.Description.length > 0
-            ) {
-              this.additionalProcedure.description.Value.splice(0)
-              let indexcount = 0
-              for (const element of this.ItemValue.AdditionalProcedure.Description) {
-                this.$set(this.additionalProcedure.description.Value, indexcount++, element)
-              }
-            }
-          })
-        } else {
-          // 選択肢に入力されている項目がなければ自由入力に展開される
-          this.freewordText = text
+    if (this.selectedItem !== '') {
+      // 選択肢に付随術式などの情報がある場合展開する
+      this.OnCandidateSelected()
+      this.$nextTick().then(_ => {
+        // 付随情報を設定する
+        if (this.description.Title !== '' &&
+          this.ItemValue?.Description?.length > 0
+        ) {
+          this.description.Value.splice(0)
+          for (const index in this.ItemValue.Description) {
+            this.$set(this.description.Value, index, this.ItemValue.Description[index])
+          }
         }
-      }
+        // 標準併施手術についての付随情報を設定する
+        if (this.additionalProcedure.Title !== '') {
+          const additionalDescriptionLength =
+            this.ItemValue?.AdditionalProcedure?.Description?.length
+
+          if (additionalDescriptionLength > 0) {
+            this.additionalProcedure.description.Value.splice(0)
+            for (const index in this.ItemValue.AdditionalProcedure.Description) {
+              this.$set(this.additionalProcedure.description.Value, index,
+                this.ItemValue.AdditionalProcedure.Description[index]
+              )
+            }
+          } else {
+            console.log('expand additional')
+            const blankItem = this.additionalProcedure.description.Options
+              .filter(item => item[item.length - 1] === '$')
+            if (blankItem.length > 0) {
+              this.additionalProcedure.description.Value.splice(0)
+              this.$set(this.additionalProcedure.description.Value, 0, blankItem[0])
+            }
+          }
+        }
+      })
       this.$nextTick()
     }
   },

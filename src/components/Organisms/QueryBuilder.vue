@@ -81,7 +81,7 @@ export default {
   created () {
     // デフォルトルールセットを設定
     if (Object.keys(this.ruleset).length > 0) {
-      for (const key of Object.keys(this.ruleset)) {
+      for (const key in this.ruleset) {
         this.recordAssignment[key] = Object.assign({}, this.ruleset[key])
       }
     }

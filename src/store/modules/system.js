@@ -84,7 +84,7 @@ export default {
   },
   mutations: {
     SetPreferences (state, payload = {}) {
-      for (const key of Object.keys(payload)) {
+      for (const key in payload) {
         if (state.settings[key] !== undefined) {
           Vue.set(state.settings, key, payload[key])
         }

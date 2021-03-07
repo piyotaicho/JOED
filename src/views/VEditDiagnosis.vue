@@ -54,7 +54,7 @@ export default {
   },
   created () {
     if (this.ItemIndex > -1) {
-      // ItemIndex != -1 の場合は再編集
+      // ItemIndex != -1 の場合は新規ではなく再編集
       // Chainの解釈
       if (this.ItemValue.Chain) {
         if (this.ItemValue.Chain[0]) {
@@ -64,25 +64,19 @@ export default {
           }
         }
       }
-      // Textはmountedで解釈する
-    }
-  },
-  mounted () {
-    if (this.catgegory !== '' && this.target !== '') {
-      // カテゴリと対象が選択されているので選択リストの展開
-      this.SetCandidateItemsBySelection()
 
-      const text = this.ItemValue.Text
-      if (text !== '') {
-        if (this.candidates.includes(text)) {
-          // 選択肢に該当項目がある場合選択する
-          this.selectedItem = text
+      if (this.catgegory !== '' && this.ItemValue.Text !== '') {
+        // カテゴリが選択されているので選択リストの展開
+        this.SetCandidateItemsBySelection()
+
+        if (this.candidates.includes(this.ItemValue.Text)) {
+          // 選択肢に該当項目そのものがある場合選択する
+          this.selectedItem = this.ItemValue.Text
         } else {
           // 選択肢に入力されている項目がなければ自由入力に展開する
-          this.freewordText = text
+          this.freewordText = this.ItemValue.Text
         }
       }
-      this.$nextTick()
     }
   },
   computed: {

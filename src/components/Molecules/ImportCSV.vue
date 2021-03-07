@@ -74,7 +74,7 @@ export default {
   created () {
     const preload = JSON.parse(this.preservedRule)
     if (Object.keys(preload).length > 0) {
-      for (const key of Object.keys(preload)) {
+      for (const key in preload) {
         this.$set(this.RuleSet, key, Object.assign({}, preload[key]))
       }
     }
