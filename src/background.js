@@ -236,21 +236,21 @@ const MenuTemplate = [
   ...(
     process.platform === 'darwin'
       ? [{
-        label: app.getName(),
-        submenu: [
-          { label: app.getName() + 'について', role: 'about' },
-          { type: 'separator' },
-          { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
-          { type: 'separator' },
-          { label: 'サービス', role: 'services', submenu: [] },
-          { type: 'separator' },
-          { label: app.getName() + 'を隠す', accelerator: 'Command+H', role: 'hide' },
-          { label: '他を隠す', accelerator: 'Command+Alt+H', role: 'hideothers' },
-          { label: '全てを表示', role: 'unhide' },
-          { type: 'separator' },
-          { label: '終了', accelerator: 'Command+Q', role: 'quit' }
-        ]
-      }]
+          label: app.getName(),
+          submenu: [
+            { label: app.getName() + 'について', role: 'about' },
+            { type: 'separator' },
+            { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+            { type: 'separator' },
+            { label: 'サービス', role: 'services', submenu: [] },
+            { type: 'separator' },
+            { label: app.getName() + 'を隠す', accelerator: 'Command+H', role: 'hide' },
+            { label: '他を隠す', accelerator: 'Command+Alt+H', role: 'hideothers' },
+            { label: '全てを表示', role: 'unhide' },
+            { type: 'separator' },
+            { label: '終了', accelerator: 'Command+Q', role: 'quit' }
+          ]
+        }]
       : []
   ),
   // 通常のメニュー
@@ -264,58 +264,58 @@ const MenuTemplate = [
       ...(process.platform === 'darwin'
         ? []
         : [
-          { type: 'separator' },
-          { label: '設定', id: 'setup', enabled: false, accelerator: 'Ctrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
-          { label: '終了', accelerator: 'Alt+F4', role: 'quit' }
-        ])
+            { type: 'separator' },
+            { label: '設定', id: 'setup', enabled: false, accelerator: 'Ctrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+            { label: '終了', accelerator: 'Alt+F4', role: 'quit' }
+          ])
     ]
   },
   // macosでは編集メニューがないとコピーアンドペーストができない
   ...(
     process.platform === 'darwin'
       ? [
-        {
-          label: '編集',
-          submenu: [
-            { label: '取り消す', role: 'undo', accelerator: 'Command+Z' },
-            { label: 'やり直す', role: 'redo', accelerator: 'Command+Shift+Z' },
-            { type: 'separator' },
-            { label: 'カット', role: 'cut', accelerator: 'Command+X' },
-            { label: 'コピー', role: 'copy', accelerator: 'Command+C' },
-            { label: 'ペースト', role: 'paste', accelerator: 'Command+V' },
-            { label: 'すべてを選択', role: 'selectALL', accelerator: 'Command+A' }
-          ]
-        }
-      ]
+          {
+            label: '編集',
+            submenu: [
+              { label: '取り消す', role: 'undo', accelerator: 'Command+Z' },
+              { label: 'やり直す', role: 'redo', accelerator: 'Command+Shift+Z' },
+              { type: 'separator' },
+              { label: 'カット', role: 'cut', accelerator: 'Command+X' },
+              { label: 'コピー', role: 'copy', accelerator: 'Command+C' },
+              { label: 'ペースト', role: 'paste', accelerator: 'Command+V' },
+              { label: 'すべてを選択', role: 'selectALL', accelerator: 'Command+A' }
+            ]
+          }
+        ]
       : []
   ),
   ...(
     process.platform === 'win32'
       ? [{
-        label: 'ヘルプ',
-        submenu: [
-          { label: app.getName() + 'について', role: 'about' }
-        ]
-      }]
+          label: 'ヘルプ',
+          submenu: [
+            { label: app.getName() + 'について', role: 'about' }
+          ]
+        }]
       : []
   ),
   ...(
     isDevelopment
       ? [{
-        label: '開発支援',
-        submenu: [
-          {
-            label: 'リロード',
-            accelerator: '',
-            click: (item, focusedWindow) => { focusedWindow.webContents.onbeforeunload = null; focusedWindow.reload() }
-          },
-          {
-            label: '開発者ツール',
-            accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
-            click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools()
-          }
-        ]
-      }]
+          label: '開発支援',
+          submenu: [
+            {
+              label: 'リロード',
+              accelerator: '',
+              click: (item, focusedWindow) => { focusedWindow.webContents.onbeforeunload = null; focusedWindow.reload() }
+            },
+            {
+              label: '開発者ツール',
+              accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
+              click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools()
+            }
+          ]
+        }]
       : []
   )
 ]

@@ -71,15 +71,15 @@ export default {
     PersonalInformation () {
       return this.Loading
         ? {
-          Id: '',
-          Name: 'データを取得中',
-          Age: ''
-        }
+            Id: '',
+            Name: 'データを取得中',
+            Age: ''
+          }
         : {
-          Id: this.ItemDocument.PatientId,
-          Name: this.ItemDocument.Name ? this.ItemDocument.Name : '',
-          Age: this.ItemDocument.Age ? '( ' + Number(this.ItemDocument.Age) + '歳 )' : ''
-        }
+            Id: this.ItemDocument.PatientId,
+            Name: this.ItemDocument.Name ? this.ItemDocument.Name : '',
+            Age: this.ItemDocument.Age ? '( ' + Number(this.ItemDocument.Age) + '歳 )' : ''
+          }
     },
     Diagnosis () {
       return this.Loading ? '' : CaseDocumentHandler.ItemValue(this.ItemDocument.Diagnoses[0])

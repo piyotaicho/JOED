@@ -279,14 +279,14 @@ function laparoProcedure (procedure = '', typedprocedure = '', typeofselection =
 function handleUserTyped (category, item, typeditem) {
   return item.substr(0, 3) !== 'その他'
     ? {
-      Chain: [category],
-      Text: CharacterReplacer(item)
-    }
+        Chain: [category],
+        Text: CharacterReplacer(item)
+      }
     : {
-      Chain: [category],
-      Text: typeditem,
-      UserTyped: true
-    }
+        Chain: [category],
+        Text: typeditem,
+        UserTyped: true
+      }
 }
 
 export function Migrate2019to2020 (CaseData) {

@@ -1,4 +1,3 @@
-// 保存先は最終的にはデータベースではなく electron.config に逃げる予定
 import Vue from 'vue'
 import { LoadConfig, SaveConfig } from 'depmodules/config'
 
@@ -11,7 +10,7 @@ export default {
       InstitutionID: '',
       JSOGoncologyboardID: '',
       EditJSOGId: true,
-      EditNCDId: true,
+      EditNCDId: false,
       View: {
         Filters: [],
         Sort: {
