@@ -4,7 +4,13 @@
       <div class="edit-top">
         <div class="edit-top-left">
           <InputDateOfProcedure v-model="CaseData.DateOfProcedure" :required="true"/>
-          <InputTextField title="患者ID" :required="true" v-model="CaseData.PatientId" placeholder="施設の患者ID"/>
+          <InputTextField title="患者ID" :required="true" v-model="CaseData.PatientId" placeholder="施設の患者ID">
+            <template v-if="CaseData.Decline" #title>
+              <el-tooltip placement="right" content="登録拒否を申し出た症例です.">
+                <span style="color: var(--color-danger);"><i class="el-icon-warning" v-if="CaseData.Decline" style="margin-right: 0.5rem;"/>患者ID</span>
+              </el-tooltip>
+            </template>
+          </InputTextField>
           <InputTextField title="患者名" v-model="CaseData.Name"/>
           <InputNumberField title="年齢" v-model="CaseData.Age" :min="1" :max="120"/>
         </div>
@@ -83,6 +89,12 @@
                 </template>
                 <el-dropdown-item command="new">保存して新規作成</el-dropdown-item>
                 <el-dropdown-item command="temporarynew">一時保存して新規作成</el-dropdown-item>
+                <template v-if="CaseData.Decline">
+                  <el-dropdown-item command="toggledecline" divided>登録拒否を解除して保存</el-dropdown-item>
+                </template>
+                <template v-else>
+                  <el-dropdown-item command="toggledecline" divided>登録拒否症例として保存</el-dropdown-item>
+                </template>
               </el-dropdown-menu>
 
             </el-dropdown>
@@ -154,7 +166,8 @@ export default {
         Diagnoses: [],
         Procedures: [],
         AEs: [],
-        Notification: ''
+        Notification: '',
+        Decline: false
       },
       prevUid: 0,
       nextUid: 0,
@@ -328,6 +341,9 @@ export default {
       if (this.processing || this.editingSection) {
         return
       }
+      if (to === 'toggledecline') {
+        this.CaseData.Decline = !this.CaseData.Decline
+      }
 
       await this.StoreCase(to.includes('temporary'))
         .then(() => {
@@ -377,13 +393,13 @@ export default {
       const newDocument = {}
       Object.assign(newDocument, this.CaseData)
 
-      // 連番 (新規ドキュメントのuidは0もしくは00があるのでNumberで処理する)
+      // 連番 フィールドの設定(新規ドキュメントのuidは0もしくは00があるのでNumberで処理する)
       newDocument.DocumentId = Number(this.uid)
 
-      // 警告の削除
+      // 警告フィールドの削除
       delete newDocument.Notification
 
-      // 一次保存のメッセージ
+      // 一次保存の場合メッセージフィールドを設定
       if (temporary) {
         newDocument.Notification = '一時保存したデータです.\n編集終了後に確定保存して下さい.'
       }
@@ -403,7 +419,7 @@ export default {
         newDocument.NCDId = ZenToHan(newDocument.NCDId.trim()).replace(/[^\d-]/g, '')
       }
 
-      // AEsが空白の際は削除
+      // AEsが空白の際はフィールドを削除
       if (newDocument.AEs.length === 0) {
         delete newDocument.AEs
         // AEsが空白なのに PresentAEがtrue=無編集 の場合はPresentAEも削除
@@ -415,6 +431,11 @@ export default {
       // 区分コードの抽出
       if (newDocument.Procedures?.[0].Chain[0]) {
         newDocument.TypeOfProcedure = newDocument.Procedures[0].Chain[0]
+      }
+
+      // 登録拒否出ない場合はフィールドを削除
+      if (!newDocument.Decline) {
+        delete newDocument.Decline
       }
 
       try {
