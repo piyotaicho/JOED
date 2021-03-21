@@ -7,7 +7,7 @@
     "name": "Yasuhiro Yamamoto",
     "email": "Yasuhiro.Yamamoto@migspro.info"
   },
-  "private": true,
+  "license": "MIT",
   "scripts": {
     "serve": "vue-cli-service serve --modern",
     "build": "vue-cli-service build --modern",
