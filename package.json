@@ -1,7 +1,7 @@
 {
   "name": "joed5",
   "productName": "JOED5",
-  "version": "1.1.431",
+  "version": "1.1.444",
   "description": "The procedures and adverse events regstration system provided by JSGOE",
   "author": {
     "name": "Yasuhiro Yamamoto",
@@ -20,6 +20,7 @@
   },
   "main": "background.js",
   "dependencies": {
+    "babel-eslint": "^10.1.0",
     "core-js": "3.9.1",
     "difflib": "^0.2.4",
     "electron-builder": "22.9.1",
@@ -36,12 +37,11 @@
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^4.4.6",
-    "@vue/cli-plugin-eslint": "^4.4.6",
+    "@vue/cli-plugin-eslint": "^4.5.12",
     "@vue/cli-plugin-router": "^4.4.6",
     "@vue/cli-plugin-vuex": "^4.4.6",
-    "@vue/cli-service": "4.5.11",
+    "@vue/cli-service": "4.5.12",
     "@vue/eslint-config-standard": "6.0.0",
-    "babel-eslint": "^10.0.3",
     "electron": "10.3.2",
     "electron-devtools-installer": "^3.1.0",
     "electron-store": "^6.0.1",
