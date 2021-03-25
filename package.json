@@ -26,6 +26,7 @@
     "electron-builder": "22.9.1",
     "element-ui": "^2.13.2",
     "encoding-japanese": "^1.0.30",
+    "is-svg": "4.2.2",
     "nedb": "^1.8.0",
     "vue": "^2.6.11",
     "vue-infinite-loading": "^2.4.5",
