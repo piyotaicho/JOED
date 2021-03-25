@@ -371,53 +371,53 @@ export default {
     },
 
     async StoreCase (temporary = false) {
-      this.processing = true
-
-      // データベース登録に用いるドキュメントを生成
-      const newDocument = {}
-      Object.assign(newDocument, this.CaseData)
-
-      // 連番 (新規ドキュメントのuidは0もしくは00があるのでNumberで処理する)
-      newDocument.DocumentId = Number(this.uid)
-
-      // 警告の削除
-      delete newDocument.Notification
-
-      // 一次保存のメッセージ
-      if (temporary) {
-        newDocument.Notification = '一時保存したデータです.\n編集終了後に確定保存して下さい.'
-      }
-
-      // テキストフィールドの整形(trimと半角英数に置換)
-      newDocument.Name = newDocument.Name.trim()
-      newDocument.PatientId = ZenToHan(newDocument.PatientId.trim().replace(/[-－―ー-]/g, '-'))
-
-      if (newDocument.JSOGId.trim() === '') {
-        delete newDocument.JSOGId
-      } else {
-        newDocument.JSOGId = ZenToHan(newDocument.JSOGId.trim()).toUpperCase()
-      }
-      if (newDocument.NCDId.trim() === '') {
-        delete newDocument.NCDId
-      } else {
-        newDocument.NCDId = ZenToHan(newDocument.NCDId.trim()).replace(/[^\d-]/g, '')
-      }
-
-      // AEsが空白の際は削除
-      if (newDocument.AEs.length === 0) {
-        delete newDocument.AEs
-        // AEsが空白なのに PresentAEがtrue=無編集 の場合はPresentAEも削除
-        if (newDocument.PresentAE) {
-          delete newDocument.PresentAE
-        }
-      }
-
-      // 区分コードの抽出
-      if (newDocument.Procedures?.[0].Chain[0]) {
-        newDocument.TypeOfProcedure = newDocument.Procedures[0].Chain[0]
-      }
-
       try {
+        this.processing = true
+
+        // データベース登録に用いるレコードドキュメントを生成
+        const newDocument = {}
+        Object.assign(newDocument, this.CaseData)
+
+        // 連番 (新規ドキュメントのuidは0もしくは00があるのでNumberで処理する)
+        newDocument.DocumentId = Number(this.uid)
+
+        if (temporary) {
+          // 一次保存の場合メッセージを設定
+          newDocument.Notification = '一時保存したデータです.\n編集終了後に確定保存して下さい.'
+        } else {
+          // 一時保存でなければメッセージを削除
+          delete newDocument.Notification
+        }
+
+        // テキストフィールドの整形(trimと半角英数に置換)
+        newDocument.Name = newDocument.Name.trim()
+        newDocument.PatientId = ZenToHan(newDocument.PatientId.trim().replace(/[-－―ー-]/g, '-'))
+
+        if (newDocument.JSOGId.trim() === '') {
+          delete newDocument.JSOGId
+        } else {
+          newDocument.JSOGId = ZenToHan(newDocument.JSOGId.trim()).toUpperCase()
+        }
+        if (newDocument.NCDId.trim() === '') {
+          delete newDocument.NCDId
+        } else {
+          newDocument.NCDId = ZenToHan(newDocument.NCDId.trim()).replace(/[^\d-]/g, '')
+        }
+
+        // AEsが空白の際は削除
+        if (newDocument.AEs.length === 0) {
+          delete newDocument.AEs
+          // AEsが空白なのに PresentAEがtrue=無編集 の場合はPresentAEも削除
+          if (newDocument.PresentAE) {
+            delete newDocument.PresentAE
+          }
+        }
+
+        // 区分コードの抽出
+        if (newDocument.Procedures?.[0]?.Chain[0]) {
+          newDocument.TypeOfProcedure = newDocument.Procedures[0].Chain[0]
+        }
+
         await ValidateCase(newDocument, temporary)
         await this.$store.dispatch('UpsertDocument', newDocument)
       } finally {
