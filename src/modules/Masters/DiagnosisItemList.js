@@ -167,7 +167,7 @@ export default class DiagnosisMaster extends Master {
             ICD10: ['Q506', 'N701', 'N836']
           },
           {
-            Title: '卵巣出血',
+            Text: '卵巣出血',
             ICD10: ['N838']
           },
           '上記以外の付属器良性疾患',
