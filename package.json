@@ -21,7 +21,7 @@
   "main": "background.js",
   "dependencies": {
     "babel-eslint": "^10.1.0",
-    "core-js": "3.9.1",
+    "core-js": "3.16.1",
     "difflib": "^0.2.4",
     "electron": "10.4.2",
     "electron-builder": "22.10.5",
@@ -43,7 +43,7 @@
     "@vue/cli-plugin-eslint": "^4.5.12",
     "@vue/cli-plugin-router": "^4.4.6",
     "@vue/cli-plugin-vuex": "^4.4.6",
-    "@vue/cli-service": "4.5.12",
+    "@vue/cli-service": "4.5.13",
     "@vue/eslint-config-standard": "6.0.0",
     "electron-devtools-installer": "^3.1.0",
     "electron-store": "^6.0.1",
