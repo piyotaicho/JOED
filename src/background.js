@@ -325,7 +325,7 @@ Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate))
 app.setAboutPanelOptions({
   applicationName: app.getName(),
   applicationVersion: process.env.VUE_APP_VERSION,
-  copyright: 'Copyright 2020-2021 @piyotaicho and JSGOE',
+  copyright: 'Copyright 2020-2021 P4mohnet and JSGOE',
   credits: '@piyotaicho https://github.com/piyotaicho/JOED/',
   iconPath: '../public/icon.png'
 })
