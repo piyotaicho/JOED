@@ -395,7 +395,7 @@ function removeLockfile () {
 //
 // データベースの設定
 //
-const DB = require('nedb')
+const DB = require('@seald-io/nedb')
 
 // createDatabaseInstance
 //
