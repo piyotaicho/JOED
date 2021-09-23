@@ -1,6 +1,6 @@
 import HHX from 'xxhashjs'
 
-const _Database = require('nedb')
+const _Database = require('@seald-io/nedb')
 
 export function CreateInstance (payload) {
   const config = Object.assign(
