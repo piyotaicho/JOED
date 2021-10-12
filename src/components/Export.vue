@@ -356,9 +356,24 @@ export default {
             Projection: { _id: 0, DocumentId: 0 }
           }
         )
+
         if (this.exportAllFields && this.exportRaw) {
+          // 生データの出力
           ExportItems.push(exportdocument)
         } else {
+          // 提出用データを出力
+
+          // 2021より実装変更:
+          // ユニークキー(PatientId, DateOfProcedure)からレコードのハッシュを作成する.
+          const hashString = hashHHX.update(
+            JSON.stringify(
+              {
+                PatientId: exportdocument.PatientId,
+                DateOfProcedure: exportdocument.DateOfProcedure
+              }
+            )
+          ).digest().toString(36)
+
           ExportItems.push(
             {
               ...CaseDocumentHandler.ExportCase(
@@ -367,7 +382,7 @@ export default {
                   exportAllFields: this.exportAllFields
                 }
               ),
-              hash: hashHHX.update(JSON.stringify(exportdocument)).digest().toString(36)
+              hash: hashString
             }
           )
         }
@@ -386,6 +401,7 @@ export default {
           const TimeStamp = Date.now()
 
           const exportText = JSON.stringify(exportItem, ' ', 2)
+          // ヘッダのハッシュ値は
           const hash = HHX.h64(exportText, TimeStamp).toString(16)
 
           exportItem.unshift({
