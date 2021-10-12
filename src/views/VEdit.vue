@@ -172,7 +172,7 @@ export default {
       this.$store.dispatch('FetchDocument', { DocumentId: this.uid })
         .then(_ => {
           const casedocument = this.$store.getters.CaseDocument(this.uid)
-          for (var key in this.CaseData) {
+          for (const key in this.CaseData) {
             if (casedocument !== undefined && casedocument[key] !== undefined) {
               if (toString.call(casedocument[key]) === '[object Object]') {
                 this.$set(this.CaseData, key, { ...casedocument[key] })

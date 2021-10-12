@@ -137,7 +137,10 @@ export default class Master {
     }
 
     for (const targetname of (target ? [target] : this.Targets(category))) {
-      return this[category][targetname].find(item => Master.parseItem(item, 'Text', year) === text)
+      const item = this[category][targetname].find(item => Master.parseItem(item, 'Text', year) === text)
+      if (item !== undefined) {
+        return item
+      }
     }
   }
 
