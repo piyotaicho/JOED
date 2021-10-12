@@ -72,7 +72,7 @@ export default class AEmaster {
         writable: false,
         enumerable: true,
         value: {
-          // Bloodcount - これは特別扱い
+          // Bloodcount: - これは特別扱い
           Injuries: {
             Title: '発生した合併症',
             Element: 'Title',
@@ -129,17 +129,19 @@ export default class AEmaster {
             Items: [
               ['子宮', '卵管', '卵巣', '腟'],
               ['膀胱', '尿管', '後腹膜'],
-              (this.YearofMaster >= '2021'
-                ? [
-                  { Text: '消化管(直腸)', Value: '直腸' },
-                  { Text: '消化管(結腸)', Value: '結腸' },
-                  { Text: '消化管(その他)', Value: '消化管' }
-                ]
-                : ['消化管']
+              // 2021年より変更
+              (this.YearofMaster < '2021'
+                ? ['消化管']
+                : [
+                    { Text: '消化管(直腸)', Value: '直腸' },
+                    { Text: '消化管(結腸)', Value: '結腸' },
+                    { Text: '消化管(その他)', Value: '消化管' }
+                  ]
               ),
               ['腹壁', '腹壁血管', '皮下'],
               ['動脈', '静脈', '大血管動脈', '大血管静脈'],
               ['神経',
+                // 2021年より追加
                 ...(this.YearofMaster >= '2021'
                   ? [{ Text: '骨・骨膜・軟骨', Value: '骨格系' }]
                   : []
@@ -176,8 +178,14 @@ export default class AEmaster {
             Element: 'Title',
             Items: [
               ['出血', '血腫'],
-              ['創部感染', '創離開', '腟断端部離開', ...(this.YearofMaster >= '2021' ? ['メッシュ露出'] : [])],
-              ['腹膜炎', '子宮感染', '卵管・卵巣感染', ...(this.YearofMaster >= '2021' ? ['メッシュ感染'] : [])],
+              ['創部感染', '創離開', '腟断端部離開',
+                // 2021年より追加
+                ...(this.YearofMaster >= '2021' ? ['メッシュ露出'] : [])
+              ],
+              ['腹膜炎', '子宮感染', '卵管・卵巣感染',
+                // 2021年より追加
+                ...(this.YearofMaster >= '2021' ? ['メッシュ感染'] : [])
+              ],
               [
                 { Text: 'イレウス(腸管麻痺)', Value: 'イレウス' },
                 { Text: '腸閉塞(機械的閉塞・絞扼性イレウス)', Value: '腸閉塞' },
