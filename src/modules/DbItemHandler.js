@@ -114,6 +114,8 @@ export default class CaseDocumentHandler {
       params.omitAge = false
       params.omitDateOfProcedure = false
     } else {
+      // NCDIdは当分NCDへのデータ提供はないのでエクスポートしない.
+      propsToExport.splice(propsToExport.indexOf('NCDId'), 1)
       propsToExport.splice(propsToExport.indexOf('PatientId'), 1)
       propsToExport.splice(propsToExport.indexOf('Name'), 1)
     }
