@@ -9,7 +9,7 @@
 
 追加パッケージ
 
-- nedb
+- nedb (seald/nedb)
 - Element
 - Vue.Draggable
 - Vuejs Datepicker
