@@ -413,12 +413,14 @@ export default {
           }
         }
 
-        // 区分コードの抽出
-        if (newDocument.Procedures?.[0]?.Chain[0]) {
-          newDocument.TypeOfProcedure = newDocument.Procedures[0].Chain[0]
+        // データの検証と区分の取得
+        const typeofprocedure = await ValidateCase(newDocument, temporary)
+
+        // 区分コードの設定
+        if (typeofprocedure) {
+          newDocument.TypeOfProcedure = typeofprocedure
         }
 
-        await ValidateCase(newDocument, temporary)
         await this.$store.dispatch('UpsertDocument', newDocument)
       } finally {
         this.processing = false

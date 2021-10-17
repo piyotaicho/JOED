@@ -37,40 +37,58 @@ export default class Master {
       {
         Text: '項目名'
 
-        Notification: 'お知らせメッセージ'
+        Notification: 'お知らせメッセージ' -- 未実装
+
         VaildFrom: '使用開始年'
         ValidTo: '使用終了年'
 
         // *** 診断 ***
-        Procedure: '強制展開される手技' // 同一カテゴリ・対象であることが必須
+        ICD10: [...'ICD10コード'] // *で前方一致のワイルドカードを使用可能
+        Procedure: '強制展開される手技' // 同一カテゴリ・対象であることが必須 -- 未実装
 
         // *** 術式 ***
+        Kcode: [...'Kコード'] // *で前方一致のワイルドカードを使用可能
         Ditto: [同時入力できない同一手技]
         AdditionalProcedure: '同時展開される術式' // 同一カテゴリに限定
-        Description: { 補助情報のタイトル: [...候補] } // メンバに $MULTI$ があるときは複数選択, $で終わる候補は選択しても登録されない（主たる術式の場合は選択不可）
+        Description: {
+          Text: '補助情報のタイトル'
+          Values: [...候補] }
+
+        // Description の Values: [] のフォーマット
+        //
+        // 要素に '$MULTI$' を含むとDescriptionは複数保持可能となる
+        //
+        // $ で終わる文字列が選択された場合はその術式は登録無効となる(単独選択の場合エラーで登録出来ない)
+        // [] で囲まれた文字列は選択肢には表示されず、データの可読性を目的に保持される
+
       }
     }
   }
   */
 
-  // カテゴリのarrayを取得
+  // カテゴリkeyのarrayを取得
   //
+  // return: array of string
   Categories () {
     return Object.keys(this)
   }
 
-  // 対象臓器のarrayを取得
+  // 対象臓器keyのarrayを取得
   //
   // @param {string} カテゴリ
+  //
+  // return: array of string
   Targets (category = '') {
     return category !== '' ? Object.keys(this[category]) : []
   }
 
-  // カテゴリ・対象臓器に該当するアイテムのarrayを取得
+  // カテゴリ・対象臓器に該当するアイテムobjectのarrayを取得
   //
   // @param {string} カテゴリ
   // @param {string} 対象続器 - 空白もしくはundefinedの場合はカテゴリ内すべて
   // @param {number/string} データセットの参照年指定(デフォルトはマスタの年次=最新)
+  //
+  // return: array
   Items (category = '', target, year = this.YearofMaster) {
     if ((year).toString() === '') {
       year = this.YearofMaster
@@ -94,11 +112,13 @@ export default class Master {
     return temporaryArray
   }
 
-  // カテゴリ・対象臓器に該当するアイテム名(.Textもしくはキー))のarrayを取得
+  // カテゴリ・対象臓器に該当するアイテム名(.Textもしくはkey) のarrayを取得
   //
   // @param {string} カテゴリ
   // @param {string} 対象続器 - 空白もしくはundefinedの場合はカテゴリ内すべて
   // @param {number/string} データセットの参照年指定(デフォルトはマスタの年次=最新)
+  //
+  // return: array
   ItemTexts (category = '', target, year = this.YearofMaster) {
     if ((year).toString() === '') {
       year = this.YearofMaster
@@ -122,11 +142,13 @@ export default class Master {
     return Array.from(new Set(temporaryArray))
   }
 
-  // カテゴリ・対象続器・アイテム名称に合致するアイテムを取得
+  // カテゴリ・対象続器・アイテム名称に合致するアイテムobject を取得
   //
   // @param {string} アイテム名(.Text)
   // @param {string} カテゴリ
   // @param {number/string} データセットの参照年指定(デフォルトはマスタの年次=最新)
+  //
+  // return: object
   getItem (text = '', category = '', target, year = this.YearofMaster) {
     if (year < 2019) {
       year = 2019
@@ -144,12 +166,15 @@ export default class Master {
     }
   }
 
-  // 与えられた選択ツリーの３層目の情報を取得する オブジェクトならば指定のプロパティ値 stringの場合はその値
-  // データセットの対象以外、もしくは該当プロパティが無い場合は undefined
+  // アイテムobject のプロパティを取得
+  // アイテムobjectが 名称(string)の場合 それを プロパティ Text として解釈する.
+  // 年次が設定されており無効な場合や, 該当プロパティが無い場合は undefined
   //
   // @param {any} ３層目の値
   // @param {string}  プロパティ名 デフォルトはText
   // @param {string}  データセットの参照年指定
+  //
+  // return any
   static parseItem (item, $attribute = 'Text', year = '') {
     if (typeof item === 'object') {
       if (year !== '') {

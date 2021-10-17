@@ -82,9 +82,21 @@ export default class DiagnosisMaster extends Master {
             VaildFrom: '2020',
             ICD10: ['O00*']
           },
+          // 2021 新規
+          {
+            Text: '帝王切開瘢痕症候群',
+            VaildFrom: '2021'
+          },
+          // 2021 表記変更 機能性不妊症(腹腔内検査) -> 機能性不妊症(腹腔内検査,SecondLookを含む)
           {
             Text: '機能性不妊症(腹腔内検査)',
-            ICD10: ['N972', 'N973', 'N979']
+            ICD10: ['N972', 'N973', 'N979'],
+            ValidTo: '2020'
+          },
+          {
+            Text: '機能性不妊症(腹腔内検査,SecondLookを含む)',
+            ICD10: ['N972', 'N973', 'N979'],
+            ValidFrom: '2021'
           },
           {
             Text: '子宮奇形',
@@ -111,6 +123,11 @@ export default class DiagnosisMaster extends Master {
             Text: '予防的内性器摘出術の適応',
             VaildFrom: '2020',
             ICD10: ['C809', 'R798']
+          },
+          // 2021 新規
+          {
+            Text: '術後合併症・処置後合併症',
+            ValidFrom: '2021'
           }
         ],
         付属器: [
@@ -138,9 +155,16 @@ export default class DiagnosisMaster extends Master {
             VaildFrom: '2020',
             ICD10: ['O00*']
           },
+          // 2021 表記変更 機能性不妊症(腹腔内検査) -> 機能性不妊症(腹腔内検査,SecondLookを含む)
           {
             Text: '機能性不妊症(腹腔内検査)',
-            ICD10: ['N971', 'N972', 'N979']
+            ICD10: ['N972', 'N973', 'N979'],
+            ValidTo: '2020'
+          },
+          {
+            Text: '機能性不妊症(腹腔内検査,SecondLookを含む)',
+            ICD10: ['N970', 'N971', 'N972', 'N973', 'N979'],
+            ValidFrom: '2021'
           },
           {
             Text: '多嚢胞性卵巣症候群',
@@ -188,6 +212,11 @@ export default class DiagnosisMaster extends Master {
             Text: '予防的内性器摘出術の適応',
             VaildFrom: '2020',
             ICD10: ['C809', 'R798']
+          },
+          // 2021 新規
+          {
+            Text: '術後合併症・処置後合併症',
+            ValidFrom: '2021'
           }
         ],
         その他: [
@@ -227,9 +256,16 @@ export default class DiagnosisMaster extends Master {
             VaildFrom: '2020',
             ICD10: ['N736']
           },
+          // 2021 表記変更 機能性不妊症(腹腔内検査) -> 機能性不妊症(腹腔内検査,SecondLookを含む)
           {
             Text: '機能性不妊症(腹腔内検査)',
-            ICD10: ['N971', 'N972', 'N979']
+            ICD10: ['N972', 'N973', 'N979'],
+            ValidTo: '2020'
+          },
+          {
+            Text: '機能性不妊症(腹腔内検査,SecondLookを含む)',
+            ICD10: ['N970', 'N971', 'N972', 'N973', 'N979'],
+            ValidFrom: '2021'
           },
           // 2020 削除
           {
@@ -259,6 +295,11 @@ export default class DiagnosisMaster extends Master {
             Text: '婦人科以外の悪性腫瘍',
             VaildFrom: '2020',
             ICD10: ['C1*', 'C2*', 'C3*', 'C4*', 'C50*', 'C6*', 'C7*', 'C8*', 'C9*']
+          },
+          // 2021 新規
+          {
+            Text: '術後合併症・処置後合併症',
+            ValidFrom: '2021'
           }
         ]
       },
@@ -457,6 +498,12 @@ export default class DiagnosisMaster extends Master {
           {
             Text: '子宮腟異物',
             ICD10: ['T192', 'T193']
+          },
+          // 2021 新規
+          {
+            Text: '子宮性不妊・不育症',
+            VaildFrom: '2021',
+            ICD10: ['N972', 'N973']
           }
         ]
       },

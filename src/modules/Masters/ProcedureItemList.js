@@ -9,7 +9,7 @@ const defaultReference = '2020'
 //
 // 要素に '$MULTI$' を含むとDescriptionは複数保持可能となる
 //
-// $ で終わる文字列が選択された場合はその術式は無効となる(単独選択の場合エラーで登録出来ない)
+// $ で終わる文字列が選択された場合はその術式は登録無効となる(単独選択の場合エラーで登録出来ない)
 // [] で囲まれた文字列は選択肢には表示されず、データの可読性を目的に保持される
 
 export default class ProcedureMaster extends Master {
@@ -492,16 +492,6 @@ export default class ProcedureMaster extends Master {
             Text: '骨盤臓器脱修復術(ロボット支援下)',
             VaildTo: '2020'
           },
-          // 2021 新規
-          {
-            Text: '仙骨子宮靭帯縫縮術(ロボット支援下)',
-            VaildFrom: '2021'
-          },
-          // 2021 新規
-          {
-            Text: 'その他の骨盤臓器脱修復術(ロボット支援下)',
-            VaildFrom: '2021'
-          },
           'ロボット支援下その他'
         ],
         付属器: [
@@ -516,16 +506,6 @@ export default class ProcedureMaster extends Master {
           {
             Text: '仙骨腟固定術(ロボット支援下)',
             Kcode: ['K865-02-00']
-          },
-          // 2021 新規
-          {
-            Text: '仙骨子宮靭帯縫縮術(ロボット支援下)',
-            VaildFrom: '2021'
-          },
-          // 2021 新規
-          {
-            Text: 'その他の骨盤臓器脱修復術(ロボット支援下)',
-            VaildFrom: '2021'
           },
           'ロボット支援下その他'
         ]
