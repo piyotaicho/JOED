@@ -65,12 +65,12 @@ export default class CaseDocumentHandler {
     function _extract (item) {
       return (item.Description)
         ? {
-            Text: item.Text,
-            Description: item.Description
-          }
+          Text: item.Text,
+          Description: item.Description
+        }
         : {
-            Text: item.Text
-          }
+          Text: item.Text
+        }
     }
 
     const temporaryArray = []

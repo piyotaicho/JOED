@@ -47,8 +47,8 @@ export default {
         { name: 'Vue.js', href: 'https://vuejs.org/', license: 'MIT' },
         ...(process.env.VUE_APP_ELECTRON
           ? [
-              { name: 'electron', href: 'https://www.electronjs.org/', license: 'MIT' }
-            ]
+            { name: 'electron', href: 'https://www.electronjs.org/', license: 'MIT' }
+          ]
           : []),
         { name: 'Vuex', href: 'https://vuex.vuejs.org/', license: 'MIT' },
         { name: 'Vue Router', href: 'https://router.vuejs.org/', license: 'MIT' },
@@ -62,8 +62,8 @@ export default {
         { name: 'encoding.js', href: 'https://github.com/polygonplanet/encoding.js', license: 'MIT' },
         ...(process.env.VUE_APP_ELECTRON
           ? [
-              { name: 'electron store', href: 'https://github.com/sindresorhus/electron-store', license: 'MIT' }
-            ]
+            { name: 'electron store', href: 'https://github.com/sindresorhus/electron-store', license: 'MIT' }
+          ]
           : [])
       ]
     })
@@ -77,11 +77,11 @@ export default {
         Vue: this.$store.getters['system/VueVersion'],
         ...(process.env.VUE_APP_ELECTRON
           ? {
-              electron: process.versions.electron,
-              node: process.versions.node,
-              v8: process.versions.v8,
-              chrome: process.versions.chrome
-            }
+            electron: process.versions.electron,
+            node: process.versions.node,
+            v8: process.versions.v8,
+            chrome: process.versions.chrome
+          }
           : {})
       }
     }
