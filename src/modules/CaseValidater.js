@@ -1,5 +1,5 @@
-import DaignosisMaster from '@/modules/Masters/DiagnosisItemList'
-import ProcedureMaster from '@/modules/Masters/ProcedureItemList'
+import DaignosisMaster from '@/modules/Masters/DiagnosisMaster'
+import ProcedureMaster from '@/modules/Masters/ProcedureMaster'
 import AEmaster from '@/modules/Masters/AE'
 
 import ProcedureTimeSelections from '@/modules/ProcedureTimes'

@@ -22,7 +22,7 @@
 
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
-import Master from '@/modules/Masters/DiagnosisItemList'
+import Master from '@/modules/Masters/DiagnosisMaster'
 // import { getMatchesInDiagnoses } from '@/modules/CloseMatches'
 import * as Popups from '@/modules/Popups'
 
