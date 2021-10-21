@@ -49,6 +49,7 @@ function createWindow () {
     backgroundColor: '#dddddd',
     webPreferences: {
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
+      contextIsolation: false,
       spellcheck: false,
       enableWebSQL: false,
       webgl: false,

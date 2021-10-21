@@ -30,6 +30,7 @@ module.exports = {
       productName: 'JOED',
       copyright: 'Copyright (C) 2020-2021 P4mohnet and 日本産科婦人科内視鏡学会',
       nodeIntegration: true,
+      contextIsolation: false,
       buildResources: 'build/*',
       win: {
         target: 'dir',
