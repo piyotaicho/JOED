@@ -72,7 +72,7 @@
 
 <script>
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
-import { CategoryTranslation } from '@/modules/CaseValidater'
+import { CategoriesOfProcedure } from '@/modules/CaseValidater'
 import * as Popups from '@/modules/Popups'
 
 export default {
@@ -98,7 +98,7 @@ export default {
   },
   created () {
     // 選択肢項目オブジェクトの初期化
-    Object.keys(CategoryTranslation).forEach(categorylabel => {
+    CategoriesOfProcedure.forEach(categorylabel => {
       this.$set(this.Categories, categorylabel, { Field: 'TypeOfProcedure', Value: categorylabel })
     })
     this.$store.dispatch('GetYears').then((CountByYear) => {

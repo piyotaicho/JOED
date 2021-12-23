@@ -90,7 +90,6 @@ export default class CaseDocumentHandler {
   // UniqueID を付与する
   //
   // @Param Object
-  // @Param String
   // @Param Object
   static ExportCase (
     item = {},

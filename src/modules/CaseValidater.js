@@ -1,5 +1,5 @@
-import DaignosisMaster from '@/modules/Masters/DiagnosisItemList'
-import ProcedureMaster from '@/modules/Masters/ProcedureItemList'
+import DaignosisMaster from '@/modules/Masters/DiagnosisMaster'
+import ProcedureMaster from '@/modules/Masters/ProcedureMaster'
 import AEmaster from '@/modules/Masters/AE'
 
 import ProcedureTimeSelections from '@/modules/ProcedureTimes'
@@ -20,33 +20,37 @@ export const JSOGboardCaseNoFormat = /^(CC|EM|US|UAS|OV|VU|VA|TD)20\d{2}-\d+$/i
 // NCDの症例識別コード
 export const NCDIdFormat = /^\d{18}-\d{2}-\d{2}-\d{2}$/
 
-// カテゴリチェック(診断のカテゴリに集約する)のテーブル
-export const CategoryTranslation = {
-  腹腔鏡: '腹腔鏡',
-  腹腔鏡悪性: '腹腔鏡悪性',
-  ロボット: '腹腔鏡',
-  ロボット悪性: '腹腔鏡悪性',
-  子宮鏡: '子宮鏡',
-  卵管鏡: '卵管鏡'
-}
+// 診断カテゴリ
+export const CategoriesOfDiagnosis = ['腹腔鏡', '腹腔鏡悪性', '子宮鏡', '卵管鏡']
+
+// 術式カテゴリ
+export const CategoriesOfProcedure = ['腹腔鏡', '腹腔鏡悪性', 'ロボット', 'ロボット悪性', '子宮鏡', '卵管鏡']
 
 // 症例データの検証
 //
 // @Param Object １症例分のドキュメントオブジェクト
+//
+// return string 症例区分
 export async function ValidateCase (item = {}, temporary = false) {
   // 一時保存でも患者IDと手術日は最低限の必須入力項目
   await CheckBasicInformations(item)
+  const year = item.DateOfProcedure.substr(0, 4)
   if (!temporary) {
-    const Year = item.DateOfProcedure.substr(0, 4)
-
-    await allSettled([
+    const results = await allSettled([
       CheckProcedureTime(item),
       ValidateAdditionalInformations(item),
-      CheckCategoryMatch(item),
-      ValidateDiagnoses(item, Year),
-      ValidateProcedures(item, Year),
-      ValidateAEs(item, Year)
+      CheckCategoryMatch(item, year),
+      ValidateDiagnoses(item, year),
+      ValidateProcedures(item, year),
+      ValidateAEs(item, year)
     ])
+    return results[2]
+  } else {
+    try {
+      return await CheckCategoryMatch(item, year)
+    } catch {
+      return undefined
+    }
   }
 }
 
@@ -96,13 +100,67 @@ export async function ValidateAdditionalInformations (item) {
 
 // 主たる術後診断・実施術式のカテゴリの一致の検証
 //
-export async function CheckCategoryMatch (item) {
+export async function CheckCategoryMatch (item, year) {
   const categoryDiagnosis = item?.Diagnoses?.[0]?.Chain?.[0]
   const categoryProcedure = item?.Procedures?.[0]?.Chain?.[0]
   // Diagnoses, Proceduresが未設定については別でチェックされる
-  if (categoryDiagnosis && categoryProcedure &&
-    CategoryTranslation[categoryDiagnosis] !== CategoryTranslation[categoryProcedure]) {
-    throw Error('主たる手術診断と主たる実施術式のカテゴリが一致していません.')
+  if (categoryDiagnosis && categoryProcedure) {
+    if (year <= 2020) {
+      // 2020年以前の対応表
+      const translation = {
+        腹腔鏡: '腹腔鏡',
+        腹腔鏡悪性: '腹腔鏡悪性',
+        ロボット: '腹腔鏡',
+        ロボット悪性: '腹腔鏡悪性',
+        子宮鏡: '子宮鏡',
+        卵管鏡: '卵管鏡'
+      }
+      if (translation[categoryDiagnosis] !== translation[categoryProcedure]) {
+        throw Error('主たる手術診断と主たる実施術式のカテゴリが一致していません.')
+      }
+      return categoryProcedure
+    } else {
+      // 2021年～ 対応表 変更
+      if (categoryDiagnosis === categoryProcedure) {
+        return categoryProcedure
+      } else {
+        if (
+          (
+            (
+              categoryProcedure === '腹腔鏡' ||
+              categoryProcedure === '腹腔鏡悪性'
+            ) &&
+            (
+              categoryDiagnosis === '腹腔鏡' ||
+              categoryDiagnosis === '腹腔鏡悪性'
+            )
+          )
+        ) {
+          return categoryDiagnosis
+        }
+        if (
+          (
+            (
+              categoryProcedure === 'ロボット' ||
+              categoryProcedure === 'ロボット悪性'
+            ) &&
+            (
+              categoryDiagnosis === '腹腔鏡' ||
+              categoryDiagnosis === '腹腔鏡悪性'
+            )
+          )
+        ) {
+          if (categoryProcedure === '腹腔鏡') {
+            return 'ロボット'
+          } else {
+            return 'ロボット悪性'
+          }
+        }
+        throw Error('主たる手術診断と主たる実施術式のカテゴリが一致していません.')
+      }
+    }
+  } else {
+    return undefined
   }
 }
 
@@ -225,7 +283,6 @@ export async function ValidateAEs (item, year) {
 function allSettled (promises) {
   return Promise.allSettled(promises)
     .then(results => {
-      console.log(results)
       const messages = results
         .filter(result => result?.reason)
         .map(result => result.reason.message)
@@ -233,5 +290,6 @@ function allSettled (promises) {
       if (messages !== '') {
         throw Error(messages)
       }
+      return results.map(result => result?.value)
     })
 }

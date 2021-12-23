@@ -13,7 +13,7 @@
 
 <script>
 import CloseButton from '@/components/Atoms/CloseButton'
-import DiagnosisMaster from '@/modules/Masters/DiagnosisItemList'
+import DiagnosisMaster from '@/modules/Masters/DiagnosisMaster'
 
 export default {
   name: 'Dashboard',

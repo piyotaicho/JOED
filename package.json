@@ -1,11 +1,11 @@
 {
   "name": "joed5",
   "productName": "JOED5",
-  "version": "1.1.643",
+  "version": "1.1.659",
   "description": "The procedures and adverse events regstration system provided by JSGOE",
   "author": {
     "name": "Yasuhiro Yamamoto",
-    "email": "Yasuhiro.Yamamoto@migspro.info"
+    "email": "p4@mohnet.com"
   },
   "license": "MIT",
   "scripts": {

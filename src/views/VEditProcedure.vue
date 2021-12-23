@@ -49,7 +49,7 @@
 
 <script>
 import EditItemMixins from '@/mixins/EditItemMixins'
-import Master from '@/modules/Masters/ProcedureItemList'
+import Master from '@/modules/Masters/ProcedureMaster'
 import * as Popups from '@/modules/Popups'
 
 import TheWrapper from '@/components/Atoms/TheWrapper'

@@ -82,9 +82,21 @@ export default class DiagnosisMaster extends Master {
             VaildFrom: '2020',
             ICD10: ['O00*']
           },
+          // 2021 新規
+          {
+            Text: '帝王切開瘢痕症候群',
+            VaildFrom: '2021'
+          },
+          // 2021 表記変更 機能性不妊症(腹腔内検査) -> 機能性不妊症(腹腔内検査,SecondLookを含む)
           {
             Text: '機能性不妊症(腹腔内検査)',
-            ICD10: ['N972', 'N973', 'N979']
+            ICD10: ['N972', 'N973', 'N979'],
+            ValidTo: '2020'
+          },
+          {
+            Text: '機能性不妊症(腹腔内検査,SecondLookを含む)',
+            ICD10: ['N972', 'N973', 'N979'],
+            ValidFrom: '2021'
           },
           {
             Text: '子宮奇形',
@@ -111,6 +123,11 @@ export default class DiagnosisMaster extends Master {
             Text: '予防的内性器摘出術の適応',
             VaildFrom: '2020',
             ICD10: ['C809', 'R798']
+          },
+          // 2021 新規
+          {
+            Text: '術後合併症・処置後合併症',
+            ValidFrom: '2021'
           }
         ],
         付属器: [
@@ -138,9 +155,16 @@ export default class DiagnosisMaster extends Master {
             VaildFrom: '2020',
             ICD10: ['O00*']
           },
+          // 2021 表記変更 機能性不妊症(腹腔内検査) -> 機能性不妊症(腹腔内検査,SecondLookを含む)
           {
             Text: '機能性不妊症(腹腔内検査)',
-            ICD10: ['N971', 'N972', 'N979']
+            ICD10: ['N972', 'N973', 'N979'],
+            ValidTo: '2020'
+          },
+          {
+            Text: '機能性不妊症(腹腔内検査,SecondLookを含む)',
+            ICD10: ['N970', 'N971', 'N972', 'N973', 'N979'],
+            ValidFrom: '2021'
           },
           {
             Text: '多嚢胞性卵巣症候群',
@@ -188,6 +212,11 @@ export default class DiagnosisMaster extends Master {
             Text: '予防的内性器摘出術の適応',
             VaildFrom: '2020',
             ICD10: ['C809', 'R798']
+          },
+          // 2021 新規
+          {
+            Text: '術後合併症・処置後合併症',
+            ValidFrom: '2021'
           }
         ],
         その他: [
@@ -227,9 +256,16 @@ export default class DiagnosisMaster extends Master {
             VaildFrom: '2020',
             ICD10: ['N736']
           },
+          // 2021 表記変更 機能性不妊症(腹腔内検査) -> 機能性不妊症(腹腔内検査,SecondLookを含む)
           {
             Text: '機能性不妊症(腹腔内検査)',
-            ICD10: ['N971', 'N972', 'N979']
+            ICD10: ['N972', 'N973', 'N979'],
+            ValidTo: '2020'
+          },
+          {
+            Text: '機能性不妊症(腹腔内検査,SecondLookを含む)',
+            ICD10: ['N970', 'N971', 'N972', 'N973', 'N979'],
+            ValidFrom: '2021'
           },
           // 2020 削除
           {
@@ -259,6 +295,11 @@ export default class DiagnosisMaster extends Master {
             Text: '婦人科以外の悪性腫瘍',
             VaildFrom: '2020',
             ICD10: ['C1*', 'C2*', 'C3*', 'C4*', 'C50*', 'C6*', 'C7*', 'C8*', 'C9*']
+          },
+          // 2021 新規
+          {
+            Text: '術後合併症・処置後合併症',
+            ValidFrom: '2021'
           }
         ]
       },
@@ -457,6 +498,12 @@ export default class DiagnosisMaster extends Master {
           {
             Text: '子宮腟異物',
             ICD10: ['T192', 'T193']
+          },
+          // 2021 新規
+          {
+            Text: '子宮性不妊・不育症',
+            VaildFrom: '2021',
+            ICD10: ['N972', 'N973']
           }
         ]
       },
@@ -489,7 +536,14 @@ export default class DiagnosisMaster extends Master {
     return this.parseItem(item, 'ICD10')
   }
 
-  // CloseMatch
+  // CloseMatchを行う
+  //
+  // @param{String} 検索文字列
+  // @param{String}
+  // @param{String}
+  // @param{String|Number}
+  //
+  // return Array
   Matches (text, category = '', target = '', year = this.YearofMaster) {
     const source = translation(text)
     if (source === '') {
@@ -545,66 +599,15 @@ function compareCode (str1 = 'A', str2 = 'B') {
   return str1.substr(0, comparelength) === str2.substr(0, comparelength)
 }
 
-// 表記の統一のためのruleset g フラグつきで検索・置換する
-const ruleset1 = {
-  // 修飾語の除去
-  '[右左両片]側?性?|傍|(亜?急|慢|([特原続]発)|難治)性|[再多]発性?|部分|(不|完|不完)全|(高度)?変性|巨大|有茎性|破裂|捻転': '',
-  // 一般的なゆらぎの内容
-  附属器: '付属器',
-  膣: '腟',
-  頚: '頸',
-  がん: '癌',
-  閉鎖: '閉塞',
-  '(のう|嚢)(腫|胞)': '嚢$2',
-  // 疾患にありそうな表記の集約
-  '(悪性腺腫|((粘液|漿液)性?腺?|腺)癌)': '癌',
-  '(粘液|漿液|充実|孤立|繊維|多房|単発)性?': ''
-}
-
-// 一般的によくある表現をexact matchにもってゆくための検索式
-const ruleset2 = {
-  // 病名の置換～病名
-  チョコレート: 'N809',
-  '卵巣((成熟)?(嚢胞性)?奇形腫|(デルモイド|皮様)(腫瘍|嚢胞|嚢腫)?)': 'D27',
-  '(卵巣|境界悪性){2}腫瘍': 'D391',
-  '(子宮外|(卵管(角|峡|狭|間質|膨大)部|間質部|瘢痕部?))妊娠': 'O009',
-  '(漿膜下)?子宮(頸部|体部|靱帯内|漿膜下)?(平滑)筋腫': 'D259',
-  '(子宮粘膜下|粘膜下子宮)(平滑)?筋腫': 'D250',
-  '子宮頸部(軽|中等|高)度異形成': 'N879',
-  '(子宮頸部|)上皮内癌': 'N789',
-  '.+(炎|膿瘍)': 'N735',
-
-  '子宮頸部(悪性腫瘍|癌)': 'C539',
-  '子宮((癌|腺|平滑筋|脂肪|)肉腫|体部悪性腫瘍)': 'C549',
-  悪性転化: 'C56',
-  '((乳|胃|大腸)癌|(悪性|)リンパ腫)': '婦人科以外の悪性腫瘍',
-  '(奇胎|トロホブラスト)': 'D392',
-
-  '(IUD|(子宮内|)(避妊具|リング))': 'T193',
-  '(子宮|膀胱|腟|直腸)(脱|下垂|瘤)': 'N819',
-  '粘膜下(子宮)?筋腫(分娩)?': 'D250',
-
-  '([AC]IS|CIN(-|)[123])': 'N879',
-  'AEH((-|)C|)': 'N850',
-
-  GTD: 'F649',
-  FTM: 'F649',
-  MTF: 'F649',
-  DIE: 'N809',
-  ESS: 'C541',
-  FHCS: 'K670',
-  LEGH: 'D390',
-  LMS: 'C542',
-  MDA: 'C539',
-  PID: 'N735',
-  POP: 'N819',
-  POI: '上記以外の付属器良性疾患',
-  RRSO: '予防的内性器摘出術の適応',
-  リンチ症候群: '予防的内性器摘出術の適応',
-  HNPCC: '予防的内性器摘出術の適応',
-  STD: 'N735'
-}
-
+// 文字列の正規化とチェックを行う
+//
+//  前後の空白は削除
+//  全角英数字は半角に変換
+//  区切り文字の使用はエラー
+//
+// @param{String}
+//
+// return String
 function translation (str = '') {
   // 型変換と余白の削除
   let searchstring = str.toString().trim()
@@ -615,17 +618,76 @@ function translation (str = '') {
   searchstring = ZenToHan(searchstring)
 
   // 連結文字列の検索、連結が発見されたら例外を発生させる
-  if (/[ ,.､、｡。\t]+/.test(searchstring)) {
+  if (/[ ,.､、｡。+＋\t]+/.test(searchstring)) {
     throw new Error('区切り文字で区切られた複数項目からなる入力は許容されません.')
   }
 
   // 置換1 - 文字列の全置換
+  // 表記の統一を行う
+  const ruleset1 = {
+    // 修飾語の除去
+    '[右左両片]側?性?|傍|(亜?急|慢|([特原続]発)|難治)性|[再多]発性?|部分|(不|完|不完)全|(高度)?変性|巨大|有茎性|破裂|捻転': '',
+    // 一般的なゆらぎの内容
+    附属器: '付属器',
+    膣: '腟',
+    頚: '頸',
+    がん: '癌',
+    閉鎖: '閉塞',
+    '(のう|嚢)(腫|胞)': '嚢$2',
+    // 疾患にありそうな表記の集約
+    '(悪性腺腫|((粘液|漿液)性?腺?|腺)癌)': '癌',
+    '(粘液|漿液|充実|孤立|繊維|多房|単発)性?': ''
+  }
+
   for (const rule in ruleset1) {
     const regex = new RegExp(rule, 'g')
     searchstring = searchstring.replace(regex, ruleset1[rule])
   }
 
-  // 置換2 - 文字列からの検索して置き換え
+  // 置換2 - 一般的な入力内容に相当する内容に置換する
+  const ruleset2 = {
+    // 病名の置換～病名
+    チョコレート: 'N809',
+    '卵巣((成熟)?(嚢胞性)?奇形腫|(デルモイド|皮様)(腫瘍|嚢胞|嚢腫)?)': 'D27',
+    '(卵巣|境界悪性){2}腫瘍': 'D391',
+    '(子宮外|(卵管(角|峡|狭|間質|膨大)部|間質部|瘢痕部?))妊娠': 'O009',
+    '(漿膜下)?子宮(頸部|体部|靱帯内|漿膜下)?(平滑)筋腫': 'D259',
+    '(子宮粘膜下|粘膜下子宮)(平滑)?筋腫': 'D250',
+    '子宮頸部(軽|中等|高)度異形成': 'N879',
+    '(子宮頸部|)上皮内癌': 'N789',
+    '.+(炎|膿瘍)': 'N735',
+
+    '子宮頸部(悪性腫瘍|癌)': 'C539',
+    '子宮((癌|腺|平滑筋|脂肪|)肉腫|体部悪性腫瘍)': 'C549',
+    悪性転化: 'C56',
+    '((乳|胃|大腸)癌|(悪性|)リンパ腫)': '婦人科以外の悪性腫瘍',
+    '(奇胎|トロホブラスト)': 'D392',
+
+    '(IUD|(子宮内|)(避妊具|リング))': 'T193',
+    '(子宮|膀胱|腟|直腸)(脱|下垂|瘤)': 'N819',
+    '粘膜下(子宮)?筋腫(分娩)?': 'D250',
+
+    '([AC]IS|CIN(-|)[123])': 'N879',
+    'AEH((-|)C|)': 'N850',
+
+    GTD: 'F649',
+    FTM: 'F649',
+    MTF: 'F649',
+    DIE: 'N809',
+    ESS: 'C541',
+    FHCS: 'K670',
+    LEGH: 'D390',
+    LMS: 'C542',
+    MDA: 'C539',
+    PID: 'N735',
+    POP: 'N819',
+    POI: '上記以外の付属器良性疾患',
+    RRSO: '予防的内性器摘出術の適応',
+    リンチ症候群: '予防的内性器摘出術の適応',
+    HNPCC: '予防的内性器摘出術の適応',
+    STD: 'N735'
+  }
+
   for (const rule in ruleset2) {
     const regex = new RegExp(rule, 'i')
     if (regex.test(searchstring)) {
