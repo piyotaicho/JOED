@@ -1,7 +1,7 @@
 {
   "name": "joed5",
   "productName": "JOED5",
-  "version": "1.1.659",
+  "version": "1.2.722",
   "description": "The procedures and adverse events regstration system provided by JSGOE",
   "author": {
     "name": "Yasuhiro Yamamoto",
@@ -24,7 +24,7 @@
     "babel-eslint": "^10.1.0",
     "core-js": "^3.18.3",
     "difflib": "^0.2.4",
-    "electron": "12.2.2",
+    "electron": "12.2.3",
     "electron-builder": "^22.13.1",
     "element-ui": "^2.13.2",
     "encoding-japanese": "^1.0.30",
