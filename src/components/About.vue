@@ -53,7 +53,7 @@ export default {
         { name: 'Vuex', href: 'https://vuex.vuejs.org/', license: 'MIT' },
         { name: 'Vue Router', href: 'https://router.vuejs.org/', license: 'MIT' },
         { name: 'Element', href: 'https://element.eleme.io/', license: 'MIT' },
-        { name: 'nedb', href: 'https://github.com/louischatriot/nedb', license: 'MIT' },
+        { name: 'seald/nedb', href: 'https://github.com/seald/nedb', license: 'MIT' },
         { name: 'Vue.Draggable', href: 'https://github.com/SortableJS/Vue.Draggable', license: 'MIT' },
         { name: 'Datepicker', href: 'https://github.com/charliekassel/vuejs-datepicker', license: 'MIT' },
         { name: 'Vue-infinite-loading', href: 'https://github.com/PeachScript/vue-infinite-loading', license: 'MIT' },
