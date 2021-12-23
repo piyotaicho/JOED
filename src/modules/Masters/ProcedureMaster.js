@@ -2,8 +2,8 @@ import Master from '@/modules/Masters/Master'
 import { ZenToHan } from '@/modules/ZenHanChars'
 import * as difflib from 'difflib'
 
-export const LastUpdate = '2021-02-10'
-const defaultReference = '2020'
+export const LastUpdate = '2021-12-23'
+const defaultReference = '2021'
 
 // Description の Values: [] のフォーマット
 //
@@ -28,12 +28,12 @@ export default class ProcedureMaster extends Master {
           // 2020 表記変更 異所性(子宮外)妊娠手術(その他) -> 異所性妊娠手術(その他)
           {
             Text: '異所性(子宮外)妊娠手術(その他)',
-            VaildTo: '2019'
+            ValidTo: '2019'
           },
           {
             Text: '異所性妊娠手術(その他)',
             Ditto: ['異所性妊娠手術(卵管摘出術)', '異所性妊娠手術(卵管線状切開術)'],
-            VaildFrom: '2020',
+            ValidFrom: '2020',
             Kcode: ['K912-00-02']
           },
           {
@@ -67,7 +67,7 @@ export default class ProcedureMaster extends Master {
           // 2021 削除
           {
             Text: '骨盤臓器脱修復術',
-            VaildTo: '2020'
+            ValidTo: '2020'
           },
           {
             Text: '仙骨腟固定術',
@@ -76,12 +76,12 @@ export default class ProcedureMaster extends Master {
           // 2021 新規
           {
             Text: '仙骨子宮靭帯縫縮術',
-            VaildFrom: '2021'
+            ValidFrom: '2021'
           },
           // 2021 新規
           {
             Text: 'その他の骨盤臓器脱修復術',
-            VaildFrom: '2021'
+            ValidFrom: '2021'
           },
           {
             Text: '他の悪性疾患の予防的切除術',
@@ -97,14 +97,14 @@ export default class ProcedureMaster extends Master {
               Text: '実施内容',
               Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術', '$MULTI$']
             },
-            VaildFrom: '2020',
+            ValidFrom: '2020',
             Kcode: ['K888-00-02']
           },
           '術後合併症の修復術',
           // 2020 新規
           {
             Text: '他の診療科との合同手術',
-            VaildFrom: '2020'
+            ValidFrom: '2020'
           }
         ],
         付属器: [
@@ -115,11 +115,11 @@ export default class ProcedureMaster extends Master {
           // 2020 表記変更 子宮付属器嚢胞摘出術(チョコレート嚢胞) -> 子宮付属器嚢胞摘出術(子宮内膜症性嚢胞)
           {
             Text: '子宮付属器嚢胞摘出術(チョコレート嚢胞)',
-            VaildTo: '2019'
+            ValidTo: '2019'
           },
           {
             Text: '子宮付属器嚢胞摘出術(子宮内膜症性嚢胞)',
-            VaildFrom: '2020',
+            ValidFrom: '2020',
             Kcode: ['K863-00-00', 'K887-00-02', 'K888-00-02']
           },
           {
@@ -129,11 +129,11 @@ export default class ProcedureMaster extends Master {
           // 2020 表記変更 子宮付属器切除術(チョコレート嚢胞) -> 子宮付属器切除術(子宮内膜症性嚢胞)
           {
             Text: '子宮付属器切除術(チョコレート嚢胞)',
-            VaildTo: '2019'
+            ValidTo: '2019'
           },
           {
             Text: '子宮付属器切除術(子宮内膜症性嚢胞)',
-            VaildFrom: '2020',
+            ValidFrom: '2020',
             Kcode: ['K863-00-00', 'K888-00-02']
           },
           {
@@ -160,35 +160,35 @@ export default class ProcedureMaster extends Master {
           {
             Text: '異所性(子宮外)妊娠手術(卵管摘出術)',
             Ditto: ['異所性(子宮外)妊娠手術(卵管線状切開術)'],
-            VaildTo: '2019'
+            ValidTo: '2019'
           },
           {
             Text: '異所性妊娠手術(卵管摘出術)',
             Ditto: ['異所性妊娠手術(卵管線状切開術)', '異所性妊娠手術(その他)'],
-            VaildFrom: '2020',
+            ValidFrom: '2020',
             Kcode: ['K912-00-02', 'K888-02-02', 'K887-03-02']
           },
           // 2020 表記変更 異所性(子宮外)妊娠手術(卵管摘出術) -> 異所性妊娠手術(卵管摘出術)
           {
             Text: '異所性(子宮外)妊娠手術(卵管線状切開術)',
             Ditto: ['異所性(子宮外)妊娠手術(卵管摘出術)'],
-            VaildTo: '2019'
+            ValidTo: '2019'
           },
           {
             Text: '異所性妊娠手術(卵管線状切開術)',
             Ditto: ['異所性妊娠手術(卵管摘出術)', '異所性妊娠手術(その他)'],
-            VaildFrom: '2020',
+            ValidFrom: '2020',
             Kcode: ['K912-00-02', 'K888-02-02']
           },
           // 2020 表記変更 異所性(子宮外)妊娠手術(その他) -> 異所性妊娠手術(その他)
           {
             Text: '異所性(子宮外)妊娠手術(その他)',
-            VaildTo: '2019'
+            ValidTo: '2019'
           },
           {
             Text: '異所性妊娠手術(その他)',
             Ditto: ['異所性妊娠手術(卵管摘出術)', '異所性妊娠手術(卵管線状切開術)'],
-            VaildFrom: '2020',
+            ValidFrom: '2020',
             Kcode: ['K912-00-02']
           },
           {
@@ -203,11 +203,11 @@ export default class ProcedureMaster extends Master {
           // 2020 表記変更 チョコレート嚢胞エタノール固定術 -> 卵巣嚢腫エタノール固定術(子宮内膜症性嚢胞含む)
           {
             Text: 'チョコレート嚢胞エタノール固定術',
-            VaildTo: '2019'
+            ValidTo: '2019'
           },
           {
             Text: '卵巣嚢腫エタノール固定術(子宮内膜症性嚢胞含む)',
-            VaildFrom: '2020',
+            ValidFrom: '2020',
             Kcode: ['J017-00-00']
           },
           // 2020 新規
@@ -217,7 +217,7 @@ export default class ProcedureMaster extends Master {
               Text: '実施内容',
               Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術', '$MULTI$']
             },
-            VaildFrom: '2020',
+            ValidFrom: '2020',
             Kcode: ['K877-02-00', 'K888-00-02', 'K888-02-02']
           },
           // 2020 新規
@@ -227,19 +227,19 @@ export default class ProcedureMaster extends Master {
               Text: '実施内容',
               Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術', '$MULTI$']
             },
-            VaildFrom: '2020',
+            ValidFrom: '2020',
             Kcode: ['K888-00-02']
           },
           // 2020 新規
           {
             Text: '妊孕性温存のための付属器摘出術',
-            VaildFrom: '2020'
+            ValidFrom: '2020'
           },
           '術後合併症の修復術',
           // 2020 新規
           {
             Text: '他の診療科との合同手術',
-            VaildFrom: '2020'
+            ValidFrom: '2020'
           }
         ],
         その他: [
@@ -254,12 +254,12 @@ export default class ProcedureMaster extends Master {
           // 2020 表記変更 異所性(子宮外)妊娠手術(その他) -> 異所性妊娠手術(その他)
           {
             Text: '異所性(子宮外)妊娠手術(その他)',
-            VaildTo: '2019'
+            ValidTo: '2019'
           },
           {
             Text: '異所性妊娠手術(その他)',
             Ditto: ['異所性妊娠手術(卵管摘出術)', '異所性妊娠手術(卵管線状切開術)'],
-            VaildFrom: '2020'
+            ValidFrom: '2020'
           },
           {
             Text: '造腟術',
@@ -272,7 +272,7 @@ export default class ProcedureMaster extends Master {
           // 2021 削除
           {
             Text: '骨盤臓器脱修復術',
-            VaildTo: '2020'
+            ValidTo: '2020'
           },
           {
             Text: '仙骨腟固定術',
@@ -281,12 +281,12 @@ export default class ProcedureMaster extends Master {
           // 2021 新規
           {
             Text: '仙骨子宮靭帯縫縮術',
-            VaildFrom: '2021'
+            ValidFrom: '2021'
           },
           // 2021 新規
           {
             Text: 'その他の骨盤臓器脱修復術',
-            VaildFrom: '2021'
+            ValidFrom: '2021'
           },
           '術後合併症の修復術'
         ]
@@ -329,7 +329,7 @@ export default class ProcedureMaster extends Master {
           // 2020 削除
           {
             Text: 'Second Look Operation',
-            VaildTo: '2019'
+            ValidTo: '2019'
           },
           {
             Text: '他の悪性疾患の予防的切除術',
@@ -342,13 +342,13 @@ export default class ProcedureMaster extends Master {
           // 2020 新規
           {
             Text: '婦人科以外の悪性疾患による子宮全摘出術',
-            VaildFrom: '2020',
+            ValidFrom: '2020',
             Kcode: ['K877-02-00']
           },
           // 2020 新規
           {
             Text: '再発病巣の摘出術',
-            VaildFrom: '2020'
+            ValidFrom: '2020'
           },
           // 2020 新規
           {
@@ -357,13 +357,13 @@ export default class ProcedureMaster extends Master {
               Text: '組織生検',
               Values: ['[生検]あり', '[生検]なし']
             },
-            VaildFrom: '2020',
+            ValidFrom: '2020',
             Kcode: ['D314-00-00', 'K636-03-00', 'K636-04-00']
           },
           // 2020 新規
           {
             Text: '他の診療科との合同手術',
-            VaildFrom: '2020'
+            ValidFrom: '2020'
           },
           '治療のために開腹手術へ移行(合併症を除く)',
           '術後合併症の修復術'
@@ -372,7 +372,7 @@ export default class ProcedureMaster extends Master {
           // 2020 実装変更
           {
             Text: '腹腔鏡下病変生検・審査腹腔鏡',
-            VaildTo: '2019'
+            ValidTo: '2019'
           },
           {
             Text: '腹腔鏡下病変生検・審査腹腔鏡',
@@ -380,7 +380,7 @@ export default class ProcedureMaster extends Master {
               Text: '組織生検',
               Values: ['[生検]あり', '[生検]なし']
             },
-            VaildFrom: '2020',
+            ValidFrom: '2020',
             Kcode: ['D314-00-00', 'K636-03-00', 'K636-04-00']
           },
           {
@@ -401,12 +401,12 @@ export default class ProcedureMaster extends Master {
           // 2020 削除
           {
             Text: 'Second Look Operation',
-            VaildTo: '2019'
+            ValidTo: '2019'
           },
           // 2020 新規
           {
             Text: '他の診療科との合同手術',
-            VaildFrom: '2020'
+            ValidFrom: '2020'
           },
           '治療のために開腹手術へ移行(合併症を除く)',
           {
@@ -423,13 +423,13 @@ export default class ProcedureMaster extends Master {
               Text: '実施内容',
               Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術', '$MULTI$']
             },
-            VaildFrom: '2020',
+            ValidFrom: '2020',
             Kcode: ['K888-00-02']
           },
           // 2020 新規
           {
             Text: '妊孕性温存のための付属器摘出術',
-            VaildFrom: '2020'
+            ValidFrom: '2020'
           },
           // 2020 新規
           {
@@ -443,7 +443,7 @@ export default class ProcedureMaster extends Master {
           // 2020 新規
           {
             Text: '再発病巣の摘出術',
-            VaildFrom: '2020'
+            ValidFrom: '2020'
           },
           '術後合併症の修復術'
         ],
@@ -451,7 +451,7 @@ export default class ProcedureMaster extends Master {
           // 2020 実装変更
           {
             Text: '腹腔鏡下病変生検・審査腹腔鏡',
-            VaildTo: '2019'
+            ValidTo: '2019'
           },
           {
             Text: '腹腔鏡下病変生検・審査腹腔鏡',
@@ -459,24 +459,24 @@ export default class ProcedureMaster extends Master {
               Text: '組織生検',
               Values: ['[生検]あり', '[生検]なし']
             },
-            VaildFrom: '2020',
+            ValidFrom: '2020',
             Kcode: ['D314-00-00', 'K636-03-00', 'K636-04-00']
           },
           // 2020 新規
           {
             Text: '再発病巣の摘出術',
-            VaildFrom: '2020'
+            ValidFrom: '2020'
           },
           // 2020 新規
           {
             Text: '他の診療科との合同手術',
-            VaildFrom: '2020'
+            ValidFrom: '2020'
           },
           '治療のために開腹手術へ移行(合併症を除く)',
           // 2020 削除
           {
             Text: 'Second Look Operation',
-            VaildTo: '2019'
+            ValidTo: '2019'
           },
           '術後合併症の修復術'
         ]
@@ -490,7 +490,7 @@ export default class ProcedureMaster extends Master {
           // 2021 削除
           {
             Text: '骨盤臓器脱修復術(ロボット支援下)',
-            VaildTo: '2020'
+            ValidTo: '2020'
           },
           'ロボット支援下その他'
         ],
@@ -501,7 +501,7 @@ export default class ProcedureMaster extends Master {
           // 2021 削除
           {
             Text: '骨盤臓器脱修復術(ロボット支援下)',
-            VaildTo: '2020'
+            ValidTo: '2020'
           },
           {
             Text: '仙骨腟固定術(ロボット支援下)',
@@ -545,13 +545,13 @@ export default class ProcedureMaster extends Master {
           // 2020 削除
           {
             Text: 'Second Look Operation',
-            VaildTo: '2019'
+            ValidTo: '2019'
           },
           '術後合併症の修復術',
           // 2020 新規
           {
             Text: '婦人科以外の悪性疾患によるロボット支援下子宮全摘出術',
-            VaildFrom: '2020',
+            ValidFrom: '2020',
             Kcode: ['K877-02-00']
           }
         ]
@@ -586,7 +586,7 @@ export default class ProcedureMaster extends Master {
           // 2020 新規
           {
             Text: '帝王切開瘢痕症候群創部切除術',
-            VaildFrom: '2020'
+            ValidFrom: '2020'
           },
           {
             Text: '子宮鏡検査・内膜剥爬術',
@@ -605,12 +605,12 @@ export default class ProcedureMaster extends Master {
           // 2020 表記変更 腹腔鏡併用は付随情報へ
           {
             Text: '卵管鏡下卵管形成術(単独)',
-            VaildTo: '2019'
+            ValidTo: '2019'
           },
           // 2020 表記変更 腹腔鏡併用は付随情報へ
           {
             Text: '卵管鏡下卵管形成術(腹腔鏡併用)',
-            VaildTo: '2019'
+            ValidTo: '2019'
           },
           {
             Text: '卵管鏡下卵管形成術',
@@ -618,7 +618,7 @@ export default class ProcedureMaster extends Master {
               Text: '実施形態',
               Values: ['卵管鏡単独', '腹腔鏡併用']
             },
-            VaildFrom: '2020',
+            ValidFrom: '2020',
             Kcode: ['K890-02-00']
           }
         ]

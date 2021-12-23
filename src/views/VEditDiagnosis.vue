@@ -8,7 +8,6 @@
         :Pane2.sync="target" :Pane2Items="TargetOrgans"
         @pane2change="SetCandidateItemsBySelection()"
         :Pane3.sync="selectedItem" :Pane3Items="candidates"
-        @pane3change="OnCandidateSelected()"
         @pane3dblclick="CommitChanges()"
       />
 
@@ -21,11 +20,8 @@
 </template>
 
 <script>
-import EditItemMixins from '@/mixins/EditItemMixins'
 import Master from '@/modules/Masters/DiagnosisMaster'
-// import { getMatchesInDiagnoses } from '@/modules/CloseMatches'
 import * as Popups from '@/modules/Popups'
-
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import EditSection from '@/components/Molecules/EditSection'
 import ThreePaneSelections from '@/components/Molecules/3PaneSelections'
@@ -34,6 +30,19 @@ import FreewordSection from '@/components/Molecules/EditSectionFreeword'
 const DiagnosesTree = new Master()
 
 export default {
+  props: {
+    ItemIndex: {
+      type: Number,
+      default: -1
+    },
+    ItemValue: {
+      type: Object
+    },
+    year: {
+      type: String,
+      default: ''
+    }
+  },
   data () {
     return {
       category: '',
@@ -43,9 +52,6 @@ export default {
       freewordText: ''
     }
   },
-  mixins: [
-    EditItemMixins
-  ],
   components: {
     TheWrapper,
     EditSection,
@@ -85,13 +91,46 @@ export default {
     },
     TargetOrgans () {
       return DiagnosesTree.Targets(this.category)
+    },
+    UserEditingAllowed () {
+      return !!this.category && !this.selectedItem
     }
   },
   methods: {
-    OnCandidateSelected () {
-      // this.freewordText = ''
-    },
+    async CategoryIsChanged () {
+      this.target = ''
+      if (this.selectedItem !== '') {
+        this.freewordText = ''
+      }
 
+      this.selectedItem = ''
+      if (this.CandidateItems) {
+        this.CandidateItems.splice(0)
+      }
+
+      if (this.Description) {
+        this.Description.Title = ''
+      }
+
+      if (this.AdditionalProcedure) {
+        this.AdditionalProcedure.Title = ''
+      }
+
+      await this.$nextTick()
+
+      if (this.candidates) {
+        this.candidates.splice(0)
+      }
+
+      // 対象臓器が1つだけのときはそれを選択する
+      if (this.TargetOrgans.length === 1) {
+        this.target = this.TargetOrgans[0]
+        await this.$nextTick()
+
+        this.SetCandidateItemsBySelection()
+        await this.$nextTick()
+      }
+    },
     SetCandidateItemsBySelection () {
       this.candidates = DiagnosesTree.ItemTexts(this.category, this.target, this.year)
       this.selectedItem = ''
@@ -142,6 +181,9 @@ export default {
         this.$emit('data-upsert', 'Diagnoses', this.ItemIndex, temporaryItem)
         this.GoBack()
       }
+    },
+    GoBack () {
+      this.$router.replace('./')
     }
   }
 }

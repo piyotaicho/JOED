@@ -133,10 +133,10 @@ export default class AEmaster {
               (this.YearofMaster < '2021'
                 ? ['消化管']
                 : [
-                    { Text: '消化管(直腸)', Value: '直腸' },
-                    { Text: '消化管(結腸)', Value: '結腸' },
-                    { Text: '消化管(その他)', Value: '消化管' }
-                  ]
+                  { Text: '消化管(直腸)', Value: '直腸' },
+                  { Text: '消化管(結腸)', Value: '結腸' },
+                  { Text: '消化管(その他)', Value: '消化管' }
+                ]
               ),
               ['腹壁', '腹壁血管', '皮下'],
               ['動脈', '静脈', '大血管動脈', '大血管静脈'],

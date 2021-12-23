@@ -48,7 +48,6 @@
 </template>
 
 <script>
-import EditItemMixins from '@/mixins/EditItemMixins'
 import Master from '@/modules/Masters/ProcedureMaster'
 import * as Popups from '@/modules/Popups'
 
@@ -62,15 +61,25 @@ const ProceduresTree = new Master()
 
 export default {
   name: 'ViewEditItemProcedure',
-  mixins: [
-    EditItemMixins
-  ],
   components: {
     TheWrapper,
     EditSection,
     ThreePaneSelections,
     DescriptionSection,
     FreewordSection
+  },
+  props: {
+    ItemIndex: {
+      type: Number,
+      default: -1
+    },
+    ItemValue: {
+      type: Object
+    },
+    year: {
+      type: String,
+      default: ''
+    }
   },
   data () {
     return ({
@@ -172,9 +181,47 @@ export default {
     },
     TargetOrgans () {
       return ProceduresTree.Targets(this.category)
+    },
+    UserEditingAllowed () {
+      return !!this.category && !this.selectedItem
     }
   },
   methods: {
+    async CategoryIsChanged () {
+      this.target = ''
+      if (this.selectedItem !== '') {
+        this.freewordText = ''
+      }
+
+      this.selectedItem = ''
+      if (this.CandidateItems) {
+        this.CandidateItems.splice(0)
+      }
+
+      if (this.Description) {
+        this.Description.Title = ''
+      }
+
+      if (this.AdditionalProcedure) {
+        this.AdditionalProcedure.Title = ''
+      }
+
+      await this.$nextTick()
+
+      if (this.candidates) {
+        this.candidates.splice(0)
+      }
+
+      // 対象臓器が1つだけのときはそれを選択する
+      if (this.TargetOrgans.length === 1) {
+        this.target = this.TargetOrgans[0]
+        await this.$nextTick()
+
+        this.SetCandidateItemsBySelection()
+        await this.$nextTick()
+      }
+    },
+
     SetCandidateItemsBySelection () {
       this.candidates = ProceduresTree.ItemTexts(this.category, this.target, this.year)
       this.selectedItem = ''
@@ -315,6 +362,10 @@ export default {
         this.$emit('data-upsert', 'Procedures', this.ItemIndex, temporaryItem)
         this.GoBack()
       }
+    },
+
+    GoBack () {
+      this.$router.replace('./')
     }
   }
 }

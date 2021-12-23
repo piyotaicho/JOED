@@ -39,7 +39,7 @@ export default class Master {
 
         Notification: 'お知らせメッセージ' -- 未実装
 
-        VaildFrom: '使用開始年'
+        ValidFrom: '使用開始年'
         ValidTo: '使用終了年'
 
         // *** 診断 ***
@@ -178,10 +178,10 @@ export default class Master {
   static parseItem (item, $attribute = 'Text', year = '') {
     if (typeof item === 'object') {
       if (year !== '') {
-        if (item.VaildTo && year > item.VaildTo) {
+        if (item.ValidTo && year > item.ValidTo) {
           return undefined
         }
-        if (item.VaildFrom && year < item.VaildFrom) {
+        if (item.ValidFrom && year < item.ValidFrom) {
           return undefined
         }
       }
