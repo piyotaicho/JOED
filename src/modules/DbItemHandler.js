@@ -96,52 +96,47 @@ export default class CaseDocumentHandler {
     param = {}
   ) {
     const temporaryItem = {}
-    const propsToExport = [
-      'JSOGId', 'NCDId',
-      'PatientId', 'Name', 'Age',
-      'DateOfProcedure', 'ProcedureTime', 'TypeOfProcedure',
-      'PresentAE', 'Imported'
-    ]
     const params = {
-      exportAllFields: false,
-      omitDateOfProcedure: true,
-      omitAge: true,
+      omitNCDId: true,
+      anonymizeJSOGId: true,
       ...param
     }
 
-    if (params.exportAllFields) {
-      params.omitAge = false
-      params.omitDateOfProcedure = false
-    } else {
-      // NCDIdは当分NCDへのデータ提供はないのでエクスポートしない.
-      propsToExport.splice(propsToExport.indexOf('NCDId'), 1)
-      propsToExport.splice(propsToExport.indexOf('PatientId'), 1)
-      propsToExport.splice(propsToExport.indexOf('Name'), 1)
+    // 手術実施年を抽出
+    temporaryItem.YearOfProcedure = item.DateOfProcedure.substr(0, 4)
+
+    // NCDIdの処理
+    if (!params.omitNCDId && item?.NCDId) {
+      temporaryItem.NCDId = item.NCDId
     }
 
-    if (params.omitAge) {
-      propsToExport.splice(propsToExport.indexOf('Age'), 1)
+    // JSOGIdの処理
+    if (item?.JSOGId) {
+      temporaryItem.JSOGId = params.anonymizeJSOGId
+        ? item.JSOGId.substr(0, 6) + '-X'
+        : item.JSOGId
     }
 
-    if (params.omitDateOfProcedure) {
-      propsToExport.splice(propsToExport.indexOf('DateOfProcedure'), 1)
+    // TypeOfProcedureをコピー
+    temporaryItem.TypeOfProcedure = item.TypeOfProcedure
+
+    // PresentAEをコピー
+    temporaryItem.PresentAE = item.PresentAE
+
+    // Importedの処理
+    if (item?.Imported !== undefined) {
+      temporaryItem.Imported = item.Imported
     }
 
-    for (const prop of propsToExport) {
-      if (item[prop] !== undefined) {
-        temporaryItem[prop] = item[prop]
-      }
-    }
-
+    // 診断・実施手術を変形してコピー
     temporaryItem.Diagnoses = this.$flattenItem(item.Diagnoses)
     temporaryItem.Procedures = this.$flattenItem(item.Procedures)
 
-    if (params.omitDateOfProcedure) {
-      temporaryItem.YearOfProcedure = item.DateOfProcedure.substr(0, 4)
-    }
+    // 合併症項目をコピー
     if (item.AEs) {
       temporaryItem.AEs = Object.assign([], item.AEs)
     }
+
     return temporaryItem
   }
 }

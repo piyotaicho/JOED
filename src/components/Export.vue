@@ -12,20 +12,8 @@
         :options="{学会提出データ: false, バックアップデータ: true}"/>
 
       <InputSwitchField
-        v-model="exportRaw"
+        v-model="validateOnBackup"
         :disabled="!exportAllFields"
-        title="データ形式"
-        :options="{処理データ: false, 生データ: true}"/>
-
-      <InputSwitchField
-        v-model="addHeader"
-        :disabled="!(exportAllFields && exportRaw)"
-        title="ヘッダの生成"
-        :options="{する: true, しない: false}"/>
-
-      <InputSwitchField
-        v-model="RawValidation"
-        :disabled="!(exportAllFields && exportRaw && !addHeader)"
         title="データのエラーチェック"
         :options="{行う: true, 行わない: false}"/>
 
@@ -96,9 +84,7 @@ export default {
     return ({
       exportYear: '',
       exportAllFields: false,
-      exportRaw: false,
-      RawValidation: true,
-      addHeader: true,
+      validateOnBackup: true,
 
       exportText: '',
 
@@ -138,16 +124,12 @@ export default {
       async set (newvalue) {
         if (newvalue && await Popups.confirm('不用意に全てのフィールドのデータを出力するのは,個人情報保護の観点からお薦め出来ません.\nそれでも出力しますか?', this)) {
           this.exportAllFields = true
-          this.exportRaw = true
-          this.addHeader = false
           this.RawValidation = false
         } else {
           this.exportAllFields = false
         }
         if (newvalue === false) {
           this.exportAllFields = false
-          this.exportRaw = false
-          this.addHeader = true
         }
       }
     },
@@ -228,7 +210,7 @@ export default {
     //
     async CheckSystem () {
       // バックアップデータでエラーチェックなしでは チェックをスキップする
-      if (this.exportAllFields && !this.RawValidation) {
+      if (this.exportAllFields && !this.validateOnBackup) {
         return
       }
 
@@ -253,7 +235,7 @@ export default {
     // インポートデータ( Imported )で特になんの問題も無くインポートできたもの以外には Notification がある
     async CheckImported () {
       // バックアップデータでエラーチェックなしでは チェックをスキップする
-      if (this.exportAllFields && !this.RawValidation) {
+      if (this.exportAllFields && !this.validateOnBackup) {
         return
       }
 
@@ -300,7 +282,7 @@ export default {
       const documentIds = querydocuments.map(item => item.DocumentId)
 
       // バックアップデータでエラーチェックなしでは これ以上のチェックをスキップする
-      if (this.exportAllFields && !this.RawValidation) {
+      if (this.exportAllFields && !this.validateOnBackup) {
         return documentIds
       }
 
@@ -347,6 +329,8 @@ export default {
       this.progressCreateData = 0
       const ExportItems = []
       const hashHHX = HHX.h64(this.$store.getters['system/SALT'])
+      const exportJSOGId = this.$store.getters['system/ExportJSOGId']
+      const exportNCDId = this.$store.getters['system/ExportNCDId']
 
       for (const index in documentIds) {
         this.progressCreateData = parseInt(index * 100.0 / documentIds.length)
@@ -357,7 +341,7 @@ export default {
           }
         )
 
-        if (this.exportAllFields && this.exportRaw) {
+        if (this.exportAllFields) {
           // 生データの出力
           ExportItems.push(exportdocument)
         } else {
@@ -379,7 +363,8 @@ export default {
               ...CaseDocumentHandler.ExportCase(
                 exportdocument,
                 {
-                  exportAllFields: this.exportAllFields
+                  omitNCDId: !exportNCDId,
+                  anonymizeJSOGId: !exportJSOGId
                 }
               ),
               hash: hashString
@@ -394,7 +379,7 @@ export default {
     // Step 5 - データヘッダの作成
     //
     async CreateHeader (exportItem) {
-      if (!(this.exportAllFields && this.exportRaw && !this.addHeader)) {
+      if (!this.exportAllFields) {
         const length = exportItem.length
 
         if (length > 0) {
