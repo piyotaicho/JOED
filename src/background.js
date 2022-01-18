@@ -326,7 +326,7 @@ Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate))
 app.setAboutPanelOptions({
   applicationName: app.getName(),
   applicationVersion: process.env.VUE_APP_VERSION,
-  copyright: 'Copyright 2020-2021 P4mohnet and JSGOE',
+  copyright: 'Copyright 2020-2022 P4mohnet and JSGOE',
   credits: '@piyotaicho https://github.com/piyotaicho/JOED/',
   iconPath: '../public/icon.png'
 })
@@ -529,9 +529,14 @@ ipcMain.handle('FineOneByHash', (_, payload) => {
     app.DatabaseInstance
       .findOne({
         $where: function () {
-          delete this._id
-          const hash = HHX64.update(JSON.stringify(this)).digest().toString(36)
-          return payload.Hash === hash
+          // 2021より実装変更:
+          // レコードのハッシュはユニークキー(PatientId, DateOfProcedure)から生成
+          const recordKeys = {
+            PatientId: this.PatientId,
+            DateOfProcedure: this.DateOfProcedure
+          }
+          const recordHash = HHX64.update(JSON.stringify(recordKeys)).digest().toString(36)
+          return payload.Hash === recordHash
         }
       })
       .projection({ DocumentId: 1 })
