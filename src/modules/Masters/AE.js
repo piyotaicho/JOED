@@ -1,5 +1,5 @@
 export const LastUpdate = '2021-02-28'
-const defaultReference = '2020'
+const defaultReference = '2021'
 
 export default class AEmaster {
   constructor (year) {
