@@ -117,6 +117,9 @@ export default class CaseDocumentHandler {
         : item.JSOGId
     }
 
+    // ProcedureTimeをコピー
+    temporaryItem.ProcedureTime = item.ProcedureTime
+
     // TypeOfProcedureをコピー
     temporaryItem.TypeOfProcedure = item.TypeOfProcedure
 
