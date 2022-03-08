@@ -1,0 +1,84 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://registry.jsgoe.jp/schema/dataformat.json",
+    "$comment": "JOEDのバックアップデータファイルフォーマット",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "AEs": {
+                "$ref": "#/defs/AE"
+            }
+        }
+    },
+    "defs": {
+        "AE": {
+            "type": "object",
+            "properties": {
+                "Category": {
+                    "type": "string",
+                    "enum": [
+                        "出血",
+                        "術中手術操作",
+                        "気腹・潅流操作",
+                        "機器の不具合・破損",
+                        "機器の誤操作",
+                        "術中使用した薬剤",
+                        "術後"
+                    ]
+                },
+                "Title": {
+                    "type": "string",
+                    "enum": [
+                        "臓器損傷",
+                        "出血",
+
+                        "皮下気腫",
+                        "ガス塞栓(炭酸ガス)",
+                        "ガス塞栓(空気)",
+                        "水中毒",
+                        "そのほか心臓障害",
+                        "そのほか呼吸器障害",
+                        "そのほか神経系障害",
+                        "上記以外",
+
+                        ""                        
+                    ]
+                },
+                "Location": {
+                    "type": "string",
+                    "enum": [
+                        ""
+                    ]
+                },
+                "Cause": {
+                    "type": "string",
+                    "enum": [
+                        ""
+                    ]
+                },
+                "Grading": {
+                    "type": "string",
+                    "enum": [
+                        "1",
+                        "2",
+                        "3a",
+                        "3b",
+                        "4",
+                        "5"
+                    ]
+                },
+                "Courses": {
+                    "type": "array",
+                    "items": true,
+                    "item": {
+                        "type": "string",
+                        "enum": [
+                            ""
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
