@@ -3,7 +3,7 @@
     <div class="w30"></div>
     <div class="w20 selectionbox">
       <div>
-        <span>{{Container.Title}}</span>
+        <span>{{DescriptionContainer.Title}}</span>
       </div>
     </div>
     <div class="w40 selectionbox">
@@ -37,41 +37,47 @@ export default {
     LabeledCheckbox
   },
   model: {
-    prop: 'Container',
+    prop: 'DescriptionContainer',
     event: 'update'
   },
   props: {
-    Container: {
-      type: Object, // .Title, .Multi, .Options[], .Value[]
+    DescriptionContainer: {
+      type: Object, // .Title, .SelectionMode, .Options[], .Value[]
       required: true
     }
   },
   computed: {
     Source () {
-      return this.Container.Options || []
+      return this.DescriptionContainer.Options || []
     },
     IsMultipleSelection () {
-      return this.Container.Multi
+      return (
+        this.DescriptionContainer.SelectionMode === 'any' ||
+        this.DescriptionContainer.SelectionMode === 'anyornone'
+      )
     },
     SelectedValue: {
       get () {
-        return this.Container.Value ? this.Container.Value : []
+        return this.DescriptionContainer.Value ? this.DescriptionContainer.Value : []
       },
       set (value) {
-        const description = Object.assign({}, this.Container)
+        const description = Object.assign({}, this.DescriptionContainer)
         /*
-          Title: this.Container.Title,
-          Options: this.Container.Options,
-          Multi: this.Container.Multi,
+          Title: this.DescriptionContainer.Title,
+          Options: this.DescriptionContainer.Options,
+          Multi: this.DescriptionContainer.SelectionMode,
           Value: []
         }
         */
         if (value === undefined || typeof value === 'string') {
+          // SELECTからのイベント
           if (value) {
             description.Value = [value]
           }
-        } else {
-          if (value.length > 0) {
+        }
+        if (Array.isArray(value)) {
+          // CHECKBOXからのイベント
+          if (value.length > 0 || description.SelectionMode === 'anyornone') {
             description.Value = [...value]
           }
         }

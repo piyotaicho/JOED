@@ -3,8 +3,13 @@
     :container.sync="items"
     @addnewitem="AddNewItem">
     <template #default="itemprops">
-      <SectionItem :item="itemprops.item" @remove="RemoveItem(itemprops.index)" @edit="EditItem(itemprops.index, itemprops.item)" editable/>
-      <SectionItem :item="itemprops.item.AdditionalProcedure" @remove="RemoveAdditionalItem(itemprops.index)" v-if="itemprops.item.AdditionalProcedure"/>
+      <template v-if="!itemprops.item.AdditionalProcedure">
+        <SectionItem :item="itemprops.item" @remove="RemoveItem(itemprops.index)" @edit="EditItem(itemprops.index, itemprops.item)" editable/>
+      </template>
+      <template v-else>
+        <SectionItem :item="itemprops.item" @remove="RemoveAdditionalItemEntry(itemprops.index)" @edit="EditItem(itemprops.index, itemprops.item)" editable/>
+        <SectionItem :item="itemprops.item.AdditionalProcedure" @remove="RemoveAdditionalItemEntry(itemprops.index)"/>
+      </template>
     </template>
   </Section>
 </template>
@@ -46,7 +51,7 @@ export default {
     RemoveItem (index) {
       this.$emit('removeitem', index)
     },
-    async RemoveAdditionalItem (index) {
+    async RemoveAdditionalItemEntry (index) {
       if (await confirmYesNo('付随する手術も併せて削除されます.')) {
         this.RemoveItem(index)
       }

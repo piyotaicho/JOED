@@ -2,12 +2,10 @@ import Master from '@/modules/Masters/Master'
 import { ZenToHan } from '@/modules/ZenHanChars'
 import * as difflib from 'difflib'
 
-export const LastUpdate = '2021-12-23'
-const defaultReference = '2021'
+export const LastUpdate = '2022-04-01'
+const defaultReference = '2022'
 
 // Description の Values: [] のフォーマット
-//
-// 要素に '$MULTI$' を含むとDescriptionは複数保持可能となる
 //
 // $ で終わる文字列が選択された場合はその術式は登録無効となる(単独選択の場合エラーで登録出来ない)
 // [] で囲まれた文字列は選択肢には表示されず、データの可読性を目的に保持される
@@ -76,7 +74,14 @@ export default class ProcedureMaster extends Master {
           // 2021 新規
           {
             Text: '仙骨子宮靭帯縫縮術',
-            ValidFrom: '2021'
+            ValidFrom: '2021',
+            ValidTo: '2021'
+          },
+          // 2022 変更 K-コード追加
+          {
+            Text: '仙骨子宮靭帯縫縮術',
+            ValidFrom: '2022',
+            Kcode: ['K860-03-00']
           },
           // 2021 新規
           {
@@ -87,7 +92,8 @@ export default class ProcedureMaster extends Master {
             Text: '他の悪性疾患の予防的切除術',
             Description: {
               Text: '実施内容',
-              Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術', '$MULTI$']
+              Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術'],
+              Selection: 'any'
             }
           },
           // 2020 新規
@@ -95,12 +101,19 @@ export default class ProcedureMaster extends Master {
             Text: 'リスク低減のための内性器摘出術',
             Description: {
               Text: '実施内容',
-              Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術', '$MULTI$']
+              Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術'],
+              Selection: 'any'
             },
             ValidFrom: '2020',
             Kcode: ['K888-00-02']
           },
           '術後合併症の修復術',
+          // 2022 新規
+          {
+            Text: '腹腔鏡下子宮瘢痕部修復術',
+            ValidFrom: '2022',
+            Kcode: ['K882-02-00']
+          },
           // 2020 新規
           {
             Text: '他の診療科との合同手術',
@@ -215,7 +228,8 @@ export default class ProcedureMaster extends Master {
             Text: '他の悪性疾患の予防的切除術',
             Description: {
               Text: '実施内容',
-              Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術', '$MULTI$']
+              Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術'],
+              Selection: 'any'
             },
             ValidFrom: '2020',
             Kcode: ['K877-02-00', 'K888-00-02', 'K888-02-02']
@@ -225,7 +239,8 @@ export default class ProcedureMaster extends Master {
             Text: 'リスク低減のための内性器摘出術',
             Description: {
               Text: '実施内容',
-              Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術', '$MULTI$']
+              Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術'],
+              Selection: 'any'
             },
             ValidFrom: '2020',
             Kcode: ['K888-00-02']
@@ -322,7 +337,8 @@ export default class ProcedureMaster extends Master {
             Text: '腹腔鏡下リンパ節生検・郭清',
             Description: {
               Text: 'リンパ節郭清の範囲',
-              Values: ['なし(センチネル生検なし)$', 'なし(センチネル生検あり)', 'PLN', 'PLN+PAN', 'PAN']
+              Values: ['なし(センチネル生検なし)$', 'なし(センチネル生検あり)', 'PLN', 'PLN+PAN', 'PAN'],
+              Selection: 'one'
             },
             Kcode: ['K627-02-01', 'K627-02-02', 'K627-02-03']
           },
@@ -335,7 +351,8 @@ export default class ProcedureMaster extends Master {
             Text: '他の悪性疾患の予防的切除術',
             Description: {
               Text: '実施内容',
-              Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術', '$MULTI$']
+              Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術'],
+              Selection: 'any'
             },
             Kcode: ['K877-02-00', 'K888-00-02', 'K888-02-02']
           },
@@ -395,7 +412,8 @@ export default class ProcedureMaster extends Master {
             Text: '腹腔鏡下リンパ節生検・郭清',
             Description: {
               Text: 'リンパ節郭清の範囲',
-              Values: ['なし(センチネル生検なし)$', 'なし(センチネル生検あり)', 'PLN', 'PLN+PAN', 'PAN']
+              Values: ['なし(センチネル生検なし)$', 'なし(センチネル生検あり)', 'PLN', 'PLN+PAN', 'PAN'],
+              Selection: 'one'
             }
           },
           // 2020 削除
@@ -413,7 +431,8 @@ export default class ProcedureMaster extends Master {
             Text: '他の悪性疾患の予防的切除術',
             Description: {
               Text: '実施内容',
-              Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術', '$MULTI$']
+              Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術'],
+              Selection: 'any'
             }
           },
           // 2020 新規
@@ -421,7 +440,8 @@ export default class ProcedureMaster extends Master {
             Text: 'リスク低減のための内性器摘出術',
             Description: {
               Text: '実施内容',
-              Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術', '$MULTI$']
+              Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術'],
+              Selection: 'any'
             },
             ValidFrom: '2020',
             Kcode: ['K888-00-02']
@@ -538,7 +558,8 @@ export default class ProcedureMaster extends Master {
             Text: 'ロボット支援下リンパ節生検・郭清',
             Description: {
               Text: 'リンパ節郭清の範囲',
-              Values: ['なし(センチネル生検なし)$', 'なし(センチネル生検あり)', 'PLN', 'PLN+PAN', 'PAN']
+              Values: ['なし(センチネル生検なし)$', 'なし(センチネル生検あり)', 'PLN', 'PLN+PAN', 'PAN'],
+              Selection: 'one'
             }
           },
           '治療のために開腹手術へ移行(合併症を除く)',
@@ -558,13 +579,37 @@ export default class ProcedureMaster extends Master {
       },
       子宮鏡: {
         子宮: [
+          // 2022 詳細調査追加
           {
             Text: '子宮筋腫摘出術',
-            Kcode: ['K872-03-01', 'K872-03-02', 'K873-00-01', 'K873-00-02']
+            Kcode: ['K872-03-01', 'K872-03-02', 'K873-00-01', 'K873-00-02'],
+            ValidTo: '2021'
+          },
+          {
+            Text: '子宮筋腫摘出術',
+            Kcode: ['K872-03-01', 'K872-03-02', 'K873-00-01', 'K873-00-02'],
+            ValidFrom: '2022',
+            Description: {
+              Text: '詳細情報',
+              Values: ['電解質溶液使用', 'シェーバー使用'],
+              Selection: 'anyornone'
+            }
+          },
+          // 2022 詳細調査追加
+          {
+            Text: '子宮内膜ポリープ摘出術',
+            Kcode: ['K872-03-01', 'K872-03-02'],
+            ValidTo: '2021'
           },
           {
             Text: '子宮内膜ポリープ摘出術',
-            Kcode: ['K872-03-01', 'K872-03-02']
+            Kcode: ['K872-03-01', 'K872-03-02'],
+            ValidFrom: '2022',
+            Description: {
+              Text: '詳細情報',
+              Values: ['電解質溶液使用', 'シェーバー使用'],
+              Selection: 'anyornone'
+            }
           },
           {
             Text: '子宮内腔癒着剥離術',
@@ -616,7 +661,8 @@ export default class ProcedureMaster extends Master {
             Text: '卵管鏡下卵管形成術',
             Description: {
               Text: '実施形態',
-              Values: ['卵管鏡単独', '腹腔鏡併用']
+              Values: ['腹腔鏡併用'],
+              Selection: 'anyornone'
             },
             ValidFrom: '2020',
             Kcode: ['K890-02-00']
@@ -650,19 +696,17 @@ export default class ProcedureMaster extends Master {
   }
 
   static getDescriptionTitle (item) {
-    return (this.getDescriptionObject(item))
-      ? this.getDescriptionObject(item).Text
-      : undefined
+    return this.getDescriptionObject(item)?.Text
   }
 
-  static getDescriptionValue (item) {
+  static getDescriptionOptions (item) {
     return (this.getDescriptionObject(item))
-      ? this.getDescriptionObject(item).Values.filter(value => value !== '$MULTI$')
+      ? this.getDescriptionObject(item).Values
       : []
   }
 
-  static isDescriptionMultiple (item) {
-    return this.getDescriptionObject(item).Values.findIndex(value => value === '$MULTI$') >= 0
+  static getDescriptionSelectionMode (item) {
+    return (this.getDescriptionObject(item)?.Selection || 'one')
   }
 
   // CloseMatch
