@@ -1,5 +1,5 @@
-export const LastUpdate = '2021-02-28'
-const defaultReference = '2021'
+export const LastUpdate = '2022-04-01'
+const defaultReference = '2022'
 
 export default class AEmaster {
   constructor (year) {
@@ -297,7 +297,7 @@ export default class AEmaster {
     // 合併症の種類毎に入力を確認
     if (!AE.Category) {
       // データがそもそもおかしい
-      throw Error('不正な合併症入力です.')
+      throw Error('合併症入力にカテゴリ設定のない不正なデータです.')
     }
     if (AE.Category === '出血') {
       // 出血量については他とvaludationが異なる
@@ -305,34 +305,34 @@ export default class AEmaster {
         throw Error('出血の入力内容が不正です.')
       }
     } else {
-      // 各合併症の設計オブジェクトを取得
-      const category = this.Category.find(element => element.Value === AE.Category)
-      if (category) {
+      // 合併症カテゴリの設計オブジェクトを取得
+      const categorySchema = this.Category.find(element => element.Value === AE.Category)
+      if (categorySchema) {
         // 合併症設計のコンポーネント毎に入力があるか検証
-        for (const component of category.Components) {
-          const key = this.Components[component].Element
-          if (AE[key] === undefined || AE[key].length === 0) {
-            if (component === category.Option) {
-              // 必須入力ではないもの以降は検証しない
+        for (const component of categorySchema.Components) {
+          const propertyName = this.Components[component].Element
+          if (AE[propertyName] === undefined || AE[propertyName].length === 0) {
+            if (component === categorySchema.Option) {
+              // 必須入力ではないもは検証しない
               break
             } else {
-              throw Error('合併症 ' + category.Text + 'の入力が不十分です.')
+              throw Error('合併症 ' + categorySchema.Text + 'の入力が不十分です.')
             }
           } else {
             // 入力があるので内容を検証する
             const items = this.Components[component].Items
               .flat(2)
               .map(item => (typeof item === 'object') ? item.Value : item)
-            for (const item of AE[key]) {
+            for (const item of AE[propertyName]) {
               if (items.indexOf(item) === -1) {
-                throw Error('合併症 ' + category.Text + 'の内容(' + item + ')がマスタにありません.')
+                throw Error('合併症 ' + categorySchema.Text + 'の内容(' + item + ')がマスタにありません.')
               }
             }
           }
         }
       } else {
         // 指定されたカテゴリがない
-        throw Error('不正な合併症入力です.')
+        throw Error('入力された合併症カテゴリ(' + AE.Category + ')に該当するカテゴリがマスタにありません.')
       }
     }
 

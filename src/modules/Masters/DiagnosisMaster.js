@@ -3,7 +3,7 @@ import { ZenToHan } from '@/modules/ZenHanChars'
 import { getCloseMatches } from 'difflib'
 
 export const LastUpdate = '2021-12-23'
-const defaultReference = '2021'
+const defaultReference = '2022'
 
 export default class DiagnosisMaster extends Master {
   constructor () {
