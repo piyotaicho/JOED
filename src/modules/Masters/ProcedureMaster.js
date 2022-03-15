@@ -700,9 +700,7 @@ export default class ProcedureMaster extends Master {
   }
 
   static getDescriptionOptions (item) {
-    return (this.getDescriptionObject(item))
-      ? this.getDescriptionObject(item).Values
-      : []
+    return (this.getDescriptionObject(item)?.Values || [])
   }
 
   static getDescriptionSelectionMode (item) {

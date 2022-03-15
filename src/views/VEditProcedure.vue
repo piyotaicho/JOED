@@ -186,12 +186,12 @@ export default {
   methods: {
     async ClearSelectedEntry () {
       this.selectedItemText = ''
-      this.$set(this.description, 'Title', '')
+      this.setDescriptionSection(undefined)
       this.$set(this.additionalProcedure, 'Title', '')
+      this.setDescriptionSection(undefined, this.additionalProcedure.description)
       await this.$nextTick()
     },
     async CategoryIsChanged () {
-      this.target = ''
       this.freewordText = ''
       this.candidates.splice(0)
       await this.ClearSelectedEntry()
@@ -199,9 +199,10 @@ export default {
       // 対象臓器が1つだけのときはそれを選択する
       if (this.TargetOrgans.length === 1) {
         this.target = this.TargetOrgans[0]
-        await this.$nextTick()
-
         this.SetCandidateListBySelection()
+      } else {
+        this.target = ''
+        await this.$nextTick()
       }
     },
 
@@ -227,45 +228,31 @@ export default {
       }
     },
 
-    setDescriptionSection (item) {
-      this.description.Value.splice(0)
+    setDescriptionSection (item, description = this.description) {
+      description.Value.splice(0)
+      description.Options.splice(0)
 
-      const title = Master.getDescriptionTitle(item)
-      if (title) {
-        this.$set(this.description, 'Title', title)
-        this.$set(this.description, 'SelectionMode', Master.getDescriptionSelectionMode(item))
+      if (Master.getDescriptionObject(item) !== undefined) {
+        this.$set(description, 'Title', Master.getDescriptionTitle(item))
+        this.$set(description, 'SelectionMode', Master.getDescriptionSelectionMode(item))
 
-        this.description.Options.splice(0)
-        const options = Master.getDescriptionOptions(item)
-        if (options && options.length > 0) {
-          this.description.Options.splice(0, 0, ...options)
-        }
+        description.Options.splice(0, 0, ...Master.getDescriptionOptions(item))
       } else {
-        this.$set(this.description, 'Title', '')
-        this.$set(this.description, 'SelectionMode', 'one')
+        this.$set(description, 'Title', '')
+        this.$set(description, 'SelectionMode', 'one')
       }
+      this.$nextTick()
     },
 
     setAdditionalProcedureSection (item) {
-      this.additionalProcedure.description.Value.splice(0)
-
       const additionalProcedure = Master.getAdditioninalProcedure(item)
       if (additionalProcedure) {
         this.$set(this.additionalProcedure, 'Title', additionalProcedure)
-
         const additionalItem = ProceduresTree.getItem(additionalProcedure, this.category, this.target, this.year)
-
-        this.$set(this.additionalProcedure.description, 'Title', Master.getDescriptionTitle(additionalItem))
-        this.$set(this.additionalProcedure.description, 'SelectionMode', Master.getDescriptionSelectionMode(additionalItem))
-
-        this.additionalProcedure.description.Options.splice(0)
-        const options = Master.getDescriptionOptions(additionalItem)
-        if (options && options.length > 0) {
-          this.additionalProcedure.description.Options.splice(0, 0, ...options)
-        }
+        this.setDescriptionSection(additionalItem, this.additionalProcedure.description)
       } else {
         this.$set(this.additionalProcedure, 'Title', '')
-        this.$set(this.description, 'SelectionMode', 'one')
+        this.setDescriptionSection(undefined, this.additionalProcedure.description)
       }
     },
 

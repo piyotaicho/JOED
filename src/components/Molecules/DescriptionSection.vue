@@ -3,7 +3,7 @@
     <div class="w30"></div>
     <div class="w20 selectionbox">
       <div>
-        <span>{{DescriptionContainer.Title}}</span>
+        <span>{{Container.Title}}</span>
       </div>
     </div>
     <div class="w40 selectionbox">
@@ -37,35 +37,35 @@ export default {
     LabeledCheckbox
   },
   model: {
-    prop: 'DescriptionContainer',
+    prop: 'Container',
     event: 'update'
   },
   props: {
-    DescriptionContainer: {
+    Container: {
       type: Object, // .Title, .SelectionMode, .Options[], .Value[]
       required: true
     }
   },
   computed: {
     Source () {
-      return this.DescriptionContainer.Options || []
+      return this.Container.Options || []
     },
     IsMultipleSelection () {
       return (
-        this.DescriptionContainer.SelectionMode === 'any' ||
-        this.DescriptionContainer.SelectionMode === 'anyornone'
+        this.Container.SelectionMode === 'any' ||
+        this.Container.SelectionMode === 'anyornone'
       )
     },
     SelectedValue: {
       get () {
-        return this.DescriptionContainer.Value ? this.DescriptionContainer.Value : []
+        return this.Container.Value ? this.Container.Value : []
       },
       set (value) {
-        const description = Object.assign({}, this.DescriptionContainer)
+        const description = Object.assign({}, this.Container)
         /*
-          Title: this.DescriptionContainer.Title,
-          Options: this.DescriptionContainer.Options,
-          Multi: this.DescriptionContainer.SelectionMode,
+          Title: this.Container.Title,
+          Options: this.Container.Options,
+          Multi: this.Container.SelectionMode,
           Value: []
         }
         */
