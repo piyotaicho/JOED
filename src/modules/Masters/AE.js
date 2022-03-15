@@ -35,19 +35,25 @@ export default class AEmaster {
           {
             Text: '気腹・潅流操作に伴う合併症・偶発症',
             Value: '気腹・潅流操作',
-            Components: ['Irrigation', 'Locations']
+            // 2022年より変更
+            Components:
+              (this.YearofMaster >= '2022'
+                ? ['Irrigation']
+                : ['Irrigation', 'Locations']
+              )
           },
           {
             Text: '機器の不具合・破損に伴う合併症・偶発症',
             Value: '機器の不具合・破損',
             Components: ['Devices', 'Injuries', 'Locations'],
-            Option: 'Injuries'
+            Optional: 'Injuries'
           },
           {
             Text: '機器の誤操作に伴う合併症・偶発症',
             Value: '機器の誤操作',
             Components: ['Devices', 'Injuries', 'Locations'],
-            Option: 'Injuries'
+            // 2022年より変更 内容の必須化
+            Optional: (this.YearofMaster >= '2022' ? '' : 'Injuries')
           },
           {
             Text: '術中使用した薬剤に伴う合併症',
@@ -90,7 +96,11 @@ export default class AEmaster {
                 { Text: '空気塞栓', Value: 'ガス塞栓(空気)' }
               ],
               ['水中毒'],
-              ['そのほか心臓障害', 'そのほか呼吸器障害', 'そのほか神経系障害'],
+              // 2022年より 表記変更
+              (this.YearofMaster <= '2021'
+                ? ['そのほか心臓障害', 'そのほか呼吸器障害', 'そのほか神経系障害']
+                : ['その他 循環器系障害', 'その他 呼吸器系障害', 'その他 神経系障害']
+              ),
               ['上記以外']
             ]
           },
@@ -193,9 +203,23 @@ export default class AEmaster {
               ],
               ['腹壁瘢痕・ポートサイトヘルニア'],
               ['尿管損傷', '尿路閉塞', '膀胱損傷'],
-              ['肺動脈血栓塞栓症', '深部静脈血栓症'],
-              ['気胸', '心肺停止', 'コンパートメント症候群'],
-              ['上肢神経障害', '下肢神経障害'],
+              // 2022年より変更・追加
+              ...(this.YearofMaster <= '2021'
+                ? [
+                  ['肺動脈血栓塞栓症', '深部静脈血栓症'],
+                  ['気胸', '心肺停止', 'コンパートメント症候群']
+                ]
+                : [
+                  ['肺動脈血栓塞栓症', '深部静脈血栓症', '心肺停止'],
+                  ['その他 循環器系障害'],
+                  ['気胸', 'その他 呼吸器系障害'],
+                  ['コンパートメント症候群', 'その他 骨軟部系障害']
+                ]
+              ),
+              ['上肢神経障害', '下肢神経障害',
+                // 2022年より追加
+                ...(this.YearofMaster >= '2022' ? ['その他 神経系障害'] : [])
+              ],
               ['リンパ浮腫', '非感染性リンパ嚢胞', '感染性リンパ嚢胞・後腹膜膿瘍'],
               ['子宮腔からの出血持続', '子宮腔の癒着', '卵管閉塞']
             ]
@@ -312,8 +336,8 @@ export default class AEmaster {
         for (const component of categorySchema.Components) {
           const propertyName = this.Components[component].Element
           if (AE[propertyName] === undefined || AE[propertyName].length === 0) {
-            if (component === categorySchema.Option) {
-              // 必須入力ではないもは検証しない
+            if (component === categorySchema.Optional) {
+              // 空白な必須入力ではないコンポーネントの出現以降は検証しない
               break
             } else {
               throw Error('合併症 ' + categorySchema.Text + 'の入力が不十分です.')
