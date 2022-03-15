@@ -91,7 +91,8 @@ export default class AEmaster {
             Element: 'Title',
             Items: [
               [
-                '皮下気腫',
+                // 2022年より 表記変更
+                (this.YearofMaster <= '2021' ? '皮下気腫' : '気腫'),
                 { Text: '炭酸ガス塞栓', Value: 'ガス塞栓(炭酸ガス)' },
                 { Text: '空気塞栓', Value: 'ガス塞栓(空気)' }
               ],
