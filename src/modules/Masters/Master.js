@@ -90,11 +90,11 @@ export default class Master {
   //
   // return: array
   Items (category = '', target, year = this.YearofMaster) {
-    if ((year).toString() === '') {
+    if (year === '') {
       year = this.YearofMaster
     }
-    if (year < 2019) {
-      year = 2019
+    if (year < '2019') {
+      year = '2019'
     }
 
     const temporaryArray = []
@@ -120,11 +120,11 @@ export default class Master {
   //
   // return: array
   ItemTexts (category = '', target, year = this.YearofMaster) {
-    if ((year).toString() === '') {
+    if (year === '') {
       year = this.YearofMaster
     }
-    if (year < 2019) {
-      year = 2019
+    if (year < '2019') {
+      year = '2019'
     }
 
     const temporaryArray = []
@@ -150,8 +150,11 @@ export default class Master {
   //
   // return: object
   getItem (text = '', category = '', target, year = this.YearofMaster) {
-    if (year < 2019) {
-      year = 2019
+    if (year === '') {
+      year = this.YearofMaster
+    }
+    if (year < '2019') {
+      year = '2019'
     }
 
     if (!text || !category) {

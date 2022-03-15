@@ -661,10 +661,21 @@ export default class ProcedureMaster extends Master {
             Text: '卵管鏡下卵管形成術',
             Description: {
               Text: '実施形態',
+              Values: ['卵管鏡単独', '腹腔鏡併用']
+            },
+            ValidFrom: '2020',
+            ValidTo: '2021',
+            Kcode: ['K890-02-00']
+          },
+          // 2022年 付随情報の選択様式変更
+          {
+            Text: '卵管鏡下卵管形成術',
+            Description: {
+              Text: '実施形態',
               Values: ['腹腔鏡併用'],
               Selection: 'anyornone'
             },
-            ValidFrom: '2020',
+            ValidFrom: '2022',
             Kcode: ['K890-02-00']
           }
         ]
