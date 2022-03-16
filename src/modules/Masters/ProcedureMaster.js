@@ -591,7 +591,7 @@ export default class ProcedureMaster extends Master {
             ValidFrom: '2022',
             Description: {
               Text: '詳細情報',
-              Values: ['電解質溶液使用', 'シェーバー使用'],
+              Values: ['電解質溶液使用', '細径子宮鏡使用', '鋏鉗子使用', 'シェーバー使用'],
               Selection: 'anyornone'
             }
           },
@@ -607,8 +607,8 @@ export default class ProcedureMaster extends Master {
             ValidFrom: '2022',
             Description: {
               Text: '詳細情報',
-              Values: ['電解質溶液使用', 'シェーバー使用'],
-              Selection: 'anyornone'
+              Values: ['レゼクトスコープ 電解質溶液使用', 'レゼクトスコープ 非電解質溶液使用', '細径子宮鏡使用', '細径子宮鏡・鋏鉗子使用', 'シェーバー使用'],
+              Selection: 'one'
             }
           },
           {
@@ -624,9 +624,21 @@ export default class ProcedureMaster extends Master {
             Text: '子宮内膜焼灼術',
             Kcode: ['K863-03-00']
           },
+          // 2022 詳細調査追加
           {
             Text: '胎盤ポリープ・胎盤遺残摘出術',
-            Kcode: ['K861-00-00', 'K872-03-01', 'K872-03-02']
+            Kcode: ['K861-00-00', 'K872-03-01', 'K872-03-02'],
+            ValidTo: '2021'
+          },
+          {
+            Text: '胎盤ポリープ・胎盤遺残摘出術',
+            Kcode: ['K861-00-00', 'K872-03-01', 'K872-03-02'],
+            ValidFrom: '2022',
+            Description: {
+              Text: '詳細情報',
+              Values: ['電解質溶液使用', '細径子宮鏡使用', '鋏鉗子使用', 'シェーバー使用'],
+              Selection: 'anyornone'
+            }
           },
           // 2020 新規
           {
