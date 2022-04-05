@@ -1,7 +1,7 @@
 <template>
   <div>
     <select v-model="SelectedValue">
-      <option v-for="(value, name, index) in Selections" :key="value" :value="name" :selected="index===0">{{name}}年 ({{value}}件)</option>
+      <option v-for="(value, name, index) in Selections" :key="name" :value="name" :selected="index===0">{{name}}年 ({{value}}件)</option>
       <option value="" v-if="acceptAll">すべて</option>
     </select>
   </div>
