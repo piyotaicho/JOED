@@ -52,11 +52,15 @@ function DateOfProcedure (CaseData, record, assignrule) {
   // CSVのフィールドから読み込み いろいろな日付フォーマットに一応対応 - HARDCODED
   if (ruleofField.column !== undefined) {
     const value = record[ruleofField.column].trim()
-    const datefields = value.match(/20(?<year>[0-9]{2})[年/-](?<month>0{0,1}[1-9]|1[0-2])[月/-](?<day>0{0,1}[1-9]|[12][0-9]|3[01])$/)
+    const datefields = value.match(/^(?<year>20[0-9]{2})[年/-](?<month>0?[1-9]|1[0-2])[月/-](?<day>0?[1-9]|[12][0-9]|3[01])日?$/)
     if (datefields === null) {
       throw new Error('ファイル中の日付の指定(' + value + ')が無効です.')
     }
-    CaseData.DateOfProcedure = '20' + datefields.groups.year + '-' + ('0' + datefields.groups.month).substr(-2) + '-' + ('0' + datefields.groups.day).substr(-2)
+    CaseData.DateOfProcedure = [
+      datefields.groups.year,
+      ('0' + datefields.groups.month).slice(-2),
+      ('0' + datefields.groups.day).slice(-2)
+    ].join('-')
   }
 
   // 指定の定数を設定
@@ -82,7 +86,7 @@ function BasicInformation (CaseData, record, assignrule) {
       if (compute !== 'ID') {
         throw new Error(fieldname + 'にはID以外の自動生成は設定できません.')
       }
-      return 'I-' + ('000000' + (++staticCount).toString(10)).substr(-6)
+      return 'I-' + ('000000' + (++staticCount).toString(10)).slice(-6)
     }
   )
   if (ID !== undefined) {
