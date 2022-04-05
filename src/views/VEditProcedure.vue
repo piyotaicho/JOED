@@ -3,11 +3,14 @@
     <EditSection @commit="CommitChanges" @discard="GoBack">
       <ThreePaneSelections
         Pane3Title="実施手術の候補"
-        :Pane1.sync="category" :Pane1Items="Categories"
+        :Pane1.sync="category"
+        :Pane1Items="Categories"
         @pane1change="CategoryIsChanged()"
-        :Pane2.sync="target" :Pane2Items="TargetOrgans"
+        :Pane2.sync="target"
+        :Pane2Items="TargetOrgans"
         @pane2change="SetCandidateListBySelection()"
-        :Pane3.sync="selectedItemText" :Pane3Items="candidates"
+        :Pane3.sync="selectedItemText"
+        :Pane3Items="candidates"
         @pane3change="OnCandidateSelected()"
         @pane3dblclick="CommitChanges()"
       />
@@ -28,21 +31,20 @@
             </div>
           </div>
           <div class="w40">
-            <div style="padding-left: 1rem;">
-              <span>{{additionalProcedure.Title}}</span>
+            <div style="padding-left: 1rem">
+              <span>{{ additionalProcedure.Title }}</span>
             </div>
           </div>
           <div class="w10"></div>
         </div>
-        <DescriptionSection
-          v-model="additionalProcedure.description"
-        />
+        <DescriptionSection v-model="additionalProcedure.description" />
       </template>
 
       <FreewordSection
         v-model="freewordText"
         :disabled="!UserEditingAllowed"
-        @click-search="SetCandidateListByFreeword"/>
+        @click-search="SetCandidateListByFreeword"
+      />
     </EditSection>
   </TheWrapper>
 </template>
@@ -82,7 +84,7 @@ export default {
     }
   },
   data () {
-    return ({
+    return {
       category: '',
       target: '',
       candidates: [],
@@ -103,7 +105,7 @@ export default {
           Value: []
         }
       }
-    })
+    }
   },
   created () {
     if (this.ItemIndex > -1) {
@@ -150,7 +152,11 @@ export default {
       ) {
         // Description -> description
         for (const index in this.ItemValue.Description) {
-          this.$set(this.description.Value, index, this.ItemValue.Description[index])
+          this.$set(
+            this.description.Value,
+            index,
+            this.ItemValue.Description[index]
+          )
         }
       }
 
@@ -158,15 +164,24 @@ export default {
         if (this.ItemValue?.AdditionalProcedure?.Description?.length > 0) {
           // AdditionalProcedure -> additionalProcedure
           for (const index in this.ItemValue.AdditionalProcedure.Description) {
-            this.$set(this.additionalProcedure.description.Value, index,
+            this.$set(
+              this.additionalProcedure.description.Value,
+              index,
               this.ItemValue.AdditionalProcedure.Description[index]
             )
           }
         } else {
-          // 空白値があれば選択
-          const defaultValue = this.additionalProcedure.description.Options.filter(item => item[item.length - 1] === '$')
-          if (defaultValue.length > 0) {
-            this.$set(this.additionalProcedure.description.Value, 0, defaultValue[0])
+          // additionalProcedureが空白の場合、有効なデフォルト設定があれば設定
+          const defaultValue =
+            this.additionalProcedure.description.Options.filter(
+              (item) => item.slice(-1) === '$'
+            )[0]
+          if (defaultValue) {
+            this.$set(
+              this.additionalProcedure.description.Value,
+              0,
+              defaultValue
+            )
           }
         }
       }
@@ -188,7 +203,10 @@ export default {
       this.selectedItemText = ''
       this.setDescriptionSection(undefined)
       this.$set(this.additionalProcedure, 'Title', '')
-      this.setDescriptionSection(undefined, this.additionalProcedure.description)
+      this.setDescriptionSection(
+        undefined,
+        this.additionalProcedure.description
+      )
       await this.$nextTick()
     },
     async CategoryIsChanged () {
@@ -207,13 +225,22 @@ export default {
     },
 
     async SetCandidateListBySelection () {
-      this.candidates = ProceduresTree.ItemTexts(this.category, this.target, this.year)
+      this.candidates = ProceduresTree.ItemTexts(
+        this.category,
+        this.target,
+        this.year
+      )
       await this.ClearSelectedEntry()
     },
 
     async SetCandidateListByFreeword () {
       if (this.UserEditingAllowed && this.freewordText) {
-        const matches = ProceduresTree.Matches(this.freewordText, this.category, this.target || '', this.year)
+        const matches = ProceduresTree.Matches(
+          this.freewordText,
+          this.category,
+          this.target || '',
+          this.year
+        )
         this.candidates.splice(0, this.candidates.length, ...matches)
         await this.ClearSelectedEntry()
       }
@@ -221,23 +248,40 @@ export default {
 
     async OnCandidateSelected () {
       if (this.selectedItemText) {
-        const masterItem = ProceduresTree.getItem(this.selectedItemText, this.category, this.target, this.year)
+        const masterItem = ProceduresTree.getItem(
+          this.selectedItemText,
+          this.category,
+          this.target,
+          this.year
+        )
         this.setDescriptionSection(masterItem)
         this.setAdditionalProcedureSection(masterItem)
         await this.$nextTick()
       }
     },
 
-    setDescriptionSection (item, description = this.description) {
+    setDescriptionSection (item, description = this.description, splicedefault = true) {
+      // descriptionの設定を削除
       description.Value.splice(0)
       description.Options.splice(0)
 
       if (Master.getDescriptionObject(item) !== undefined) {
+        // descriptionの設定をマスタからコピー
         this.$set(description, 'Title', Master.getDescriptionTitle(item))
-        this.$set(description, 'SelectionMode', Master.getDescriptionSelectionMode(item))
+        this.$set(
+          description,
+          'SelectionMode',
+          Master.getDescriptionSelectionMode(item)
+        )
 
-        description.Options.splice(0, 0, ...Master.getDescriptionOptions(item))
+        // 単独入力不可項目の対応
+        if (splicedefault) {
+          description.Options.splice(0, 0, ...Master.getDescriptionOptions(item).filter(option => option.slice(-1) !== '$'))
+        } else {
+          description.Options.splice(0, 0, ...Master.getDescriptionOptions(item))
+        }
       } else {
+        // descriptionの設定を完全に削除
         this.$set(description, 'Title', '')
         this.$set(description, 'SelectionMode', 'one')
       }
@@ -247,12 +291,27 @@ export default {
     setAdditionalProcedureSection (item) {
       const additionalProcedure = Master.getAdditioninalProcedure(item)
       if (additionalProcedure) {
+        // 付随種々の情報を展開
         this.$set(this.additionalProcedure, 'Title', additionalProcedure)
-        const additionalItem = ProceduresTree.getItem(additionalProcedure, this.category, this.target, this.year)
-        this.setDescriptionSection(additionalItem, this.additionalProcedure.description)
+
+        const additionalItem = ProceduresTree.getItem(
+          additionalProcedure,
+          this.category,
+          this.target,
+          this.year
+        )
+        this.setDescriptionSection(
+          additionalItem,
+          this.additionalProcedure.description,
+          false
+        )
       } else {
         this.$set(this.additionalProcedure, 'Title', '')
-        this.setDescriptionSection(undefined, this.additionalProcedure.description)
+
+        this.setDescriptionSection(
+          undefined,
+          this.additionalProcedure.description
+        )
       }
     },
 
@@ -261,23 +320,43 @@ export default {
 
       if (this.selectedItemText !== '') {
         // 選択された内容が最優先
-        // 選択されたものには適切な付随情報を収納
-        temporaryItem.Text = this.selectedItemText
-        temporaryItem.Chain = [this.category, ...(this.target !== '' ? [this.target] : [])]
 
-        const ditto = Master.getDittos(ProceduresTree.getItem(temporaryItem.Text, temporaryItem.Chain[0], temporaryItem.Chain[1], this.year))
+        // 選択内容を保存
+        temporaryItem.Text = this.selectedItemText
+        temporaryItem.Chain = [
+          this.category,
+          ...(this.target !== '' ? [this.target] : [])
+        ]
+
+        // 選択枝の重複確認情報を保存
+        const ditto = Master.getDittos(
+          ProceduresTree.getItem(
+            temporaryItem.Text,
+            temporaryItem.Chain[0],
+            temporaryItem.Chain[1],
+            this.year
+          )
+        )
         if (ditto) {
           temporaryItem.Ditto = [...ditto]
         }
 
-        // 術式付随情報
+        // 術式付随情報があれば保存
         if (this.description.Title !== '') {
-          if (this.description.Value.length === 0 &&
-          this.description.SelectionMode !== 'anyornone') {
+          // 選択枝にないものと単独保存対象外設定された項目(デフォルト)を除外
+          const descriptionValue = this.description.Value
+            .filter(item => item.slice(-1) !== '$')
+            .filter(item => this.description.Options.indexOf(item) !== -1)
+
+          if (
+            descriptionValue.length === 0 &&
+            this.description.SelectionMode !== 'anyornone'
+          ) {
+            // 選択必須だが選択がない
+            await Popups.information('詳細情報の入力が不足しています.')
             return
           }
-          // 登録対象外項目を除外
-          const descriptionValue = this.description.Value.filter(item => item.substr(-1) !== '$')
+
           if (descriptionValue.length > 0) {
             temporaryItem.Description = [...descriptionValue]
           }
@@ -285,12 +364,21 @@ export default {
 
         // 従たる術式に関する情報
         if (this.additionalProcedure.Title !== '') {
-          if (this.additionalProcedure.description.length === 0 &&
-          this.additionalProcedure.description.SelectionMode !== 'anyornone') {
+          if (
+            this.additionalProcedure.description.length === 0 &&
+            this.additionalProcedure.description.SelectionMode !== 'anyornone'
+          ) {
+            // 選択必須だが選択がない
+            await Popups.information(
+              '付随術式に関する情報の入力が不足しています.'
+            )
             return
           }
-          // descriptionと同じロジック
-          const descriptionValue = this.additionalProcedure.description.Value.filter(item => item.substr(-1) !== '$')
+          // 保存対象外設定された項目(デフォルト)を除外
+          const descriptionValue =
+            this.additionalProcedure.description.Value.filter(
+              (item) => item.slice(-1) !== '$'
+            )
           if (descriptionValue.length > 0) {
             temporaryItem.AdditionalProcedure = {
               Text: this.additionalProcedure.Title,
@@ -304,17 +392,25 @@ export default {
           this.SetCandidateListByFreeword()
           if (
             this.candidates.length !== 0 &&
-            await Popups.confirm('実施手術の候補があります,選択を優先してください.') === false
+            (await Popups.confirm(
+              '実施手術の候補があります,選択を優先してください.'
+            )) === false
           ) {
             return
           }
           // 候補に入力と同じものがある場合は何が何でも選択させる.
           if (this.candidates.indexOf(this.freewordText.trim()) !== -1) {
-            await Popups.information('自由入力の内容が候補にありますので選択してください.')
+            await Popups.information(
+              '自由入力の内容が候補にありますので選択してください.'
+            )
             return
           }
           // 最終確認
-          if (await Popups.confirm('直接入力した実施術式の登録は可能な限り控えてください.') === false) {
+          if (
+            (await Popups.confirm(
+              '直接入力した実施術式の登録は可能な限り控えてください.'
+            )) === false
+          ) {
             return
           }
 

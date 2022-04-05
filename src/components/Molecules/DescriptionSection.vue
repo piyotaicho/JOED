@@ -3,7 +3,7 @@
     <div class="w30"></div>
     <div class="w20 selectionbox">
       <div>
-        <span>{{Container.Title}}</span>
+        <span>{{ Container.Title }}</span>
       </div>
     </div>
     <div class="w40 selectionbox">
@@ -11,7 +11,7 @@
         <template v-for="item of Source">
           <div :key="item">
             <LabeledCheckbox v-model="SelectedValue" :value="item" :key="item">
-              {{spliceMarker(item)}}
+              {{ ItemCaption(item) }}
             </LabeledCheckbox>
           </div>
         </template>
@@ -19,7 +19,7 @@
       <template v-else>
         <select v-model="SelectedValue[0]">
           <option v-for="item of Source" :key="item" :value="item">
-            {{spliceMarker(item)}}
+            {{ ItemCaption(item) }}
           </option>
         </select>
       </template>
@@ -51,6 +51,7 @@ export default {
       return this.Container.Options || []
     },
     IsMultipleSelection () {
+      // .SelectionModeは'one'がデフォルトで設定されていないことも想定
       return (
         this.Container.SelectionMode === 'any' ||
         this.Container.SelectionMode === 'anyornone'
@@ -61,33 +62,31 @@ export default {
         return this.Container.Value ? this.Container.Value : []
       },
       set (value) {
-        const description = Object.assign({}, this.Container)
-        /*
-          Title: this.Container.Title,
-          Options: this.Container.Options,
-          Multi: this.Container.SelectionMode,
-          Value: []
-        }
-        */
-        if (value === undefined || typeof value === 'string') {
-          // SELECTからのイベント
-          if (value) {
-            description.Value = [value]
-          }
-        }
-        if (Array.isArray(value)) {
-          // CHECKBOXからのイベント
-          if (value.length > 0 || description.SelectionMode === 'anyornone') {
-            description.Value = [...value]
-          }
-        }
-        this.$emit('update', description)
+        this.EmitValue(value)
       }
     }
   },
   methods: {
-    spliceMarker (str) {
+    ItemCaption (str) {
       return str.replace(/\[.+\]/g, '').replace(/\$$/, '')
+    },
+    EmitValue (value) {
+      const newvalue = []
+      if (value === undefined || typeof value === 'string') {
+        // SELECTから
+        if (value && this.Container.Options.indexOf(value) !== -1) {
+          newvalue.push(value)
+        }
+      }
+      if (Array.isArray(value)) {
+        // CHECKBOXから
+        const filtedvalue = value.filter(element => this.Container.Options.indexOf(element) !== -1)
+        if (filtedvalue.length > 0 || newvalue.SelectionMode === 'anyornone') {
+          newvalue.push(...filtedvalue)
+        }
+      }
+      const newContainer = Object.assign(this.Container, { Value: newvalue })
+      this.$emit('update', newContainer)
     }
   }
 }
