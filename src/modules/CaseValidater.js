@@ -236,10 +236,8 @@ export async function ValidateProcedures (item, year) {
           }
           // マスタに存在する場合、Descriptionを確認
           const masterItem = master.getItem(record.Text, record?.Chain?.[0], '', year)
-          console.dir(masterItem)
           if (masterItem?.Description) {
             const masterDescription = masterItem.Description
-            console.dir(record)
             if (record?.Description === undefined) {
               // Descriptionの設定がない
               if (masterDescription.Selection !== 'anyornone') {
