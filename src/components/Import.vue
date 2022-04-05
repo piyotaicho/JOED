@@ -47,7 +47,7 @@ export default {
     return ({
       Processing: false,
       Committing: 0,
-      ImportMode: 'merge',
+      ImportMode: 'csv',
       FileExtentions: {
         json: '.json',
         csv: '.csv,.mer',
