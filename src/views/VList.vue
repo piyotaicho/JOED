@@ -13,8 +13,8 @@
 
       <CaseDocument v-for="uid in Uids" :key="uid" :uid="uid"/>
       <InfiniteLoading @infinite="HandleInfinite" :identifier="DisplayIdentifier" ref="infiniteloading">
-        <span slot="no-more"></span>
-        <span slot="no-results"></span>
+        <template v-slot:no-more><span></span></template>
+        <template v-slot:no-results><span></span></template>
       </InfiniteLoading>
     </div>
 

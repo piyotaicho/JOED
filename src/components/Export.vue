@@ -46,9 +46,11 @@
       <div v-show="readyToExport">
         <el-dropdown split-button type="primary" @click="Download()">
           出力先を指定してファイルの出力
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item @click.native="showPreview = true">出力先結果の確認</el-dropdown-item>
-          </el-dropdown-menu>
+          <template v-slot:dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item @click.native="showPreview = true">出力先結果の確認</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
         </el-dropdown>
       </div>
     </el-collapse-transition>

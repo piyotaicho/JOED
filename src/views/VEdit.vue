@@ -76,14 +76,16 @@
               @command="CommitCase">
               編集内容を保存 <i class="el-icon-loading" v-show="processing"/>
 
-              <el-dropdown-menu slot="dropdown">
-                <template v-if="isEditingExistingItem">
-                  <el-dropdown-item command="next" :disabled="!nextUid">保存して次へ</el-dropdown-item>
-                  <el-dropdown-item command="prev" :disabled="!prevUid">保存して前へ</el-dropdown-item>
-                </template>
-                <el-dropdown-item command="new">保存して新規作成</el-dropdown-item>
-                <el-dropdown-item command="temporarynew">一時保存して新規作成</el-dropdown-item>
-              </el-dropdown-menu>
+              <template v-slot:dropdown>
+                <el-dropdown-menu>
+                  <template v-if="isEditingExistingItem">
+                    <el-dropdown-item command="next" :disabled="!nextUid">保存して次へ</el-dropdown-item>
+                    <el-dropdown-item command="prev" :disabled="!prevUid">保存して前へ</el-dropdown-item>
+                  </template>
+                  <el-dropdown-item command="new">保存して新規作成</el-dropdown-item>
+                  <el-dropdown-item command="temporarynew">一時保存して新規作成</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
 
             </el-dropdown>
           </div>

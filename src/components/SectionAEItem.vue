@@ -1,8 +1,8 @@
 <template>
   <el-tooltip placement="top-start" :open-delay="700">
-    <div slot="content">
+    <template v-slot:content>
       <DescriptionOfAE :item="item"/>
-    </div>
+    </template>
 
     <div class="section-item" tabindex="0" @keydown.delete="RemoveItem">
       <span class="w20">{{ item.Category }}</span>

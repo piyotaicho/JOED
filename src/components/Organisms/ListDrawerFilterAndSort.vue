@@ -60,9 +60,11 @@
     <div class="menu-item-bottom">
       <el-dropdown split-button type="primary" @click="Apply()">
         設定
-        <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item @click.native="Store()">現在の表示設定を規定として保存</el-dropdown-item>
-        </el-dropdown-menu>
+        <template v-slot:dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item @click.native="Store()">現在の表示設定を規定として保存</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
       </el-dropdown>
 
       <el-button type="success" style="margin-left: 0.715rem;" @click="Revert()">規定の設定に戻す</el-button>

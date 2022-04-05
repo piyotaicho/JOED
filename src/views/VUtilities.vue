@@ -2,7 +2,9 @@
   <div>
     <el-tabs v-model="SelectedTab" tab-position="left">
       <el-tab-pane name="list">
-        <span slot="label"><i class="el-icon-d-arrow-left" /> 戻る</span>
+        <template v-slot:label>
+          <span><i class="el-icon-d-arrow-left" /> 戻る</span>
+        </template>
       </el-tab-pane>
       <el-tab-pane label="データ出力" name="export">
         <Export/>
