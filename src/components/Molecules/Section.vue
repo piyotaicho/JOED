@@ -104,7 +104,8 @@ div.section
       margin-bottom: 2px
       list-style: none
       .handle
-        margin-right: 0.7rem
+        font-size: 1.2rem
+        margin: auto 0.7rem auto 0
       .edit-button
         position: absolute
         font-size: 1.25rem

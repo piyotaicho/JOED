@@ -104,6 +104,7 @@ div.QueryPaneListItemLabel
   white-space: nowrap
   overflow-x: hidden
   text-overflow: ellipsis
+
 div.QueryPaneListItemLabelContents
   display: flex
   flex-direction: row
@@ -115,10 +116,11 @@ div.QueryPaneListItemLabelContents
     text-overflow: ellipsis
     &:nth-child(2)
       text-align: right
+
 div.QueryPaneListItemEraseButton
   position: relative
-  width: 0.8rem
-  height: 0.8rem
+  width: 1rem
+  height: 1rem
   flex-grow: 0
   margin: auto 0.8rem
   padding: 0
@@ -127,8 +129,10 @@ div.QueryPaneListItemEraseButton
   overflow: hidden
   &::after
     position: absolute
-    top: -0.32rem
+    margin: auto
     color: grey
+    // font-family: 'element-icons' !important
     font-size: 1rem
-    content: '\00d7'
+    // content: '\e6db'
+    content: '*'
 </style>

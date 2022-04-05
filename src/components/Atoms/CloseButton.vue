@@ -1,5 +1,5 @@
 <template>
-  <div class="closebutton" @keypress.enter="Click" @click="Click" :tabindex="this.tabindex">&#xe6db;</div>
+  <div class="closebutton" @keypress.enter="Click" @click="Click" :tabindex="this.tabindex"></div>
 </template>
 
 <script>
@@ -24,8 +24,13 @@ div.closebutton
   top: 1rem
   width: 1rem
   height: 1rem
-  font-family: 'element-icons'
-  font-size: 1.2rem
-  &:hover
+  &::after
+    position: absolute
+    margin: auto
+    color: grey
+    font-family: 'element-icons' !important
+    font-size: 1.2rem
+    content: '\e6db'
+  &:hover::after
     font-weight: bold
 </style>
