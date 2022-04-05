@@ -80,11 +80,16 @@ export default {
       }
       if (Array.isArray(value)) {
         // CHECKBOXから
-        const filtedvalue = value.filter(element => this.Container.Options.indexOf(element) !== -1)
+
+        // Optionsからvalueに該当するものをピックアップ > Optionsの順番を維持して保持
+        const filtedvalue = this.Container.Options.filter(
+          (option) => value.indexOf(option) !== -1
+        )
         if (filtedvalue.length > 0 || newvalue.SelectionMode === 'anyornone') {
           newvalue.push(...filtedvalue)
         }
       }
+
       const newContainer = Object.assign(this.Container, { Value: newvalue })
       this.$emit('update', newContainer)
     }

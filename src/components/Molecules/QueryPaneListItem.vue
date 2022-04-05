@@ -15,7 +15,7 @@
         </div>
       </slot>
     </div>
-    <div class="QueryPaneListItemEraseButton" v-if="erasable" @click="erase"/>
+    <div class="QueryPaneListItemEraseButton" v-if="erasable" @click="erase"></div>
   </div>
 </template>
 
@@ -119,20 +119,22 @@ div.QueryPaneListItemLabelContents
 
 div.QueryPaneListItemEraseButton
   position: relative
-  width: 1rem
-  height: 1rem
+  width: 1.2rem
+  height: 1.2rem
   flex-grow: 0
-  margin: auto 0.8rem
+  margin: auto 0.8rem auto 0
   padding: 0
   border: 1px solid grey
   background: white
   overflow: hidden
   &::after
     position: absolute
-    margin: auto
-    color: grey
-    // font-family: 'element-icons' !important
+    margin: auto 0
+    padding-top: 0.05rem
+    padding-left: 0.05rem
+    box-sizing: border-box
+    color: black
+    font-family: 'element-icons' !important
     font-size: 1rem
-    // content: '\e6db'
-    content: '*'
+    content: '\e6db'
 </style>

@@ -16,7 +16,9 @@
       :CSV="CSV"
       :CSVhasTitleRow="CSVhasTitle"
       :ruleset="RuleSet"
-      @change="SetRuleset"
+      @change="updateRuleset"
+      @set="setRuleSet"
+      @delete="deleteRuleSet"
       />
       <LabeledCheckbox v-model="ReplaceStrings" :value="false">診断名称・実施手術の入力に対して基本的な置換操作を行う</LabeledCheckbox>
       <el-tooltip placement="top-start" :tabindex="-1">
@@ -71,14 +73,14 @@ export default {
       records: []
     })
   },
-  created () {
-    const preload = JSON.parse(this.preservedRule)
-    if (Object.keys(preload).length > 0) {
-      for (const key in preload) {
-        this.$set(this.RuleSet, key, Object.assign({}, preload[key]))
-      }
-    }
-  },
+  // created () {
+  //   const preload = JSON.parse(this.preservedRule)
+  //   if (Object.keys(preload).length > 0) {
+  //     for (const key in preload) {
+  //       this.$set(this.RuleSet, key, Object.assign({}, preload[key]))
+  //     }
+  //   }
+  // },
   watch: {
     stream () {
       this.ResetState()
@@ -138,7 +140,7 @@ export default {
     }
   },
   methods: {
-    ResetState () {
+    async ResetState () {
       this.Processing = -1
       this.LogMessages.splice(0)
       this.records.splice(0)
@@ -147,10 +149,13 @@ export default {
       } catch (error) {
         Popups.alert(error.message)
       }
-      this.SetRuleset({})
-    },
-    SetRuleset (rule) {
-      this.$set(this, 'RuleSet', rule)
+      if (this.preservedRule !== '{}' && await Popups.confirmYesNo('保存されたルールを利用しますか?')) {
+        this.updateRuleset(JSON.parse(this.preservedRule))
+      } else {
+        if (Object.keys(this.RuleSet).length > 0 && await Popups.confirmYesNo('現在のルールを利用しますか?') === false) {
+          this.updateRuleset({})
+        }
+      }
     },
     async ProcessStream () {
       this.LogMessages.splice(0)
@@ -195,7 +200,7 @@ export default {
           } catch (error) {
             console.warn(`On line ${index + 1} - ${error.message}.`)
 
-            if (!(await Popups.confirmYesNo('指定されたファイル中に不適切なフィールドが認められました.\n残りの処理を続行しますか?'))) {
+            if (!(await Popups.confirmYesNo(error.message + '\n残りの処理を続行しますか?'))) {
               throw new Error(`${index + 1}行目の不適切なフィールドにより変換を中止しました.`)
             }
           }
@@ -208,6 +213,21 @@ export default {
       } catch (error) {
         Popups.alert(error.message)
       }
+    },
+    async updateRuleset (rule) {
+      for (const key of Object.keys(this.RuleSet)) {
+        this.deleteRuleSet(key)
+      }
+      for (const key of Object.keys(rule)) {
+        this.setRuleSet(key, rule[key])
+      }
+      await this.$nextTick()
+    },
+    async setRuleSet (key, value) {
+      this.$set(this.RuleSet, key, value)
+    },
+    async deleteRuleSet (key) {
+      this.$delete(this.RuleSet, key)
     },
     StoreRuleset () {
       this.$emit('store', JSON.stringify(this.RuleSet))

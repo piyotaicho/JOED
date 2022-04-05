@@ -73,25 +73,28 @@ export default {
   },
   data () {
     return {
-      recordAssignment: {},
+      // recordAssignment: {},
       source: 'CSV',
       previewIndex: -1
     }
   },
-  created () {
-    // デフォルトルールセットを設定
-    if (Object.keys(this.ruleset).length > 0) {
-      for (const key in this.ruleset) {
-        this.recordAssignment[key] = Object.assign({}, this.ruleset[key])
-      }
-    }
-  },
-  watch: {
-    recordAssignment () {
-      this.$emit('change', this.recordAssignment)
-    }
-  },
+  // created () {
+  //   // デフォルトルールセットを設定
+  //   if (Object.keys(this.ruleset).length > 0) {
+  //     for (const key in this.ruleset) {
+  //       this.recordAssignment[key] = Object.assign({}, this.ruleset[key])
+  //     }
+  //   }
+  // },
+  // watch: {
+  //   recordAssignment () {
+  //     this.$emit('change', this.recordAssignment)
+  //   }
+  // },
   computed: {
+    recordAssignment () {
+      return this.ruleset
+    },
     listFunctions () {
       return Object.keys(this.functions)
     },
@@ -146,7 +149,8 @@ export default {
     },
     removeAssignment (index) {
       if (this.recordAssignment[this.records[index]]) {
-        this.$delete(this.recordAssignment, this.records[index])
+        // this.$delete(this.recordAssignment, this.records[index])
+        this.$emit('delete', this.records[index])
       }
     },
     async itemDropped (index, dragevent) {
@@ -167,10 +171,12 @@ export default {
               inputvalue = await prompt(data.title)
             }
             if (inputvalue !== null) {
-              this.$set(this.recordAssignment, this.records[index], { constants: inputvalue })
+              // this.$set(this.recordAssignment, this.records[index], { constants: inputvalue })
+              this.$emit('set', this.records[index], { constants: inputvalue })
             }
           } else {
-            this.$set(this.recordAssignment, this.records[index], data)
+            // this.$set(this.recordAssignment, this.records[index], data)
+            this.$emit('set', this.records[index], data)
           }
         }
       } catch {

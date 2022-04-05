@@ -1,10 +1,10 @@
 import ProcedureTimeSelections from '@/modules/ProcedureTimes'
 import { DateFormat } from '@/modules/CaseValidater'
-import { CharacterReplacer, Migrate2019to2020 } from '@/modules/ImportMergeV4'
+import { Migrate2019to2020 } from '@/modules/ImportMergeV4'
 
 let staticCount = 0
 
-export function CreateDocument (record = [], assignrule = {}) {
+export function CreateDocument (record = [], ruleset = {}) {
   // インポートデータのフラグとメッセージ
   const CaseData = {
     Imported: true,
@@ -12,17 +12,17 @@ export function CreateDocument (record = [], assignrule = {}) {
   }
 
   // DateOfProcedue と ID はレコード構成の最低限必須項目
-  DateOfProcedure(CaseData, record, assignrule)
-  BasicInformation(CaseData, record, assignrule)
-  ProcedureTime(CaseData, record, assignrule)
-  DiagnosesAndProcedures(CaseData, record, assignrule)
-  AEs(CaseData, record, assignrule)
+  DateOfProcedure(CaseData, record, ruleset)
+  BasicInformation(CaseData, record, ruleset)
+  ProcedureTime(CaseData, record, ruleset)
+  DiagnosesAndProcedures(CaseData, record, ruleset)
+  AEs(CaseData, record, ruleset)
 
   return CaseData
 }
 
-function getvalueByRule (fieldname, record, assignrule, generator = undefined) {
-  const ruleofField = assignrule[fieldname]
+function getvalueByRule (fieldname, record, ruleset, generator = undefined) {
+  const ruleofField = ruleset[fieldname]
   if (ruleofField === undefined) {
     return undefined
   }
@@ -44,8 +44,8 @@ function getvalueByRule (fieldname, record, assignrule, generator = undefined) {
   }
 }
 
-function DateOfProcedure (CaseData, record, assignrule) {
-  const ruleofField = assignrule['手術日 (必須)']
+function DateOfProcedure (CaseData, record, ruleset) {
+  const ruleofField = ruleset['手術日 (必須)']
   if (ruleofField === undefined) {
     throw new Error('手術日は必須入力項目です.')
   }
@@ -77,11 +77,11 @@ function DateOfProcedure (CaseData, record, assignrule) {
   }
 }
 
-function BasicInformation (CaseData, record, assignrule) {
+function BasicInformation (CaseData, record, ruleset) {
   // 患者属性データの設定
 
   // 必須項目である患者IDを設定もしくは生成
-  const ID = getvalueByRule('ID (必須)', record, assignrule,
+  const id = getvalueByRule('ID (必須)', record, ruleset,
     (fieldname, compute) => {
       if (compute !== 'ID') {
         throw new Error(fieldname + 'にはID以外の自動生成は設定できません.')
@@ -89,33 +89,33 @@ function BasicInformation (CaseData, record, assignrule) {
       return 'I-' + ('000000' + (++staticCount).toString(10)).slice(-6)
     }
   )
-  if (ID !== undefined) {
-    CaseData.PatientId = ID
+  if (id !== undefined) {
+    CaseData.PatientId = id
   } else {
     throw new Error('IDは必須入力項目です.')
   }
 
   // 非必須フィールドの設定
-  const name = getvalueByRule('患者名', record, assignrule)
+  const name = getvalueByRule('患者名', record, ruleset)
   if (name !== undefined) {
     CaseData.Name = name
   }
-  const age = (getvalueByRule('年齢', record, assignrule) || '').match(/\d+/)
+  const age = (getvalueByRule('年齢', record, ruleset) || '').match(/\d+/)
   if (age !== null) {
     CaseData.Age = Number(age)
   }
-  const JSOGid = getvalueByRule('腫瘍登録番号', record, assignrule)
+  const JSOGid = getvalueByRule('腫瘍登録番号', record, ruleset)
   if (JSOGid !== undefined) {
     CaseData.JSOGid = JSOGid
   }
-  const NCDid = getvalueByRule('NCD症例識別コード', record, assignrule)
+  const NCDid = getvalueByRule('NCD症例識別コード', record, ruleset)
   if (NCDid !== undefined) {
     CaseData.NCDid = NCDid
   }
 }
 
-function ProcedureTime (CaseData, record, assignrule) {
-  const operationtime = getvalueByRule('手術時間', record, assignrule)
+function ProcedureTime (CaseData, record, ruleset) {
+  const operationtime = getvalueByRule('手術時間', record, ruleset)
   if (operationtime !== undefined) {
     const timestrmatches = operationtime.match(/\s*(\d+)(分{0,1}(以上|(未満|まで))){0,1}/)
     if (timestrmatches !== null) {
@@ -125,108 +125,121 @@ function ProcedureTime (CaseData, record, assignrule) {
   }
 }
 
-function DiagnosesAndProcedures (CaseData, record, assignrule) {
-  CaseData.Diagnoses = []
-  CaseData.Procedures = []
-  const diagnosisFields = ['手術診断1', '手術診断2', '手術診断3', '手術診断4']
-  const procedureFields = ['実施手術1', '実施手術2', '実施手術3', '実施手術4']
+function DiagnosesAndProcedures (CaseData, record, ruleset) {
+  Diagnoses(CaseData, record, ruleset)
+  Procedures(CaseData, record, ruleset)
 
-  for (const field of diagnosisFields) {
-    const diagnosis = getvalueByRule(field, record, assignrule)
-    if (diagnosis) {
-      const temporaryfield = { Text: CharacterReplacer(diagnosis) }
-
-      const benignormalignancy = getvalueByRule(field + '良性/悪性', record, assignrule)
-
-      // 診断のカテゴリにロボットはなく腹腔鏡に集約している
-      const category = (
-        getvalueByRule(field + 'カテゴリ', record, assignrule) ||
-        ''
-      ).replace('ロボット', '腹腔鏡')
-      if (category === '') {
-        throw new Error(field + 'に対するカテゴリの指定が必要です.')
-      }
-
-      // 良悪性のフィールドが利用されていない もしくは
-      // 非悪性の場合はカテゴリをそのまま採用
-      if (
-        benignormalignancy === undefined ||
-        !benignormalignancy.includes('悪性')
-      ) {
-        temporaryfield.Chain = [category]
-      } else {
-        // 悪性が別フィールドで保持されている場合に対応
-
-        // すでにカテゴリに悪性が含まれている場合はそのまま通過
-        // 卵管鏡・子宮鏡に悪性を設定している可能性も考慮
-        if (
-          category.includes('悪性') ||
-          category === '子宮鏡' ||
-          category === '卵管鏡'
-        ) {
-          temporaryfield.Chain = [category]
-        } else {
-          temporaryfield.Chain = ['腹腔鏡悪性']
-        }
-      }
-      CaseData.Diagnoses.push(temporaryfield)
-    }
-  }
-
-  for (const field of procedureFields) {
-    const procedure = getvalueByRule(field, record, assignrule)
-    if (procedure) {
-      const temporaryfield = { Text: CharacterReplacer(procedure) }
-
-      const benignormalignancy = getvalueByRule(field + '良性/悪性', record, assignrule)
-      const category = getvalueByRule(field + 'カテゴリ', record, assignrule)
-      if (category === undefined) {
-        throw new Error(field + 'に対するカテゴリの指定が必要です.')
-      }
-      // 良悪性のフィールドが利用されていない もしくは
-      // 非悪性の場合はカテゴリをそのまま採用
-      if (
-        benignormalignancy === undefined ||
-        !benignormalignancy.includes('悪性')
-      ) {
-        temporaryfield.Chain = [category]
-      } else {
-        // 悪性が別フィールドで保持されている場合に対応
-
-        // すでにカテゴリに悪性が含まれている場合はそのまま通過
-        // 卵管鏡・子宮鏡に悪性を設定している可能性も考慮
-        if (
-          category.includes('悪性') ||
-          category === '子宮鏡' ||
-          category === '卵管鏡'
-        ) {
-          temporaryfield.Chain = [category]
-        } else {
-          // ロボット悪性 or 腹腔鏡悪性
-          if (category.includes('ロボット')) {
-            temporaryfield.Chain = ['ロボット悪性']
-          } else {
-            temporaryfield.Chain = ['腹腔鏡悪性']
-          }
-        }
-      }
-      CaseData.Procedures.push(temporaryfield)
-    }
-  }
-
-  // 主たる術式からカテゴリを設定
-  if (CaseData.Procedures[0]) {
-    CaseData.TypeOfProcedure = CaseData.Procedures[0].Chain[0]
+  // 主たる診断からカテゴリを設定(2021年より診断優位をデフォルトとした)
+  if (CaseData.Diagnoses[0]) {
+    CaseData.TypeOfProcedure = CaseData.Diagnoses[0].Chain[0]
   }
 }
 
-function AEs (CaseData, record, assignrule) {
-  const hasAE = getvalueByRule('合併症の有無', record, assignrule)
+function Diagnoses (CaseData, record, ruleset) {
+  CaseData.Diagnoses = []
+  const diagnosisFields = ['手術診断1', '手術診断2', '手術診断3', '手術診断4']
+  for (const field of diagnosisFields) {
+    const diagnosis = getvalueByRule(field, record, ruleset)
+    if (diagnosis) {
+      // 実施術式の取得
+      const temporaryfield = { Text: ConvertCharacters(diagnosis) }
+
+      // カテゴリ指定を取得
+      let category = getvalueByRule(field + 'カテゴリ', record, ruleset)
+      // 良悪性区分フィールドの取得
+      let benignormalignancy = getvalueByRule(field + '良性/悪性', record, ruleset)
+
+      // カテゴリと良悪性区分の正規化
+      if (category === undefined) {
+        throw new Error(field + 'に対するカテゴリの指定が必要です.')
+      } else {
+        // 良悪性区分が未指定の場合 カテゴリに含まれていないかを検索
+        if (benignormalignancy === undefined) {
+          const guess = category.search(/[良悪]性/)
+          if (guess !== -1) {
+            benignormalignancy = category.slice(guess, guess + 1) === '良' ? '良性' : '悪性'
+          }
+        }
+
+        // カテゴリの正規化
+        if (category.search('腹腔鏡') !== -1 || category.search('ロボット') !== -1) {
+          category = benignormalignancy !== '悪性' ? '腹腔鏡' : '腹腔鏡悪性'
+        } else if (category.search('子宮鏡') !== -1) {
+          category = '子宮鏡'
+        } else if (category.search('卵管鏡') !== -1) {
+          category = '卵管鏡'
+        } else {
+          throw new Error(field + 'のカテゴリに指定された値(' + category + ')が不正です.カテゴリ指定には腹腔鏡,腹腔鏡悪性,ロボット,ロボット悪性,子宮鏡,卵管鏡のいずれか用いてください.')
+        }
+      }
+
+      temporaryfield.Chain = [category]
+      CaseData.Diagnoses.push(temporaryfield)
+    }
+  }
+}
+
+function Procedures (CaseData, record, ruleset) {
+  CaseData.Procedures = []
+  const procedureFields = ['実施手術1', '実施手術2', '実施手術3', '実施手術4']
+  for (const field of procedureFields) {
+    const procedure = getvalueByRule(field, record, ruleset)
+    if (procedure) {
+      const temporaryfield = {}
+
+      // 実施術式の取得
+      let text = ConvertCharacters(procedure)
+      if (text.search(/\[.*\]/) !== -1) {
+        // 1.3- [] 内にカンマ区切りで保持された付随情報を展開する
+        const descriptions = text.slice(text.search(/\[/) + 1, text.search(/\]/)).split(/\w*,\w*/).map(item => item.trim())
+        if (descriptions.length > 0) {
+          temporaryfield.Description = descriptions
+        }
+        text = text.slice(0, text.search(/\[/) - 1).trim()
+      }
+      temporaryfield.Text = text
+
+      // カテゴリ指定を取得
+      let category = getvalueByRule(field + 'カテゴリ', record, ruleset)
+      // 良悪性区分フィールドの取得
+      let benignormalignancy = getvalueByRule(field + '良性/悪性', record, ruleset)
+
+      // カテゴリと良悪性区分の正規化
+      if (category === undefined) {
+        throw new Error(field + 'に対するカテゴリの指定が必要です.')
+      } else {
+        // 良悪性区分が未指定の場合 カテゴリに含まれていないかを検索
+        if (benignormalignancy === undefined) {
+          const guess = category.search(/[良悪]性/)
+          if (guess !== -1) {
+            benignormalignancy = category.slice(guess, guess + 1) === '良' ? '良性' : '悪性'
+          }
+        }
+
+        // カテゴリの正規化
+        if (category.search('腹腔鏡') !== -1) {
+          category = benignormalignancy !== '悪性' ? '腹腔鏡' : '腹腔鏡悪性'
+        } else if (category.search('ロボット') !== -1) {
+          category = benignormalignancy !== '悪性' ? 'ロボット' : 'ロボット悪性'
+        } else if (category.search('子宮鏡') !== -1) {
+          category = '子宮鏡'
+        } else if (category.search('卵管鏡') !== -1) {
+          category = '卵管鏡'
+        } else {
+          throw new Error(field + 'のカテゴリに指定された値(' + category + ')が不正です.カテゴリ指定には腹腔鏡,腹腔鏡悪性,ロボット,ロボット悪性,子宮鏡,卵管鏡のいずれか用いてください.')
+        }
+      }
+      temporaryfield.Chain = [category]
+
+      CaseData.Procedures.push(temporaryfield)
+    }
+  }
+}
+
+function AEs (CaseData, record, ruleset) {
+  const hasAE = getvalueByRule('合併症の有無', record, ruleset)
   if (hasAE !== undefined) {
-    if (
-      /(合併症|)[無な]し/.test(hasAE) ||
-      /no/i.test(hasAE)
-    ) {
+    if (hasAE.search(/(合併症)?[無な]し|no/i) !== -1) {
       CaseData.PresentAE = false
     } else {
       CaseData.PresentAE = true
@@ -236,5 +249,37 @@ function AEs (CaseData, record, assignrule) {
 }
 
 export function Migrate (CaseData) {
+  // MergeV4のルーチンを利用
   return Migrate2019to2020(CaseData)
+}
+
+export function ConvertCharacters (str = '') {
+  // 全角記号を半角に丸める
+  // eslint-disable-next-line no-irregular-whitespace
+  const index = str.search(/[（）　、，。．]/)
+  if (index === -1) {
+    return str
+  } else {
+    let c = str.slice(index, index + 1)
+    switch (c) {
+      case '（':
+        c = '('
+        break
+      case '）':
+        c = ')'
+        break
+      case '　':
+        c = ' '
+        break
+      case '、':
+      case '，':
+        c = ','
+        break
+      case '。':
+      case '．':
+        c = '.'
+        break
+    }
+    return str.slice(0, index) + c + ConvertCharacters(str.slice(index + 1))
+  }
 }

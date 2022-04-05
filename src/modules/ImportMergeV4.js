@@ -1,4 +1,5 @@
 import ProcedureTimeSelections from '@/modules/ProcedureTimes'
+import { ConvertCharacters } from '@/modules/ImportCSV'
 
 export function ValidateRecords (records) {
   if (!Array.isArray(records)) {
@@ -215,20 +216,6 @@ function AEs (CaseData, record) {
   }
 }
 
-export function CharacterReplacer (str = '') {
-  const replaceTable = {
-    '（': '(',
-    '）': ')',
-    '、': ',',
-    '，': ','
-  }
-  return str.toString().replace(
-    /[（）、，]/g,
-    c => {
-      return replaceTable[c] || c
-    })
-}
-
 function laparoProcedure (procedure = '', typedprocedure = '', typeofselection = '', lymphadnectomy, omentectomy) {
   const category = procedure.includes('ロボット') ? 'ロボット' : '腹腔鏡'
   const translation = {
@@ -256,7 +243,7 @@ function laparoProcedure (procedure = '', typedprocedure = '', typeofselection =
       temporaryObject.Text = typedprocedure
       temporaryObject.UserTyped = true
     } else {
-      temporaryObject.Text = CharacterReplacer(procedure)
+      temporaryObject.Text = ConvertCharacters(procedure)
       const translatedlymph = translation.lymph[lymphadnectomy]
       if (lymphadnectomy) {
         if (translatedlymph && translatedlymph.substr(-1, 1) !== '$') {
@@ -280,7 +267,7 @@ function handleUserTyped (category, item, typeditem) {
   return item.substr(0, 3) !== 'その他'
     ? {
       Chain: [category],
-      Text: CharacterReplacer(item)
+      Text: ConvertCharacters(item)
     }
     : {
       Chain: [category],
