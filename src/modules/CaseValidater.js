@@ -230,8 +230,48 @@ export async function ValidateProcedures (item, year) {
         reject(Error('空白の実施手術レコードです.'))
       } else {
         if (record.UserTyped !== true) {
+          // 選択術式がマスタに存在するか確認
           if (master.ItemTexts(record?.Chain?.[0], '', year).indexOf(record.Text) === -1) {
             reject(Error(record.Text + ' が術式マスタにありません.'))
+          }
+          // マスタに存在する場合、Descriptionを確認
+          const masterItem = master.getItem(record.Text, record?.Chain?.[0], '', year)
+          console.dir(masterItem)
+          if (masterItem?.Description) {
+            const masterDescription = masterItem.Description
+            console.dir(record)
+            if (record?.Description === undefined) {
+              // Descriptionの設定がない
+              if (masterDescription.Selection !== 'anyornone') {
+                reject(Error('実施手術 ' + record.Text + ' には詳細情報が必要です.'))
+              }
+            } else {
+              // 入力されたDescriptionを確認
+              // 入力数の確認
+              if (record.Description.length === 0) {
+                // 入力なし - anyornoneでは許容される
+                if (masterDescription.Selection !== 'anyornone') {
+                  reject(Error('実施手術 ' + record.Text + ' には詳細情報が必要です.'))
+                }
+              } else {
+                // 単一入力に複数の入力がある
+                if (record.Description.length > 1 && masterDescription.Selection !== 'one') {
+                  reject(Error('実施手術 ' + record.Text + ' に単一では無く複数の詳細情報が設定されています.'))
+                }
+
+                // 入力内容の確認
+                const intersection = record.Description.filter(
+                  description =>
+                    masterDescription.Values
+                      .findIndex(
+                        item => (item.slice(-1) === '$' ? item.slice(0, -1) : item) === description
+                      ) !== -1
+                )
+                if (record.Description.length !== intersection.length) {
+                  reject(Error('実施手術 ' + record.Text + ' に入力された詳細情報 (' + record.Description.join(',') + ') にマスタとの不一致があります.'))
+                }
+              }
+            }
           }
         }
         resolve()
