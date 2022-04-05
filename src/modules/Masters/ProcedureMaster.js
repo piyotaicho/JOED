@@ -72,12 +72,12 @@ export default class ProcedureMaster extends Master {
             Kcode: ['K865-02-00']
           },
           // 2021 新規
+          // 2022 変更 K-コード追加
           {
             Text: '仙骨子宮靭帯縫縮術',
             ValidFrom: '2021',
             ValidTo: '2021'
           },
-          // 2022 変更 K-コード追加
           {
             Text: '仙骨子宮靭帯縫縮術',
             ValidFrom: '2022',
@@ -591,8 +591,8 @@ export default class ProcedureMaster extends Master {
             ValidFrom: '2022',
             Description: {
               Text: '詳細情報',
-              Values: ['電解質溶液使用', '細径子宮鏡使用', '鋏鉗子使用', 'シェーバー使用'],
-              Selection: 'anyornone'
+              Values: ['レゼクトスコープ 電解質溶液使用', 'レゼクトスコープ 非電解質溶液使用', '細径子宮鏡使用', '軟性子宮鏡使用', 'シェーバー使用'],
+              Selection: 'one'
             }
           },
           // 2022 詳細調査追加
@@ -607,7 +607,7 @@ export default class ProcedureMaster extends Master {
             ValidFrom: '2022',
             Description: {
               Text: '詳細情報',
-              Values: ['レゼクトスコープ 電解質溶液使用', 'レゼクトスコープ 非電解質溶液使用', '細径子宮鏡使用', '細径子宮鏡・鋏鉗子使用', 'シェーバー使用'],
+              Values: ['レゼクトスコープ 電解質溶液使用', 'レゼクトスコープ 非電解質溶液使用', '細径子宮鏡使用', '軟性子宮鏡使用', 'シェーバー使用'],
               Selection: 'one'
             }
           },
@@ -636,8 +636,8 @@ export default class ProcedureMaster extends Master {
             ValidFrom: '2022',
             Description: {
               Text: '詳細情報',
-              Values: ['電解質溶液使用', '細径子宮鏡使用', '鋏鉗子使用', 'シェーバー使用'],
-              Selection: 'anyornone'
+              Values: ['レゼクトスコープ 電解質溶液使用', 'レゼクトスコープ 非電解質溶液使用', '細径子宮鏡使用', '軟性子宮鏡使用', 'シェーバー使用'],
+              Selection: 'one'
             }
           },
           // 2020 新規
@@ -669,6 +669,7 @@ export default class ProcedureMaster extends Master {
             Text: '卵管鏡下卵管形成術(腹腔鏡併用)',
             ValidTo: '2019'
           },
+          // 2022年 付随情報の選択様式変更
           {
             Text: '卵管鏡下卵管形成術',
             Description: {
@@ -679,7 +680,6 @@ export default class ProcedureMaster extends Master {
             ValidTo: '2021',
             Kcode: ['K890-02-00']
           },
-          // 2022年 付随情報の選択様式変更
           {
             Text: '卵管鏡下卵管形成術',
             Description: {
