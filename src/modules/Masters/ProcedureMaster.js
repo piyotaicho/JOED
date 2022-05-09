@@ -590,8 +590,8 @@ export default class ProcedureMaster extends Master {
             Kcode: ['K872-03-01', 'K872-03-02', 'K873-00-01', 'K873-00-02'],
             ValidFrom: '2022',
             Description: {
-              Text: '詳細情報',
-              Values: ['レゼクトスコープ 電解質溶液使用', 'レゼクトスコープ 非電解質溶液使用', '細径子宮鏡使用', '軟性子宮鏡使用', 'シェーバー使用'],
+              Text: '主たる使用機器',
+              Values: ['レゼクトスコープ 電解質溶液使用', 'レゼクトスコープ 非電解質溶液使用', '細径子宮鏡', '軟性子宮鏡', 'シェーバー'],
               Selection: 'one'
             }
           },
@@ -606,14 +606,26 @@ export default class ProcedureMaster extends Master {
             Kcode: ['K872-03-01', 'K872-03-02'],
             ValidFrom: '2022',
             Description: {
-              Text: '詳細情報',
-              Values: ['レゼクトスコープ 電解質溶液使用', 'レゼクトスコープ 非電解質溶液使用', '細径子宮鏡使用', '軟性子宮鏡使用', 'シェーバー使用'],
+              Text: '主たる使用機器',
+              Values: ['レゼクトスコープ 電解質溶液使用', 'レゼクトスコープ 非電解質溶液使用', '細径子宮鏡', '軟性子宮鏡', 'シェーバー'],
               Selection: 'one'
             }
           },
+          // 2022 詳細調査追加
           {
             Text: '子宮内腔癒着剥離術',
-            Kcode: ['K863-02-00']
+            Kcode: ['K863-02-00'],
+            ValidTo: '2021'
+          },
+          {
+            Text: '子宮内腔癒着剥離術',
+            Kcode: ['K863-02-00'],
+            ValidFrom: '2022',
+            Description: {
+              Text: '主たる使用機器',
+              Values: ['レゼクトスコープ 電解質溶液使用', 'レゼクトスコープ 非電解質溶液使用', '細径子宮鏡', '軟性子宮鏡', 'シェーバー'],
+              Selection: 'one'
+            }
           },
           {
             Text: '子宮鏡下子宮中隔切除術',
@@ -635,8 +647,8 @@ export default class ProcedureMaster extends Master {
             Kcode: ['K861-00-00', 'K872-03-01', 'K872-03-02'],
             ValidFrom: '2022',
             Description: {
-              Text: '詳細情報',
-              Values: ['レゼクトスコープ 電解質溶液使用', 'レゼクトスコープ 非電解質溶液使用', '細径子宮鏡使用', '軟性子宮鏡使用', 'シェーバー使用'],
+              Text: '主たる使用機器',
+              Values: ['レゼクトスコープ 電解質溶液使用', 'レゼクトスコープ 非電解質溶液使用', '細径子宮鏡', '軟性子宮鏡', 'シェーバー'],
               Selection: 'one'
             }
           },
@@ -825,7 +837,7 @@ const ruleset2 = {
 }
 
 function translation (str = '') {
-  // 型変換と余白の削除
+  // 型変換と前後の余白の削除
   let searchstring = str.toString().trim()
   if (searchstring === '') {
     return ''
@@ -834,7 +846,7 @@ function translation (str = '') {
   searchstring = ZenToHan(searchstring)
 
   // 連結文字列の検索、連結が発見されたら例外を発生させる
-  if (/[ ,.､、｡。\t]+/.test(searchstring)) {
+  if (/([ .､、｡。\t]+|(?<!TLH),(?!=LH))/.test(searchstring)) {
     throw new Error('区切り文字で区切られた複数項目からなる入力は許容されません.')
   }
 
