@@ -2,7 +2,7 @@ import Master from '@/modules/Masters/Master'
 import { ZenToHan } from '@/modules/ZenHanChars'
 import { getCloseMatches } from 'difflib'
 
-export const LastUpdate = '2021-12-23'
+export const LastUpdate = '2022-05-05'
 const defaultReference = '2022'
 
 export default class DiagnosisMaster extends Master {

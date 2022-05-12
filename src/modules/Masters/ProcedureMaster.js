@@ -2,7 +2,7 @@ import Master from '@/modules/Masters/Master'
 import { ZenToHan } from '@/modules/ZenHanChars'
 import * as difflib from 'difflib'
 
-export const LastUpdate = '2022-04-01'
+export const LastUpdate = '2022-05-05'
 const defaultReference = '2022'
 
 // Description の Values: [] のフォーマット
