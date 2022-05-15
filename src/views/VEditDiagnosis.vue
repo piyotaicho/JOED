@@ -132,7 +132,9 @@ export default {
       }
     },
     SetCandidateItemsBySelection () {
-      this.candidates = DiagnosesTree.ItemTexts(this.category, this.target, this.year)
+      this.candidates = DiagnosesTree.Items(
+        this.category, this.target, this.year
+      ).map(item => item.Text)
       this.selectedItem = ''
       this.$nextTick()
     },

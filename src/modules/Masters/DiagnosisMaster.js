@@ -194,7 +194,9 @@ export default class DiagnosisMaster extends Master {
             Text: '卵巣出血',
             ICD10: ['N838']
           },
-          '上記以外の付属器良性疾患',
+          {
+            Text: '上記以外の付属器良性疾患'
+          },
           // 2020 新規
           {
             Text: '性同一性障害',
@@ -353,7 +355,9 @@ export default class DiagnosisMaster extends Master {
             ValidFrom: '2020',
             ICD10: ['C809', 'R798']
           },
-          '術後合併症の修復'
+          {
+            Text: '術後合併症の修復'
+          }
         ],
         付属器: [
           // 2020 表記変更 卵巣癌(卵管癌・腹膜癌含む) -> 卵巣癌(卵管癌,腹膜癌含む)
@@ -396,7 +400,9 @@ export default class DiagnosisMaster extends Master {
             Text: '転移性卵巣癌',
             ValidTo: '2019'
           },
-          '術後合併症の修復'
+          {
+            Text: '術後合併症の修復'
+          }
         ],
         その他: [
           // 2020 削除
@@ -428,7 +434,9 @@ export default class DiagnosisMaster extends Master {
             ValidFrom: '2020',
             ICD10: ['C1*', 'C2*', 'C3*', 'C4*', 'C50*', 'C6*', 'C7*', 'C8*', 'C9*']
           },
-          '術後合併症の修復'
+          {
+            Text: '術後合併症の修復'
+          }
         ]
       },
       子宮鏡: {
@@ -457,7 +465,9 @@ export default class DiagnosisMaster extends Master {
             ValidFrom: '2020',
             ICD10: ['C54*']
           },
-          '上記以外の子宮体部腫瘍',
+          {
+            Text: '上記以外の子宮体部腫瘍'
+          },
           {
             Text: '子宮頸管ポリープ',
             ICD10: ['N841']

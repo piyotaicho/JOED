@@ -112,36 +112,6 @@ export default class Master {
     return temporaryArray
   }
 
-  // カテゴリ・対象臓器に該当するアイテム名(.Textもしくはkey) のarrayを取得
-  //
-  // @param {string} カテゴリ
-  // @param {string} 対象続器 - 空白もしくはundefinedの場合はカテゴリ内すべて
-  // @param {number/string} データセットの参照年指定(デフォルトはマスタの年次=最新)
-  //
-  // return: array
-  ItemTexts (category = '', target, year = this.YearofMaster) {
-    if (year === '') {
-      year = this.YearofMaster
-    }
-    if (year < '2019') {
-      year = '2019'
-    }
-
-    const temporaryArray = []
-
-    if (!category) {
-      return temporaryArray
-    }
-
-    for (const targetname of (target ? [target] : this.Targets(category))) {
-      temporaryArray.push(...this[category][targetname]
-        .map(item => Master.parseItem(item, 'Text', year))
-        .filter(item => item)
-      )
-    }
-    return Array.from(new Set(temporaryArray))
-  }
-
   // カテゴリ・対象続器・アイテム名称に合致するアイテムobject を取得
   //
   // @param {string} アイテム名(.Text)

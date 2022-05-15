@@ -60,8 +60,12 @@ export default class ProcedureMaster extends Master {
             Ditto: ['子宮筋腫核出術(腹腔鏡下)'],
             Kcode: ['K872-02-00']
           },
-          '子宮腺筋症病巣除去術(腹腔鏡下)',
-          '腹腔内観察',
+          {
+            Text: '子宮腺筋症病巣除去術(腹腔鏡下)'
+          },
+          {
+            Text: '腹腔内観察'
+          },
           // 2021 削除
           {
             Text: '骨盤臓器脱修復術',
@@ -107,7 +111,9 @@ export default class ProcedureMaster extends Master {
             ValidFrom: '2020',
             Kcode: ['K888-00-02']
           },
-          '術後合併症の修復術',
+          {
+            Text: '術後合併症の修復術'
+          },
           // 2022 新規
           {
             Text: '腹腔鏡下子宮瘢痕部修復術',
@@ -208,7 +214,9 @@ export default class ProcedureMaster extends Master {
             Text: '卵管切除術',
             Kcode: ['K888-02-02']
           },
-          '腹腔内観察',
+          {
+            Text: '腹腔内観察'
+          },
           {
             Text: '上記以外の付属器手術',
             Kcode: ['K913-02-02']
@@ -250,7 +258,9 @@ export default class ProcedureMaster extends Master {
             Text: '妊孕性温存のための付属器摘出術',
             ValidFrom: '2020'
           },
-          '術後合併症の修復術',
+          {
+            Text: '術後合併症の修復術'
+          },
           // 2020 新規
           {
             Text: '他の診療科との合同手術',
@@ -303,7 +313,9 @@ export default class ProcedureMaster extends Master {
             Text: 'その他の骨盤臓器脱修復術',
             ValidFrom: '2021'
           },
-          '術後合併症の修復術'
+          {
+            Text: '術後合併症の修復術'
+          }
         ]
       },
       腹腔鏡悪性: {
@@ -382,8 +394,12 @@ export default class ProcedureMaster extends Master {
             Text: '他の診療科との合同手術',
             ValidFrom: '2020'
           },
-          '治療のために開腹手術へ移行(合併症を除く)',
-          '術後合併症の修復術'
+          {
+            Text: '治療のために開腹手術へ移行(合併症を除く)'
+          },
+          {
+            Text: '術後合併症の修復術'
+          }
         ],
         付属器: [
           // 2020 実装変更
@@ -426,7 +442,9 @@ export default class ProcedureMaster extends Master {
             Text: '他の診療科との合同手術',
             ValidFrom: '2020'
           },
-          '治療のために開腹手術へ移行(合併症を除く)',
+          {
+            Text: '治療のために開腹手術へ移行(合併症を除く)'
+          },
           {
             Text: '他の悪性疾患の予防的切除術',
             Description: {
@@ -465,7 +483,9 @@ export default class ProcedureMaster extends Master {
             Text: '再発病巣の摘出術',
             ValidFrom: '2020'
           },
-          '術後合併症の修復術'
+          {
+            Text: '術後合併症の修復術'
+          }
         ],
         その他: [
           // 2020 実装変更
@@ -492,13 +512,17 @@ export default class ProcedureMaster extends Master {
             Text: '他の診療科との合同手術',
             ValidFrom: '2020'
           },
-          '治療のために開腹手術へ移行(合併症を除く)',
+          {
+            Text: '治療のために開腹手術へ移行(合併症を除く)'
+          },
           // 2020 削除
           {
             Text: 'Second Look Operation',
             ValidTo: '2019'
           },
-          '術後合併症の修復術'
+          {
+            Text: '術後合併症の修復術'
+          }
         ]
       },
       ロボット: {
@@ -512,10 +536,14 @@ export default class ProcedureMaster extends Master {
             Text: '骨盤臓器脱修復術(ロボット支援下)',
             ValidTo: '2020'
           },
-          'ロボット支援下その他'
+          {
+            Text: 'ロボット支援下その他'
+          }
         ],
         付属器: [
-          'ロボット支援下その他'
+          {
+            Text: 'ロボット支援下その他'
+          }
         ],
         その他: [
           // 2021 削除
@@ -527,7 +555,9 @@ export default class ProcedureMaster extends Master {
             Text: '仙骨腟固定術(ロボット支援下)',
             Kcode: ['K865-02-00']
           },
-          'ロボット支援下その他'
+          {
+            Text: 'ロボット支援下その他'
+          }
         ]
       },
       ロボット悪性: {
@@ -562,13 +592,17 @@ export default class ProcedureMaster extends Master {
               Selection: 'one'
             }
           },
-          '治療のために開腹手術へ移行(合併症を除く)',
+          {
+            Text: '治療のために開腹手術へ移行(合併症を除く)'
+          },
           // 2020 削除
           {
             Text: 'Second Look Operation',
             ValidTo: '2019'
           },
-          '術後合併症の修復術',
+          {
+            Text: '術後合併症の修復術'
+          },
           // 2020 新規
           {
             Text: '婦人科以外の悪性疾患によるロボット支援下子宮全摘出術',
@@ -631,7 +665,9 @@ export default class ProcedureMaster extends Master {
             Text: '子宮鏡下子宮中隔切除術',
             Kcode: ['K863-02-00']
           },
-          '子宮形成術',
+          {
+            Text: '子宮形成術'
+          },
           {
             Text: '子宮内膜焼灼術',
             Kcode: ['K863-03-00']
@@ -661,12 +697,16 @@ export default class ProcedureMaster extends Master {
             Text: '子宮鏡検査・内膜剥爬術',
             Kcode: ['D320-00-00', 'D322-00-00', 'K861-00-00']
           },
-          '異物除去術',
+          {
+            Text: '異物除去術'
+          },
           {
             Text: '子宮頸管ポリープ切除術',
             Kcode: ['K866-00-00']
           },
-          '上記以外の子宮体部腫瘍切除術'
+          {
+            Text: '上記以外の子宮体部腫瘍切除術'
+          }
         ]
       },
       卵管鏡: {

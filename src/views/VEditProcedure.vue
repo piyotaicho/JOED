@@ -225,11 +225,9 @@ export default {
     },
 
     async SetCandidateListBySelection () {
-      this.candidates = ProceduresTree.ItemTexts(
-        this.category,
-        this.target,
-        this.year
-      )
+      this.candidates = ProceduresTree.Items(
+        this.category, this.target, this.year
+      ).map(item => item.Text)
       await this.ClearSelectedEntry()
     },
 
