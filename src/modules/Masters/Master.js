@@ -79,7 +79,13 @@ export default class Master {
   //
   // return: array of string
   Targets (category = '') {
-    return category !== '' ? Object.keys(this[category]) : []
+    if (category) {
+      const categoryObject = this[category]
+      // 不正なカテゴリが指定された場合は空白のarray
+      return categoryObject ? Object.keys(categoryObject) : []
+    } else {
+      return []
+    }
   }
 
   // カテゴリ・対象臓器に該当するアイテムobjectのarrayを取得
@@ -118,32 +124,17 @@ export default class Master {
   // @param {string} カテゴリ
   // @param {number/string} データセットの参照年指定(デフォルトはマスタの年次=最新)
   //
-  // return: object
+  // return: object 見つからない場合は空白オブジェクト
   getItem (text = '', category = '', target, year = this.YearofMaster) {
-    if (year === '') {
-      year = this.YearofMaster
-    }
-    if (year < '2019') {
-      year = '2019'
-    }
-
-    if (!text || !category) {
-      return {}
-    }
-
-    for (const targetname of (target ? [target] : this.Targets(category))) {
-      const item = this[category][targetname].find(item => Master.parseItem(item, 'Text', year) === text)
-      if (item !== undefined) {
-        return item
-      }
-    }
+    const itemFound = this.Items(category, target, year).find(item => Master.parseItem(item, 'Text', year) === text)
+    return itemFound !== undefined ? itemFound : {}
   }
 
   // アイテムobject のプロパティを取得
   // アイテムobjectが 名称(string)の場合 それを プロパティ Text として解釈する.
   // 年次が設定されており無効な場合や, 該当プロパティが無い場合は undefined
   //
-  // @param {any} ３層目の値
+  // @param {any} ３層目のオブジェクト
   // @param {string}  プロパティ名 デフォルトはText
   // @param {string}  データセットの参照年指定
   //

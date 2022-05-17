@@ -189,7 +189,8 @@ export async function ValidateDiagnoses (item, year) {
         reject(Error('空白の手術診断レコードです.'))
       } else {
         if (record.UserTyped !== true) {
-          if (master.ItemTexts(record?.Chain?.[0], '', year).indexOf(record.Text) === -1) {
+          const masterItem = master.getItem(record.Text, record?.Chain?.[0], '', year)
+          if (master.getText(masterItem) === undefined) {
             reject(Error(record.Text + ' が診断マスタにありません.'))
           }
         }
@@ -231,16 +232,16 @@ export async function ValidateProcedures (item, year) {
       } else {
         if (record.UserTyped !== true) {
           // 選択術式がマスタに存在するか確認
-          if (master.ItemTexts(record?.Chain?.[0], '', year).indexOf(record.Text) === -1) {
+          const masterItem = master.getItem(record.Text, record?.Chain?.[0], '', year)
+          if (master.getText(masterItem) === undefined) {
             reject(Error(record.Text + ' が術式マスタにありません.'))
           }
-          // マスタに存在する場合、Descriptionを確認
-          const masterItem = master.getItem(record.Text, record?.Chain?.[0], '', year)
-          if (masterItem?.Description) {
-            const masterDescription = masterItem.Description
+          // マスタに存在する場合、Descriptionの要否を確認
+          const itemDescription = ProcedureMaster.parseItem(masterItem, 'Description')
+          if (itemDescription) {
             if (record?.Description === undefined) {
-              // Descriptionの設定がない
-              if (masterDescription.Selection !== 'anyornone') {
+              // Descriptionの入力がない
+              if (itemDescription.Selection !== 'anyornone') {
                 reject(Error('実施手術 ' + record.Text + ' には詳細情報が必要です.'))
               }
             } else {
@@ -248,19 +249,19 @@ export async function ValidateProcedures (item, year) {
               // 入力数の確認
               if (record.Description.length === 0) {
                 // 入力なし - anyornoneでは許容される
-                if (masterDescription.Selection !== 'anyornone') {
+                if (itemDescription.Selection !== 'anyornone') {
                   reject(Error('実施手術 ' + record.Text + ' には詳細情報が必要です.'))
                 }
               } else {
                 // 単一入力に複数の入力がある
-                if (record.Description.length > 1 && masterDescription.Selection !== 'one') {
+                if (record.Description.length > 1 && itemDescription.Selection !== 'one') {
                   reject(Error('実施手術 ' + record.Text + ' に単一では無く複数の詳細情報が設定されています.'))
                 }
 
                 // 入力内容の確認
                 const intersection = record.Description.filter(
                   description =>
-                    masterDescription.Values
+                    itemDescription.Values
                       .findIndex(
                         item => (item.slice(-1) === '$' ? item.slice(0, -1) : item) === description
                       ) !== -1
