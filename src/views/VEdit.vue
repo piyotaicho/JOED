@@ -392,14 +392,22 @@ export default {
         }
 
         // テキストフィールドの整形(trimと半角英数に置換)
+        // 患者名 : 前後トリムのみ
         newDocument.Name = newDocument.Name.trim()
-        newDocument.PatientId = ZenToHan(newDocument.PatientId.trim().replace(/[-－―ー-]/g, '-'))
+        // 患者ID : 半角文字に置換・空白文字を除去
+        newDocument.PatientId = ZenToHan(newDocument.PatientId.trim())
+          .replace(/\s/g, '')
 
+        // 腫瘍登録番号 : 半角文字に置換・大文字変換・空白文字の除去
         if (newDocument.JSOGId.trim() === '') {
           delete newDocument.JSOGId
         } else {
-          newDocument.JSOGId = ZenToHan(newDocument.JSOGId.trim()).toUpperCase()
+          newDocument.JSOGId = ZenToHan(newDocument.JSOGId)
+            .toUpperCase()
+            .replace(/\s/g, '')
         }
+
+        // NCD登録番号 : 半角文字に置換・数値とハイフン以外を除去
         if (newDocument.NCDId.trim() === '') {
           delete newDocument.NCDId
         } else {
