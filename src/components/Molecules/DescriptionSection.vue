@@ -10,14 +10,14 @@
       <template v-if="IsMultipleSelection">
         <template v-for="item of Source">
           <div :key="item">
-            <LabeledCheckbox v-model="SelectedValue" :value="item" :key="item">
+            <LabeledCheckbox v-model="SelectedArrayValue" :value="item" :key="item">
               {{ ItemCaption(item) }}
             </LabeledCheckbox>
           </div>
         </template>
       </template>
       <template v-else>
-        <select v-model="SelectedValue[0]">
+        <select v-model="SelectedSingleValue">
           <option v-for="item of Source" :key="item" :value="item">
             {{ ItemCaption(item) }}
           </option>
@@ -48,18 +48,33 @@ export default {
   },
   computed: {
     Source () {
-      return this.Container.Options || []
+      return this.Container?.Options || []
     },
     IsMultipleSelection () {
       // .SelectionModeは'one'がデフォルトで設定されていないことも想定
       return (
-        this.Container.SelectionMode === 'any' ||
-        this.Container.SelectionMode === 'anyornone'
+        this.Container?.SelectionMode === 'any' ||
+        this.Container?.SelectionMode === 'anyornone'
       )
     },
-    SelectedValue: {
+    SelectedArrayValue: {
       get () {
         return this.Container.Value ? this.Container.Value : []
+      },
+      set (value) {
+        this.EmitValue(value)
+      }
+    },
+    SelectedSingleValue: {
+      get () {
+        if (this.Container.Value.length === 0) {
+          return undefined
+        } else {
+          if (this.Container.Value.length > 1) {
+            this.EmitValue(this.Container.Value[0])
+          }
+          return this.Container.Value[0]
+        }
       },
       set (value) {
         this.EmitValue(value)

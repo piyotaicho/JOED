@@ -237,7 +237,7 @@ export async function ValidateProcedures (item, year) {
             reject(Error(record.Text + ' が術式マスタにありません.'))
           }
           // マスタに存在する場合、Descriptionの要否を確認
-          const itemDescription = ProcedureMaster.parseItem(masterItem, 'Description')
+          const itemDescription = ProcedureMaster.getDescriptionObject(masterItem)
           if (itemDescription) {
             if (record?.Description === undefined) {
               // Descriptionの入力がない
@@ -248,13 +248,14 @@ export async function ValidateProcedures (item, year) {
               // 入力されたDescriptionを確認
               // 入力数の確認
               if (record.Description.length === 0) {
-                // 入力なし - anyornoneでは許容される
+                // 入力なし - Selection == 'anyornone' でのみ許容される
                 if (itemDescription.Selection !== 'anyornone') {
                   reject(Error('実施手術 ' + record.Text + ' には詳細情報が必要です.'))
                 }
               } else {
-                // 単一入力に複数の入力がある
-                if (record.Description.length > 1 && itemDescription.Selection !== 'one') {
+                // 入力あり
+                // 単一入力 Selection == 'one' に複数の入力がある
+                if (itemDescription.Selection === 'one' && record.Description.length > 1) {
                   reject(Error('実施手術 ' + record.Text + ' に単一では無く複数の詳細情報が設定されています.'))
                 }
 
