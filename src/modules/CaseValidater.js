@@ -101,12 +101,12 @@ export async function ValidateAdditionalInformations (item) {
 // 主たる術後診断・実施術式のカテゴリの一致の検証
 //
 export async function CheckCategoryMatch (item, year) {
-  const categoryDiagnosis = item?.Diagnoses?.[0]?.Chain?.[0]
-  const categoryProcedure = item?.Procedures?.[0]?.Chain?.[0]
+  const categoryOfDiagnosis = item?.Diagnoses?.[0]?.Chain?.[0]
+  const categoryOfProcedure = item?.Procedures?.[0]?.Chain?.[0]
   // Diagnoses, Proceduresが未設定については別でチェックされる
-  if (categoryDiagnosis && categoryProcedure) {
+  if (categoryOfDiagnosis && categoryOfProcedure) {
     if (year <= 2020) {
-      // 2020年以前の対応表
+      // 2020年以前の対応表 - 術式のカテゴリを優先
       const translation = {
         腹腔鏡: '腹腔鏡',
         腹腔鏡悪性: '腹腔鏡悪性',
@@ -115,44 +115,45 @@ export async function CheckCategoryMatch (item, year) {
         子宮鏡: '子宮鏡',
         卵管鏡: '卵管鏡'
       }
-      if (translation[categoryDiagnosis] !== translation[categoryProcedure]) {
+      if (translation[categoryOfDiagnosis] !== translation[categoryOfProcedure]) {
         throw Error('主たる手術診断と主たる実施術式のカテゴリが一致していません.')
       }
-      return categoryProcedure
+      return categoryOfProcedure
     } else {
-      // 2021年～ 対応表 変更
-      if (categoryDiagnosis === categoryProcedure) {
-        return categoryProcedure
+      // 2021年以降 - 診断優先のカテゴリ分類
+      if (categoryOfDiagnosis === categoryOfProcedure) {
+        // 同一の場合はそのまま
+        return categoryOfDiagnosis
       } else {
-        if (
-          (
-            (
-              categoryProcedure === '腹腔鏡' ||
-              categoryProcedure === '腹腔鏡悪性'
-            ) &&
-            (
-              categoryDiagnosis === '腹腔鏡' ||
-              categoryDiagnosis === '腹腔鏡悪性'
-            )
-          )
-        ) {
-          return categoryDiagnosis
-        }
-        if (
-          (
-            (
-              categoryProcedure === 'ロボット' ||
-              categoryProcedure === 'ロボット悪性'
-            ) &&
-            (
-              categoryDiagnosis === '腹腔鏡' ||
-              categoryDiagnosis === '腹腔鏡悪性'
-            )
-          )
-        ) {
-          if (categoryProcedure === '腹腔鏡') {
+        if (categoryOfDiagnosis === '腹腔鏡') {
+          // 良性腹腔鏡
+          if (
+            categoryOfProcedure === '腹腔鏡' ||
+            categoryOfProcedure === '腹腔鏡悪性'
+          ) {
+            return '腹腔鏡'
+          }
+          // 良性ロボット
+          if (
+            categoryOfProcedure === 'ロボット' ||
+            categoryOfProcedure === 'ロボット悪性'
+          ) {
             return 'ロボット'
-          } else {
+          }
+        }
+        if (categoryOfDiagnosis === '腹腔鏡悪性') {
+          // 悪性腹腔鏡
+          if (
+            categoryOfProcedure === '腹腔鏡' ||
+            categoryOfProcedure === '腹腔鏡悪性'
+          ) {
+            return '腹腔鏡悪性'
+          }
+          // 悪性ロボット
+          if (
+            categoryOfProcedure === 'ロボット' ||
+            categoryOfProcedure === 'ロボット悪性'
+          ) {
             return 'ロボット悪性'
           }
         }
@@ -160,7 +161,7 @@ export async function CheckCategoryMatch (item, year) {
       }
     }
   } else {
-    return undefined
+    throw Error('主たる手術診断と主たる実施術式が適切に設定されていません.')
   }
 }
 
