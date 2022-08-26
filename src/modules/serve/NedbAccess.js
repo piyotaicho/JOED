@@ -1,6 +1,6 @@
 import HHX from 'xxhashjs'
 
-const _Database = require('@seald-io/nedb')
+const NeDB = require('@seald-io/nedb')
 
 export function CreateInstance (payload) {
   const config = Object.assign(
@@ -10,66 +10,27 @@ export function CreateInstance (payload) {
     },
     payload)
 
-  return new _Database(config)
+  return new NeDB(config)
 }
 
-export function Insert (payload, DatabaseInstance) {
-  return new Promise((resolve, reject) => {
-    DatabaseInstance
-      .insert(payload.Document, (error, newdocument) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(newdocument)
-        }
-      })
-  })
+export async function Insert (payload, DatabaseInstance) {
+  return DatabaseInstance.insertAsync(payload.Document)
 }
 
-export function Find (payload, DatabaseInstance) {
-  return new Promise((resolve, reject) => {
-    const query = payload.Query ? payload.Query : {}
-    const projection = payload.Projection ? payload.Projection : {}
-    const sort = payload.Sort ? payload.Sort : {}
-    const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
-    const limit = payload.Limit ? Number.parseInt(payload.Limit) : 0
-
-    DatabaseInstance
-      .find(query)
-      .projection(projection)
-      .sort(sort)
-      .skip(skip)
-      .limit(limit)
-      .exec((error, founddocuments) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(founddocuments)
-        }
-      })
-  })
+export async function Find (payload, DatabaseInstance) {
+  return DatabaseInstance.findAsync(payload?.Query ? payload.Query : {})
+    .projection(payload?.Projection ? payload.Projection : {})
+    .sort(payload?.Sort ? payload.Sort : {})
+    .skip(payload?.Skip ? Number.parseInt(payload.Skip) : 0)
+    .limit(payload?.Limit ? Number.parseInt(payload.Limit) : 0)
 }
 
-export function FindOne (payload, DatabaseInstance) {
-  return new Promise((resolve, reject) => {
-    const query = payload.Query ? payload.Query : {}
-    const projection = payload.Projection ? payload.Projection : {}
-    const sort = payload.Sort ? payload.Sort : {}
-    const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
-
-    DatabaseInstance
-      .findOne(query)
-      .projection(projection)
-      .sort(sort)
-      .skip(skip)
-      .exec((error, founddocument) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(founddocument)
-        }
-      })
-  })
+export async function FindOne (payload, DatabaseInstance) {
+  return DatabaseInstance.findOneAsync(payload?.Query ? payload.Query : {})
+    .projection(payload?.Projection ? payload.Projection : {})
+    .sort(payload?.Sort ? payload.Sort : {})
+    .skip(payload?.Skip ? Number.parseInt(payload.Skip) : 0)
+    .limit(payload?.Limit ? Number.parseInt(payload.Limit) : 0)
 }
 
 // FindOneByHash
@@ -79,71 +40,45 @@ export function FindOne (payload, DatabaseInstance) {
 //   .SALT - ハッシュキー(Number)
 //
 // return - promise(uid)
-export function FindOneByHash (payload, DatabaseInstance) {
+export async function FindOneByHash (payload, DatabaseInstance) {
   const HHX64 = HHX.h64(payload.SALT)
-  const hashvalue = parseInt(payload.Hash, 36)
 
-  return new Promise((resolve, reject) => {
-    DatabaseInstance
-      .findOne({
-        $where: function () {
-          delete this._id
-          const hash = HHX64.update(JSON.stringify(this)).digest().toNumber()
-          return hash === hashvalue
+  const founddocument = await DatabaseInstance.findOneAsync(
+    // query
+    {
+      $where: function () {
+        const recordKeys = {
+          PatientId: this.PatientId,
+          DateOfProcedure: this.DateOfProcedure
         }
-      })
-      .projection({ DocumentId: 1 })
-      .exec((error, founddocument) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(founddocument !== null ? founddocument.DocumentId : undefined)
-        }
-      })
-  })
+        const hash = HHX64.update(JSON.stringify(recordKeys)).digest().toString(36)
+        return hash === payload.Hash
+      }
+    },
+    // projection
+    { DocumentId: 1 }
+  )
+
+  return founddocument !== null ? founddocument?.DocumentId : undefined
 }
 
-export function Count (payload, DatabaseInstance) {
-  return new Promise((resolve, reject) => {
-    const query = payload.Query ? payload.Query : {}
-    DatabaseInstance
-      .count(query, (error, count) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(count)
-        }
-      })
-  })
+export async function Count (payload, DatabaseInstance) {
+  return await DatabaseInstance.countAsync(
+    payload?.Query ? payload.Query : {}
+  )
 }
 
-export function Update (payload, DatabaseInstance) {
-  return new Promise((resolve, reject) => {
-    const query = payload.Query ? payload.Query : {}
-    const update = payload.Update ? payload.Update : {}
-    const options = payload.Options ? payload.Options : {}
-    DatabaseInstance
-      .update(query, update, options, (error, numrows) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(numrows)
-        }
-      })
-  })
+export async function Update (payload, DatabaseInstance) {
+  return await DatabaseInstance.updateAsync(
+    payload?.Query ? payload.Query : {},
+    payload?.Update ? payload.Update : {},
+    payload?.Options ? payload.Options : {}
+  )
 }
 
-export function Remove (payload, DatabaseInstance) {
-  return new Promise((resolve, reject) => {
-    const query = payload.Query ? payload.Query : {}
-    const options = payload.Options ? payload.Options : {}
-    DatabaseInstance
-      .remove(query, options, (error, numrows) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(numrows)
-        }
-      })
-  })
+export async function Remove (payload, DatabaseInstance) {
+  return await DatabaseInstance.removeAsync(
+    payload?.Query ? payload.Query : {},
+    payload?.Options ? payload.Options : {}
+  )
 }

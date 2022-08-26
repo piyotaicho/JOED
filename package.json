@@ -20,7 +20,7 @@
   },
   "main": "background.js",
   "dependencies": {
-    "@seald-io/nedb": "2.2.2",
+    "@seald-io/nedb": "3.0.0",
     "babel-eslint": "^10.1.0",
     "core-js": "3.22.5",
     "difflib": "^0.2.4",
