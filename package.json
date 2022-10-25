@@ -1,7 +1,7 @@
 {
   "name": "joed5",
   "productName": "JOED5",
-  "version": "1.3.967",
+  "version": "1.3.1028",
   "description": "The procedures and adverse events regstration system provided by JSGOE",
   "author": {
     "name": "Yasuhiro Yamamoto",
@@ -20,7 +20,7 @@
   },
   "main": "background.js",
   "dependencies": {
-    "@seald-io/nedb": "3.0.0",
+    "@seald-io/nedb": "3.1.0",
     "babel-eslint": "^10.1.0",
     "core-js": "3.22.5",
     "difflib": "^0.2.4",
