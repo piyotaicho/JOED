@@ -1,15 +1,15 @@
 <template>
   <div class="utility">
     <div class="utility-switches">
-      <div>
-        <div class="label">出力する年次</div>
-        <SelectYear class="field" v-model="exportYear" :accept-all="false"/>
-      </div>
-
       <InputSwitchField
-        v-model="allFields"
+        v-model="exportAsBackup"
         title="出力する様式"
         :options="{学会提出データ: false, バックアップデータ: true}"/>
+
+      <div>
+        <div class="label">出力する年次</div>
+        <SelectYear class="field" v-model="exportYear" :accept-all="exportAsBackup"/>
+      </div>
 
       <InputSwitchField
         v-model="validateOnBackup"
@@ -18,7 +18,7 @@
         :options="{行う: true, 行わない: false}"/>
 
       <div>
-        <el-button type="primary" @click="Process()" :disabled="exportYear=='' || processing">出力データの作成</el-button>
+        <el-button type="primary" @click="Process()" :disabled="(!exportYear) || processing">出力データの作成</el-button>
       </div>
     </div>
 
@@ -103,6 +103,9 @@ export default {
       this.ResetState()
     },
     exportAllFields () {
+      if (this.exportYear === 'ALL') {
+        this.exportYear = ''
+      }
       this.ResetState()
     },
     exportRaw () {
@@ -119,7 +122,7 @@ export default {
     }
   },
   computed: {
-    allFields: {
+    exportAsBackup: {
       get () {
         return this.exportAllFields
       },
@@ -140,8 +143,9 @@ export default {
         DocumentId: { $gt: 0 }
       }
       if (this.exportYear !== '') {
-        const reg = new RegExp('^' + this.exportYear + '-')
-        query.DateOfProcedure = { $regex: reg }
+        if (this.exportYear !== 'ALL') {
+          query.DateOfProcedure = { $regex: new RegExp('^' + this.exportYear + '-') }
+        }
       }
       return query
     },
@@ -167,10 +171,10 @@ export default {
       this.showPreview = false
 
       try {
-        await this.CheckSystem()
+        await this.CheckSystemConfiguration()
         this.processStep++
 
-        await this.CheckImported()
+        await this.CheckImportedRecords()
         this.processStep++
 
         const documentIds = await this.CheckConsistency()
@@ -210,32 +214,34 @@ export default {
 
     // Step 1 - 施設名とIDが設定されているかを確認
     //
-    async CheckSystem () {
+    async CheckSystemConfiguration () {
       // バックアップデータでエラーチェックなしでは チェックをスキップする
       if (this.exportAllFields && !this.validateOnBackup) {
         return
       }
 
+      // 施設番号は必須
       if (!this.$store.getters['system/InstitutionID']) {
         throw new Error('施設情報が未設定です.')
       }
 
-      const countJSOGId = await this.$store.dispatch('dbCount', {
-        Query:
-          {
-            JSOGId: { $exists: true },
-            ...this.baseQuery
-          }
-      })
-      if (countJSOGId > 0 && !this.$store.getters['system/JSOGInstitutionID']) {
-        throw new Error('日本産科婦人科学会腫瘍登録施設番号が未設定です.')
-      }
+      // 2022年収集からは腫瘍登録番号に関する情報は収集しないので腫瘍登録施設番号の確認は行わない
+      // const countJSOGId = await this.$store.dispatch('dbCount', {
+      //   Query:
+      //     {
+      //       JSOGId: { $exists: true },
+      //       ...this.baseQuery
+      //     }
+      // })
+      // if (countJSOGId > 0 && !this.$store.getters['system/JSOGInstitutionID']) {
+      //   throw new Error('日本産科婦人科学会腫瘍登録施設番号が未設定です.')
+      // }
     },
 
     // Step 2 - インポートデータがすべて確認されているかを確認
     //
     // インポートデータ( Imported )で特になんの問題も無くインポートできたもの以外には Notification がある
-    async CheckImported () {
+    async CheckImportedRecords () {
       // バックアップデータでエラーチェックなしでは チェックをスキップする
       if (this.exportAllFields && !this.validateOnBackup) {
         return

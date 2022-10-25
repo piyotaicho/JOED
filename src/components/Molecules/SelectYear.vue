@@ -1,8 +1,11 @@
 <template>
   <div>
     <select v-model="SelectedValue">
-      <option v-for="(value, name, index) in Selections" :key="name" :value="name" :selected="index===0">{{name}}年 ({{value}}件)</option>
-      <option value="" v-if="acceptAll">すべて</option>
+      <option value="ALL" v-if="acceptAll">すべて</option>
+      <option v-for="item in Selections"
+        :key="item.year" :value="item.year">
+        {{item.year}}年 ({{item.count}}件)
+      </option>
     </select>
   </div>
 </template>
@@ -20,14 +23,20 @@ export default {
   },
   data () {
     return ({
-      Selections: {}
+      Selections: []
     })
   },
   mounted () {
     this.$store.dispatch('GetYears')
       .then(CountByYear => {
-        for (const year in CountByYear) {
-          this.$set(this.Selections, year, CountByYear[year])
+        const years = Object.keys(CountByYear).sort().reverse()
+        for (const year of years) {
+          this.Selections.push(
+            {
+              year: year,
+              count: CountByYear[year]
+            }
+          )
         }
       })
   },
