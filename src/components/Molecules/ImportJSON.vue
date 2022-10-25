@@ -64,10 +64,12 @@ export default {
         } else {
           throw new Error()
         }
-      } catch {
-        // JSONのパース失敗 もしくは JSONの中身がObjectのArrayではない
-        // もしくは空のArray
-        Popups.alert('指定されたファイルの基本的なフォーマットが違います.')
+      } catch (e) {
+        if (e.name === 'SyntaxError') {
+          Popups.alert('指定されたファイルはJSON形式ではありません.')
+        } else {
+          Popups.alert('指定されたファイルの構造が違います.')
+        }
       }
     },
     async ProcessStream () {
