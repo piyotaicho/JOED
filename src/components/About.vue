@@ -75,12 +75,12 @@ export default {
     LibraryVersions () {
       return {
         Vue: this.$store.getters['system/VueVersion'],
-        ...(process.env.VUE_APP_ELECTRON
+        ...(window?.Versions
           ? {
-            electron: process.versions.electron,
-            node: process.versions.node,
-            v8: process.versions.v8,
-            chrome: process.versions.chrome
+            electron: window.Versions.Electron(),
+            node: window.Versions.Node(),
+            v8: window.Versions.V8(),
+            chrome: window.Versions.Chrome()
           }
           : {})
       }

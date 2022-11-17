@@ -1,4 +1,4 @@
-import { ipcRenderer } from 'electron'
+// import { ipcRenderer } from 'electron'
 
 export function CreateInstance (payload, NedbDatabaseObject) {
   // web版との互換性確保のため
@@ -6,29 +6,29 @@ export function CreateInstance (payload, NedbDatabaseObject) {
 }
 
 export function Insert (payload) {
-  return ipcRenderer.invoke('Insert', payload)
+  return window.IPC.Insert(payload)
 }
 
 export function Find (payload) {
-  return ipcRenderer.invoke('Find', payload)
+  return window.IPC.Find(payload)
 }
 
 export function FindOne (payload) {
-  return ipcRenderer.invoke('FindOne', payload)
+  return window.IPC.FindOne(payload)
 }
 
 export function FindOneByHash (payload) {
-  return ipcRenderer.invoke('FineOneByHash', payload)
+  return window.IPC.FineOneByHash(payload)
 }
 
 export function Count (payload) {
-  return ipcRenderer.invoke('Count', payload)
+  return window.IPC.Count(payload)
 }
 
 export function Update (payload) {
-  return ipcRenderer.invoke('Update', payload)
+  return window.IPC.Update(payload)
 }
 
 export function Remove (payload) {
-  return ipcRenderer.invoke('Remove', payload)
+  return window.IPC.Remove(payload)
 }

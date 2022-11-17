@@ -53,7 +53,8 @@ function createWindow () {
       spellcheck: false,
       enableWebSQL: false,
       webgl: false,
-      devTools: isDevelopment
+      devTools: isDevelopment,
+      preload: path.join(__dirname, 'preload.js')
     }
   })
 
@@ -337,11 +338,11 @@ app.setAboutPanelOptions({
 
 // main -> renderer : メニューからrouterの切り替え要求 (App.vueで処理)
 function RendererRoute (routename, targetwindow) {
-  targetwindow.webContents.send('RendererRoute', { Name: routename })
+  targetwindow.webContents.send('update-route', routename)
 }
 
 // route毎のメニュー操作
-ipcMain.on('menuroute', (event, payload) => {
+function SwitchMenu (payload) {
   const menu = Menu.getApplicationMenu()
   switch (payload) {
     case 'login':
@@ -373,7 +374,7 @@ ipcMain.on('menuroute', (event, payload) => {
       menu.getMenuItemById('list-export').enabled = false
       menu.getMenuItemById('setup').enabled = false
   }
-})
+}
 
 //
 // ロックファイル制御
@@ -621,3 +622,8 @@ ipcMain.handle('LoadConfig', (_, payload) =>
 ipcMain.handle('SaveConfig', (_, payload) =>
   app.ConfigStore.set(payload.Key, payload.Config)
 )
+
+//
+// Routerからのメニュー制御
+//
+ipcMain.on('SwitchMenu', (_, payload) => SwitchMenu(payload))

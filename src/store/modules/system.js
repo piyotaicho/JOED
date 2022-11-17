@@ -31,11 +31,11 @@ export default {
     },
     // APP_NAMEの中継
     ApplicationName () {
-      return process.env.VUE_APP_NAME
+      return window?.Versions?.ApplicationName()
     },
     // APP_VERSIONの中継
     ApplicationVersion () {
-      return process.env.VUE_APP_VERSION
+      return window?.Versions?.ApplicationVersion()
     },
     // Vueのバージョンの中継
     VueVersion () {
@@ -43,9 +43,7 @@ export default {
     },
     // 実行プラットフォーム(v1.2からブラウザ版はアーキテクチャを返さない)
     Platform () {
-      return process.env.VUE_APP_ELECTRON
-        ? process.platform
-        : 'browser'
+      return window?.Versions?.Platform() || 'browser'
     },
 
     // settingsオブジェクト全体

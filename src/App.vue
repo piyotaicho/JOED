@@ -17,34 +17,29 @@ export default {
       this.$store.dispatch('ReloadDocumentList')
     })
 
-    // electron環境下でのメインプロセスからのメッセージ(メニュー操作)を処理
-    try {
-      if (process.env.VUE_APP_ELECTRON) {
-        const { ipcRenderer } = require('electron')
-
-        ipcRenderer.on('RendererRoute', (event, payload) => {
-          if (payload) {
-            const routename = payload.Name
-            switch (this.$route.name) {
-              case 'list':
-                if (routename === 'new') {
-                  this.$router.push({ name: 'edit', params: { uid: 0 } })
-                } else {
-                  this.$router.push({ name: routename })
-                }
-                break
-              case 'export':
-              case 'import':
-              case 'settings':
-                if (routename !== 'new' && this.$route.name !== routename) {
-                  this.$router.push({ name: routename })
-                }
-                break
+    // electron環境下でのメインプロセスからのメッセージ(メニュー操作によるroute変更)を処理
+    if (window?.IPC) {
+      window.IPC.onChangeRoute((_, routename) => {
+        switch (this.$route.name) {
+          case 'list':
+            if (routename === 'new') {
+              this.$router.push({ name: 'edit', params: { uid: 0 } })
+            } else {
+              if (routename !== '') {
+                this.$router.push({ name: routename })
+              }
             }
-          }
-        })
-      }
-    } catch {}
+            break
+          case 'export':
+          case 'import':
+          case 'settings':
+            if (routename !== '' && routename !== 'new' && this.$route.name !== routename) {
+              this.$router.push({ name: routename })
+            }
+            break
+        }
+      })
+    }
   },
   computed: {
     routeKey () {
