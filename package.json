@@ -24,7 +24,7 @@
     "babel-eslint": "^10.1.0",
     "core-js": "3.22.5",
     "difflib": "^0.2.4",
-    "electron": "12.2.3",
+    "electron": "18.3.7",
     "electron-builder": "^22.13.1",
     "element-ui": "2.15.10",
     "encoding-japanese": "^1.0.30",
