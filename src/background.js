@@ -49,12 +49,12 @@ function createWindow () {
     backgroundColor: '#dddddd',
     webPreferences: {
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
-      contextIsolation: false,
+      contextIsolation: true,
       spellcheck: false,
       enableWebSQL: false,
       webgl: false,
       devTools: isDevelopment,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.resolve(__dirname, 'preload.js')
     }
   })
 
@@ -342,7 +342,7 @@ function RendererRoute (routename, targetwindow) {
 }
 
 // route毎のメニュー操作
-function SwitchMenu (payload) {
+function switchMenu (payload) {
   const menu = Menu.getApplicationMenu()
   switch (payload) {
     case 'login':
@@ -626,4 +626,4 @@ ipcMain.handle('SaveConfig', (_, payload) =>
 //
 // Routerからのメニュー制御
 //
-ipcMain.on('SwitchMenu', (_, payload) => SwitchMenu(payload))
+ipcMain.handle('SwitchMenu', (_, payload) => switchMenu(payload))
