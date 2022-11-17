@@ -1,4 +1,4 @@
-// preload script
+// preload script for electron context isolation
 //
 import { contextBridge, ipcRenderer } from 'electron'
 
@@ -7,7 +7,7 @@ contextBridge.exposeInMainWorld('Versions',
   {
     ApplicationName: () => process.env.VUE_APP_NAME,
     ApplicationVersion: () => process.env.VUE_APP_VERSION,
-    Plathome: () => process.platform,
+    Platform: () => process.platform,
     Electron: () => process.versions.electron,
     Node: () => process.versions.node,
     V8: () => process.versions.v8,
@@ -16,21 +16,23 @@ contextBridge.exposeInMainWorld('Versions',
 )
 
 // IPC呼び出しのマッピング
-contextBridge.exposeInMainWorld('IPC',
+contextBridge.exposeInMainWorld('API',
   {
     // Renderer to main
-    Insert: (payload) => ipcRenderer.invoke('Insert', payload),
-    Find: (payload) => ipcRenderer.invoke('Find', payload),
-    FindOne: (payload) => ipcRenderer.invoke('FindOne', payload),
-    FindOneByHash: (payload) => ipcRenderer.invoke('FineOneByHash', payload),
-    Count: (payload) => ipcRenderer.invoke('Count', payload),
-    Update: (payload) => ipcRenderer.invoke('Update', payload),
-    Remove: (payload) => ipcRenderer.invoke('Remove', payload),
+    Insert: async (payload) => await ipcRenderer.invoke('Insert', payload),
+    Find: async (payload) => await ipcRenderer.invoke('Find', payload),
+    FindOne: async (payload) => await ipcRenderer.invoke('FindOne', payload),
+    FindOneByHash: async (payload) => await ipcRenderer.invoke('FineOneByHash', payload),
+    Count: async (payload) => await ipcRenderer.invoke('Count', payload),
+    Update: async (payload) => await ipcRenderer.invoke('Update', payload),
+    Remove: async (payload) => await ipcRenderer.invoke('Remove', payload),
 
-    LoadConfig: (payload) => ipcRenderer.invoke('LoadConfig', payload),
-    SaveConfig: (payload) => ipcRenderer.invoke('SaveConfig', payload),
+    LoadConfig: async (payload) => await ipcRenderer.invoke('LoadConfig', payload),
+    SaveConfig: async (payload) => await ipcRenderer.invoke('SaveConfig', payload),
 
     SwitchMenu: (payload) => ipcRenderer.invoke('SwitchMenu', payload),
+
+    OpenURL: (payload) => ipcRenderer.invoke('OpenURL', payload),
 
     // Main to renderer
     onChangeRoute: (callback) => ipcRenderer.on('update-route', callback)

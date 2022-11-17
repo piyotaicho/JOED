@@ -52,7 +52,8 @@ export default {
   },
   computed: {
     webApp () {
-      return !process.env.VUE_APP_ELECTRON
+      // electron環境ではwindow.Versionを用意している
+      return !window.Versions
     },
     searchActivated () {
       return this.$store.getters.SearchActivated

@@ -6,6 +6,8 @@
 </template>
 
 <script>
+import Encoding from 'encoding-japanese'
+
 export default {
   name: 'InputFile',
   props: {
@@ -29,10 +31,9 @@ export default {
       const reader = new FileReader()
       const self = this
       reader.onload = function () {
-        const encoding = require('encoding-japanese')
         const readerarray = new Uint8Array(reader.result)
-        const readencoding = encoding.detect(readerarray)
-        const unicodetext = encoding.convert(readerarray, {
+        const readencoding = Encoding.detect(readerarray)
+        const unicodetext = Encoding.convert(readerarray, {
           to: 'UNICODE',
           from: readencoding === 'UNICODE' ? 'UTF8' : readencoding,
           type: 'string'

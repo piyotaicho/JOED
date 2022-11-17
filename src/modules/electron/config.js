@@ -1,4 +1,4 @@
-// import { ipcRenderer } from 'electron'
+// Interface to electron store
 import HHX from 'xxhashjs'
 
 export async function LoadConfig () {
@@ -22,9 +22,9 @@ export async function SavePassword (payload) {
 }
 
 async function ipcLoadConfig (key, defaultvalue) {
-  return await window.IPC.LoadConfig({ Key: key, DefaultConfig: defaultvalue || {} })
+  return await window.API.LoadConfig({ Key: key, DefaultConfig: defaultvalue || {} })
 }
 
 async function ipcSaveConfig (key, settings) {
-  return await window.IPC.SaveConfig({ Key: key, Config: settings })
+  return await window.API.SaveConfig({ Key: key, Config: settings })
 }

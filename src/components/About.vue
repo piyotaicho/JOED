@@ -28,6 +28,10 @@
       <li v-for="(item, index) of List" :key="index">
         {{item.name}} (<ExtLink :url="item.href" />) - License : {{item.license}}
       </li>
+      <template v-if="LibraryVersions.electron">
+        <li>electron (<ExtLink url="https://www.electronjs.org/" />) - License : MIT</li>
+        <li>electron store (<ExtLink url="https://github.com/sindresorhus/electron-store" />) - License : MIT</li>
+      </template>
     </ul>
   </div>
 </template>
@@ -45,11 +49,6 @@ export default {
       List: [
         // { name: '', href: '', license: '' },
         { name: 'Vue.js', href: 'https://vuejs.org/', license: 'MIT' },
-        ...(process.env.VUE_APP_ELECTRON
-          ? [
-            { name: 'electron', href: 'https://www.electronjs.org/', license: 'MIT' }
-          ]
-          : []),
         { name: 'Vuex', href: 'https://vuex.vuejs.org/', license: 'MIT' },
         { name: 'Vue Router', href: 'https://router.vuejs.org/', license: 'MIT' },
         { name: 'Element', href: 'https://element.eleme.io/', license: 'MIT' },
@@ -59,12 +58,7 @@ export default {
         { name: 'Vue-infinite-loading', href: 'https://github.com/PeachScript/vue-infinite-loading', license: 'MIT' },
         { name: 'xxhashjs', href: 'https://github.com/pierrec/js-xxhash', license: 'MIT' },
         { name: 'Difflib.js', href: 'https://github.com/qiao/difflib.js', license: 'PSF' },
-        { name: 'encoding.js', href: 'https://github.com/polygonplanet/encoding.js', license: 'MIT' },
-        ...(process.env.VUE_APP_ELECTRON
-          ? [
-            { name: 'electron store', href: 'https://github.com/sindresorhus/electron-store', license: 'MIT' }
-          ]
-          : [])
+        { name: 'encoding.js', href: 'https://github.com/polygonplanet/encoding.js', license: 'MIT' }
       ]
     })
   },

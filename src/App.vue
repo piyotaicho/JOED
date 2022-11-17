@@ -19,7 +19,7 @@ export default {
 
     // electron環境下でのメインプロセスからのメッセージ(メニュー操作によるroute変更)を処理
     if (window?.IPC) {
-      window.IPC.onChangeRoute((_, routename) => {
+      window.API.onChangeRoute((_, routename) => {
         switch (this.$route.name) {
           case 'list':
             if (routename === 'new') {

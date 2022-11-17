@@ -2,7 +2,7 @@
 /* global __static */
 'use strict'
 
-import { app, protocol, BrowserWindow, Menu, ipcMain, dialog } from 'electron'
+import { app, protocol, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 import HHX from 'xxhashjs'
@@ -627,3 +627,8 @@ ipcMain.handle('SaveConfig', (_, payload) =>
 // Routerからのメニュー制御
 //
 ipcMain.handle('SwitchMenu', (_, payload) => switchMenu(payload))
+
+//
+// Renderが指定する外部リンクをシステムで開く
+//
+ipcMain.on('OpenURL', (_, target) => shell.openExternal(target))

@@ -6,29 +6,29 @@ export function CreateInstance (payload, NedbDatabaseObject) {
 }
 
 export function Insert (payload) {
-  return window.IPC.Insert(payload)
+  return window.API.Insert(payload)
 }
 
 export function Find (payload) {
-  return window.IPC.Find(payload)
+  return window.API.Find(payload)
 }
 
 export function FindOne (payload) {
-  return window.IPC.FindOne(payload)
+  return window.API.FindOne(payload)
 }
 
 export function FindOneByHash (payload) {
-  return window.IPC.FineOneByHash(payload)
+  return window.API.FineOneByHash(payload)
 }
 
 export function Count (payload) {
-  return window.IPC.Count(payload)
+  return window.API.Count(payload)
 }
 
 export function Update (payload) {
-  return window.IPC.Update(payload)
+  return window.API.Update(payload)
 }
 
 export function Remove (payload) {
-  return window.IPC.Remove(payload)
+  return window.API.Remove(payload)
 }

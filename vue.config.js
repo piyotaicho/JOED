@@ -8,7 +8,7 @@ module.exports = {
   productionSourceMap: false,
   configureWebpack: {
     devtool: 'source-map',
-    target: process.env.VUE_APP_ELECTRON ? 'electron-renderer' : 'web',
+    target: 'web',
     optimization: {
       splitChunks: {
         maxSize: 512000
@@ -26,10 +26,10 @@ module.exports = {
   },
   pluginOptions: {
     electronBuilder: {
-      appId: process.env.VUP_APP_ID,
+      appId: process.env.VUE_APP_ID,
       productName: 'JOED',
       copyright: 'Copyright (C) 2020-2021 P4mohnet and 日本産科婦人科内視鏡学会',
-      nodeIntegration: true,
+      nodeIntegration: false,
       contextIsolation: false,
       preload: 'src/preload.js',
       buildResources: 'build/*',

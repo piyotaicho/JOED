@@ -15,12 +15,11 @@ export default {
   },
   methods: {
     Click () {
-      if (process.env.VUE_APP_ELECTRON) {
-        try {
-          const { shell } = require('electron')
-          shell.openExternal(this.url)
-        } catch {}
+      if (window?.Version) {
+        // electron環境
+        window.API.OpenURL(this.url)
       } else {
+        // ブラウザ環境
         window.open(this.url, '_blank')
       }
     }
