@@ -17,9 +17,9 @@ export default {
       this.$store.dispatch('ReloadDocumentList')
     })
 
-    // electron環境下でのメインプロセスからのメッセージ(メニュー操作によるroute変更)を処理
-    if (window?.IPC) {
-      window.API.onChangeRoute((_, routename) => {
+    // electron環境下でのメインプロセスからのメッセージ(メニュー操作によるrouter変更)を処理
+    if (window?.API) {
+      window.API.onChangeRouter((_, routename) => {
         switch (this.$route.name) {
           case 'list':
             if (routename === 'new') {

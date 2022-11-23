@@ -76,12 +76,12 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.path === '/' || Store.getters['password/isAuthenticated']) {
-    if (window?.IPC) {
+    if (window?.API) {
       window.API.SwitchMenu(to.name)
     }
     next()
   } else {
-    if (window?.IPC) {
+    if (window?.API) {
       window.API.SwitchMenu('login')
     }
     next('/')

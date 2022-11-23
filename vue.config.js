@@ -28,7 +28,7 @@ module.exports = {
     electronBuilder: {
       appId: process.env.VUE_APP_ID,
       productName: 'JOED',
-      copyright: 'Copyright (C) 2020-2021 P4mohnet and 日本産科婦人科内視鏡学会',
+      copyright: 'Copyright (C) 2020-2022 P4mohnet and 日本産科婦人科内視鏡学会',
       nodeIntegration: false,
       contextIsolation: false,
       preload: 'src/preload.js',

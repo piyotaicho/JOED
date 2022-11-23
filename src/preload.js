@@ -35,6 +35,6 @@ contextBridge.exposeInMainWorld('API',
     OpenURL: (payload) => ipcRenderer.invoke('OpenURL', payload),
 
     // Main to renderer
-    onChangeRoute: (callback) => ipcRenderer.on('update-route', callback)
+    onChangeRouter: (callback) => ipcRenderer.on('update-router', callback)
   }
 )

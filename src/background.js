@@ -338,10 +338,10 @@ app.setAboutPanelOptions({
 
 // main -> renderer : メニューからrouterの切り替え要求 (App.vueで処理)
 function RendererRoute (routename, targetwindow) {
-  targetwindow.webContents.send('update-route', routename)
+  targetwindow.webContents.send('update-router', routename)
 }
 
-// route毎のメニュー操作
+// router毎のメニュー操作
 function switchMenu (payload) {
   const menu = Menu.getApplicationMenu()
   switch (payload) {
