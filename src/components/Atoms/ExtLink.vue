@@ -15,11 +15,10 @@ export default {
   },
   methods: {
     Click () {
-      if (window?.Version) {
-        // electron環境
+      // webpackのコンパイルで条件分岐
+      if (process.env.VUE_APP_ELECTRON) {
         window.API.OpenURL(this.url)
       } else {
-        // ブラウザ環境
         window.open(this.url, '_blank')
       }
     }

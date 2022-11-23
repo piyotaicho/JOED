@@ -626,7 +626,7 @@ ipcMain.handle('SaveConfig', (_, payload) =>
 //
 // Routerからのメニュー制御
 //
-ipcMain.handle('SwitchMenu', (_, payload) => switchMenu(payload))
+ipcMain.on('SwitchMenu', (_, payload) => switchMenu(payload))
 
 //
 // Renderが指定する外部リンクをシステムで開く

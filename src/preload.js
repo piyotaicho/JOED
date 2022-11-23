@@ -30,9 +30,9 @@ contextBridge.exposeInMainWorld('API',
     LoadConfig: async (payload) => await ipcRenderer.invoke('LoadConfig', payload),
     SaveConfig: async (payload) => await ipcRenderer.invoke('SaveConfig', payload),
 
-    SwitchMenu: (payload) => ipcRenderer.invoke('SwitchMenu', payload),
+    SwitchMenu: (payload) => ipcRenderer.send('SwitchMenu', payload),
 
-    OpenURL: (payload) => ipcRenderer.invoke('OpenURL', payload),
+    OpenURL: (payload) => ipcRenderer.send('OpenURL', payload),
 
     // Main to renderer
     onChangeRouter: (callback) => ipcRenderer.on('update-router', callback)
