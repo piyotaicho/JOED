@@ -394,18 +394,19 @@ export default {
           const TimeStamp = Date.now()
 
           const exportText = JSON.stringify(exportItem, ' ', 2)
-          // ヘッダのハッシュ値は
+          // ヘッダが保持するドキュメント部分のハッシュ値
           const hash = HHX.h64(exportText, TimeStamp).toString(16)
 
           exportItem.unshift({
             InstitutionName: this.$store.getters['system/InstitutionName'],
             InstitutionID: this.$store.getters['system/InstitutionID'],
-            JSOGoncologyboardID: this.$store.getters['system/JSOGInstitutionID'],
+            // 2022年からは腫瘍関係の情報収集は排除.
+            // JSOGoncologyboardID: this.$store.getters['system/JSOGInstitutionID'],
             TimeStamp: TimeStamp,
             Year: this.exportYear || 'ALL',
             NumberOfCases: exportItem.length,
             Version: this.$store.getters['system/ApplicationVersion'],
-            Plathome: window.navigator.platform + '(' + process.arch + ')',
+            Plathome: this.$store.getters['system/Plathome'],
             hash: hash
           })
         }
