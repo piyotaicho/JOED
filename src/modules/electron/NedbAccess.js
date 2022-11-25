@@ -18,7 +18,7 @@ export function FindOne (payload) {
 }
 
 export function FindOneByHash (payload) {
-  return window.API.FineOneByHash(payload)
+  return window.API.FindOneByHash(payload)
 }
 
 export function Count (payload) {
