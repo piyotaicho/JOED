@@ -20,7 +20,8 @@ module.exports = {
           process.env.VUE_APP_ELECTRON
             ? 'src/modules/electron/'
             : 'src/modules/serve/'
-        )
+        ),
+        path: false
       }
     }
   },

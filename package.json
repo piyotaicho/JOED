@@ -19,14 +19,14 @@
   "main": "background.js",
   "dependencies": {
     "@seald-io/nedb": "3.1.0",
-    "core-js": "3.22.5",
+    "core-js": "3.26.1",
     "difflib": "^0.2.4",
-    "electron-builder": "23.3.3",
-    "element-ui": "2.15.10",
-    "encoding-japanese": "^1.0.30",
-    "glob-parent": "5.1.2",
+    "electron-builder": "23.6.0",
+    "element-ui": "2.15.12",
+    "encoding-japanese": "^2.0.0",
+    "glob-parent": "^6.0.2",
     "is-svg": "4.3.2",
-    "sass-loader": "10.2.1",
+    "sass-loader": "^13.2.0",
     "url-parse": "1.5.10",
     "vue": "2.7.13",
     "vue-infinite-loading": "^2.4.5",
@@ -37,26 +37,27 @@
     "xxhashjs": "^0.2.2"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "4.5.17",
-    "@vue/cli-plugin-eslint": "4.5.17",
-    "@vue/cli-plugin-router": "4.5.17",
-    "@vue/cli-plugin-vuex": "4.5.17",
-    "@vue/cli-service": "4.5.17",
-    "@vue/eslint-config-standard": "5.1.2",
+    "@babel/eslint-parser": "^7.19.1",
+    "@vue/cli-plugin-babel": "~5.0.8",
+    "@vue/cli-plugin-eslint": "~5.0.8",
+    "@vue/cli-plugin-router": "~5.0.8",
+    "@vue/cli-plugin-vuex": "~5.0.8",
+    "@vue/cli-service": "^5.0.8",
+    "@vue/eslint-config-standard": "^8.0.1",
     "babel-eslint": "^10.1.0",
     "electron": "^20.3.7",
     "electron-devtools-installer": "^3.1.0",
     "electron-store": "8.1.0",
-    "eslint": "6.8.0",
-    "eslint-plugin-import": "2.25.4",
+    "eslint": "8",
+    "eslint-plugin-import": "2.26.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "4.3.1",
-    "eslint-plugin-standard": "4",
-    "eslint-plugin-vue": "^7.20.0",
-    "sass": "1.51.0",
-    "vue-cli-plugin-electron-builder": "~2.1.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-standard": "^5.0.0",
+    "eslint-plugin-vue": "^9.8.0",
+    "sass": "^1.56.1",
+    "vue-cli-plugin-electron-builder": "^2.1.1",
     "vue-cli-plugin-element": "^1.0.1",
-    "vue-template-compiler": "2.7.13"
+    "vue-template-compiler": "2.7.14"
   },
   "eslintConfig": {
     "root": true,
@@ -65,10 +66,11 @@
     },
     "extends": [
       "plugin:vue/essential",
-      "@vue/standard"
+      "@vue/eslint-config-standard"
     ],
     "parserOptions": {
-      "parser": "babel-eslint"
+      "parser": "@babel/eslint-parser",
+      "requireConfig": true
     },
     "rules": {}
   },
