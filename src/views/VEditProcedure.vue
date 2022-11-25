@@ -283,7 +283,7 @@ export default {
         this.$set(description, 'Title', '')
         this.$set(description, 'SelectionMode', 'one')
       }
-      this.$nextTick()
+      this.$nextTick(() => {})
     },
 
     setAdditionalProcedureSection (item) {

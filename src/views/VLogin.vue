@@ -1,6 +1,6 @@
 <template>
   <div class="login-dialog">
-    <div class="w30" id="auth-logo"><Icon/></div>
+    <div class="w30" id="auth-logo"><LargeIcon/></div>
     <div class="w70" id="auth">
       <div class="title">{{Title[0]}}</div>
       <div class="subtitle">{{Title[1]}}</div>
@@ -22,12 +22,12 @@
 </template>
 
 <script>
-import Icon from '@/components/Atoms/Icon'
+import LargeIcon from '@/components/Atoms/LargeIcon'
 
 export default {
   name: 'ViewLogin',
   components: {
-    Icon
+    LargeIcon
   },
   data () {
     return ({

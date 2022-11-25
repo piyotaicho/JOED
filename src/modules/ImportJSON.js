@@ -53,8 +53,8 @@ export function ValidateRecords (records) {
   }
   return {
     length: numberofCase,
-    hasHeader: hasHeader,
-    anonymised: anonymised
+    hasHeader,
+    anonymised
   }
 }
 

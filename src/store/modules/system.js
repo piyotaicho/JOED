@@ -50,12 +50,14 @@ export default {
       return process.env.VUE_APP_ELECTRON
         ? window?.Versions?.Platform()
         : (
-          (
-            window.navigator?.platform ||
+            (
+              window.navigator?.platform ||
             window.navigator?.userAgentData?.platform ||
             'win32'
-          ).includes('Mac') ? 'darwin' : 'win32'
-        )
+            ).includes('Mac')
+              ? 'darwin'
+              : 'win32'
+          )
     },
 
     // settingsオブジェクト全体

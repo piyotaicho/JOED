@@ -1,5 +1,5 @@
 <template>
-  <Section title="合併症"
+  <SectionBlock title="合併症"
     :draggable="false"
     :container.sync="items"
     @addnewitem='AddNewItem()'>
@@ -10,18 +10,18 @@
     <template #default="itemprops">
       <SectionAEItem :item="itemprops.item" @remove="RemoveItem(itemprops.index)" />
     </template>
-  </Section>
+  </SectionBlock>
 </template>
 
 <script>
-import Section from '@/components/Molecules/Section'
+import SectionBlock from '@/components/Molecules/Section'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import SectionAEItem from '@/components/SectionAEItem'
 
 export default {
   name: 'SectionAEs',
   components: {
-    Section, LabeledCheckbox, SectionAEItem
+    SectionBlock, LabeledCheckbox, SectionAEItem
   },
   props: {
     container: {

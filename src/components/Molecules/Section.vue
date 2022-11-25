@@ -33,7 +33,7 @@ import draggable from 'vuedraggable'
 import SectionItem from '@/components/SectionItem'
 
 export default {
-  name: 'Section',
+  name: 'SectionBLock',
   components: {
     draggable, SectionItem, NewEntryButton
   },

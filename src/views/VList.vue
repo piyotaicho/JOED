@@ -9,7 +9,7 @@
       <DrawerButton class="open-drawer" tab-index="0" @click="OpenDrawer"/>
       <NewEntryButton class="list-new-entry" tab-index="0" @click="CreateNewEntry()"/>
 
-      <Drawer :visible="showMenuDrawer" @close="CloseDrawer"/>
+      <ListDrawer :visible="showMenuDrawer" @close="CloseDrawer"/>
 
       <CaseDocument v-for="uid in Uids" :key="uid" :uid="uid"/>
       <InfiniteLoading @infinite="HandleInfinite" :identifier="DisplayIdentifier" ref="infiniteloading">
@@ -27,14 +27,14 @@
 import DrawerButton from '@/components/Atoms/DrawerButton.vue'
 import NewEntryButton from '@/components/Atoms/NewEntryButton'
 import CaseDocument from '@/components/Organisms/CaseDocument'
-import Drawer from '@/components/Organisms/ListDrawer'
+import ListDrawer from '@/components/Organisms/ListDrawer'
 import WelcomeBanner from '@/components/Organisms/WelcomeBanner'
 import InfiniteLoading from 'vue-infinite-loading'
 
 export default {
   name: 'VList',
   components: {
-    DrawerButton, NewEntryButton, CaseDocument, Drawer, WelcomeBanner, InfiniteLoading
+    DrawerButton, NewEntryButton, CaseDocument, ListDrawer, WelcomeBanner, InfiniteLoading
   },
   mounted () {
     // vue routerのscrollを代替 - #doc-id なエレメントが中心になるようにスクロールとfocusする

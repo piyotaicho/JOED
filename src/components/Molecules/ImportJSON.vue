@@ -10,19 +10,19 @@
       <el-button type="primary" :disabled="disabled || Processing " @click="ProcessStream">ファイルの読み込みと変換</el-button>
     </div>
     <div class="progress-views">
-      <Reports :report="LogMessages.join('\n')" v-show="LogMessages.length > 0"/>
+      <ReportViewer :report="LogMessages.join('\n')" v-show="LogMessages.length > 0"/>
     </div>
   </div>
 </template>
 
 <script>
-import Reports from '@/components/Atoms/Reports'
+import ReportViewer from '@/components/Atoms/Reports'
 import { ValidateRecords, CreateDocument } from '@/modules/ImportJSON'
 import * as Popups from '@/modules/Popups'
 
 export default {
   name: 'ImportJSON',
-  components: { Reports },
+  components: { ReportViewer },
   props: {
     disabled: {
       type: Boolean,

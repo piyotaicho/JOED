@@ -78,7 +78,7 @@ import HHX from 'xxhashjs'
 import { ValidateCase } from '@/modules/CaseValidater'
 
 export default {
-  name: 'Export',
+  name: 'ExportData',
   components: {
     SelectYear, InputSwitchField, TheWrapper
   },
@@ -157,7 +157,7 @@ export default {
     ResetState () {
       this.processStep = undefined
       this.exportText = ''
-      this.$nextTick()
+      this.$nextTick(() => {})
     },
 
     async Process () {
@@ -402,12 +402,12 @@ export default {
             InstitutionID: this.$store.getters['system/InstitutionID'],
             // 2022年からは腫瘍関係の情報収集は排除.
             // JSOGoncologyboardID: this.$store.getters['system/JSOGInstitutionID'],
-            TimeStamp: TimeStamp,
+            TimeStamp,
             Year: this.exportYear || 'ALL',
             NumberOfCases: exportItem.length,
             Version: this.$store.getters['system/ApplicationVersion'],
             Plathome: this.$store.getters['system/Plathome'],
-            hash: hash
+            hash
           })
         }
       }

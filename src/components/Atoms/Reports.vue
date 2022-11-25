@@ -6,7 +6,7 @@
 
 <script>
 export default {
-  name: 'Reports',
+  name: 'ReportViewer',
   props: {
     report: {
       type: String,

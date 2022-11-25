@@ -40,7 +40,7 @@
 import ExtLink from '@/components/Atoms/ExtLink'
 
 export default {
-  name: 'About',
+  name: 'ShowAbout',
   components: {
     ExtLink
   },
@@ -71,11 +71,11 @@ export default {
         Vue: this.$store.getters['system/VueVersion'],
         ...(window?.Versions
           ? {
-            electron: window.Versions.Electron(),
-            node: window.Versions.Node(),
-            v8: window.Versions.V8(),
-            chrome: window.Versions.Chrome()
-          }
+              electron: window.Versions.Electron(),
+              node: window.Versions.Node(),
+              v8: window.Versions.V8(),
+              chrome: window.Versions.Chrome()
+            }
           : {})
       }
     }

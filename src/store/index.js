@@ -251,8 +251,8 @@ const store = new Vuex.Store({
       Vue.set(state, 'Sort',
         (keyvalue && keyvalue.length === 2)
           ? {
-            [keyvalue[0]]: keyvalue[1]
-          }
+              [keyvalue[0]]: keyvalue[1]
+            }
           : state.system.settings.View.Sort
       )
     }
@@ -315,7 +315,7 @@ const store = new Vuex.Store({
               {
                 Query: context.getters.ViewQuery.Query,
                 Sort: context.getters.ViewQuery.Sort,
-                Projection: Projection
+                Projection
               }
             )
           } else {
@@ -333,7 +333,7 @@ const store = new Vuex.Store({
               {
                 Query: context.getters.ViewQuery.Query,
                 Sort: querySort,
-                Projection: Projection
+                Projection
               }
             )).sort((a, b) => {
               // undefinedに対しては 30分未満を設定する.

@@ -41,7 +41,7 @@ import StepIndicator from '@/components/Molecules/StepIndicator'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 
 export default {
-  name: 'Import',
+  name: 'ImportData',
   components: { InputFile, StepIndicator, ImportJSON, ImportCSV, ImportMergeV4, TheWrapper },
   data () {
     return ({
@@ -139,7 +139,7 @@ export default {
       }
 
       this.CreatedDocument.splice(0)
-      this.$nextTick()
+      this.$nextTick(() => {})
     }
   }
 }

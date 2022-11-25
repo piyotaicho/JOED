@@ -166,7 +166,7 @@ const SearchSetting = {
 }
 
 export default {
-  name: 'Search',
+  name: 'ListSearch',
   components: {
     InputSwitchField
   },
