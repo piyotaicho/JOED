@@ -31,32 +31,33 @@ module.exports = {
       productName: 'JOED',
       copyright: 'Copyright (C) 2020-2022 P4mohnet and 日本産科婦人科内視鏡学会',
       nodeIntegration: false,
-      contextIsolation: false,
-      preload: 'src/preload.js',
-      buildResources: 'build/*',
-      win: {
-        target: 'dir',
-        icon: 'build/Windows.ico',
-        legalTrademarks: 'P4mohnet and 日本産科婦人科内視鏡学会'
-      },
-      mac: {
-        target: 'dmg',
-        category: 'public.app-category.medical',
-        hardenedRuntime: true,
-        icon: 'build/macos.icns',
-        // eslint-disable-next-line no-template-curly-in-string
-        title: '症例登録システム ${version}'
-      },
-      nsis: {
-        oneClick: false,
-        perMachine: true,
-        allowToChangeInstallationDirectory: true,
-        installerLanguage: 'ja_JP',
-        license: 'build/license(sjis).txt',
-        installerIcon: 'build/Windows.ico',
-        createStartMenuShortcut: true,
-        menuCategory: '日本産科婦人科内視鏡学会',
-        shortcutName: '症例登録システム '
+      contextIsolation: true,
+      // preload: 'src/preload.js',
+      // buildResources: 'build/',
+      builderOptions: {
+        mac: {
+          target: 'dmg',
+          category: 'public.app-category.medical',
+          hardenedRuntime: true,
+          icon: 'macos.icns'
+        },
+        dmg: {
+          // eslint-disable-next-line no-template-curly-in-string
+          title: '症例登録システム ${version}'
+        },
+        win: {
+          target: 'nsis',
+          icon: 'Windows.ico',
+          legalTrademarks: 'P4mohnet and 日本産科婦人科内視鏡学会'
+        },
+        nsis: {
+          installerIcon: 'Windows.ico',
+          installerLanguages: ['ja-JP'],
+          // eslint-disable-next-line no-template-curly-in-string
+          artifactName: '${productName}-${version}-${arch}-installer.${ext}',
+          include: 'installer.nsh',
+          script: 'installer.nsi'
+        }
       }
     }
   }
