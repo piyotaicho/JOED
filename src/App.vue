@@ -7,7 +7,6 @@
 <script>
 export default {
   created () {
-    this.$store.commit('$initDatabase')
     this.$store.dispatch('system/LoadPreferences').then(_ => {
       // システムSALTが未設定の場合は起動時をSALTにする.
       if (!this.$store.getters['system/SALT']) {

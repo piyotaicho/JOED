@@ -1,23 +1,19 @@
+// ブラウザのファイルシステムへのNeDBラッパー
+// seald/nedbになって*AsyncができたのでPromise+callbackから移行
+// データベースインスタンスは公開不要なのでインターフェースを簡素化した
 import HHX from 'xxhashjs'
 
 const NeDB = require('@seald-io/nedb')
+const DatabaseInstance = new NeDB({
+  filename: 'joed.nedb',
+  autoload: true
+})
 
-export function CreateInstance (payload) {
-  const config = Object.assign(
-    {
-      filename: '',
-      autoload: true
-    },
-    payload)
-
-  return new NeDB(config)
-}
-
-export async function Insert (payload, DatabaseInstance) {
+export async function Insert (payload) {
   return DatabaseInstance.insertAsync(payload.Document)
 }
 
-export async function Find (payload, DatabaseInstance) {
+export async function Find (payload) {
   return DatabaseInstance.findAsync(payload?.Query ? payload.Query : {})
     .projection(payload?.Projection ? payload.Projection : {})
     .sort(payload?.Sort ? payload.Sort : {})
@@ -25,7 +21,7 @@ export async function Find (payload, DatabaseInstance) {
     .limit(payload?.Limit ? Number.parseInt(payload.Limit) : 0)
 }
 
-export async function FindOne (payload, DatabaseInstance) {
+export async function FindOne (payload) {
   return DatabaseInstance.findOneAsync(payload?.Query ? payload.Query : {})
     .projection(payload?.Projection ? payload.Projection : {})
     .sort(payload?.Sort ? payload.Sort : {})
@@ -38,9 +34,7 @@ export async function FindOne (payload, DatabaseInstance) {
 // @param{object}
 //   .Hash - ドキュメントハッシュ文字列
 //   .SALT - ハッシュキー(Number)
-//
-// return - promise(uid)
-export async function FindOneByHash (payload, DatabaseInstance) {
+export async function FindOneByHash (payload) {
   const HHX64 = HHX.h64(payload.SALT)
 
   const founddocument = await DatabaseInstance.findOneAsync(
@@ -62,13 +56,13 @@ export async function FindOneByHash (payload, DatabaseInstance) {
   return founddocument !== null ? founddocument?.DocumentId : undefined
 }
 
-export async function Count (payload, DatabaseInstance) {
+export async function Count (payload) {
   return await DatabaseInstance.countAsync(
     payload?.Query ? payload.Query : {}
   )
 }
 
-export async function Update (payload, DatabaseInstance) {
+export async function Update (payload) {
   return await DatabaseInstance.updateAsync(
     payload?.Query ? payload.Query : {},
     payload?.Update ? payload.Update : {},
@@ -76,7 +70,7 @@ export async function Update (payload, DatabaseInstance) {
   )
 }
 
-export async function Remove (payload, DatabaseInstance) {
+export async function Remove (payload) {
   return await DatabaseInstance.removeAsync(
     payload?.Query ? payload.Query : {},
     payload?.Options ? payload.Options : {}
