@@ -14,7 +14,9 @@ module.exports = {
   publicPath: './',
   productionSourceMap: false,
   configureWebpack: {
-    devtool: 'source-map',
+    devtool: process.env.NODE_ENV === 'production'
+      ? false
+      : 'source-map',
     target: 'web',
     output: {
       clean: {
