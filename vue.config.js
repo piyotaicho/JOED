@@ -17,7 +17,9 @@ module.exports = {
     devtool: 'source-map',
     target: 'web',
     output: {
-      clean: true
+      clean: {
+        keep: /legacy-assets.*\.json$/
+      }
     },
     performance: {
       maxAssetSize: 1024000,
