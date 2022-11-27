@@ -1,7 +1,7 @@
 {
   "name": "joed5",
-  "version": "1.3.1060",
-  "description": "The procedures and adverse events regstration system provided by JSGOE",
+  "version": "1.3.1061",
+  "description": "The procedures and adverse events regstration system provided by JSGOE (C) 2020-2022 P4mohnet and 日本産科婦人科内視鏡学会",
   "author": {
     "name": "Yasuhiro Yamamoto",
     "email": "p4@mohnet.com"
@@ -13,6 +13,7 @@
     "electron:build": "vue-cli-service electron:build --mode electron",
     "electron:build.production": "vue-cli-service electron:build --mode electron.production",
     "electron:serve": "vue-cli-service electron:serve --mode electron",
+    "electron:serve.production": "vue-cli-service electron:serve --mode electron.production",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"
   },
@@ -26,6 +27,7 @@
     "encoding-japanese": "^2.0.0",
     "glob-parent": "^6.0.2",
     "is-svg": "4.3.2",
+    "path-browserify": "^1.0.1",
     "sass-loader": "^13.2.0",
     "url-parse": "1.5.10",
     "vue": "2.7.13",
@@ -45,16 +47,17 @@
     "@vue/cli-service": "^5.0.8",
     "@vue/eslint-config-standard": "^8.0.1",
     "babel-eslint": "^10.1.0",
-    "electron": "^20.3.7",
+    "electron": "^21.3.1",
     "electron-devtools-installer": "^3.1.0",
     "electron-store": "8.1.0",
-    "eslint": "8",
+    "eslint": "8.28.0",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-standard": "^5.0.0",
     "eslint-plugin-vue": "^9.8.0",
     "sass": "^1.56.1",
+    "terser-webpack-plugin": "^5.3.6",
     "vue-cli-plugin-electron-builder": "^2.1.1",
     "vue-cli-plugin-element": "^1.0.1",
     "vue-template-compiler": "2.7.14"

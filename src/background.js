@@ -36,7 +36,7 @@ if (!instanceLock) {
 }
 
 // CreateBrowserWindow
-function createWindow () {
+async function createWindow () {
   win = new BrowserWindow({
     width: 960,
     minWidth: 960,
@@ -60,13 +60,15 @@ function createWindow () {
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
-    win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
+    await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
       .then(_ => {
-        if (!process.env.IS_TEST) win.webContents.openDevTools()
+        if (!process.env.IS_TEST) {
+          win.webContents.openDevTools()
+        }
       })
   } else {
     createProtocol('app')
-    win.loadURL('app://./index.html')
+    await win.loadURL('app://./index.html')
   }
 
   win.on('closed', () => {
@@ -327,7 +329,7 @@ Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate))
 app.setAboutPanelOptions({
   applicationName: app.getName(),
   applicationVersion: process.env.VUE_APP_VERSION,
-  copyright: 'Copyright 2020-2022 P4mohnet and JSGOE',
+  copyright: ['Copyright', process.env.VUE_APP_COPYRIGHT].join(' '),
   credits: '@piyotaicho https://github.com/piyotaicho/JOED/',
   iconPath: '../public/icon.png'
 })
