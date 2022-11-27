@@ -77,7 +77,7 @@ module.exports = {
           target: 'dmg',
           category: 'public.app-category.medical',
           hardenedRuntime: true,
-          icon: 'macos.icns'
+          icon: 'icon.icns'
         },
         dmg: {
           title: '症例登録システム ${version}'
