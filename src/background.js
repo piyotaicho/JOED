@@ -14,9 +14,7 @@ const fs = require('fs')
 
 const ElectronStore = require('electron-store')
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
-let win
+let win = null
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
@@ -27,12 +25,15 @@ const instanceLock = app.requestSingleInstanceLock()
 if (!instanceLock) {
   app.quit()
 } else {
-  if (win) {
-    if (win.isMinimized()) {
-      win.restore()
+  // イベントで重複起動を検知. 最小化していたら前面表示へ.
+  app.on('second-instance', () => {
+    if (win !== null) {
+      if (win.isMinimized()) {
+        win.restore()
+      }
+      win.focus()
     }
-    win.focus()
-  }
+  })
 }
 
 // CreateBrowserWindow
@@ -72,7 +73,8 @@ async function createWindow () {
   }
 
   win.on('closed', () => {
-    // macosでウインドウが閉じるときにメニューは「JOED5について」しか利用出来ない.
+    // macosでウインドウが閉じた後には、アプリケーションメニューを「JOED5について」しか利用出来ないようにする.
+    // windowsではウインドウが閉じる = 終了となる
     if (process.platform === 'darwin') {
       const menu = Menu.getApplicationMenu()
       menu.getMenuItemById('list-new').enabled = false
@@ -85,62 +87,67 @@ async function createWindow () {
 }
 
 //
-// app イベントの処理
+// イベントの処理
 //
+
+// ready: アプリケーションの初期化終了→起動
+app.on('ready', async () => {
+  if (instanceLock) {
+    // コマンドライン解釈
+    parseCommandlineoptions()
+
+    // 初期設定
+    app.ConfigStore = new ElectronStore(app.configSetting)
+    app.DatabaseInstance = createDatabaseInstance()
+
+    // ウインドウの作成
+    if (isDevelopment && !process.env.IS_TEST) {
+      // Install Vue Devtools
+      try {
+        await installExtension(VUEJS_DEVTOOLS)
+      } catch (e) {
+        console.error('Vue Devtools failed to install:', e.toString())
+      }
+    }
+
+    createWindow()
+  }
+})
+
+// activate : macos ドックアイコンをクリック
 app.on('activate', () => {
   if (win === null) {
     createWindow()
   }
 })
 
-// window-all-closed : Windowsではここで終了処理を行う
+// window-all-closed : Windowsではウインドウを閉じる = 終了.
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  if (process.platform === 'win32') {
+    // 処理を統一するため終了イベントを発行
     app.quit()
   }
 })
 
+// quit : macosでの 終了 イベント.
 app.on('quit', () => {
   removeLockfile()
 })
 
-// アプリケーションの起動
-app.on('ready', async () => {
-  parseCommandlineoptions()
-
-  app.ConfigStore = new ElectronStore(app.configSetting)
-  app.DatabaseInstance = createDatabaseInstance()
-
-  // ウインドウの作成
-  if (isDevelopment && !process.env.IS_TEST) {
-    // Install Vue Devtools
-    try {
-      await installExtension(VUEJS_DEVTOOLS)
-    } catch (e) {
-      console.error('Vue Devtools failed to install:', e.toString())
-    }
-  }
-  createWindow()
-})
-
-// macosではdockから再度ウインドウを開くことが出来る.
+// activate-with-no-open-windows: macosではdockに残ったアイコンからウインドウを開く.
 if (process.platform === 'darwin') {
   app.on('activate-with-no-open-windows', _ => createWindow())
 }
 
-if (isDevelopment) {
-  if (process.platform === 'win32') {
-    process.on('message', (data) => {
-      if (data === 'graceful-exit') {
-        app.quit()
-      }
-    })
-  } else {
-    process.on('SIGTERM', () => {
-      console.error('二重起動はできません.')
+// 強制終了(windows: graceful-exit, macos: SIGTERM)
+if (process.platform === 'win32') {
+  process.on('message', (data) => {
+    if (data === 'graceful-exit') {
       app.quit()
-    })
-  }
+    }
+  })
+} else {
+  process.on('SIGTERM', () => app.quit())
 }
 
 //
@@ -216,7 +223,7 @@ function parseCommandlineoptions () {
     } else {
       try {
         fs.unlinkSync(DBfilename)
-      } catch {}
+      } catch { }
     }
 
     try {
@@ -225,7 +232,7 @@ function parseCommandlineoptions () {
         fs.unlinkSync(DBfilename + '.2')
         fs.unlinkSync(DBfilename + '.1')
       }
-    } catch {}
+    } catch { }
 
     dialog.showMessageBoxSync({ title: 'JOED5', message: 'ファイルを削除しました.' })
     app.exit()
@@ -392,7 +399,7 @@ function removeLockfile () {
   if (app.enableLocking) {
     try {
       fs.unlinkSync(path.join(app.getPath('documents'), 'joed.nedb.lock'))
-    } catch {}
+    } catch { }
   }
 }
 
@@ -401,7 +408,7 @@ function removeLockfile () {
 //
 const DB = require('@seald-io/nedb')
 
-// createDatabaseInstance
+// データベースインスタンスの作成
 //
 function createDatabaseInstance () {
   // appPath documents はデフォルトでは app.on ready で userData にオーバーライドされている.
@@ -411,15 +418,15 @@ function createDatabaseInstance () {
   // 原則としてバックアップ作成に関わるエラーは全て無視.
   try {
     fs.copyFileSync(DBfilename + '.2', DBfilename + '.3')
-  } catch {}
+  } catch { }
 
   try {
     fs.copyFileSync(DBfilename + '.1', DBfilename + '.2')
-  } catch {}
+  } catch { }
 
   try {
     fs.copyFileSync(DBfilename, DBfilename + '.1')
-  } catch {}
+  } catch { }
 
   try {
     createLockfile()
