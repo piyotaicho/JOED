@@ -16,13 +16,29 @@ module.exports = {
   configureWebpack: {
     devtool: 'source-map',
     target: 'web',
+    output: {
+      clean: true
+    },
+    performance: {
+      maxAssetSize: 1024000,
+      maxEntrypointSize: 1024000
+    },
     optimization: {
       splitChunks: {
         maxSize: 512000
       },
-      minimize: process.env.NODE_ENV === 'production',
+      // minimize: true when NODE_ENV === 'production'
       minimizer: [
         new TerserPlugin({
+          terserOptions: {
+            format: {
+              ecma: '2016',
+              comments: false
+            },
+            output: {
+              comments: false
+            }
+          },
           extractComments: 'all'
         })
       ]
@@ -48,6 +64,7 @@ module.exports = {
       nodeIntegration: false,
       contextIsolation: true,
       preload: 'src/preload.js',
+      customFileProtocol: './',
       chainWebpackMainProcess: (config) => config.output.filename(
         (file) => file.chunk.name === 'index' ? 'background.js' : '[name].js'
       ),
