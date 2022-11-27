@@ -6,10 +6,10 @@
     !define ARCH "-ia32"
   !endif
   !ifdef APP_64
-    !define ARCH ""
+    !define /ifndef ARCH ""
   !endif
   !ifndef ARCH
-    !error "UNKNOWN ARCHITECTURE"
+    !error "ARCHITECTURE SHOULD BE IA32 OR X64"
   !endif
 
   !define JOEDAPPNAME "症例登録システム"

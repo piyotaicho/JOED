@@ -1,4 +1,4 @@
-# Unicode
+# NSIS installer configuration for JOED5 - require installer.nsh to define Japanese messages.
 Unicode true
 !include MUI2.nsh
 
