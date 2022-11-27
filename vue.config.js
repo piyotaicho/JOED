@@ -47,6 +47,7 @@ module.exports = {
       copyright: ['Copyright', '(C)', process.env.VUE_APP_COPYRIGHT].join(' '),
       nodeIntegration: false,
       contextIsolation: true,
+      preload: 'src/preload.js',
       chainWebpackMainProcess: (config) => config.output.filename(
         (file) => file.chunk.name === 'index' ? 'background.js' : '[name].js'
       ),
