@@ -1,7 +1,13 @@
+/* eslint-disable no-template-curly-in-string */
 /* eslint-disable no-unused-vars */
 const path = require('path')
 
 process.env.VUE_APP_VERSION = require('./package.json').version
+process.env.VUE_APP_COPYRIGHT = (description =>
+  description.indexOf('(C)') !== -1
+    ? description.slice(description.indexOf('(C)') + 3).trim()
+    : '2020-2022 P4mohnet and JSGOE'
+)(require('./package.json').description)
 
 module.exports = {
   publicPath: './',
@@ -21,7 +27,9 @@ module.exports = {
             ? 'src/modules/electron/'
             : 'src/modules/serve/'
         ),
-        path: false
+        path: process.env.VUE_APP_ELECTRON
+          ? false
+          : 'path-browserify'
       }
     }
   },
@@ -29,11 +37,12 @@ module.exports = {
     electronBuilder: {
       appId: process.env.VUE_APP_ID,
       productName: 'JOED',
-      copyright: 'Copyright (C) 2020-2022 P4mohnet and 日本産科婦人科内視鏡学会',
+      copyright: ['Copyright', '(C)', process.env.VUE_APP_COPYRIGHT].join(' '),
       nodeIntegration: false,
       contextIsolation: true,
-      // preload: 'src/preload.js',
-      // buildResources: 'build/',
+      chainWebpackMainProcess: (config) => config.output.filename(
+        (file) => file.chunk.name === 'index' ? 'background.js' : '[name].js'
+      ),
       builderOptions: {
         mac: {
           target: 'dmg',
@@ -42,7 +51,6 @@ module.exports = {
           icon: 'macos.icns'
         },
         dmg: {
-          // eslint-disable-next-line no-template-curly-in-string
           title: '症例登録システム ${version}'
         },
         win: {
@@ -53,7 +61,6 @@ module.exports = {
         nsis: {
           installerIcon: 'Windows.ico',
           installerLanguages: ['ja-JP'],
-          // eslint-disable-next-line no-template-curly-in-string
           artifactName: '${productName}-${version}-${arch}-installer.${ext}',
           include: 'installer.nsh',
           script: 'installer.nsi'
