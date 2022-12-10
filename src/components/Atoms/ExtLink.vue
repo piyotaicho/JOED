@@ -25,3 +25,8 @@ export default {
   }
 }
 </script>
+
+<style lang="sass">
+span.extlink
+  cursor: pointer
+</style>
