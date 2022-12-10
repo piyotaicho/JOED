@@ -38,6 +38,8 @@ Unicode true
 
     !insertmacro MUI_LANGUAGE "Japanese"
 
+    !define REGPATH_UNINSTSUBKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\JOED5"
+
     Section 
         SetOutPath "$INSTDIR"
         File /r "${PROJECT_DIR}\dist_electron\win${ARCH}-unpacked\*.*"
@@ -48,15 +50,28 @@ Unicode true
         # start menu
         CreateDirectory "${MENUDIRNAME}"
         CreateShortCut "${MENUITEM1NAME}" "$INSTDIR\JOED5.exe" ""
+        IfFileExists "${MENUITEM2OLDNAME}" +1 +2
+          DELETE "${MENUITEM2OLDNAME}"
         CreateShortCut "${MENUITEM2NAME}" "$INSTDIR\Uninstall.exe" ""
+
+        # user registory
+        WriteRegStr HKCU "${REGPATH_UNINSTSUBKEY}" "DisplayName" "${JOEDAPPNAME}"
+        WriteRegStr HKCU "${REGPATH_UNINSTSUBKEY}" "DisplayIcon" "$INSTDIR\JOED5.exe,0"
+        WriteRegStr HKCU "${REGPATH_UNINSTSUBKEY}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
+        WriteRegStr HKCU "${REGPATH_UNINSTSUBKEY}" "QuietUninstallString" '"$INSTDIR\Uninstall.exe" /S'
+        WriteRegDWORD HKCU "${REGPATH_UNINSTSUBKEY}" "NoModify" 1
+        WriteRegDWORD HKCU "${REGPATH_UNINSTSUBKEY}" "NoRepair" 1
     SectionEnd
 
     Section "Uninstall" 
         DELETE "${MENUITEM1NAME}"
         DELETE "${MENUITEM2NAME}"
+        IfFileExists "${MENUITEM2OLDNAME}" +1 +2
+          DELETE "${MENUITEM2OLDNAME}"
         RMDIR "${MENUDIRNAME}"
         Delete "$INSTDIR\Uninstall.exe"
         RMDIR /r "$INSTDIR"
+        DeleteRegKey HKCU "${REGPATH_UNINSTSUBKEY}"
     SectionEnd
 
     Function un.DeleteDataFolder
