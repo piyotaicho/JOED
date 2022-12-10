@@ -136,6 +136,8 @@ div.caseitem
   padding: 0.12rem 0
   display: flex
   flex-direction: row
+  &:focus
+    background: var(--color-text-placeholder)
 div.caseitem-icon
   width: 60px
   display: flex
