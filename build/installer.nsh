@@ -14,6 +14,7 @@
 
   !define JOEDAPPNAME "症例登録システム"
   !define INSTALLERCAPTION "日本産科婦人科内視鏡学会 症例登録システム"
+  !define JOEDPUBLISHER "日本産科婦人科内視鏡学会"
 
   !define INSTALL_WELCOMEPAGE_TITLE "症例登録システムのセットアップへようこそ"
   !define INSTALL_FINISHPAGE_TITLE "症例登録システムのセットアップは完了しました"
@@ -26,7 +27,8 @@
 
   !define MENUDIRNAME "$SMPROGRAMS\日本産科婦人科内視鏡学会"
   !define MENUITEM1NAME "$SMPROGRAMS\日本産科婦人科内視鏡学会\症例登録システム.lnk"
-  !define MENUITEM2NAME "$SMPROGRAMS\日本産科婦人科内視鏡学会\アンインストール.lnk"
+  !define MENUITEM2OLDNAME "$SMPROGRAMS\日本産科婦人科内視鏡学会\アンインストール.lnk"
+  !define MENUITEM2NAME "$SMPROGRAMS\日本産科婦人科内視鏡学会\症例登録アンインストール.lnk"
 
   !define MSG_MSGBOX "設定とデータファイル等を削除しました."
 !endif
