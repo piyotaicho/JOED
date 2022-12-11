@@ -21,31 +21,18 @@
     </p>
 
     <hr />
-    <span style="font-weight: bold"
-      >アプリケーションおよび主要コンポーネントのバージョン</span
-    >
+    <span style="font-weight: bold">アプリケーションおよび主要コンポーネントのバージョン</span>
     <ul>
-      <li>
-        <ExtLink url="https://github.com/piyotaicho/JOED/">JOED5</ExtLink> :
-        {{ ApplicationVersion }}
+      <li v-for="(item, index) of CoreList" :key="index">
+        <ExtLink :url="item.href">{{ item.name }}</ExtLink> : {{ item.version }} - License: {{ item.license }}
       </li>
-      <template v-if="LibraryVersions.electron">
-        <li>Electron : {{ LibraryVersions.electron }}</li>
-        <li>Chrome : {{ LibraryVersions.chrome }}</li>
-        <li>node : {{ LibraryVersions.node }}</li>
-        <li>V8 : {{ LibraryVersions.v8 }}</li>
-      </template>
-      <li>Vue : {{ LibraryVersions.Vue }}</li>
     </ul>
 
     <hr />
-    <span style="font-weight: bold"
-      >JOED5は以下のコンポーネントを核に構成されています.</span
-    >
+    <span style="font-weight: bold">その他のコンポーネント</span>
     <ul>
-      <li v-for="(item, index) of List" :key="index">
-        {{ item.name }} (<ExtLink :url="item.href" />) - License :
-        {{ item.license }}
+      <li v-for="(item, index) of ComponentList" :key="index">
+        {{ item.name }} (<ExtLink :url="item.href" />) - License : {{ item.license }}
       </li>
     </ul>
   </div>
@@ -63,9 +50,21 @@ export default {
     return ({
       // webpackでトランスパイル時に置換される
       CopyrightString: process.env.VUE_APP_COPYRIGHT,
-      List: [
+      CoreList: [
+        // { name: '', href: '', version: '', license: ''}
+        { name: 'JOED5', href: 'https://github.com/piyotaicho/JOED', version: this.$store.getters['system/ApplicationVersion'], license: 'MIT' },
+        { name: 'Vue.js', href: 'https://vuejs.org/', version: this.$store.getters['system/VueVersion'], license: 'MIT' },
+        ...process.env.VUE_APP_ELECTRON
+          ? [
+              { name: 'Electron', href: 'https://www.electronjs.org/', version: window?.Versions.Electron(), license: 'MIT' },
+              { name: 'Chromium', href: 'https://www.chromium.org/Home/', version: window?.Versions.Chrome(), license: 'MIT' },
+              { name: 'Node.js', href: 'https://nodejs.org/', version: window?.Versions.Node(), license: 'MIT' },
+              { name: 'V8', href: 'https://v8.dev/', version: window?.Versions.V8(), license: 'Revised BSD' }
+            ]
+          : []
+      ],
+      ComponentList: [
         // { name: '', href: '', license: '' },
-        { name: 'Vue.js', href: 'https://vuejs.org/', license: 'MIT' },
         { name: 'Vuex', href: 'https://vuex.vuejs.org/', license: 'MIT' },
         { name: 'Vue Router', href: 'https://router.vuejs.org/', license: 'MIT' },
         { name: 'Element', href: 'https://element.eleme.io/', license: 'MIT' },
@@ -78,30 +77,29 @@ export default {
         { name: 'encoding.js', href: 'https://github.com/polygonplanet/encoding.js', license: 'MIT' },
         ...process.env.VUE_APP_ELECTRON
           ? [
-              { name: 'electron', href: 'https://www.electronjs.org/', license: 'MIT' },
               { name: 'electron store', href: 'https://github.com/sindresorhus/electron-store', license: 'MIT' }
             ]
           : []
       ]
     })
-  },
-  computed: {
-    ApplicationVersion () {
-      return this.$store.getters['system/ApplicationVersion']
-    },
-    LibraryVersions () {
-      return {
-        Vue: this.$store.getters['system/VueVersion'],
-        ...(window?.Versions
-          ? {
-              electron: window.Versions.Electron(),
-              node: window.Versions.Node(),
-              v8: window.Versions.V8(),
-              chrome: window.Versions.Chrome()
-            }
-          : {})
-      }
-    }
+  // },
+  // computed: {
+  //   ApplicationVersion () {
+  //     return this.$store.getters['system/ApplicationVersion']
+  //   },
+  //   LibraryVersions () {
+  //     return {
+  //       Vue: this.$store.getters['system/VueVersion'],
+  //       ...(window?.Versions
+  //         ? {
+  //             electron: window.Versions.Electron(),
+  //             node: window.Versions.Node(),
+  //             v8: window.Versions.V8(),
+  //             chrome: window.Versions.Chrome()
+  //           }
+  //         : {})
+  //     }
+  //   }
   }
 }
 </script>
