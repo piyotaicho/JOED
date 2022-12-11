@@ -336,7 +336,8 @@ export default {
     async CreateExportData (documentIds) {
       this.progressCreateData = 0
       const ExportItems = []
-      const hashHHX = HHX.h64(this.$store.getters['system/SALT'])
+      // 2022より64bitのシードを与える
+      const hashHHX = HHX.h64(this.$store.getters['system/SALT'].toString())
       const exportJSOGId = this.$store.getters['system/ExportJSOGId']
       const exportNCDId = this.$store.getters['system/ExportNCDId']
 
@@ -395,7 +396,7 @@ export default {
 
           const exportText = JSON.stringify(exportItem, ' ', 2)
           // ヘッダが保持するドキュメント部分のハッシュ値
-          const hash = HHX.h64(exportText, TimeStamp).toString(16)
+          const hash = HHX.h64(exportText, TimeStamp.toString()).toString(16)
 
           exportItem.unshift({
             InstitutionName: this.$store.getters['system/InstitutionName'],

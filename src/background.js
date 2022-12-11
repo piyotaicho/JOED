@@ -534,7 +534,7 @@ ipcMain.handle('FindOne', (_, payload) => {
 // @Object.Hash : String
 // @Object.SALT : Integer
 ipcMain.handle('FineOneByHash', (_, payload) => {
-  const HHX64 = HHX.h64(payload.SALT)
+  const HHX64 = HHX.h64()
   return new Promise((resolve, reject) => {
     app.DatabaseInstance
       .findOne({
@@ -545,8 +545,11 @@ ipcMain.handle('FineOneByHash', (_, payload) => {
             PatientId: this.PatientId,
             DateOfProcedure: this.DateOfProcedure
           }
-          const recordHash = HHX64.update(JSON.stringify(recordKeys)).digest().toString(36)
-          return payload.Hash === recordHash
+          // 2022より64bitのシードを与える
+          const hash = (this.DateOfProcedure.slice(0, 4) <= '2021')
+            ? HHX64(JSON.stringify(recordKeys), payload.SALT).digest().toString(36)
+            : HHX64(JSON.stringify(recordKeys), payload.SALT.toString()).digest().toString(36)
+          return payload.Hash === hash
         }
       })
       .projection({ DocumentId: 1 })
