@@ -73,6 +73,7 @@ module.exports = {
         (file) => file.chunk.name === 'index' ? 'background.js' : '[name].js'
       ),
       builderOptions: {
+        afterPack: './unlinkUnusedFiles.js',
         mac: {
           target: 'dmg',
           category: 'public.app-category.medical',
