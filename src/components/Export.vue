@@ -336,8 +336,6 @@ export default {
     async CreateExportData (documentIds) {
       this.progressCreateData = 0
       const ExportItems = []
-      // 2022より64bitのシードを与える
-      const hashHHX = HHX.h64(this.$store.getters['system/SALT'].toString())
       const exportJSOGId = this.$store.getters['system/ExportJSOGId']
       const exportNCDId = this.$store.getters['system/ExportNCDId']
 
@@ -358,14 +356,18 @@ export default {
 
           // 2021より実装変更:
           // ユニークキー(PatientId, DateOfProcedure)からレコードのハッシュを作成する.
-          const hashString = hashHHX.update(
+          // 2022より64bitのシードを与えるように変更
+          const hashString = HHX.h64(
             JSON.stringify(
               {
                 PatientId: exportdocument.PatientId,
                 DateOfProcedure: exportdocument.DateOfProcedure
               }
-            )
-          ).digest().toString(36)
+            ),
+            this.exportYear >= '2022'
+              ? this.$store.getters['system/SALT'].toString()
+              : this.$store.getters['system/SALT']
+          ).toString(36)
 
           ExportItems.push(
             {

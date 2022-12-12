@@ -5,7 +5,7 @@
 import { app, protocol, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
-import HHX from 'xxhashjs'
+import xxhash from 'xxhashjs'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -534,7 +534,6 @@ ipcMain.handle('FindOne', (_, payload) => {
 // @Object.Hash : String
 // @Object.SALT : Integer
 ipcMain.handle('FineOneByHash', (_, payload) => {
-  const HHX64 = HHX.h64()
   return new Promise((resolve, reject) => {
     app.DatabaseInstance
       .findOne({
@@ -546,9 +545,9 @@ ipcMain.handle('FineOneByHash', (_, payload) => {
             DateOfProcedure: this.DateOfProcedure
           }
           // 2022より64bitのシードを与える
-          const hash = (this.DateOfProcedure.slice(0, 4) <= '2021')
-            ? HHX64(JSON.stringify(recordKeys), payload.SALT).digest().toString(36)
-            : HHX64(JSON.stringify(recordKeys), payload.SALT.toString()).digest().toString(36)
+          const hash = (this.DateOfProcedure.slice(0, 4) >= '2022')
+            ? xxhash.h64(JSON.stringify(recordKeys), payload.SALT.toString()).toString(36)
+            : xxhash.h64(JSON.stringify(recordKeys), payload.SALT).toString(36)
           return payload.Hash === hash
         }
       })

@@ -17,6 +17,7 @@ export async function SavePassword (payload) {
   const password = payload.password
   const salt = payload.salt
 
+  // パスワードのhash化はsaltの32bit丸めで行う
   const hashedpassword = password === '' ? '' : HHX.h64(password, salt).toString(16)
   return await ipcSaveConfig('Password', { Password: hashedpassword })
 }
