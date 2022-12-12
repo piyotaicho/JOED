@@ -29,16 +29,15 @@ export default {
     SelectionMade (event) {
       const files = event.target.files || event.dataTransfer.files
       const reader = new FileReader()
-      const self = this
-      reader.onload = function () {
-        const readerarray = new Uint8Array(reader.result)
-        const readencoding = Encoding.detect(readerarray)
-        const unicodetext = Encoding.convert(readerarray, {
-          to: 'UNICODE',
-          from: readencoding === 'UNICODE' ? 'UTF8' : readencoding,
-          type: 'string'
-        })
-        self.$emit('load', unicodetext)
+      reader.onload = () => {
+        const dataArray = new Uint8Array(reader.result)
+        this.$emit('load',
+          Encoding.convert(dataArray, {
+            to: 'UNICODE',
+            from: Encoding.detect(dataArray),
+            type: 'string'
+          })
+        )
       }
       reader.readAsArrayBuffer(files[0])
     }
