@@ -98,6 +98,7 @@ export default class CaseDocumentHandler {
     const temporaryItem = {}
     const params = {
       omitNCDId: true,
+      omitJSOGId: true,
       anonymizeJSOGId: true,
       ...param
     }
@@ -111,7 +112,7 @@ export default class CaseDocumentHandler {
     }
 
     // JSOGIdの処理
-    if (item?.JSOGId) {
+    if (!params.omitJSOGId && item?.JSOGId) {
       temporaryItem.JSOGId = params.anonymizeJSOGId
         ? item.JSOGId.substr(0, 6) + '-X'
         : item.JSOGId
