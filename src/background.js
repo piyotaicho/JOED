@@ -534,7 +534,7 @@ ipcMain.handle('FindOne', (_, payload) => {
 // @Object.Hash : String
 // @Object.SALT : Integer
 ipcMain.handle('FineOneByHash', (_, payload) => {
-  const encoder = new TextEncoder()
+  const Encoder = new TextEncoder()
   return new Promise((resolve, reject) => {
     app.DatabaseInstance
       .findOne({
@@ -548,7 +548,7 @@ ipcMain.handle('FineOneByHash', (_, payload) => {
           // 2022よりUint8Arrayと64bitのシードを与える
           const hash = (this.DateOfProcedure.slice(0, 4) >= '2022')
             ? xxhash.h64(
-              encoder.encode(JSON.stringify(recordKeys)),
+              Encoder.encode(JSON.stringify(recordKeys)).buffer,
               payload.SALT.toString()
             ).toString(36)
             : xxhash.h64(JSON.stringify(recordKeys), payload.SALT).toString(36)

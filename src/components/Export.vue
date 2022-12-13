@@ -363,7 +363,7 @@ export default {
       const ExportItems = []
       const exportJSOGId = this.$store.getters['system/ExportJSOGId']
       const exportNCDId = this.$store.getters['system/ExportNCDId']
-      const encoder = new TextEncoder()
+      const Encoder = new TextEncoder()
 
       for (const index in documentIds) {
         this.progressCreateData = parseInt(index * 100.0 / documentIds.length)
@@ -387,13 +387,13 @@ export default {
           let hashString = ''
           if (this.exportYear >= '2022') {
             hashString = HHX.h64(
-              encoder.encode(
+              Encoder.encode(
                 JSON.stringify(
                   {
                     PatientId: exportdocument.PatientId,
                     DateOfProcedure: exportdocument.DateOfProcedure
                   })
-              ),
+              ).buffer,
               this.$store.getters['system/SALT'].toString()
             ).toString(36)
           } else {
@@ -412,10 +412,13 @@ export default {
             {
               ...CaseDocumentHandler.ExportCase(
                 exportdocument,
-                {
-                  omitNCDId: !exportNCDId,
-                  anonymizeJSOGId: !exportJSOGId
-                }
+                this.exportYear >= '2022'
+                  ? {}
+                  : {
+                      omitNCDId: !exportNCDId,
+                      omitJSOGId: false,
+                      anonymizeJSOGId: !exportJSOGId
+                    }
               ),
               hash: hashString
             }
@@ -434,12 +437,12 @@ export default {
 
         if (length > 0) {
           const TimeStamp = Date.now()
-          const encoder = new TextEncoder()
+          const Encoder = new TextEncoder()
 
           const exportText = JSON.stringify(exportItem, ' ', 2)
           // ヘッダが保持するドキュメント部分のハッシュ値
           const hash = HHX.h64(
-            encoder.encode(exportText),
+            Encoder.encode(exportText).buffer,
             TimeStamp.toString()).toString(16)
 
           exportItem.unshift({

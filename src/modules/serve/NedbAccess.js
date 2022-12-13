@@ -35,7 +35,7 @@ export async function FindOne (payload) {
 //   .Hash - ドキュメントハッシュ文字列
 //   .SALT - ハッシュキー(Number)
 export async function FindOneByHash (payload) {
-  const encoder = new TextEncoder()
+  const Encoder = new TextEncoder()
   const founddocument = await DatabaseInstance.findOneAsync(
     // query
     {
@@ -47,7 +47,7 @@ export async function FindOneByHash (payload) {
         // 2022より64bitのシードとUint8Arrayを与える
         const hash = (this.DateOfProcedure.slice(0, 4) >= '2022')
           ? HHX.h64(
-            encoder.encode(JSON.stringify(recordKeys)),
+            Encoder.encode(JSON.stringify(recordKeys)).buffer,
             payload.SALT.toString()
           ).toString(36)
           : HHX.h64(
