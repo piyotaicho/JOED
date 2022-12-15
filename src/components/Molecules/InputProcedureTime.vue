@@ -42,7 +42,7 @@ export default {
   data () {
     return ({
       ProcedureTimeSelections: ProcedureTimeSelections(),
-      typed: ''
+      typedString: ''
     })
   },
   computed: {
@@ -56,22 +56,25 @@ export default {
   methods: {
     TypeInChar (char) {
       if (char === 'DEL') {
-        this.typed = this.typed.slice(0, -1)
+        this.typedString = this.typedString.slice(0, -1)
       } else {
-        this.typed = (this.typed + char).substr(-4, 4)
+        if (char >= '0' || char <= '9' || char === ':') {
+          this.typedString = (this.typedString + char).slice(-5)
+        }
       }
-      const hourExpression = this.typed.indexOf(':')
-      if (hourExpression !== -1) {
+
+      const index = this.typedString.indexOf(':')
+      if (index !== -1) {
         this.ProcedureTime = ProcedureTimeSelections(
-          Number(this.typed.substr(0, hourExpression)) * 60 +
-          Number(this.typed.substr(hourExpression + 1))
+          Number(this.typedString.substring(0, index)) * 60 +
+          Number(this.typedString.substring(index + 1))
         )
       } else {
-        this.ProcedureTime = ProcedureTimeSelections(this.typed)
+        this.ProcedureTime = ProcedureTimeSelections(this.typedString)
       }
     },
     ClearTypedValue () {
-      this.typed = ''
+      this.typedString = ''
     }
   }
 }

@@ -182,7 +182,7 @@ function parseCommandlineoptions () {
     const configarg = app.commandLine.getSwitchValue('config')
     const configpath = path.parse(configarg)
     if (configpath.ext[0] === '.') {
-      configpath.ext = configpath.ext.substr(1)
+      configpath.ext = configpath.ext.substring(1)
     }
 
     try {
@@ -539,20 +539,24 @@ ipcMain.handle('FineOneByHash', (_, payload) => {
     app.DatabaseInstance
       .findOne({
         $where: function () {
-          // 2021より実装変更:
-          // レコードのハッシュはユニークキー(PatientId, DateOfProcedure)から生成
-          const recordKeys = {
-            PatientId: this.PatientId,
-            DateOfProcedure: this.DateOfProcedure
+          if (this.PatientId && this.DateOfProcedure) {
+            // 2021より実装変更:
+            // レコードのハッシュはユニークキー(PatientId, DateOfProcedure)から生成
+            const recordKeys = {
+              PatientId: this.PatientId,
+              DateOfProcedure: this.DateOfProcedure
+            }
+            // 2022よりUint8Arrayと64bitのシードを与える
+            const hash = (this.DateOfProcedure.substring(0, 4) >= '2022')
+              ? xxhash.h64(
+                Encoder.encode(JSON.stringify(recordKeys)).buffer,
+                payload.SALT.toString()
+              ).toString(36)
+              : xxhash.h64(JSON.stringify(recordKeys), payload.SALT).toString(36)
+            return payload.Hash === hash
+          } else {
+            return false
           }
-          // 2022よりUint8Arrayと64bitのシードを与える
-          const hash = (this.DateOfProcedure.slice(0, 4) >= '2022')
-            ? xxhash.h64(
-              Encoder.encode(JSON.stringify(recordKeys)).buffer,
-              payload.SALT.toString()
-            ).toString(36)
-            : xxhash.h64(JSON.stringify(recordKeys), payload.SALT).toString(36)
-          return payload.Hash === hash
         }
       })
       .projection({ DocumentId: 1 })

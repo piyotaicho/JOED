@@ -606,7 +606,7 @@ function compareCode (str1 = 'A', str2 = 'B') {
     ? (wildcard2 === -1 ? 4 : wildcard2)
     : (wildcard2 === -1 ? wildcard1 : Math.min(wildcard1, wildcard2))
 
-  return str1.substr(0, comparelength) === str2.substr(0, comparelength)
+  return str1.substring(0, comparelength) === str2.substring(0, comparelength)
 }
 
 // 文字列の正規化とチェックを行う

@@ -104,7 +104,7 @@ export default class CaseDocumentHandler {
     }
 
     // 手術実施年を抽出
-    temporaryItem.YearOfProcedure = item.DateOfProcedure.substr(0, 4)
+    temporaryItem.YearOfProcedure = item.DateOfProcedure.substring(0, 4)
 
     // NCDIdの処理
     if (!params.omitNCDId && item?.NCDId) {
@@ -114,7 +114,7 @@ export default class CaseDocumentHandler {
     // JSOGIdの処理
     if (!params.omitJSOGId && item?.JSOGId) {
       temporaryItem.JSOGId = params.anonymizeJSOGId
-        ? item.JSOGId.substr(0, 6) + '-X'
+        ? item.JSOGId.substring(0, 6) + '-X'
         : item.JSOGId
     }
 

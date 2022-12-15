@@ -40,21 +40,25 @@ export async function FindOneByHash (payload) {
     // query
     {
       $where: function () {
-        const recordKeys = {
-          PatientId: this.PatientId,
-          DateOfProcedure: this.DateOfProcedure
+        if (this.PatientId && this.DateOfProcedure) {
+          const recordKeys = {
+            PatientId: this.PatientId,
+            DateOfProcedure: this.DateOfProcedure
+          }
+          // 2022より64bitのシードとUint8Arrayを与える
+          const hash = (this.DateOfProcedure.substring(0, 4) >= '2022')
+            ? HHX.h64(
+              Encoder.encode(JSON.stringify(recordKeys)).buffer,
+              payload.SALT.toString()
+            ).toString(36)
+            : HHX.h64(
+              JSON.stringify(recordKeys),
+              payload.SALT
+            ).toString(36)
+          return hash === payload.Hash
+        } else {
+          return false
         }
-        // 2022より64bitのシードとUint8Arrayを与える
-        const hash = (this.DateOfProcedure.slice(0, 4) >= '2022')
-          ? HHX.h64(
-            Encoder.encode(JSON.stringify(recordKeys)).buffer,
-            payload.SALT.toString()
-          ).toString(36)
-          : HHX.h64(
-            JSON.stringify(recordKeys),
-            payload.SALT
-          ).toString(36)
-        return hash === payload.Hash
       }
     },
     // projection

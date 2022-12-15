@@ -39,7 +39,7 @@ export default {
   mounted () {
     // vue routerのscrollを代替 - #doc-id なエレメントが中心になるようにスクロールとfocusする
     if (this.$route.hash) {
-      const element = document.getElementById(this.$route.hash.substr(1))
+      const element = document.getElementById(this.$route.hash.slice(1))
       if (element) {
         element.scrollIntoView({ block: 'center' })
         element.focus()
@@ -84,7 +84,7 @@ export default {
       const currentid = document.activeElement.id
       if (!this.showMenuDrawer && !this.ShowStartupDialog && currentid !== '') {
         const moveto = this.Uids[
-          this.Uids.indexOf(Number(currentid.substr(3))) + diff
+          this.Uids.indexOf(Number(currentid.substring(3))) + diff
         ]
         if (moveto) {
           document.getElementById('doc' + moveto).focus()

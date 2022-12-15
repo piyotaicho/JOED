@@ -416,7 +416,7 @@ export default {
                   ? {}
                   : {
                       omitNCDId: !exportNCDId,
-                      omitJSOGId: false,
+                      omitJSOGId: !exportJSOGId,
                       anonymizeJSOGId: !exportJSOGId
                     }
               ),

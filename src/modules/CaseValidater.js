@@ -34,7 +34,7 @@ export const CategoriesOfProcedure = ['腹腔鏡', '腹腔鏡悪性', 'ロボッ
 export async function ValidateCase (item = {}, temporary = false) {
   // 一時保存でも患者IDと手術日は最低限の必須入力項目
   await CheckBasicInformations(item)
-  const year = item.DateOfProcedure.substr(0, 4)
+  const year = item.DateOfProcedure.substring(0, 4)
   if (!temporary) {
     const results = await allSettled([
       CheckProcedureTime(item),

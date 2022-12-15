@@ -6,7 +6,7 @@ const TerserPlugin = require('terser-webpack-plugin')
 process.env.VUE_APP_VERSION = require('./package.json').version
 process.env.VUE_APP_COPYRIGHT = (description =>
   description.indexOf('(C)') !== -1
-    ? description.slice(description.indexOf('(C)') + 3).trim()
+    ? description.substring(description.indexOf('(C)') + 3).trim()
     : '2020-2022 P4mohnet and JSGOE'
 )(require('./package.json').description)
 

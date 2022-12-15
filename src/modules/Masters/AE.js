@@ -9,7 +9,7 @@ export default class AEmaster {
 
     if (/^20[0-9]{2}/.test(year)) {
       Object.defineProperty(this, 'YearofMaster', {
-        value: year.substr(0, 4)
+        value: year.substring(0, 4)
       })
     } else {
       throw Error('マスターの日付シリアル指定に問題があります.')
@@ -377,7 +377,7 @@ export default class AEmaster {
         throw Error('Gradeの指定が不正です.')
       }
 
-      const grade = Number(AE.Grade.toString().substr(0, 1))
+      const grade = Number(AE.Grade.toString()[0] | 0)
       let min = 0
       let max = 0
       for (const course of AE.Course) {

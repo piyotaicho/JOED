@@ -147,7 +147,7 @@ export default {
             (!prefecturesMatch || item.ID.match(prefecturesMatch)) && !!item.name.match(search)
           )
           .map(item => {
-            item.Prefecture = ListOfPrefectures[Number(item.ID.substr(0, 2)) - 1]
+            item.Prefecture = ListOfPrefectures[Number(item.ID.substring(0, 2)) - 1]
             return item
           })
 

@@ -48,7 +48,7 @@ function DateOfProcedure (CaseData, record) {
       record['手術日']
         .match(/^20([0-9]{2})[/-](0{0,1}[1-9]|1[0-2])[/-](0{0,1}[1-9]|[12][0-9]|3[01])$/)
         .splice(1, 3)
-        .map(item => ('0' + item).substr(-2))
+        .map(item => ('0' + item).slice(-2))
         .join('-')
       return
     } catch {}
@@ -73,10 +73,10 @@ function BasicInformation (CaseData, record) {
     return
   }
   if (record['内部ID']) {
-    CaseData.PatientId = CaseData.DateOfProcedure.substr(0, 4) + record['内部ID'].substr(5)
+    CaseData.PatientId = CaseData.DateOfProcedure.substring(0, 4) + record['内部ID'].substring(5)
     return
   }
-  CaseData.PatientId = 'I-' + Number(new Date()).toString().substr(-8)
+  CaseData.PatientId = 'I-' + Number(new Date()).toString().slice(-8)
 }
 
 function ProcedureTime (CaseData, record) {
@@ -246,7 +246,7 @@ function laparoProcedure (procedure = '', typedprocedure = '', typeofselection =
       temporaryObject.Text = ConvertCharacters(procedure)
       const translatedlymph = translation.lymph[lymphadnectomy]
       if (lymphadnectomy) {
-        if (translatedlymph && translatedlymph.substr(-1, 1) !== '$') {
+        if (translatedlymph && translatedlymph.slice(-1) !== '$') {
           temporaryObject.AdditionalProcedure = {
             Text: category === 'ロボット' ? 'ロボット支援下リンパ節生検・郭清' : '腹腔鏡下リンパ節生検・郭清',
             Description: [translatedlymph]
@@ -264,7 +264,7 @@ function laparoProcedure (procedure = '', typedprocedure = '', typeofselection =
 }
 
 function handleUserTyped (category, item, typeditem) {
-  return item.substr(0, 3) !== 'その他'
+  return item.substring(0, 3) !== 'その他'
     ? {
         Chain: [category],
         Text: ConvertCharacters(item)
@@ -277,7 +277,7 @@ function handleUserTyped (category, item, typeditem) {
 }
 
 export function Migrate2019to2020 (CaseData) {
-  if (CaseData.DateOfProcedure.substr(0, 4) > '2019') {
+  if (CaseData.DateOfProcedure.substring(0, 4) > '2019') {
     // 術後診断の置換
     const DiagnosisReplacer = {
       '子宮内膜症(チョコレート嚢胞含む)': '子宮内膜症(子宮内膜症性嚢胞含む)',
