@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import ProcedureTimeSelections from '@/modules/ProcedureTimes'
+import { ProcedureTimeSelections, parseProcedureTime } from '@/modules/ProcedureTimes'
 
 export default {
   name: 'InputProcedureTime',
@@ -58,19 +58,17 @@ export default {
       if (char === 'DEL') {
         this.typedString = this.typedString.slice(0, -1)
       } else {
-        if (char >= '0' || char <= '9' || char === ':') {
-          this.typedString = (this.typedString + char).slice(-5)
-        }
+        this.typedString = (this.typedString + char).slice(-5)
       }
 
       const index = this.typedString.indexOf(':')
       if (index !== -1) {
-        this.ProcedureTime = ProcedureTimeSelections(
+        this.ProcedureTime = parseProcedureTime(
           Number(this.typedString.substring(0, index)) * 60 +
           Number(this.typedString.substring(index + 1))
         )
       } else {
-        this.ProcedureTime = ProcedureTimeSelections(this.typedString)
+        this.ProcedureTime = parseProcedureTime(this.typedString)
       }
     },
     ClearTypedValue () {
