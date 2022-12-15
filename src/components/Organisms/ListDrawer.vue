@@ -47,14 +47,11 @@ export default {
   },
   data () {
     return ({
-      view: 'view'
+      view: 'view',
+      webApp: !process.env.VUE_APP_ELECTRON
     })
   },
   computed: {
-    webApp () {
-      // electron環境ではwindow.Versionを用意している
-      return !window.Versions
-    },
     searchActivated () {
       return this.$store.getters.SearchActivated
     }

@@ -3,7 +3,7 @@ import Vuex from 'vuex'
 import * as NedbAccess from 'depmodules/NedbAccess'
 import system from '@/store/modules/system'
 import password from '@/store/modules/passwordauth'
-
+import { parseProcedureTime } from '@/modules/ProcedureTimes'
 Vue.use(Vuex)
 
 const store = new Vuex.Store({
@@ -314,8 +314,6 @@ const store = new Vuex.Store({
             // ソートのためProcedureTimeも読み込む
             Projection.ProcedureTime = 1
 
-            const ExtractTime = /([1-9]\d?0)分(以上|未満)/
-
             documents = (await context.dispatch('dbFind',
               {
                 Query: context.getters.ViewQuery.Query,
@@ -323,13 +321,8 @@ const store = new Vuex.Store({
                 Projection
               }
             )).sort((a, b) => {
-              // undefinedに対しては 30分未満を設定する.
-              const stringA = a.ProcedureTime || '30分未満'
-              const stringB = b.ProcedureTime || '30分未満'
-              const matchA = ExtractTime.exec(stringA)
-              const valueA = Number(matchA[1]) - ((matchA[2] || '以上') === '未満' ? 1 : 0)
-              const matchB = ExtractTime.exec(stringB)
-              const valueB = Number(matchB[1]) - ((matchB[2] || '以上') === '未満' ? 1 : 0)
+              const valueA = parseProcedureTime(a.ProcedureTime)
+              const valueB = parseProcedureTime(b.ProcedureTime)
               return valueA === valueB ? 0 : valueA < valueB ? -1 * direction : 1 * direction
             })
           }

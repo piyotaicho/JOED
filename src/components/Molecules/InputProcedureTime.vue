@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import { ProcedureTimeSelections, parseProcedureTime } from '@/modules/ProcedureTimes'
+import { ProcedureTimeSelections, encodeProcedureTime } from '@/modules/ProcedureTimes'
 
 export default {
   name: 'InputProcedureTime',
@@ -63,12 +63,12 @@ export default {
 
       const index = this.typedString.indexOf(':')
       if (index !== -1) {
-        this.ProcedureTime = parseProcedureTime(
+        this.ProcedureTime = encodeProcedureTime(
           Number(this.typedString.substring(0, index)) * 60 +
           Number(this.typedString.substring(index + 1))
         )
       } else {
-        this.ProcedureTime = parseProcedureTime(this.typedString)
+        this.ProcedureTime = encodeProcedureTime(this.typedString)
       }
     },
     ClearTypedValue () {
