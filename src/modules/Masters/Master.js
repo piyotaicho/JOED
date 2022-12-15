@@ -9,7 +9,7 @@ export default class Master {
   constructor (initialTree = {}, Year = '') {
     // マスタ年次の設定
     if (/^20[0-9]{2}/.test(Year)) {
-      Object.defineProperty(this, 'YearofMaster', { value: Year.substr(0, 4) })
+      Object.defineProperty(this, 'YearofMaster', { value: Year.substring(0, 4) })
     } else {
       throw Error('マスターの日付シリアル指定に問題があります.')
     }

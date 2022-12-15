@@ -2,14 +2,14 @@ import DaignosisMaster from '@/modules/Masters/DiagnosisMaster'
 import ProcedureMaster from '@/modules/Masters/ProcedureMaster'
 import AEmaster from '@/modules/Masters/AE'
 
-import ProcedureTimeSelections from '@/modules/ProcedureTimes'
+import { procedureTimeFormat } from '@/modules/ProcedureTimes'
 
 // 日付の表記
 export const DateFormatPattern = '^20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$'
 export const DateFormat = new RegExp(DateFormatPattern)
 
 // 手術時間の表記
-export const ProcedureTimeFormat = /^\d+0分(以上|未満)( － \d+0分未満)?$/
+// procedureTimeFormat - ProcedureTimesからimport
 
 // 施設番号の表記
 export const InstituteIDFormat = /^(0[1-9]|[1-3]\d|4[0-7])\d{3}$/
@@ -34,7 +34,7 @@ export const CategoriesOfProcedure = ['腹腔鏡', '腹腔鏡悪性', 'ロボッ
 export async function ValidateCase (item = {}, temporary = false) {
   // 一時保存でも患者IDと手術日は最低限の必須入力項目
   await CheckBasicInformations(item)
-  const year = item.DateOfProcedure.substr(0, 4)
+  const year = item.DateOfProcedure.substring(0, 4)
   if (!temporary) {
     const results = await allSettled([
       CheckProcedureTime(item),
@@ -71,13 +71,12 @@ export async function CheckProcedureTime (item) {
   if (!item.ProcedureTime) {
     throw Error('手術時間は必須入力項目です.')
   }
-  let procedureTimeString = item.ProcedureTime
 
-  if (/^\d+$/.test(procedureTimeString)) {
-    procedureTimeString = ProcedureTimeSelections(Number(procedureTimeString))
-  }
-  if (!ProcedureTimeFormat.test(procedureTimeString)) {
-    throw Error('手術時間の入力様式が違います.')
+  if (
+    !procedureTimeFormat.test(item.ProcedureTime) ||
+    !/^(\d+:)?\d+$/.test(item.ProcedureTime) // 実時間入力
+  ) {
+    throw Error('手術時間の入力様式に問題があります.')
   }
 }
 // 補足登録情報の検証

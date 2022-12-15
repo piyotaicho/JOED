@@ -15,11 +15,9 @@ export default {
   },
   methods: {
     Click () {
+      // webpackのコンパイルで条件分岐
       if (process.env.VUE_APP_ELECTRON) {
-        try {
-          const { shell } = require('electron')
-          shell.openExternal(this.url)
-        } catch {}
+        window.API.OpenURL(this.url)
       } else {
         window.open(this.url, '_blank')
       }
@@ -27,3 +25,8 @@ export default {
   }
 }
 </script>
+
+<style lang="sass">
+span.extlink
+  cursor: pointer
+</style>

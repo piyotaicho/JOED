@@ -1,52 +1,52 @@
 /* eslint-disable no-unused-vars */
 class Institution {
-    InstitutionName // String
-    InstitutionId // String
-    LockedInstitutionProperty // Bloolean
+  InstitutionName // String
+  InstitutionId // String
+  LockedInstitutionProperty // Bloolean
 }
 
 class DatabaseProperty {
-    ApplicationVersion // String
-    CreateDate // DateString
-    Year // String
+  ApplicationVersion // String
+  CreateDate // DateString
+  Year // String
 }
 
 class Cases {
-    _id // Applied by nedb
-    DocumentId // Number
-    UniqueId // String : created on export
-    Name // String
-    Age // Number
-    PatientId // String
-    JSOGId // String
-    NCDId // String
-    DateOfProcedure // DateString
-    ProcedureTime // String
-    TypeOfProcedure // String
-    PresentAE // Boolean
-    AEs // Array of object AE
-    Diagnoses // Array of object Diagnosis
-    Procedures // Array of object Procedure
-    Imported // Boolean
-    ValidationReport // Array of String
+  _id // Applied by nedb
+  DocumentId // Number
+  UniqueId // String : created on export
+  Name // String
+  Age // Number
+  PatientId // String
+  JSOGId // String
+  NCDId // String
+  DateOfProcedure // DateString
+  ProcedureTime // String
+  TypeOfProcedure // String
+  PresentAE // Boolean
+  AEs // Array of object AE
+  Diagnoses // Array of object Diagnosis
+  Procedures // Array of object Procedure
+  Imported // Boolean
+  ValidationReport // Array of String
 }
 
 class Diagnosis {
-    Diagnosis
+  Diagnosis
 }
 
 class Procedure {
-    Procedure
-    TypeOfProcedure
-    AssociatedProcedures
+  Procedure
+  TypeOfProcedure
+  AssociatedProcedures
 }
 
 class AE {
-    Category
-    Title
-    Cause
-    Location
-    BloodCounts
-    Grade
-    Course
+  Category
+  Title
+  Cause
+  Location
+  BloodCounts
+  Grade
+  Course
 }

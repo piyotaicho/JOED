@@ -245,7 +245,7 @@ export default {
     },
     AnotherEdit (uid) {
       if (uid > 0) {
-        this.$router.push({ name: 'edit', params: { uid: uid } })
+        this.$router.push({ name: 'edit', params: { uid } })
       }
       // HACK:
       // 新規(uid = '0')→新規(uid = '0')ではApp.vueで定義したRouterKeyが重複するための quick hack.
@@ -260,7 +260,7 @@ export default {
 
       const index = params.ItemIndex !== undefined ? params.ItemIndex : -1
       const value = params.ItemValue || {}
-      const editingYear = this.CaseData.DateOfProcedure.substr(0, 4)
+      const editingYear = this.CaseData.DateOfProcedure.substring(0, 4)
       this.$router.push({
         name: target,
         params: {

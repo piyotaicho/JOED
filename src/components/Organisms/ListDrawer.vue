@@ -8,7 +8,7 @@
     @open="DrawerOpened"
     @close="CloseDrawer">
     <div class="drawer-content" @keydown.ctrl.w.capture="CloseDrawer()">
-      <Dashboard @close="CloseDrawer"/>
+      <ListDashboard @close="CloseDrawer"/>
 
       <el-collapse accordion @change="CollapseChanged" :value="view">
         <el-collapse-item title="表示の設定" name="view">
@@ -19,7 +19,7 @@
           <template #title>
             検索 <i class="el-icon-success" style="color: var(--color-success); margin-left: 1rem;" v-if="searchActivated"/>
           </template>
-          <Search @changed="UpdateView"/>
+          <ListSearch @changed="UpdateView"/>
         </el-collapse-item>
 
         <el-collapse-item title="データの処理" name="management" v-if="webApp"/>
@@ -31,14 +31,14 @@
 </template>
 
 <script>
-import Dashboard from '@/components/Molecules/Dashboard'
+import ListDashboard from '@/components/Molecules/Dashboard'
 import FilterAndSort from '@/components/Organisms/ListDrawerFilterAndSort'
-import Search from '@/components/Organisms/ListDrawerSearch'
+import ListSearch from '@/components/Organisms/ListDrawerSearch'
 
 export default {
-  name: 'Drawer',
+  name: 'ListDrawer',
   components: {
-    Dashboard, FilterAndSort, Search
+    ListDashboard, FilterAndSort, ListSearch
   },
   props: {
     visible: {
@@ -47,13 +47,11 @@ export default {
   },
   data () {
     return ({
-      view: 'view'
+      view: 'view',
+      webApp: !process.env.VUE_APP_ELECTRON
     })
   },
   computed: {
-    webApp () {
-      return !process.env.VUE_APP_ELECTRON
-    },
     searchActivated () {
       return this.$store.getters.SearchActivated
     }

@@ -1,18 +1,18 @@
 <template>
-  <Section title="手術診断"
+  <SectionBlock title="手術診断"
     :container.sync="items"
     @addnewitem="AddNewItem"
     @edititem="EditItem"
     @removeitem="RemoveItem">
-  </Section>
+  </SectionBlock>
 </template>
 
 <script>
-import Section from '@/components/Molecules/Section'
+import SectionBlock from '@/components/Molecules/Section'
 
 export default {
   name: 'SectionDiagnoses',
-  components: { Section },
+  components: { SectionBlock },
   props: {
     container: {
       type: Array,

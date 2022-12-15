@@ -37,6 +37,7 @@ export async function SavePassword (payload, storecontext) {
       },
       { root: true })
   } else {
+    // パスワードのhash化はsaltの32bit丸めで行う
     const hashedpassword = password === '' ? '' : HHX.h64(password, salt).toString(16)
     storecontext.dispatch('dbUpdate',
       {

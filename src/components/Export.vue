@@ -4,40 +4,63 @@
       <InputSwitchField
         v-model="exportAsBackup"
         title="出力する様式"
-        :options="{学会提出データ: false, バックアップデータ: true}"/>
+        :options="{ 学会提出データ: false, バックアップデータ: true }"
+      />
 
       <div>
         <div class="label">出力する年次</div>
-        <SelectYear class="field" v-model="exportYear" :accept-all="exportAsBackup"/>
+        <SelectYear
+          class="field"
+          v-model="exportYear"
+          :accept-all="exportAsBackup"
+        />
       </div>
 
       <InputSwitchField
         v-model="validateOnBackup"
         :disabled="!exportAllFields"
         title="データのエラーチェック"
-        :options="{行う: true, 行わない: false}"/>
+        :options="{ 行う: true, 行わない: false }"
+      />
 
       <div>
-        <el-button type="primary" @click="Process()" :disabled="(!exportYear) || processing">出力データの作成</el-button>
+        <el-button
+          type="primary"
+          @click="Process()"
+          :disabled="!exportYear || processing"
+          >出力データの作成</el-button
+        >
       </div>
     </div>
 
     <el-collapse-transition>
       <div class="progress-views" v-show="processStep !== undefined">
-        <el-steps :active="processStep" process-status="warning" finish-status="success" direction="vertical" space="42px">
-          <el-step title="システム設定の確認"/>
-          <el-step title="読み込み症例の確認を検証"/>
+        <el-steps
+          :active="processStep"
+          process-status="warning"
+          finish-status="success"
+          direction="vertical"
+          space="42px"
+        >
+          <el-step title="システム設定の確認" />
+          <el-step title="読み込み症例の確認を検証" />
           <el-step title="登録内容の妥当性の検証">
             <template #description>
-              <el-progress :v-show="progressCheckConsistency > 0" :percentage="progressCheckConsistency"/>
+              <el-progress
+                :v-show="progressCheckConsistency > 0"
+                :percentage="progressCheckConsistency"
+              />
             </template>
           </el-step>
           <el-step title="提出用データとして整形">
             <template #description>
-              <el-progress :v-show="progressCreateData > 0" :percentage="progressCreateData"/>
+              <el-progress
+                :v-show="progressCreateData > 0"
+                :percentage="progressCreateData"
+              />
             </template>
           </el-step>
-          <el-step title="チェックサムの計算とヘッダの付与"/>
+          <el-step title="チェックサムの計算とヘッダの付与" />
         </el-steps>
       </div>
     </el-collapse-transition>
@@ -48,20 +71,22 @@
           出力先を指定してファイルの出力
           <template v-slot:dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item @click.native="showPreview = true">出力先結果の確認</el-dropdown-item>
+              <el-dropdown-item @click.native="showPreview = true"
+                >出力先結果の確認</el-dropdown-item
+              >
             </el-dropdown-menu>
           </template>
         </el-dropdown>
       </div>
     </el-collapse-transition>
 
-    <TheWrapper prevent-close v-if="processing"/>
+    <TheWrapper prevent-close v-if="processing" />
     <TheWrapper v-if="showPreview" alpha="60" @click="showPreview = false">
       <div>
         <div id="preview">
           画面のクリックで戻ります.
-          <hr/>
-          <pre>{{exportText}}</pre>
+          <hr />
+          <pre>{{ exportText }}</pre>
         </div>
       </div>
     </TheWrapper>
@@ -78,7 +103,7 @@ import HHX from 'xxhashjs'
 import { ValidateCase } from '@/modules/CaseValidater'
 
 export default {
-  name: 'Export',
+  name: 'ExportData',
   components: {
     SelectYear, InputSwitchField, TheWrapper
   },
@@ -157,7 +182,7 @@ export default {
     ResetState () {
       this.processStep = undefined
       this.exportText = ''
-      this.$nextTick()
+      this.$nextTick(() => {})
     },
 
     async Process () {
@@ -336,9 +361,9 @@ export default {
     async CreateExportData (documentIds) {
       this.progressCreateData = 0
       const ExportItems = []
-      const hashHHX = HHX.h64(this.$store.getters['system/SALT'])
       const exportJSOGId = this.$store.getters['system/ExportJSOGId']
       const exportNCDId = this.$store.getters['system/ExportNCDId']
+      const Encoder = new TextEncoder()
 
       for (const index in documentIds) {
         this.progressCreateData = parseInt(index * 100.0 / documentIds.length)
@@ -357,23 +382,43 @@ export default {
 
           // 2021より実装変更:
           // ユニークキー(PatientId, DateOfProcedure)からレコードのハッシュを作成する.
-          const hashString = hashHHX.update(
-            JSON.stringify(
-              {
-                PatientId: exportdocument.PatientId,
-                DateOfProcedure: exportdocument.DateOfProcedure
-              }
-            )
-          ).digest().toString(36)
+          // 2022より64bitのシードを与えるように変更
+          // 今後のライブラリ変更に備えてdataを入力前にUint8Arrayに変更
+          let hashString = ''
+          if (this.exportYear >= '2022') {
+            hashString = HHX.h64(
+              Encoder.encode(
+                JSON.stringify(
+                  {
+                    PatientId: exportdocument.PatientId,
+                    DateOfProcedure: exportdocument.DateOfProcedure
+                  })
+              ).buffer,
+              this.$store.getters['system/SALT'].toString()
+            ).toString(36)
+          } else {
+            hashString = HHX.h64(
+              JSON.stringify(
+                {
+                  PatientId: exportdocument.PatientId,
+                  DateOfProcedure: exportdocument.DateOfProcedure
+                }
+              ),
+              this.$store.getters['system/SALT']
+            ).toString(36)
+          }
 
           ExportItems.push(
             {
               ...CaseDocumentHandler.ExportCase(
                 exportdocument,
-                {
-                  omitNCDId: !exportNCDId,
-                  anonymizeJSOGId: !exportJSOGId
-                }
+                this.exportYear >= '2022'
+                  ? {}
+                  : {
+                      omitNCDId: !exportNCDId,
+                      omitJSOGId: !exportJSOGId,
+                      anonymizeJSOGId: !exportJSOGId
+                    }
               ),
               hash: hashString
             }
@@ -392,21 +437,25 @@ export default {
 
         if (length > 0) {
           const TimeStamp = Date.now()
+          const Encoder = new TextEncoder()
 
           const exportText = JSON.stringify(exportItem, ' ', 2)
-          // ヘッダのハッシュ値は
-          const hash = HHX.h64(exportText, TimeStamp).toString(16)
+          // ヘッダが保持するドキュメント部分のハッシュ値
+          const hash = HHX.h64(
+            Encoder.encode(exportText).buffer,
+            TimeStamp.toString()).toString(16)
 
           exportItem.unshift({
             InstitutionName: this.$store.getters['system/InstitutionName'],
             InstitutionID: this.$store.getters['system/InstitutionID'],
-            JSOGoncologyboardID: this.$store.getters['system/JSOGInstitutionID'],
-            TimeStamp: TimeStamp,
+            // 2022年からは腫瘍関係の情報収集は排除.
+            // JSOGoncologyboardID: this.$store.getters['system/JSOGInstitutionID'],
+            TimeStamp,
             Year: this.exportYear || 'ALL',
             NumberOfCases: exportItem.length,
             Version: this.$store.getters['system/ApplicationVersion'],
-            Plathome: window.navigator.platform + '(' + process.arch + ')',
-            hash: hash
+            Plathome: this.$store.getters['system/Plathome'],
+            hash
           })
         }
       }

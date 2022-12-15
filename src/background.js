@@ -2,10 +2,10 @@
 /* global __static */
 'use strict'
 
-import { app, protocol, BrowserWindow, Menu, ipcMain, dialog } from 'electron'
+import { app, protocol, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
-import HHX from 'xxhashjs'
+import xxhash from 'xxhashjs'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -14,9 +14,7 @@ const fs = require('fs')
 
 const ElectronStore = require('electron-store')
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
-let win
+let win = null
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
@@ -27,16 +25,19 @@ const instanceLock = app.requestSingleInstanceLock()
 if (!instanceLock) {
   app.quit()
 } else {
-  if (win) {
-    if (win.isMinimized()) {
-      win.restore()
+  // イベントで重複起動を検知. 最小化していたら前面表示へ.
+  app.on('second-instance', () => {
+    if (win !== null) {
+      if (win.isMinimized()) {
+        win.restore()
+      }
+      win.focus()
     }
-    win.focus()
-  }
+  })
 }
 
 // CreateBrowserWindow
-function createWindow () {
+async function createWindow () {
   win = new BrowserWindow({
     width: 960,
     minWidth: 960,
@@ -49,27 +50,31 @@ function createWindow () {
     backgroundColor: '#dddddd',
     webPreferences: {
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
-      contextIsolation: false,
+      contextIsolation: true,
       spellcheck: false,
       enableWebSQL: false,
       webgl: false,
-      devTools: isDevelopment
+      devTools: isDevelopment,
+      preload: path.resolve(__dirname, 'preload.js')
     }
   })
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
-    win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
+    await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
       .then(_ => {
-        if (!process.env.IS_TEST) win.webContents.openDevTools()
+        if (!process.env.IS_TEST) {
+          win.webContents.openDevTools()
+        }
       })
   } else {
     createProtocol('app')
-    win.loadURL('app://./index.html')
+    await win.loadURL('app://./index.html')
   }
 
   win.on('closed', () => {
-    // macosでウインドウが閉じるときにメニューは「JOED5について」しか利用出来ない.
+    // macosでウインドウが閉じた後には、アプリケーションメニューを「JOED5について」しか利用出来ないようにする.
+    // windowsではウインドウが閉じる = 終了となる
     if (process.platform === 'darwin') {
       const menu = Menu.getApplicationMenu()
       menu.getMenuItemById('list-new').enabled = false
@@ -82,62 +87,67 @@ function createWindow () {
 }
 
 //
-// app イベントの処理
+// イベントの処理
 //
+
+// ready: アプリケーションの初期化終了→起動
+app.on('ready', async () => {
+  if (instanceLock) {
+    // コマンドライン解釈
+    parseCommandlineoptions()
+
+    // 初期設定
+    app.ConfigStore = new ElectronStore(app.configSetting)
+    app.DatabaseInstance = createDatabaseInstance()
+
+    // ウインドウの作成
+    if (isDevelopment && !process.env.IS_TEST) {
+      // Install Vue Devtools
+      try {
+        await installExtension(VUEJS_DEVTOOLS)
+      } catch (e) {
+        console.error('Vue Devtools failed to install:', e.toString())
+      }
+    }
+
+    createWindow()
+  }
+})
+
+// activate : macos ドックアイコンをクリック
 app.on('activate', () => {
   if (win === null) {
     createWindow()
   }
 })
 
-// window-all-closed : Windowsではここで終了処理を行う
+// window-all-closed : Windowsではウインドウを閉じる = 終了.
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  if (process.platform === 'win32') {
+    // 処理を統一するため終了イベントを発行
     app.quit()
   }
 })
 
+// quit : macosでの 終了 イベント.
 app.on('quit', () => {
   removeLockfile()
 })
 
-// アプリケーションの起動
-app.on('ready', async () => {
-  parseCommandlineoptions()
-
-  app.ConfigStore = new ElectronStore(app.configSetting)
-  app.DatabaseInstance = createDatabaseInstance()
-
-  // ウインドウの作成
-  if (isDevelopment && !process.env.IS_TEST) {
-    // Install Vue Devtools
-    try {
-      await installExtension(VUEJS_DEVTOOLS)
-    } catch (e) {
-      console.error('Vue Devtools failed to install:', e.toString())
-    }
-  }
-  createWindow()
-})
-
-// macosではdockから再度ウインドウを開くことが出来る.
+// activate-with-no-open-windows: macosではdockに残ったアイコンからウインドウを開く.
 if (process.platform === 'darwin') {
   app.on('activate-with-no-open-windows', _ => createWindow())
 }
 
-if (isDevelopment) {
-  if (process.platform === 'win32') {
-    process.on('message', (data) => {
-      if (data === 'graceful-exit') {
-        app.quit()
-      }
-    })
-  } else {
-    process.on('SIGTERM', () => {
-      console.error('二重起動はできません.')
+// 強制終了(windows: graceful-exit, macos: SIGTERM)
+if (process.platform === 'win32') {
+  process.on('message', (data) => {
+    if (data === 'graceful-exit') {
       app.quit()
-    })
-  }
+    }
+  })
+} else {
+  process.on('SIGTERM', () => app.quit())
 }
 
 //
@@ -172,7 +182,7 @@ function parseCommandlineoptions () {
     const configarg = app.commandLine.getSwitchValue('config')
     const configpath = path.parse(configarg)
     if (configpath.ext[0] === '.') {
-      configpath.ext = configpath.ext.substr(1)
+      configpath.ext = configpath.ext.substring(1)
     }
 
     try {
@@ -213,7 +223,7 @@ function parseCommandlineoptions () {
     } else {
       try {
         fs.unlinkSync(DBfilename)
-      } catch {}
+      } catch { }
     }
 
     try {
@@ -222,7 +232,7 @@ function parseCommandlineoptions () {
         fs.unlinkSync(DBfilename + '.2')
         fs.unlinkSync(DBfilename + '.1')
       }
-    } catch {}
+    } catch { }
 
     dialog.showMessageBoxSync({ title: 'JOED5', message: 'ファイルを削除しました.' })
     app.exit()
@@ -237,21 +247,21 @@ const MenuTemplate = [
   ...(
     process.platform === 'darwin'
       ? [{
-        label: app.getName(),
-        submenu: [
-          { label: app.getName() + 'について', role: 'about' },
-          { type: 'separator' },
-          { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
-          { type: 'separator' },
-          { label: 'サービス', role: 'services', submenu: [] },
-          { type: 'separator' },
-          { label: app.getName() + 'を隠す', accelerator: 'Command+H', role: 'hide' },
-          { label: '他を隠す', accelerator: 'Command+Alt+H', role: 'hideothers' },
-          { label: '全てを表示', role: 'unhide' },
-          { type: 'separator' },
-          { label: '終了', accelerator: 'Command+Q', role: 'quit' }
-        ]
-      }]
+          label: app.getName(),
+          submenu: [
+            { label: app.getName() + 'について', role: 'about' },
+            { type: 'separator' },
+            { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+            { type: 'separator' },
+            { label: 'サービス', role: 'services', submenu: [] },
+            { type: 'separator' },
+            { label: app.getName() + 'を隠す', accelerator: 'Command+H', role: 'hide' },
+            { label: '他を隠す', accelerator: 'Command+Alt+H', role: 'hideothers' },
+            { label: '全てを表示', role: 'unhide' },
+            { type: 'separator' },
+            { label: '終了', accelerator: 'Command+Q', role: 'quit' }
+          ]
+        }]
       : []
   ),
   // 通常のメニュー
@@ -265,58 +275,58 @@ const MenuTemplate = [
       ...(process.platform === 'darwin'
         ? []
         : [
-          { type: 'separator' },
-          { label: '設定', id: 'setup', enabled: false, accelerator: 'Ctrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
-          { label: '終了', accelerator: 'Alt+F4', role: 'quit' }
-        ])
+            { type: 'separator' },
+            { label: '設定', id: 'setup', enabled: false, accelerator: 'Ctrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+            { label: '終了', accelerator: 'Alt+F4', role: 'quit' }
+          ])
     ]
   },
   // macosでは編集メニューがないとコピーアンドペーストができない
   ...(
     process.platform === 'darwin'
       ? [
-        {
-          label: '編集',
-          submenu: [
-            { label: '取り消す', role: 'undo', accelerator: 'Command+Z' },
-            { label: 'やり直す', role: 'redo', accelerator: 'Command+Shift+Z' },
-            { type: 'separator' },
-            { label: 'カット', role: 'cut', accelerator: 'Command+X' },
-            { label: 'コピー', role: 'copy', accelerator: 'Command+C' },
-            { label: 'ペースト', role: 'paste', accelerator: 'Command+V' },
-            { label: 'すべてを選択', role: 'selectALL', accelerator: 'Command+A' }
-          ]
-        }
-      ]
+          {
+            label: '編集',
+            submenu: [
+              { label: '取り消す', role: 'undo', accelerator: 'Command+Z' },
+              { label: 'やり直す', role: 'redo', accelerator: 'Command+Shift+Z' },
+              { type: 'separator' },
+              { label: 'カット', role: 'cut', accelerator: 'Command+X' },
+              { label: 'コピー', role: 'copy', accelerator: 'Command+C' },
+              { label: 'ペースト', role: 'paste', accelerator: 'Command+V' },
+              { label: 'すべてを選択', role: 'selectALL', accelerator: 'Command+A' }
+            ]
+          }
+        ]
       : []
   ),
   ...(
     process.platform === 'win32'
       ? [{
-        label: 'ヘルプ',
-        submenu: [
-          { label: app.getName() + 'について', role: 'about' }
-        ]
-      }]
+          label: 'ヘルプ',
+          submenu: [
+            { label: app.getName() + 'について', role: 'about' }
+          ]
+        }]
       : []
   ),
   ...(
     isDevelopment
       ? [{
-        label: '開発支援',
-        submenu: [
-          {
-            label: 'リロード',
-            accelerator: '',
-            click: (item, focusedWindow) => { focusedWindow.webContents.onbeforeunload = null; focusedWindow.reload() }
-          },
-          {
-            label: '開発者ツール',
-            accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
-            click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools()
-          }
-        ]
-      }]
+          label: '開発支援',
+          submenu: [
+            {
+              label: 'リロード',
+              accelerator: '',
+              click: (item, focusedWindow) => { focusedWindow.webContents.onbeforeunload = null; focusedWindow.reload() }
+            },
+            {
+              label: '開発者ツール',
+              accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
+              click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools()
+            }
+          ]
+        }]
       : []
   )
 ]
@@ -326,7 +336,7 @@ Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate))
 app.setAboutPanelOptions({
   applicationName: app.getName(),
   applicationVersion: process.env.VUE_APP_VERSION,
-  copyright: 'Copyright 2020-2022 P4mohnet and JSGOE',
+  copyright: ['Copyright', process.env.VUE_APP_COPYRIGHT].join(' '),
   credits: '@piyotaicho https://github.com/piyotaicho/JOED/',
   iconPath: '../public/icon.png'
 })
@@ -337,11 +347,11 @@ app.setAboutPanelOptions({
 
 // main -> renderer : メニューからrouterの切り替え要求 (App.vueで処理)
 function RendererRoute (routename, targetwindow) {
-  targetwindow.webContents.send('RendererRoute', { Name: routename })
+  targetwindow.webContents.send('update-router', routename)
 }
 
-// route毎のメニュー操作
-ipcMain.on('menuroute', (event, payload) => {
+// router毎のメニュー操作
+function switchMenu (payload) {
   const menu = Menu.getApplicationMenu()
   switch (payload) {
     case 'login':
@@ -373,7 +383,7 @@ ipcMain.on('menuroute', (event, payload) => {
       menu.getMenuItemById('list-export').enabled = false
       menu.getMenuItemById('setup').enabled = false
   }
-})
+}
 
 //
 // ロックファイル制御
@@ -389,7 +399,7 @@ function removeLockfile () {
   if (app.enableLocking) {
     try {
       fs.unlinkSync(path.join(app.getPath('documents'), 'joed.nedb.lock'))
-    } catch {}
+    } catch { }
   }
 }
 
@@ -398,7 +408,7 @@ function removeLockfile () {
 //
 const DB = require('@seald-io/nedb')
 
-// createDatabaseInstance
+// データベースインスタンスの作成
 //
 function createDatabaseInstance () {
   // appPath documents はデフォルトでは app.on ready で userData にオーバーライドされている.
@@ -408,15 +418,15 @@ function createDatabaseInstance () {
   // 原則としてバックアップ作成に関わるエラーは全て無視.
   try {
     fs.copyFileSync(DBfilename + '.2', DBfilename + '.3')
-  } catch {}
+  } catch { }
 
   try {
     fs.copyFileSync(DBfilename + '.1', DBfilename + '.2')
-  } catch {}
+  } catch { }
 
   try {
     fs.copyFileSync(DBfilename, DBfilename + '.1')
-  } catch {}
+  } catch { }
 
   try {
     createLockfile()
@@ -524,19 +534,29 @@ ipcMain.handle('FindOne', (_, payload) => {
 // @Object.Hash : String
 // @Object.SALT : Integer
 ipcMain.handle('FineOneByHash', (_, payload) => {
-  const HHX64 = HHX.h64(payload.SALT)
+  const Encoder = new TextEncoder()
   return new Promise((resolve, reject) => {
     app.DatabaseInstance
       .findOne({
         $where: function () {
-          // 2021より実装変更:
-          // レコードのハッシュはユニークキー(PatientId, DateOfProcedure)から生成
-          const recordKeys = {
-            PatientId: this.PatientId,
-            DateOfProcedure: this.DateOfProcedure
+          if (this.PatientId && this.DateOfProcedure) {
+            // 2021より実装変更:
+            // レコードのハッシュはユニークキー(PatientId, DateOfProcedure)から生成
+            const recordKeys = {
+              PatientId: this.PatientId,
+              DateOfProcedure: this.DateOfProcedure
+            }
+            // 2022よりUint8Arrayと64bitのシードを与える
+            const hash = (this.DateOfProcedure.substring(0, 4) >= '2022')
+              ? xxhash.h64(
+                Encoder.encode(JSON.stringify(recordKeys)).buffer,
+                payload.SALT.toString()
+              ).toString(36)
+              : xxhash.h64(JSON.stringify(recordKeys), payload.SALT).toString(36)
+            return payload.Hash === hash
+          } else {
+            return false
           }
-          const recordHash = HHX64.update(JSON.stringify(recordKeys)).digest().toString(36)
-          return payload.Hash === recordHash
         }
       })
       .projection({ DocumentId: 1 })
@@ -621,3 +641,13 @@ ipcMain.handle('LoadConfig', (_, payload) =>
 ipcMain.handle('SaveConfig', (_, payload) =>
   app.ConfigStore.set(payload.Key, payload.Config)
 )
+
+//
+// Routerからのメニュー制御
+//
+ipcMain.on('SwitchMenu', (_, payload) => switchMenu(payload))
+
+//
+// Renderが指定する外部リンクをシステムで開く
+//
+ipcMain.on('OpenURL', (_, target) => shell.openExternal(target))

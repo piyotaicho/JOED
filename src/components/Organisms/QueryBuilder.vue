@@ -145,7 +145,7 @@ export default {
         const nextindex = this.previewIndex + (vector === 'prev' ? -1 : 1)
         this.previewIndex = nextindex < 0 ? 0 : (nextindex >= this.CSV.length ? this.CSV.length - 1 : nextindex)
       }
-      this.$nextTick()
+      this.$nextTick(() => {})
     },
     removeAssignment (index) {
       if (this.recordAssignment[this.records[index]]) {

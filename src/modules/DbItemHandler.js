@@ -65,12 +65,12 @@ export default class CaseDocumentHandler {
     function _extract (item) {
       return (item.Description)
         ? {
-          Text: item.Text,
-          Description: item.Description
-        }
+            Text: item.Text,
+            Description: item.Description
+          }
         : {
-          Text: item.Text
-        }
+            Text: item.Text
+          }
     }
 
     const temporaryArray = []
@@ -98,12 +98,13 @@ export default class CaseDocumentHandler {
     const temporaryItem = {}
     const params = {
       omitNCDId: true,
+      omitJSOGId: true,
       anonymizeJSOGId: true,
       ...param
     }
 
     // 手術実施年を抽出
-    temporaryItem.YearOfProcedure = item.DateOfProcedure.substr(0, 4)
+    temporaryItem.YearOfProcedure = item.DateOfProcedure.substring(0, 4)
 
     // NCDIdの処理
     if (!params.omitNCDId && item?.NCDId) {
@@ -111,9 +112,9 @@ export default class CaseDocumentHandler {
     }
 
     // JSOGIdの処理
-    if (item?.JSOGId) {
+    if (!params.omitJSOGId && item?.JSOGId) {
       temporaryItem.JSOGId = params.anonymizeJSOGId
-        ? item.JSOGId.substr(0, 6) + '-X'
+        ? item.JSOGId.substring(0, 6) + '-X'
         : item.JSOGId
     }
 

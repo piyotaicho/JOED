@@ -33,7 +33,7 @@ export default {
         for (const year of years) {
           this.Selections.push(
             {
-              year: year,
+              year,
               count: CountByYear[year]
             }
           )

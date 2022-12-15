@@ -1,4 +1,4 @@
-export const LastUpdate = '2022-04-01'
+export const LastUpdate = '2022-11-27'
 const defaultReference = '2022'
 
 export default class AEmaster {
@@ -9,7 +9,7 @@ export default class AEmaster {
 
     if (/^20[0-9]{2}/.test(year)) {
       Object.defineProperty(this, 'YearofMaster', {
-        value: year.substr(0, 4)
+        value: year.substring(0, 4)
       })
     } else {
       throw Error('マスターの日付シリアル指定に問題があります.')
@@ -92,15 +92,18 @@ export default class AEmaster {
             Items: [
               [
                 // 2022年より 表記変更
-                (this.YearofMaster <= '2021' ? '皮下気腫' : '気腫'),
+                (this.YearofMaster >= '2022'
+                  ? '気腫'
+                  : '皮下気腫'
+                ),
                 { Text: '炭酸ガス塞栓', Value: 'ガス塞栓(炭酸ガス)' },
                 { Text: '空気塞栓', Value: 'ガス塞栓(空気)' }
               ],
               ['水中毒'],
               // 2022年より 表記変更
-              (this.YearofMaster <= '2021'
-                ? ['そのほか心臓障害', 'そのほか呼吸器障害', 'そのほか神経系障害']
-                : ['その他 循環器系障害', 'その他 呼吸器系障害', 'その他 神経系障害']
+              (this.YearofMaster >= '2022'
+                ? ['その他 循環器系障害', 'その他 呼吸器系障害', 'その他 神経系障害']
+                : ['そのほか心臓障害', 'そのほか呼吸器障害', 'そのほか神経系障害']
               ),
               ['上記以外']
             ]
@@ -141,13 +144,13 @@ export default class AEmaster {
               ['子宮', '卵管', '卵巣', '腟'],
               ['膀胱', '尿管', '後腹膜'],
               // 2021年より変更
-              (this.YearofMaster < '2021'
-                ? ['消化管']
-                : [
-                  { Text: '消化管(直腸)', Value: '直腸' },
-                  { Text: '消化管(結腸)', Value: '結腸' },
-                  { Text: '消化管(その他)', Value: '消化管' }
-                ]
+              (this.YearofMaster >= '2021'
+                ? [
+                    { Text: '消化管(直腸)', Value: '直腸' },
+                    { Text: '消化管(結腸)', Value: '結腸' },
+                    { Text: '消化管(その他)', Value: '消化管' }
+                  ]
+                : ['消化管']
               ),
               ['腹壁', '腹壁血管', '皮下'],
               ['動脈', '静脈', '大血管動脈', '大血管静脈'],
@@ -204,26 +207,29 @@ export default class AEmaster {
               ],
               ['腹壁瘢痕・ポートサイトヘルニア'],
               // 2022年より追加
-              ...(this.YearofMaster <= '2021'
-                ? [['尿管損傷', '尿路閉塞', '膀胱損傷']]
-                : [['尿管損傷', '尿路閉塞', '膀胱損傷', 'その他 尿路系障害']]
+              ...(this.YearofMaster >= '2022'
+                ? [['尿管損傷', '尿路閉塞', '膀胱損傷', 'その他 尿路系障害']]
+                : [['尿管損傷', '尿路閉塞', '膀胱損傷']]
               ),
               // 2022年より変更・追加
-              ...(this.YearofMaster <= '2021'
+              ...(this.YearofMaster >= '2022'
                 ? [
-                  ['肺動脈血栓塞栓症', '深部静脈血栓症'],
-                  ['気胸', '心肺停止', 'コンパートメント症候群']
-                ]
+                    ['肺動脈血栓塞栓症', '深部静脈血栓症', '心肺停止'],
+                    ['その他 循環器系障害'],
+                    ['気胸', 'その他 呼吸器系障害'],
+                    ['コンパートメント症候群', 'その他 骨軟部系障害']
+                  ]
                 : [
-                  ['肺動脈血栓塞栓症', '深部静脈血栓症', '心肺停止'],
-                  ['その他 循環器系障害'],
-                  ['気胸', 'その他 呼吸器系障害'],
-                  ['コンパートメント症候群', 'その他 骨軟部系障害']
-                ]
+                    ['肺動脈血栓塞栓症', '深部静脈血栓症'],
+                    ['気胸', '心肺停止', 'コンパートメント症候群']
+                  ]
               ),
               ['上肢神経障害', '下肢神経障害',
                 // 2022年より追加
-                ...(this.YearofMaster >= '2022' ? ['その他 神経系障害'] : [])
+                ...(this.YearofMaster >= '2022'
+                  ? ['その他 神経系障害']
+                  : []
+                )
               ],
               ['リンパ浮腫', '非感染性リンパ嚢胞', '感染性リンパ嚢胞・後腹膜膿瘍'],
               ['子宮腔からの出血持続', '子宮腔の癒着', '卵管閉塞']
@@ -331,7 +337,7 @@ export default class AEmaster {
     if (AE.Category === '出血') {
       // 出血量については他とvaludationが異なる
       if (!/^(不明|([1-9]\d+|[5-9])\d{2})$/.test(AE?.BloodCount)) {
-        throw Error('出血の入力内容が不正です.')
+        throw Error('出血量の入力内容が不正です.')
       }
     } else {
       // 合併症カテゴリの設計オブジェクトを取得
@@ -371,7 +377,7 @@ export default class AEmaster {
         throw Error('Gradeの指定が不正です.')
       }
 
-      const grade = Number(AE.Grade.toString().substr(0, 1))
+      const grade = Number(AE.Grade.toString()[0] | 0)
       let min = 0
       let max = 0
       for (const course of AE.Course) {

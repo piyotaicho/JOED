@@ -16,7 +16,7 @@
         <SettingOfView/>
       </el-tab-pane>
       <el-tab-pane label="ライセンス表記" name="about">
-        <About/>
+        <ShowAbout/>
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -26,12 +26,12 @@
 import SettingOfInstutute from '@/components/SettingOfInstitute'
 import SettingOfAuthentication from '@/components/SettingOfAuthentication'
 import SettingOfView from '@/components/SettingOfView'
-import About from '@/components/About'
+import ShowAbout from '@/components/About'
 
 export default {
   name: 'VSettings',
   components: {
-    SettingOfInstutute, SettingOfAuthentication, SettingOfView, About
+    SettingOfInstutute, SettingOfAuthentication, SettingOfView, ShowAbout
   },
   data () {
     return ({

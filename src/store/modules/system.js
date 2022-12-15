@@ -31,21 +31,33 @@ export default {
     },
     // APP_NAMEの中継
     ApplicationName () {
-      return process.env.VUE_APP_NAME
+      return process.env.VUE_APP_ELECTRON
+        ? window?.Versions?.ApplicationName()
+        : process.env.VUE_APP_NAME
     },
     // APP_VERSIONの中継
     ApplicationVersion () {
-      return process.env.VUE_APP_VERSION
+      return process.env.VUE_APP_ELECTRON
+        ? window?.Versions?.ApplicationVersion()
+        : process.env.VUE_APP_VERSION
     },
     // Vueのバージョンの中継
     VueVersion () {
       return Vue.version || 'undefined'
     },
-    // 実行プラットフォーム(v1.2からブラウザ版はアーキテクチャを返さない)
+    // 実行プラットフォーム - 可能な限り検出する
     Platform () {
       return process.env.VUE_APP_ELECTRON
-        ? process.platform
-        : 'browser'
+        ? window?.Versions?.Platform()
+        : (
+            (
+              window.navigator?.platform ||
+            window.navigator?.userAgentData?.platform ||
+            'win32'
+            ).includes('Mac')
+              ? 'darwin'
+              : 'win32'
+          )
     },
 
     // settingsオブジェクト全体

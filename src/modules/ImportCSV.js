@@ -157,7 +157,7 @@ function Diagnoses (CaseData, record, ruleset) {
         if (benignormalignancy === undefined) {
           const guess = category.search(/[良悪]性/)
           if (guess !== -1) {
-            benignormalignancy = category.slice(guess, guess + 1) === '良' ? '良性' : '悪性'
+            benignormalignancy = category[guess] === '良' ? '良性' : '悪性'
           }
         }
 
@@ -191,11 +191,11 @@ function Procedures (CaseData, record, ruleset) {
       let text = ConvertCharacters(procedure)
       if (text.search(/\[.*\]/) !== -1) {
         // 1.3- [] 内にカンマ区切りで保持された付随情報を展開する
-        const descriptions = text.slice(text.search(/\[/) + 1, text.search(/\]/)).split(/\w*,\w*/).map(item => item.trim())
+        const descriptions = text.substring(text.search(/\[/) + 1, text.search(/\]/)).split(/\w*,\w*/).map(item => item.trim())
         if (descriptions.length > 0) {
           temporaryfield.Description = descriptions
         }
-        text = text.slice(0, text.search(/\[/) - 1).trim()
+        text = text.substring(0, text.search(/\[/) - 1).trim()
       }
       temporaryfield.Text = text
 
@@ -212,7 +212,7 @@ function Procedures (CaseData, record, ruleset) {
         if (benignormalignancy === undefined) {
           const guess = category.search(/[良悪]性/)
           if (guess !== -1) {
-            benignormalignancy = category.slice(guess, guess + 1) === '良' ? '良性' : '悪性'
+            benignormalignancy = category[guess] === '良' ? '良性' : '悪性'
           }
         }
 
@@ -260,7 +260,7 @@ export function ConvertCharacters (str = '') {
   if (index === -1) {
     return str
   } else {
-    let c = str.slice(index, index + 1)
+    let c = str[index]
     switch (c) {
       case '（':
         c = '('
@@ -280,6 +280,6 @@ export function ConvertCharacters (str = '') {
         c = '.'
         break
     }
-    return str.slice(0, index) + c + ConvertCharacters(str.slice(index + 1))
+    return str.substring(0, index) + c + ConvertCharacters(str.substring(index + 1))
   }
 }

@@ -16,7 +16,7 @@ import CloseButton from '@/components/Atoms/CloseButton'
 import DiagnosisMaster from '@/modules/Masters/DiagnosisMaster'
 
 export default {
-  name: 'Dashboard',
+  name: 'ListDashboard',
   components: {
     CloseButton
   },

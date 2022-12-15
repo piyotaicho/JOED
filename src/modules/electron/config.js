@@ -1,4 +1,4 @@
-import { ipcRenderer } from 'electron'
+// Interface to electron store
 import HHX from 'xxhashjs'
 
 export async function LoadConfig () {
@@ -17,14 +17,15 @@ export async function SavePassword (payload) {
   const password = payload.password
   const salt = payload.salt
 
+  // パスワードのhash化はsaltの32bit丸めで行う
   const hashedpassword = password === '' ? '' : HHX.h64(password, salt).toString(16)
   return await ipcSaveConfig('Password', { Password: hashedpassword })
 }
 
 async function ipcLoadConfig (key, defaultvalue) {
-  return await ipcRenderer.invoke('LoadConfig', { Key: key, DefaultConfig: defaultvalue || {} })
+  return await window.API.LoadConfig({ Key: key, DefaultConfig: defaultvalue || {} })
 }
 
 async function ipcSaveConfig (key, settings) {
-  return await ipcRenderer.invoke('SaveConfig', { Key: key, Config: settings })
+  return await window.API.SaveConfig({ Key: key, Config: settings })
 }

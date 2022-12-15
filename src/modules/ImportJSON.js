@@ -53,8 +53,8 @@ export function ValidateRecords (records) {
   }
   return {
     length: numberofCase,
-    hasHeader: hasHeader,
-    anonymised: anonymised
+    hasHeader,
+    anonymised
   }
 }
 
@@ -81,7 +81,7 @@ function DateOfProcedure (CaseData, record) {
       record.DateOfProcedure
         .match(/^20([0-9]{2})[/-](0{0,1}[1-9]|1[0-2])[/-](0{0,1}[1-9]|[12][0-9]|3[01])$/)
         .splice(1, 3)
-        .map(item => ('0' + item).substr(-2))
+        .map(item => ('0' + item).slice(-2))
         .join('-')
     } catch {
       throw new Error('日付の書式が不正です.')
@@ -108,7 +108,7 @@ function BasicInformation (CaseData, record) {
   if (record.PatientId !== undefined) {
     CaseData.PatientId = record.PatientId
   } else {
-    CaseData.PatientId = 'I-' + ('000000' + internalcounter.toString(10)).substr(-6)
+    CaseData.PatientId = 'I-' + ('000000' + internalcounter.toString(10)).slice(-6)
     CaseData.Imported = true
     CaseData.Notification = (CaseData.Notification || '') +
       '自動生成された患者IDです重複などに注意してください.'

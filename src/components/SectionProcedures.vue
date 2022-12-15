@@ -1,5 +1,5 @@
 <template>
-  <Section title="実施手術"
+  <SectionBlock title="実施手術"
     :container.sync="items"
     @addnewitem="AddNewItem">
     <template #default="itemprops">
@@ -11,17 +11,17 @@
         <SectionItem :item="itemprops.item.AdditionalProcedure" @remove="RemoveAdditionalItemEntry(itemprops.index)"/>
       </template>
     </template>
-  </Section>
+  </SectionBLock>
 </template>
 
 <script>
-import Section from '@/components/Molecules/Section'
+import SectionBlock from '@/components/Molecules/Section'
 import SectionItem from '@/components/SectionItem'
 import { confirmYesNo } from '@/modules/Popups'
 
 export default {
   name: 'SectionProcedures',
-  components: { Section, SectionItem },
+  components: { SectionBlock, SectionItem },
   props: {
     container: {
       type: Array,

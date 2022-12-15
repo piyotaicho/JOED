@@ -3,7 +3,7 @@ import Vuex from 'vuex'
 import * as NedbAccess from 'depmodules/NedbAccess'
 import system from '@/store/modules/system'
 import password from '@/store/modules/passwordauth'
-
+import { parseProcedureTime } from '@/modules/ProcedureTimes'
 Vue.use(Vuex)
 
 const store = new Vuex.Store({
@@ -11,7 +11,6 @@ const store = new Vuex.Store({
     system, password
   },
   state: {
-    DatabaseInstance: undefined, // 直接参照禁止, electron版ではundefined
     DocumentIds: {
       List: [], // queryされたuidの全リスト
       TotalCount: 0, // 全登録数
@@ -164,18 +163,6 @@ const store = new Vuex.Store({
   },
 
   mutations: {
-    // DatabaseInstanceを設定する.
-    // App.vue の onCreated からのみ呼ばれる.
-    //
-    $initDatabase (state) {
-      if (state.DatabaseInstance === undefined) {
-        Vue.set(state, 'DatabaseInstance', NedbAccess.CreateInstance(
-          {
-            filename: 'joed.nedb'
-          }
-        ))
-      }
-    },
     // DocumentIdsにドキュメントリストを設定する
     //
     // @param {Object} DocumentIds
@@ -251,8 +238,8 @@ const store = new Vuex.Store({
       Vue.set(state, 'Sort',
         (keyvalue && keyvalue.length === 2)
           ? {
-            [keyvalue[0]]: keyvalue[1]
-          }
+              [keyvalue[0]]: keyvalue[1]
+            }
           : state.system.settings.View.Sort
       )
     }
@@ -263,40 +250,40 @@ const store = new Vuex.Store({
     // Insert document
     // @Param {Object} Document
     dbInsert (context, payload) {
-      return NedbAccess.Insert(payload, context.state.DatabaseInstance)
+      return NedbAccess.Insert(payload)
     },
     // Find documents
     // @Param {Object} Query, Projection, Sort,
     // @Param {Number} Skip, Limit
     dbFind (context, payload) {
-      return NedbAccess.Find(payload, context.state.DatabaseInstance)
+      return NedbAccess.Find(payload)
     },
     // Find a first document
     // @Param {Object} Query, Projection, Sort,
     // @Param {Number} Skip
     dbFindOne (context, payload) {
-      return NedbAccess.FindOne(payload, context.state.DatabaseInstance)
+      return NedbAccess.FindOne(payload)
     },
     // Find a document by hash
     // @Param {String} Hash
     // @Param {Number} SALT
     dbFindOneByHash (context, payload) {
-      return NedbAccess.FindOneByHash(payload, context.state.DatabaseInstance)
+      return NedbAccess.FindOneByHash(payload)
     },
     // Count matched documents
     // @Param {Object} Query
     dbCount (context, payload) {
-      return NedbAccess.Count(payload, context.state.DatabaseInstance)
+      return NedbAccess.Count(payload)
     },
     // Update documents
     // @Param {Object} Query, Update, Options
     dbUpdate (context, payload) {
-      return NedbAccess.Update(payload, context.state.DatabaseInstance)
+      return NedbAccess.Update(payload)
     },
     // Remove documents
     // @Param {Object} Query, Options
     dbRemove (context, payload) {
-      return NedbAccess.Remove(payload, context.state.DatabaseInstance)
+      return NedbAccess.Remove(payload)
     },
 
     // DocumentIdリストの更新. データベースの操作後は必ず実行する.
@@ -315,7 +302,7 @@ const store = new Vuex.Store({
               {
                 Query: context.getters.ViewQuery.Query,
                 Sort: context.getters.ViewQuery.Sort,
-                Projection: Projection
+                Projection
               }
             )
           } else {
@@ -327,22 +314,15 @@ const store = new Vuex.Store({
             // ソートのためProcedureTimeも読み込む
             Projection.ProcedureTime = 1
 
-            const ExtractTime = /([1-9]\d?0)分(以上|未満)/
-
             documents = (await context.dispatch('dbFind',
               {
                 Query: context.getters.ViewQuery.Query,
                 Sort: querySort,
-                Projection: Projection
+                Projection
               }
             )).sort((a, b) => {
-              // undefinedに対しては 30分未満を設定する.
-              const stringA = a.ProcedureTime || '30分未満'
-              const stringB = b.ProcedureTime || '30分未満'
-              const matchA = ExtractTime.exec(stringA)
-              const valueA = Number(matchA[1]) - ((matchA[2] || '以上') === '未満' ? 1 : 0)
-              const matchB = ExtractTime.exec(stringB)
-              const valueB = Number(matchB[1]) - ((matchB[2] || '以上') === '未満' ? 1 : 0)
+              const valueA = parseProcedureTime(a.ProcedureTime)
+              const valueB = parseProcedureTime(b.ProcedureTime)
               return valueA === valueB ? 0 : valueA < valueB ? -1 * direction : 1 * direction
             })
           }

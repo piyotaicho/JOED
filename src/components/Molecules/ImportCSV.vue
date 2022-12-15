@@ -32,7 +32,7 @@
       <el-button type="primary" :disabled="disabled" @click="StoreRuleset">ルールを保存</el-button>
     </div>
     <div class="progress-views">
-      <Reports :report="LogMessages.join('\n')" v-show="LogMessages.length > 0"/>
+      <ReportViewer :report="LogMessages.join('\n')" v-show="LogMessages.length > 0"/>
     </div>
   </div>
 </template>
@@ -40,7 +40,7 @@
 <script>
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import QueryBuilder from '@/components/Organisms/QueryBuilder'
-import Reports from '@/components/Atoms/Reports'
+import ReportViewer from '@/components/Atoms/Reports'
 import { parseCSV } from '@/modules/CSV'
 import { CreateDocument, Migrate } from '@/modules/ImportCSV.js'
 import { DateFormatPattern } from '@/modules/CaseValidater'
@@ -48,7 +48,7 @@ import * as Popups from '@/modules/Popups'
 
 export default {
   name: 'ImportCSV',
-  components: { LabeledCheckbox, QueryBuilder, Reports },
+  components: { LabeledCheckbox, QueryBuilder, ReportViewer },
   props: {
     disabled: {
       type: Boolean,
@@ -157,7 +157,7 @@ export default {
         this.LogMessages.push('ファイルにはタイトル行を含めて' + this.records.length + '行の情報があります.')
 
         this.ProcessStep++
-        this.$nextTick()
+        this.$nextTick(() => {})
 
         // ルールセットの確認
         if (this.RuleSet['手術日 (必須)'] && this.RuleSet['ID (必須)']) {

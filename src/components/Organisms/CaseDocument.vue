@@ -53,7 +53,7 @@ export default {
         .dispatch('FetchDocument', { DocumentId: this.uid })
         .then(_ => {
           this.Loading = false
-          this.$nextTick()
+          this.$nextTick(() => {})
         })
         .catch(e => e)
     }
@@ -71,15 +71,15 @@ export default {
     PersonalInformation () {
       return this.Loading
         ? {
-          Id: '',
-          Name: 'データを取得中',
-          Age: ''
-        }
+            Id: '',
+            Name: 'データを取得中',
+            Age: ''
+          }
         : {
-          Id: this.ItemDocument.PatientId,
-          Name: this.ItemDocument.Name ? this.ItemDocument.Name : '',
-          Age: this.ItemDocument.Age ? '( ' + Number(this.ItemDocument.Age) + '歳 )' : ''
-        }
+            Id: this.ItemDocument.PatientId,
+            Name: this.ItemDocument.Name ? this.ItemDocument.Name : '',
+            Age: this.ItemDocument.Age ? '( ' + Number(this.ItemDocument.Age) + '歳 )' : ''
+          }
     },
     Diagnosis () {
       return this.Loading ? '' : CaseDocumentHandler.ItemValue(this.ItemDocument.Diagnoses[0])
@@ -136,6 +136,8 @@ div.caseitem
   padding: 0.12rem 0
   display: flex
   flex-direction: row
+  &:focus
+    background: var(--color-text-placeholder)
 div.caseitem-icon
   width: 60px
   display: flex

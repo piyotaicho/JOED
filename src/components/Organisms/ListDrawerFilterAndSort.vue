@@ -107,7 +107,7 @@ export default {
       Object.keys(CountByYear).forEach(year => {
         this.$set(this.Years, year + '年', { Field: 'DateOfProcedure', Value: year })
       })
-      this.$nextTick()
+      this.$nextTick(() => {})
     })
     this.ImportSettings()
   },
@@ -177,7 +177,7 @@ export default {
       await this.DisableSearch()
       this.$emit('changed')
       this.ImportSettings()
-      this.$nextTick()
+      this.$nextTick(() => {})
     },
     async DisableSearch () {
       if (this.$store.getters.SearchActivated) {

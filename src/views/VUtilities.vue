@@ -7,23 +7,23 @@
         </template>
       </el-tab-pane>
       <el-tab-pane label="データ出力" name="export">
-        <Export/>
+        <ExportData/>
       </el-tab-pane>
       <el-tab-pane label="データ読み込み" name="import">
-        <Import/>
+        <ImportData/>
       </el-tab-pane>
     </el-tabs>
   </div>
 </template>
 
 <script>
-const Export = () => import('@/components/Export')
-const Import = () => import('@/components/Import')
+import ExportData from '@/components/Export'
+import ImportData from '@/components/Import'
 
 export default {
   name: 'ViewUtilities',
   components: {
-    Export, Import
+    ExportData, ImportData
   },
   data () {
     return ({
