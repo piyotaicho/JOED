@@ -72,10 +72,10 @@ export async function CheckProcedureTime (item) {
     throw Error('手術時間は必須入力項目です.')
   }
 
-  if (
-    !procedureTimeFormat.test(item.ProcedureTime) ||
-    !/^(\d+:)?\d+$/.test(item.ProcedureTime) // 実時間入力
-  ) {
+  if (!(
+    procedureTimeFormat.test(item.ProcedureTime) ||
+    /^(\d+:)?\d+$/.test(item.ProcedureTime) // 実時間入力
+  )) {
     throw Error('手術時間の入力様式に問題があります.')
   }
 }
