@@ -7,7 +7,7 @@ process.env.VUE_APP_VERSION = require('./package.json').version
 process.env.VUE_APP_COPYRIGHT = (description =>
   description.indexOf('(C)') !== -1
     ? description.substring(description.indexOf('(C)') + 3).trim()
-    : '2020-2022 P4mohnet and JSGOE'
+    : '2020- P4mohnet and JSGOE'
 )(require('./package.json').description)
 
 module.exports = {
