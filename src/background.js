@@ -7,37 +7,39 @@ import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 import xxhash from 'xxhashjs'
 
-const isDevelopment = process.env.NODE_ENV !== 'production'
-
 const path = require('path')
 const fs = require('fs')
 
 const ElectronStore = require('electron-store')
+const DB = require('@seald-io/nedb')
 
+// バックエンドの変数
+const isDevelopment = process.env.NODE_ENV !== 'production'
+const instanceLock = app.requestSingleInstanceLock()
 let win = null
+let session = null
+const appConfig = {
+  electronStore: undefined,
+  storeConfig: {
+    // cwd ?:,
+    // name ?:
+    // fileExtension ?:
+  },
+  databaseInstance: undefined,
+  enableLocking: false
+}
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
 
 // 重複起動の抑制
-const instanceLock = app.requestSingleInstanceLock()
 if (!instanceLock) {
   app.quit()
-} else {
-  // イベントで重複起動を検知. 最小化していたら前面表示へ.
-  app.on('second-instance', () => {
-    if (win !== null) {
-      if (win.isMinimized()) {
-        win.restore()
-      }
-      win.focus()
-    }
-  })
 }
 
 // CreateBrowserWindow
-async function createWindow () {
+async function createWindow() {
   win = new BrowserWindow({
     width: 960,
     minWidth: 960,
@@ -72,6 +74,8 @@ async function createWindow () {
     await win.loadURL('app://./index.html')
   }
 
+  session = win.webContents.session
+
   win.on('closed', () => {
     // macosでウインドウが閉じた後には、アプリケーションメニューを「JOED5について」しか利用出来ないようにする.
     // windowsではウインドウが閉じる = 終了となる
@@ -93,12 +97,15 @@ async function createWindow () {
 // ready: アプリケーションの初期化終了→起動
 app.on('ready', async () => {
   if (instanceLock) {
+    // デフォルト path の documents を userData でオーバーライド
+    app.setPath('documents', app.getPath('userData'))
+
     // コマンドライン解釈
     parseCommandlineoptions()
 
     // 初期設定
-    app.ConfigStore = new ElectronStore(app.configSetting)
-    app.DatabaseInstance = createDatabaseInstance()
+    appConfig.electronStore = new ElectronStore(appConfig.storeConfig)
+    appConfig.databaseInstance = createDatabaseInstance()
 
     // ウインドウの作成
     if (isDevelopment && !process.env.IS_TEST) {
@@ -130,16 +137,29 @@ app.on('window-all-closed', () => {
 })
 
 // quit : macosでの 終了 イベント.
-app.on('quit', () => {
+app.on('quit', async () => {
   removeLockfile()
+  if (session) {
+    await session.clearCache()
+  }
+})
+
+// second-instance : 重複起動チェック(app.requestSingleInstanceLock)からのイベント インスタンスを前面に出す.
+app.on('second-instance', () => {
+  if (win !== null) {
+    if (win.isMinimized()) {
+      win.restore()
+    }
+    win.focus()
+  }
 })
 
 // activate-with-no-open-windows: macosではdockに残ったアイコンからウインドウを開く.
 if (process.platform === 'darwin') {
-  app.on('activate-with-no-open-windows', _ => createWindow())
+  app.on('activate-with-no-open-windows', () => createWindow())
 }
 
-// 強制終了(windows: graceful-exit, macos: SIGTERM)
+// 強制終了(windows: graceful-exit, macos: SIGTERM)への対応.
 if (process.platform === 'win32') {
   process.on('message', (data) => {
     if (data === 'graceful-exit') {
@@ -153,31 +173,26 @@ if (process.platform === 'win32') {
 //
 // コマンドラインオプションの処理
 //
-function parseCommandlineoptions () {
-  // --datadir : データの保存ディレクトリの設定
-  app.enableLocking = false
+function parseCommandlineoptions() {
+  // --datadir : データの保存ディレクトリの設定 setPath(documents)の指定
   if (app.commandLine.hasSwitch('datadir')) {
     try {
       const datadirarg = app.commandLine.getSwitchValue('datadir')
       if (fs.statSync(datadirarg).isDirectory()) {
         // 指定のフォルダがなければ例外
         app.setPath('documents', datadirarg)
-        app.enableLocking = true
+        appConfig.enableLocking = true
       } else {
         // 指定ファイルがディレクトリで無い場合も例外
         throw new Error()
       }
     } catch {
-      dialog.showMessageBoxSync({ title: 'JOED5', message: 'データ保存先として指定されたパスが不正です.' })
+      dialog.showMessageBoxSync({ title: 'JOED5', type: 'error', message: 'データ保存先として指定されたパスが不正です.' })
       app.exit(-1)
     }
-  } else {
-    // デフォルト path の documents を userData でオーバーライド
-    app.setPath('documents', app.getPath('userData'))
   }
 
   // --config : 設定の保存ファイル/ディレクトリを指定
-  app.configSetting = {}
   if (app.commandLine.hasSwitch('config')) {
     const configarg = app.commandLine.getSwitchValue('config')
     const configpath = path.parse(configarg)
@@ -191,26 +206,23 @@ function parseCommandlineoptions () {
         if (fs.existsSync(configarg)) {
           // 指定パスが存在する
           if (fs.statSync(configarg).isDirectory()) {
-            // 指定パスはディレクトリ
-            app.configSetting.cwd = configarg
-            // 以下は electron-store のデフォルト
-            // configSetting.name = 'config'
-            // configSetting.fileExtension = 'json'
+            // 指定パスはディレクトリ ファイル名はデフォルト値
+            appConfig.storeConfig.cwd = configarg
           } else {
             // 指定パスはファイル
-            app.configSetting.cwd = configpath.dir
-            app.configSetting.name = configpath.name
-            app.configSetting.fileExtension = configpath.ext
+            appConfig.storeConfig.cwd = configpath.dir
+            appConfig.storeConfig.name = configpath.name
+            appConfig.storeConfig.fileExtension = configpath.ext
           }
         } else {
           // 指定パス自体は存在しないので新規ファイルとして扱う
-          app.configSetting.cwd = configpath.dir
-          app.configSetting.name = configpath.name
-          app.configSetting.fileExtension = configpath.ext
+          appConfig.storeConfig.cwd = configpath.dir
+          appConfig.storeConfig.name = configpath.name
+          appConfig.storeConfig.fileExtension = configpath.ext
         }
       }
     } catch {
-      dialog.showMessageBoxSync({ title: 'JOED5', message: '設定ファイルに指定されたパスが不正です.' })
+      dialog.showMessageBoxSync({ title: 'JOED5', type: 'error', message: '設定ファイルに指定されたパスが不正です.' })
       app.exit(-1)
     }
   }
@@ -237,6 +249,39 @@ function parseCommandlineoptions () {
     dialog.showMessageBoxSync({ title: 'JOED5', message: 'ファイルを削除しました.' })
     app.exit()
   }
+
+  // unlock : 共有により影響を受けたロックファイルを削除する
+  if (app.commandLine.hasSwitch('unlock')) {
+    removeLockfile()
+    dialog.showMessageBoxSync({ title: 'JOED5', message: 'ロックを解除しました.' })
+    app.exit()
+  }
+
+  // refresh-work : ワークディレクトリをリフレッシュする
+  if (app.commandLine.hasSwitch('refresh')) {
+    const libdir = app.getPath('userData')
+    const items = [
+      'Cache', 'Code Cache', 'DawnCache', 'GPUCache',
+      'blob_storage', 'Local Storage', 'Network', 'Session Storage',
+      'Dictionaries', 'extensions',
+      'Local state', 'Preferences'
+    ]
+
+    try {
+      if (fs.existsSync(libdir)) {
+        for (const entry of items) {
+          const removeTarget = path.join(libdir, entry)
+          if (fs.existsSync(removeTarget)) {
+            fs.rmSync(removeTarget, { recursive: true })
+          }
+        }
+      }
+      dialog.showMessageBoxSync({ title: 'JOED5', message: '作業領域をリフレッシュしました.' })
+    } catch {
+      dialog.showMessageBoxSync({ title: 'JOED5', type: 'error', message: '作業領域のリフレッシュ中にエラーが発生しました.\n作業が不十分な可能性があります.' })
+    }
+    app.exit()
+  }
 }
 
 //
@@ -247,21 +292,21 @@ const MenuTemplate = [
   ...(
     process.platform === 'darwin'
       ? [{
-          label: app.getName(),
-          submenu: [
-            { label: app.getName() + 'について', role: 'about' },
-            { type: 'separator' },
-            { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
-            { type: 'separator' },
-            { label: 'サービス', role: 'services', submenu: [] },
-            { type: 'separator' },
-            { label: app.getName() + 'を隠す', accelerator: 'Command+H', role: 'hide' },
-            { label: '他を隠す', accelerator: 'Command+Alt+H', role: 'hideothers' },
-            { label: '全てを表示', role: 'unhide' },
-            { type: 'separator' },
-            { label: '終了', accelerator: 'Command+Q', role: 'quit' }
-          ]
-        }]
+        label: app.getName(),
+        submenu: [
+          { label: app.getName() + 'について', role: 'about' },
+          { type: 'separator' },
+          { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+          { type: 'separator' },
+          { label: 'サービス', role: 'services', submenu: [] },
+          { type: 'separator' },
+          { label: app.getName() + 'を隠す', accelerator: 'Command+H', role: 'hide' },
+          { label: '他を隠す', accelerator: 'Command+Alt+H', role: 'hideothers' },
+          { label: '全てを表示', role: 'unhide' },
+          { type: 'separator' },
+          { label: '終了', accelerator: 'Command+Q', role: 'quit' }
+        ]
+      }]
       : []
   ),
   // 通常のメニュー
@@ -275,58 +320,58 @@ const MenuTemplate = [
       ...(process.platform === 'darwin'
         ? []
         : [
-            { type: 'separator' },
-            { label: '設定', id: 'setup', enabled: false, accelerator: 'Ctrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
-            { label: '終了', accelerator: 'Alt+F4', role: 'quit' }
-          ])
+          { type: 'separator' },
+          { label: '設定', id: 'setup', enabled: false, accelerator: 'Ctrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+          { label: '終了', accelerator: 'Alt+F4', role: 'quit' }
+        ])
     ]
   },
   // macosでは編集メニューがないとコピーアンドペーストができない
   ...(
     process.platform === 'darwin'
       ? [
-          {
-            label: '編集',
-            submenu: [
-              { label: '取り消す', role: 'undo', accelerator: 'Command+Z' },
-              { label: 'やり直す', role: 'redo', accelerator: 'Command+Shift+Z' },
-              { type: 'separator' },
-              { label: 'カット', role: 'cut', accelerator: 'Command+X' },
-              { label: 'コピー', role: 'copy', accelerator: 'Command+C' },
-              { label: 'ペースト', role: 'paste', accelerator: 'Command+V' },
-              { label: 'すべてを選択', role: 'selectALL', accelerator: 'Command+A' }
-            ]
-          }
-        ]
+        {
+          label: '編集',
+          submenu: [
+            { label: '取り消す', role: 'undo', accelerator: 'Command+Z' },
+            { label: 'やり直す', role: 'redo', accelerator: 'Command+Shift+Z' },
+            { type: 'separator' },
+            { label: 'カット', role: 'cut', accelerator: 'Command+X' },
+            { label: 'コピー', role: 'copy', accelerator: 'Command+C' },
+            { label: 'ペースト', role: 'paste', accelerator: 'Command+V' },
+            { label: 'すべてを選択', role: 'selectALL', accelerator: 'Command+A' }
+          ]
+        }
+      ]
       : []
   ),
   ...(
     process.platform === 'win32'
       ? [{
-          label: 'ヘルプ',
-          submenu: [
-            { label: app.getName() + 'について', role: 'about' }
-          ]
-        }]
+        label: 'ヘルプ',
+        submenu: [
+          { label: app.getName() + 'について', role: 'about' }
+        ]
+      }]
       : []
   ),
   ...(
     isDevelopment
       ? [{
-          label: '開発支援',
-          submenu: [
-            {
-              label: 'リロード',
-              accelerator: '',
-              click: (item, focusedWindow) => { focusedWindow.webContents.onbeforeunload = null; focusedWindow.reload() }
-            },
-            {
-              label: '開発者ツール',
-              accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
-              click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools()
-            }
-          ]
-        }]
+        label: '開発支援',
+        submenu: [
+          {
+            label: 'リロード',
+            accelerator: '',
+            click: (item, focusedWindow) => { focusedWindow.webContents.onbeforeunload = null; focusedWindow.reload() }
+          },
+          {
+            label: '開発者ツール',
+            accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
+            click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools()
+          }
+        ]
+      }]
       : []
   )
 ]
@@ -346,12 +391,12 @@ app.setAboutPanelOptions({
 //
 
 // main -> renderer : メニューからrouterの切り替え要求 (App.vueで処理)
-function RendererRoute (routename, targetwindow) {
+function RendererRoute(routename, targetwindow) {
   targetwindow.webContents.send('update-router', routename)
 }
 
 // router毎のメニュー操作
-function switchMenu (payload) {
+function switchMenu(payload) {
   const menu = Menu.getApplicationMenu()
   switch (payload) {
     case 'login':
@@ -388,15 +433,15 @@ function switchMenu (payload) {
 //
 // ロックファイル制御
 //
-function createLockfile () {
-  if (app.enableLocking) {
+function createLockfile() {
+  if (appConfig.enableLocking) {
     const fd = fs.openSync(path.join(app.getPath('documents'), 'joed.nedb.lock'), 'wx')
     fs.closeSync(fd)
   }
 }
 
-function removeLockfile () {
-  if (app.enableLocking) {
+function removeLockfile() {
+  if (appConfig.enableLocking) {
     try {
       fs.unlinkSync(path.join(app.getPath('documents'), 'joed.nedb.lock'))
     } catch { }
@@ -406,11 +451,10 @@ function removeLockfile () {
 //
 // データベースの設定
 //
-const DB = require('@seald-io/nedb')
 
 // データベースインスタンスの作成
 //
-function createDatabaseInstance () {
+function createDatabaseInstance() {
   // appPath documents はデフォルトでは app.on ready で userData にオーバーライドされている.
   const DBfilename = path.join(app.getPath('documents'), 'joed.nedb')
 
@@ -431,7 +475,7 @@ function createDatabaseInstance () {
   try {
     createLockfile()
   } catch (error) {
-    dialog.showMessageBoxSync({ title: 'JOED5', message: '他のユーザがデータベースファイルを使用中のため起動を中止します.' })
+    dialog.showMessageBoxSync({ title: 'JOED5', type: 'info', message: '他のユーザがデータベースファイルを使用中のため起動を中止します.' })
     app.quit()
   }
 
@@ -462,7 +506,7 @@ function createDatabaseInstance () {
 // @Object.Document : Object
 ipcMain.handle('Insert', (_, payload) => {
   return new Promise((resolve, reject) => {
-    app.DatabaseInstance
+    appConfig.databaseInstance
       .insert(payload.Document, (error, newdocument) => {
         if (error) {
           reject(error)
@@ -487,7 +531,7 @@ ipcMain.handle('Find', (_, payload) => {
     const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
     const limit = payload.Limit ? Number.parseInt(payload.Limit) : 0
 
-    app.DatabaseInstance
+    appConfig.databaseInstance
       .find(query)
       .projection(projection)
       .sort(sort)
@@ -515,7 +559,7 @@ ipcMain.handle('FindOne', (_, payload) => {
     const sort = payload.Sort ? payload.Sort : {}
     const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
 
-    app.DatabaseInstance
+    appConfig.databaseInstance
       .findOne(query)
       .projection(projection)
       .sort(sort)
@@ -536,7 +580,7 @@ ipcMain.handle('FindOne', (_, payload) => {
 ipcMain.handle('FineOneByHash', (_, payload) => {
   const Encoder = new TextEncoder()
   return new Promise((resolve, reject) => {
-    app.DatabaseInstance
+    appConfig.databaseInstance
       .findOne({
         $where: function () {
           if (this.PatientId && this.DateOfProcedure) {
@@ -575,7 +619,7 @@ ipcMain.handle('FineOneByHash', (_, payload) => {
 ipcMain.handle('Count', (_, payload) => {
   return new Promise((resolve, reject) => {
     const query = payload.Query ? payload.Query : {}
-    app.DatabaseInstance
+    appConfig.databaseInstance
       .count(query, (error, count) => {
         if (error) {
           reject(error)
@@ -595,7 +639,7 @@ ipcMain.handle('Update', (_, payload) => {
     const query = payload.Query ? payload.Query : {}
     const update = payload.Update ? payload.Update : {}
     const options = payload.Options ? payload.Options : {}
-    app.DatabaseInstance
+    appConfig.databaseInstance
       .update(query, update, options, (error, numrows) => {
         if (error) {
           reject(error)
@@ -613,7 +657,7 @@ ipcMain.handle('Remove', (_, payload) => {
   return new Promise((resolve, reject) => {
     const query = payload.Query ? payload.Query : {}
     const options = payload.Options ? payload.Options : {}
-    app.DatabaseInstance
+    appConfig.databaseInstance
       .remove(query, options, (error, numrows) => {
         if (error) {
           reject(error)
@@ -632,14 +676,14 @@ ipcMain.handle('Remove', (_, payload) => {
 // @Object.Key : String
 // @Object.DefaultConfig : Object
 ipcMain.handle('LoadConfig', (_, payload) =>
-  app.ConfigStore.get(payload.Key, payload.DefaultConfig)
+  appConfig.electronStore.get(payload.Key, payload.DefaultConfig)
 )
 
 // SaveConfig
 // @Object.Key : String
 // @Object.Config : Object
 ipcMain.handle('SaveConfig', (_, payload) =>
-  app.ConfigStore.set(payload.Key, payload.Config)
+  appConfig.electronStore.set(payload.Key, payload.Config)
 )
 
 //
