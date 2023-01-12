@@ -1,4 +1,4 @@
-# language
+# as Japanese language definition
 !ifndef JOEDINSTALLER
   !define JOEDINSTALLER true
 
