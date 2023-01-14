@@ -12,11 +12,18 @@
       @dragged="CSVitemDragged"
       v-show="source === 'CSV'">
       <template #title>
-        <span @click="ToggleSource">&#x1f5d8; CSVファイルのフィールド</span>
-        <div style="display: inline-block; margin-left: 1rem; letter-spacing: 0.3rem;">
-          <span @click="CSVcursor('prev')">&#x229f;</span>
-          <span @click="CSVcursor('home')">&#x1f56e;</span>
-          <span @click="CSVcursor('next')">&#x229e;</span>
+        <div class="sourceTitle">
+          <span>CSVファイルのフィールド</span>
+          <el-switch v-model="source"
+            inactive-value="CSV"
+            active-value="functions"></el-switch>
+          <span>生成値</span>
+          <div class="record_control">
+            <span></span>
+            <span @click="CSVcursor('prev')">◀</span>
+            <span @click="CSVcursor('home')">インデックス</span>
+            <span @click="CSVcursor('next')">▶</span>
+          </div>
         </div>
       </template>
     </QueryPane>
@@ -26,7 +33,13 @@
       @dragged="functionalitemDragged"
       v-show="source === 'functions'">
       <template #title>
-        <span @click="ToggleSource">&#x1f5d8; 生成値</span>
+        <div class="sourceTitle">
+          <span>CSVファイルのフィールド</span>
+          <el-switch v-model="source"
+            inactive-value="CSV"
+            active-value="functions"></el-switch>
+          <span>生成値</span>
+        </div>
       </template>
     </QueryPane>
   </div>
@@ -78,19 +91,6 @@ export default {
       previewIndex: -1
     }
   },
-  // created () {
-  //   // デフォルトルールセットを設定
-  //   if (Object.keys(this.ruleset).length > 0) {
-  //     for (const key in this.ruleset) {
-  //       this.recordAssignment[key] = Object.assign({}, this.ruleset[key])
-  //     }
-  //   }
-  // },
-  // watch: {
-  //   recordAssignment () {
-  //     this.$emit('change', this.recordAssignment)
-  //   }
-  // },
   computed: {
     recordAssignment () {
       return this.ruleset
@@ -135,9 +135,6 @@ export default {
     }
   },
   methods: {
-    ToggleSource () {
-      this.source = this.source === 'CSV' ? 'functions' : 'CSV'
-    },
     CSVcursor (vector) {
       if (vector === 'home') {
         this.previewIndex = -1
@@ -213,4 +210,20 @@ div.QueryBuilder
   align-content: stretch
   resize: vertical
   overflow-y: hidden
+
+div.sourceTitle
+  display: inline-flex
+  flex-direction: row
+  justify-content: space-between
+  span
+    display: flexbox
+    padding-right: 1rem
+  div
+    padding-right: 1rem
+
+div.record_control
+  display: inline-block
+  :hover
+    color: var(--color-primary)
+    cursor: pointer
 </style>

@@ -15,13 +15,20 @@
         </div>
       </slot>
     </div>
-    <div class="QueryPaneListItemEraseButton" v-if="erasable" @click="erase"></div>
+    <div class="QueryPaneListItemEraseButton" v-if="erasable" >
+      <CloseButton @click="erase" bordered></CloseButton>
+    </div>
   </div>
 </template>
 
 <script>
+import CloseButton from '@/components/Atoms/CloseButton'
+
 export default {
   name: 'QueryPaneLisyItem',
+  components: {
+    CloseButton
+  },
   props: {
     item: {
       type: [String, Number, Array, Object],
@@ -122,19 +129,7 @@ div.QueryPaneListItemEraseButton
   width: 1.2rem
   height: 1.2rem
   flex-grow: 0
-  margin: auto 0.8rem auto 0
-  padding: 0
-  border: 1px solid grey
-  background: white
+  margin: auto 0.3rem
+  background: var(--background-color-list)
   overflow: hidden
-  &::after
-    position: absolute
-    margin: auto 0
-    padding-top: 0.05rem
-    padding-left: 0.05rem
-    box-sizing: border-box
-    color: black
-    font-family: 'element-icons' !important
-    font-size: 1rem
-    content: '\e6db'
 </style>
