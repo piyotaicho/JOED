@@ -1,4 +1,5 @@
-# NSIS installer configuration for JOED5 - require installer.nsh to define Japanese messages.
+# NSIS installer configuration for JOED5
+# - require installer.nsh to define Japanese messages.
 Unicode true
 !include MUI2.nsh
 
@@ -43,6 +44,10 @@ Unicode true
 
     Section 
         SetOutPath "$INSTDIR"
+        # clean-up locales/ and resources/ before update - 1.3.1000 hack
+        RMDIR /r "$INSTDIR\locales"
+        RMDIR /r "$INSTDIR\resources"
+
         File /r "${PROJECT_DIR}\dist_electron\win${ARCH}-unpacked\*.*"
 
         # prepare uninstaller
@@ -64,6 +69,13 @@ Unicode true
         WriteRegStr HKCU "${REGPATH_UNINSTSUBKEY}" "QuietUninstallString" '"$INSTDIR\Uninstall.exe" /S'
         WriteRegDWORD HKCU "${REGPATH_UNINSTSUBKEY}" "NoModify" 1
         WriteRegDWORD HKCU "${REGPATH_UNINSTSUBKEY}" "NoRepair" 1
+
+        # clean up APPDATA/JOED5
+        RMDIR /r "$APPDATA\JOED5\Dictionaries"
+        RMDIR /r "$APPDATA\JOED5\Cache"
+        RMDIR /r "$APPDATA\JOED5\Code Cache"
+        RMDIR /r "$APPDATA\JOED5\DawnCache"
+        RMDIR /r "$APPDATA\JOED5\GPUCache"
     SectionEnd
 
     Section "Uninstall" 
