@@ -395,11 +395,21 @@ const store = new Vuex.Store({
             DateOfProcedure: payload.DateOfProcedure
           }
         })
-
         if (count > 0) {
-          throw new Error('同一日に同一IDの症例は登録できません.')
+          throw new Error('DUP')
         }
+      } catch (error) {
+        if (error.message === 'DUP') {
+          throw new Error(`同一日(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
+        } else {
+          if (process.env.NODE_ENV !== 'production') {
+            console.error(error)
+          }
+          throw new Error('データベースエラー(INSERT/UPDATE)です.')
+        }
+      }
 
+      try {
         // 仮登録 DocumentId = '__auto__' のドキュメントをinsert
         payload.DocumentId = '__autoid__'
         await context.dispatch('dbInsert', {
@@ -447,11 +457,7 @@ const store = new Vuex.Store({
         if (process.env.NODE_ENV !== 'production') {
           console.error(error)
         }
-        if (error.message === '同一日に同一IDの症例は登録できません.') {
-          throw error
-        } else {
-          throw new Error('データベースエラー(INSERT/UPDATE)です.')
-        }
+        throw new Error('データベースエラー(INSERT/UPDATE)です.')
       }
     },
 
@@ -464,20 +470,28 @@ const store = new Vuex.Store({
         throw new Error('内部IDの指定に問題があります.')
       }
       try {
-        const documents = await context.dispatch('dbFind', {
+        // 重複入力の確認
+        const count = await context.dispatch('dbCount', {
           Query: {
             PatientId: payload.PatientId,
             DateOfProcedure: payload.DateOfProcedure
-          },
-          Projection: { DocumentId: 1 }
-        })
-
-        for (const document of documents) {
-          if (document.DocumentId !== payload.DocumentId) {
-            throw new Error('同一日に同一IDの症例は登録できません.')
           }
+        })
+        if (count > 0) {
+          throw new Error('DUP')
         }
+      } catch (error) {
+        if (error.message === 'DUP') {
+          throw new Error(`同一日(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
+        } else {
+          if (process.env.NODE_ENV !== 'production') {
+            console.error(error)
+          }
+          throw new Error('データベースエラー(INSERT/UPDATE)です.')
+        }
+      }
 
+      try {
         await context.dispatch('dbUpdate', {
           Query: { DocumentId: payload.DocumentId },
           Update: payload,
@@ -486,17 +500,14 @@ const store = new Vuex.Store({
 
         // 変更のあったDocumentIdをキャッシュから削除
         context.commit('RemoveDatastore', { DocumentId: payload.DocumentId })
+
         // レコード操作をしたら必ずキャッシュをリロード
         await context.dispatch('ReloadDocumentList')
       } catch (error) {
         if (process.env.NODE_ENV !== 'production') {
           console.error(error)
         }
-        if (error.message === '同一日に同一IDの症例は登録できません.') {
-          throw error
-        } else {
-          throw new Error('データベースエラー(UPDATE)です.')
-        }
+        throw new Error('データベースエラー(UPDATE)です.')
       }
     },
 

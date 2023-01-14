@@ -10,24 +10,26 @@
           <option value="json">JOED5のバックアップ形式に準拠した jsonファイル</option>
         </select>
       </div>
-      <input-file @load="LoadFile" ButtonText="ファイルの指定" :AcceptFileTypes="FileExtentions[ImportMode]"/>
+      <input-file @load="LoadFile" ButtonText="ファイルの指定" :AcceptFileTypes="FileExtentions[ImportMode]" />
     </div>
 
     <!-- Importerセクション -->
-    <import-CSV v-if="ImportMode === 'csv'" :stream="FileStream" :disabled="!FileStream" :preserved-rule="CSVruleset" @done="Processed" @store="storeCSVruleset"/>
-    <import-merge-v4 v-if="ImportMode === 'merge'" :stream="FileStream" :disabled="!FileStream" @done="Processed"/>
-    <import-JSON v-if="ImportMode === 'json'" :stream="FileStream" :disabled="!FileStream" @done="Processed"/>
+    <import-CSV v-if="ImportMode === 'csv'" :stream="FileStream" :disabled="!FileStream" :preserved-rule="CSVruleset"
+      @done="Processed" @store="storeCSVruleset" />
+    <import-merge-v4 v-if="ImportMode === 'merge'" :stream="FileStream" :disabled="!FileStream" @done="Processed" />
+    <import-JSON v-if="ImportMode === 'json'" :stream="FileStream" :disabled="!FileStream" @done="Processed" />
 
     <div>
-      <el-button type="primary" :disabled="CreatedDocument.length === 0 || Committing > 0" @click="CommitImported">変換したデータの登録</el-button>
+      <el-button type="primary" :disabled="CreatedDocument.length === 0 || Committing > 0"
+        @click="CommitImported">変換したデータの登録</el-button>
     </div>
     <div class="progress-views">
       <step-indicator :step="1" :stepcount="Committing" icon="el-icon-eleme" description="登録">
-        <el-progress v-show="Committing > 0" :percentage="ProgressBar"/>
+        <el-progress v-show="Committing > 0" :percentage="ProgressBar" />
       </step-indicator>
     </div>
 
-    <TheWrapper prevent-close v-if="Processing"/>
+    <TheWrapper prevent-close v-if="Processing" />
   </div>
 </template>
 
@@ -122,7 +124,7 @@ export default {
       for (const record of this.CreatedDocument) {
         await this.$store.dispatch('UpsertDocument', record)
           .then(_ => { this.ProgressBar = Math.round(++count * 100 / this.CreatedDocument.length) })
-          .catch(error => errors.push(error.Message || error + '\n' + JSON.stringify(record)))
+          .catch(error => errors.push(error.message || error))
       }
 
       this.ImportProgress = 100
@@ -130,16 +132,38 @@ export default {
       this.Processing = false
       await this.$nextTick()
 
-      let message = count + ' 例を登録しました.'
+      const message = count + ' 例を登録しました.'
       if (errors.length > 0) {
-        message += '\n' + errors.length + ' 件の登録に失敗しました.(重複登録の可能性があります.)'
-        Popups.alert(message)
+        let exportText = message + '\n' + errors.length + ' 件の登録に失敗しました.'
+        if (await Popups.confirmAnyOk(exportText, 'エラー内容をダウンロード') === false) {
+          // errorsを保存
+          const countChars = errors.length.toString().length
+          const spaces = ((n) => {
+            let s = ''
+            for (let i = 0; i < n; i++) {
+              s += ' '
+            }
+            return s
+          })(countChars)
+
+          exportText += '\n---\n' + errors.map((str, index) =>
+            (spaces + (index + 1).toString()).slice(-countChars) + ': ' + str
+          ).join('\n')
+          // ブラウザの機能でダウンロードさせる.
+          const temporaryElementA = document.createElement('A')
+          temporaryElementA.href = URL.createObjectURL(new Blob([exportText]), { type: 'text/plain' })
+          temporaryElementA.download = 'import-error-report.txt'
+          temporaryElementA.style.display = 'none'
+          document.body.appendChild(temporaryElementA)
+          temporaryElementA.click()
+          document.body.removeChild(temporaryElementA)
+        }
       } else {
         Popups.information(message)
       }
 
       this.CreatedDocument.splice(0)
-      this.$nextTick(() => {})
+      this.$nextTick(() => { })
     }
   }
 }

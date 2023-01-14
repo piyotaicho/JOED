@@ -23,21 +23,21 @@ function messageVNode (message, caller) {
 }
 
 export function alert (message, caller = null) {
-  MessageBox.alert(messageVNode(message, caller), {
+  return MessageBox.alert(messageVNode(message, caller), {
     iconClass: 'el-icon-message-solid',
     showClose: false
   })
 }
 
 export function error (message, caller = null) {
-  MessageBox.alert(messageVNode(message, caller), {
+  return MessageBox.alert(messageVNode(message, caller), {
     iconClass: 'el-icon-error',
     showClose: false
   })
 }
 
 export function information (message, caller = null) {
-  MessageBox.alert(messageVNode(message, caller), {
+  return MessageBox.alert(messageVNode(message, caller), {
     title: '通知',
     iconClass: 'el-icon-info',
     closeOnClickModal: false,
@@ -62,6 +62,16 @@ export async function confirmYesNo (message) {
     closeOnPressEscape: false,
     cancelButtonText: 'いいえ',
     confirmButtonText: 'はい'
+  }).then(_ => true, _ => false)
+}
+
+export async function confirmAnyOk (message, anyText = 'cancel') {
+  return await MessageBox.confirm(messageVNode(message), {
+    iconClass: 'el-icon-message-solid',
+    showClose: false,
+    closeOnPressEscape: false,
+    cancelButtonText: anyText,
+    confirmButtonText: 'OK'
   }).then(_ => true, _ => false)
 }
 
