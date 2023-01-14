@@ -135,7 +135,7 @@ export default {
       const message = count + ' 例を登録しました.'
       if (errors.length > 0) {
         let exportText = message + '\n' + errors.length + ' 件の登録に失敗しました.'
-        if (await Popups.confirmAnyOk(exportText, 'エラー内容をダウンロード') === false) {
+        if (await Popups.confirmAnyOk(exportText, 'エラー内容をファイルに保存') === false) {
           // errorsを保存
           const countChars = errors.length.toString().length
           const spaces = ((n) => {
