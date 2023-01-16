@@ -97,27 +97,33 @@ async function createWindow () {
 // ready: アプリケーションの初期化終了→起動
 app.on('ready', async () => {
   if (instanceLock) {
-    // デフォルト path の documents を userData でオーバーライド
-    app.setPath('documents', app.getPath('userData'))
+    try {
+      // デフォルト path の documents を userData でオーバーライド
+      app.setPath('documents', app.getPath('userData'))
 
-    // コマンドライン解釈
-    parseCommandlineoptions()
+      // 初期設定
+      // コマンドライン解釈
+      parseCommandlineoptions()
+      // 設定ファイル読み込み
+      appConfig.electronStore = new ElectronStore(appConfig.storeConfig)
+      // データベースインスタンス作成
+      appConfig.databaseInstance = createDatabaseInstance()
 
-    // 初期設定
-    appConfig.electronStore = new ElectronStore(appConfig.storeConfig)
-    appConfig.databaseInstance = createDatabaseInstance()
-
-    // ウインドウの作成
-    if (isDevelopment && !process.env.IS_TEST) {
-      // Install Vue Devtools
-      try {
-        await installExtension(VUEJS_DEVTOOLS)
-      } catch (e) {
-        console.error('Vue Devtools failed to install:', e.toString())
+      // ウインドウの作成
+      if (isDevelopment && !process.env.IS_TEST) {
+        // Install Vue Devtools
+        try {
+          await installExtension(VUEJS_DEVTOOLS)
+        } catch (e) {
+          console.error('Vue Devtools failed to install:', e.toString())
+        }
       }
-    }
 
-    createWindow()
+      createWindow()
+    } catch {
+      // 例外時は異常終了
+      app.exit(-1)
+    }
   }
 })
 
@@ -188,7 +194,7 @@ function parseCommandlineoptions () {
       }
     } catch {
       dialog.showMessageBoxSync({ title: 'JOED5', type: 'error', message: 'データ保存先として指定されたパスが不正です.' })
-      app.exit(-1)
+      throw new Error()
     }
   }
 
@@ -223,7 +229,7 @@ function parseCommandlineoptions () {
       }
     } catch {
       dialog.showMessageBoxSync({ title: 'JOED5', type: 'error', message: '設定ファイルに指定されたパスが不正です.' })
-      app.exit(-1)
+      throw new Error()
     }
   }
 
@@ -247,14 +253,14 @@ function parseCommandlineoptions () {
     } catch { }
 
     dialog.showMessageBoxSync({ title: 'JOED5', message: 'ファイルを削除しました.' })
-    app.exit()
+    app.exit(0)
   }
 
   // unlock : 共有により影響を受けたロックファイルを削除する
   if (app.commandLine.hasSwitch('unlock')) {
     removeLockfile()
     dialog.showMessageBoxSync({ title: 'JOED5', message: 'ロックを解除しました.' })
-    app.exit()
+    app.exit(0)
   }
 
   // refresh-work : ワークディレクトリをリフレッシュする
@@ -280,7 +286,7 @@ function parseCommandlineoptions () {
     } catch {
       dialog.showMessageBoxSync({ title: 'JOED5', type: 'error', message: '作業領域のリフレッシュ中にエラーが発生しました.\n作業が不十分な可能性があります.' })
     }
-    app.exit()
+    app.exit(0)
   }
 }
 
@@ -476,7 +482,7 @@ function createDatabaseInstance () {
     createLockfile()
   } catch (error) {
     dialog.showMessageBoxSync({ title: 'JOED5', type: 'info', message: '他のユーザがデータベースファイルを使用中のため起動を中止します.' })
-    app.quit()
+    throw new Error()
   }
 
   try {
@@ -493,8 +499,7 @@ function createDatabaseInstance () {
       buttons: ['OK'],
       message: 'データベースファイルの操作に失敗しました, アプリケーションを起動できません.\n以下の情報を添えて学会までお問い合わせください.\n\n' + error.message
     })
-    app.quit(-1)
-    return undefined
+    throw new Error()
   }
 }
 
