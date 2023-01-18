@@ -38,6 +38,17 @@ if (!instanceLock) {
   app.quit()
 }
 
+// 初期設定
+// デフォルト path の documents を userData でオーバーライド
+app.setPath('documents', app.getPath('userData'))
+
+// コマンドライン解釈
+parseCommandlineoptions()
+
+// 初期設定をファイルから取得
+appConfig.electronStore = new ElectronStore(appConfig.storeConfig)
+appConfig.databaseInstance = createDatabaseInstance()
+
 // CreateBrowserWindow
 async function createWindow () {
   win = new BrowserWindow({
@@ -97,16 +108,6 @@ async function createWindow () {
 // ready: アプリケーションの初期化終了→起動
 app.on('ready', async () => {
   if (instanceLock) {
-    // デフォルト path の documents を userData でオーバーライド
-    app.setPath('documents', app.getPath('userData'))
-
-    // コマンドライン解釈
-    parseCommandlineoptions()
-
-    // 初期設定
-    appConfig.electronStore = new ElectronStore(appConfig.storeConfig)
-    appConfig.databaseInstance = createDatabaseInstance()
-
     // ウインドウの作成
     if (isDevelopment && !process.env.IS_TEST) {
       // Install Vue Devtools
@@ -247,14 +248,14 @@ function parseCommandlineoptions () {
     } catch { }
 
     dialog.showMessageBoxSync({ title: 'JOED5', message: 'ファイルを削除しました.' })
-    app.exit()
+    app.exit(0)
   }
 
   // unlock : 共有により影響を受けたロックファイルを削除する
   if (app.commandLine.hasSwitch('unlock')) {
     removeLockfile()
     dialog.showMessageBoxSync({ title: 'JOED5', message: 'ロックを解除しました.' })
-    app.exit()
+    app.exit(0)
   }
 
   // refresh-work : ワークディレクトリをリフレッシュする
@@ -277,10 +278,11 @@ function parseCommandlineoptions () {
         }
       }
       dialog.showMessageBoxSync({ title: 'JOED5', message: '作業領域をリフレッシュしました.' })
+      app.exit(0)
     } catch {
       dialog.showMessageBoxSync({ title: 'JOED5', type: 'error', message: '作業領域のリフレッシュ中にエラーが発生しました.\n作業が不十分な可能性があります.' })
+      app.exit(-1)
     }
-    app.exit()
   }
 }
 
@@ -378,6 +380,8 @@ const MenuTemplate = [
 
 Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate))
 
+// Aboutメニューのダイアログ
+
 app.setAboutPanelOptions({
   applicationName: app.getName(),
   applicationVersion: process.env.VUE_APP_VERSION,
@@ -455,8 +459,16 @@ function removeLockfile () {
 // データベースインスタンスの作成
 //
 function createDatabaseInstance () {
-  // appPath documents はデフォルトでは app.on ready で userData にオーバーライドされている.
+  // appPath documents はデフォルトで userData にオーバーライドされている.
   const DBfilename = path.join(app.getPath('documents'), 'joed.nedb')
+
+  // ロックの確認
+  try {
+    createLockfile()
+  } catch (error) {
+    dialog.showMessageBoxSync({ title: 'JOED5', type: 'info', message: '他のユーザがデータベースファイルを使用中のため起動を中止します.' })
+    app.exit(-1)
+  }
 
   // データベースファイルのバックアップを作る(３世代まで)
   // 原則としてバックアップ作成に関わるエラーは全て無視.
@@ -472,13 +484,7 @@ function createDatabaseInstance () {
     fs.copyFileSync(DBfilename, DBfilename + '.1')
   } catch { }
 
-  try {
-    createLockfile()
-  } catch (error) {
-    dialog.showMessageBoxSync({ title: 'JOED5', type: 'info', message: '他のユーザがデータベースファイルを使用中のため起動を中止します.' })
-    app.quit()
-  }
-
+  // データベースの作成
   try {
     return new DB({
       filename: DBfilename,
@@ -493,7 +499,8 @@ function createDatabaseInstance () {
       buttons: ['OK'],
       message: 'データベースファイルの操作に失敗しました, アプリケーションを起動できません.\n以下の情報を添えて学会までお問い合わせください.\n\n' + error.message
     })
-    app.quit(-1)
+    removeLockfile()
+    app.exit(-1)
     return undefined
   }
 }
