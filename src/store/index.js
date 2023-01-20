@@ -457,7 +457,7 @@ const store = new Vuex.Store({
         if (process.env.NODE_ENV !== 'production') {
           console.error(error)
         }
-        throw new Error('データベースエラー(INSERT/UPDATE)です.')
+        throw new Error('データベースエラー(INSERT)です.')
       }
     },
 
@@ -471,14 +471,17 @@ const store = new Vuex.Store({
       }
       try {
         // 重複入力の確認
-        const count = await context.dispatch('dbCount', {
+        const documents = await context.dispatch('dbFind', {
           Query: {
             PatientId: payload.PatientId,
             DateOfProcedure: payload.DateOfProcedure
-          }
+          },
+          Projection: { DocumentId: 1 }
         })
-        if (count > 0) {
-          throw new Error('DUP')
+        for (const document of documents) {
+          if (document.DocumentId !== payload.DocumentId) {
+            throw new Error('同一日に同一IDの症例は登録できません.')
+          }
         }
       } catch (error) {
         if (error.message === 'DUP') {
@@ -487,7 +490,7 @@ const store = new Vuex.Store({
           if (process.env.NODE_ENV !== 'production') {
             console.error(error)
           }
-          throw new Error('データベースエラー(INSERT/UPDATE)です.')
+          throw new Error('データベースエラー(UPDATE)です.')
         }
       }
 
