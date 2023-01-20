@@ -1,4 +1,4 @@
-import ProcedureTimeSelections from '@/modules/ProcedureTimes'
+import parseProcedureTime from '@/modules/ProcedureTimes'
 
 let year = ''
 let internalcounter = 1
@@ -124,7 +124,7 @@ function ProcedureTime (CaseData, record) {
       .match(/\s*(\d+)(分{0,1}(以上|(未満|まで))){0,1}/)
     if (timestrmatches) {
       const timevalue = Number(timestrmatches[1]) - (timestrmatches[4] !== undefined ? 1 : 0)
-      CaseData.ProcedureTime = ProcedureTimeSelections(timevalue)
+      CaseData.ProcedureTime = parseProcedureTime(timevalue)
     } else {
       throw new Error()
     }
