@@ -49,6 +49,11 @@ parseCommandlineoptions()
 appConfig.electronStore = new ElectronStore(appConfig.storeConfig)
 appConfig.databaseInstance = createDatabaseInstance()
 
+// 起動
+registerAppEvents()
+registerIPChandlers()
+registerMenu()
+
 // CreateBrowserWindow
 async function createWindow () {
   win = new BrowserWindow({
@@ -102,73 +107,74 @@ async function createWindow () {
 }
 
 //
-// イベントの処理
+// イベントの登録
 //
-
-// ready: アプリケーションの初期化終了→起動
-app.on('ready', async () => {
-  if (instanceLock) {
-    // ウインドウの作成
-    if (isDevelopment && !process.env.IS_TEST) {
-      // Install Vue Devtools
-      try {
-        await installExtension(VUEJS_DEVTOOLS)
-      } catch (e) {
-        console.error('Vue Devtools failed to install:', e.toString())
+function registerAppEvents () {
+  // ready: reateWindow
+  app.on('ready', async () => {
+    if (instanceLock) {
+      // ウインドウの作成
+      if (isDevelopment && !process.env.IS_TEST) {
+        // Install Vue Devtools
+        try {
+          await installExtension(VUEJS_DEVTOOLS)
+        } catch (e) {
+          console.error('Vue Devtools failed to install:', e.toString())
+        }
       }
+
+      createWindow()
     }
+  })
 
-    createWindow()
-  }
-})
-
-// activate : macos ドックアイコンをクリック
-app.on('activate', () => {
-  if (win === null) {
-    createWindow()
-  }
-})
-
-// window-all-closed : Windowsではウインドウを閉じる = 終了.
-app.on('window-all-closed', () => {
-  if (process.platform === 'win32') {
-    // 処理を統一するため終了イベントを発行
-    app.quit()
-  }
-})
-
-// quit : macosでの 終了 イベント.
-app.on('quit', async () => {
-  removeLockfile()
-  if (session) {
-    await session.clearCache()
-  }
-})
-
-// second-instance : 重複起動チェック(app.requestSingleInstanceLock)からのイベント インスタンスを前面に出す.
-app.on('second-instance', () => {
-  if (win !== null) {
-    if (win.isMinimized()) {
-      win.restore()
+  // activate : macos ドックアイコンをクリック
+  app.on('activate', () => {
+    if (win === null) {
+      createWindow()
     }
-    win.focus()
-  }
-})
+  })
 
-// activate-with-no-open-windows: macosではdockに残ったアイコンからウインドウを開く.
-if (process.platform === 'darwin') {
-  app.on('activate-with-no-open-windows', () => createWindow())
-}
-
-// 強制終了(windows: graceful-exit, macos: SIGTERM)への対応.
-if (process.platform === 'win32') {
-  process.on('message', (data) => {
-    if (data === 'graceful-exit') {
+  // window-all-closed : Windowsではウインドウを閉じる = 終了.
+  app.on('window-all-closed', () => {
+    if (process.platform === 'win32') {
+      // 処理を統一するため終了イベントを発行
       app.quit()
     }
   })
-} else {
-  process.on('SIGTERM', () => app.quit())
+
+  // quit : macosでの 終了 イベント.
+  app.on('quit', async () => {
+    removeLockfile()
+    if (session) {
+      await session.clearCache()
+    }
+  })
+
+  // second-instance : 重複起動チェック(app.requestSingleInstanceLock)からのイベント インスタンスを前面に出す.
+  app.on('second-instance', () => {
+    if (win !== null) {
+      if (win.isMinimized()) {
+        win.restore()
+      }
+      win.focus()
+    }
+  })
+
+  // activate-with-no-open-windows: macosではdockに残ったアイコンからウインドウを開く.
+  if (process.platform === 'darwin') {
+    app.on('activate-with-no-open-windows', () => createWindow())
+  }
+
+  // 強制終了(windows: graceful-exit, macos: SIGTERM)への対応.
+  if (process.platform === 'win32') {
+    process.on('message', (data) => {
+      if (data === 'graceful-exit') {
+        app.quit()
+      }
+    })
+  } else {
+    process.on('SIGTERM', () => app.quit())
+  }
 }
 
 //
@@ -289,106 +295,108 @@ function parseCommandlineoptions () {
 //
 // メニューの設定
 //
-const MenuTemplate = [
-  // アプリケーションメニュー
-  ...(
-    process.platform === 'darwin'
-      ? [{
-          label: app.getName(),
-          submenu: [
-            { label: app.getName() + 'について', role: 'about' },
-            { type: 'separator' },
-            { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
-            { type: 'separator' },
-            { label: 'サービス', role: 'services', submenu: [] },
-            { type: 'separator' },
-            { label: app.getName() + 'を隠す', accelerator: 'Command+H', role: 'hide' },
-            { label: '他を隠す', accelerator: 'Command+Alt+H', role: 'hideothers' },
-            { label: '全てを表示', role: 'unhide' },
-            { type: 'separator' },
-            { label: '終了', accelerator: 'Command+Q', role: 'quit' }
-          ]
-        }]
-      : []
-  ),
-  // 通常のメニュー
-  {
-    label: 'ファイル',
-    submenu: [
-      { label: '新規症例の登録', id: 'list-new', enabled: false, accelerator: 'CmdORCtrl+N', click: (item, focusedWindow) => RendererRoute('new', focusedWindow) },
-      { type: 'separator' },
-      { label: 'データの読み込み', id: 'list-import', enabled: false, click: (item, focusedWindow) => RendererRoute('import', focusedWindow) },
-      { label: 'データの書き出し', id: 'list-export', enabled: false, click: (item, focusedWindow) => RendererRoute('export', focusedWindow) },
-      ...(process.platform === 'darwin'
-        ? []
-        : [
-            { type: 'separator' },
-            { label: '設定', id: 'setup', enabled: false, accelerator: 'Ctrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
-            { label: '終了', accelerator: 'Alt+F4', role: 'quit' }
-          ])
-    ]
-  },
-  // macosでは編集メニューがないとコピーアンドペーストができない
-  ...(
-    process.platform === 'darwin'
-      ? [
-          {
-            label: '編集',
+function registerMenu () {
+  const MenuTemplate = [
+    // アプリケーションメニュー
+    ...(
+      process.platform === 'darwin'
+        ? [{
+            label: app.getName(),
             submenu: [
-              { label: '取り消す', role: 'undo', accelerator: 'Command+Z' },
-              { label: 'やり直す', role: 'redo', accelerator: 'Command+Shift+Z' },
+              { label: app.getName() + 'について', role: 'about' },
               { type: 'separator' },
-              { label: 'カット', role: 'cut', accelerator: 'Command+X' },
-              { label: 'コピー', role: 'copy', accelerator: 'Command+C' },
-              { label: 'ペースト', role: 'paste', accelerator: 'Command+V' },
-              { label: 'すべてを選択', role: 'selectALL', accelerator: 'Command+A' }
+              { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+              { type: 'separator' },
+              { label: 'サービス', role: 'services', submenu: [] },
+              { type: 'separator' },
+              { label: app.getName() + 'を隠す', accelerator: 'Command+H', role: 'hide' },
+              { label: '他を隠す', accelerator: 'Command+Alt+H', role: 'hideothers' },
+              { label: '全てを表示', role: 'unhide' },
+              { type: 'separator' },
+              { label: '終了', accelerator: 'Command+Q', role: 'quit' }
             ]
-          }
-        ]
-      : []
-  ),
-  ...(
-    process.platform === 'win32'
-      ? [{
-          label: 'ヘルプ',
-          submenu: [
-            { label: app.getName() + 'について', role: 'about' }
-          ]
-        }]
-      : []
-  ),
-  ...(
-    isDevelopment
-      ? [{
-          label: '開発支援',
-          submenu: [
+          }]
+        : []
+    ),
+    // 通常のメニュー
+    {
+      label: 'ファイル',
+      submenu: [
+        { label: '新規症例の登録', id: 'list-new', enabled: false, accelerator: 'CmdORCtrl+N', click: (item, focusedWindow) => RendererRoute('new', focusedWindow) },
+        { type: 'separator' },
+        { label: 'データの読み込み', id: 'list-import', enabled: false, click: (item, focusedWindow) => RendererRoute('import', focusedWindow) },
+        { label: 'データの書き出し', id: 'list-export', enabled: false, click: (item, focusedWindow) => RendererRoute('export', focusedWindow) },
+        ...(process.platform === 'darwin'
+          ? []
+          : [
+              { type: 'separator' },
+              { label: '設定', id: 'setup', enabled: false, accelerator: 'Ctrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+              { label: '終了', accelerator: 'Alt+F4', role: 'quit' }
+            ])
+      ]
+    },
+    // macosでは編集メニューがないとコピーアンドペーストができない
+    ...(
+      process.platform === 'darwin'
+        ? [
             {
-              label: 'リロード',
-              accelerator: '',
-              click: (item, focusedWindow) => { focusedWindow.webContents.onbeforeunload = null; focusedWindow.reload() }
-            },
-            {
-              label: '開発者ツール',
-              accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
-              click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools()
+              label: '編集',
+              submenu: [
+                { label: '取り消す', role: 'undo', accelerator: 'Command+Z' },
+                { label: 'やり直す', role: 'redo', accelerator: 'Command+Shift+Z' },
+                { type: 'separator' },
+                { label: 'カット', role: 'cut', accelerator: 'Command+X' },
+                { label: 'コピー', role: 'copy', accelerator: 'Command+C' },
+                { label: 'ペースト', role: 'paste', accelerator: 'Command+V' },
+                { label: 'すべてを選択', role: 'selectALL', accelerator: 'Command+A' }
+              ]
             }
           ]
-        }]
-      : []
-  )
-]
+        : []
+    ),
+    ...(
+      process.platform === 'win32'
+        ? [{
+            label: 'ヘルプ',
+            submenu: [
+              { label: app.getName() + 'について', role: 'about' }
+            ]
+          }]
+        : []
+    ),
+    ...(
+      isDevelopment
+        ? [{
+            label: '開発支援',
+            submenu: [
+              {
+                label: 'リロード',
+                accelerator: '',
+                click: (item, focusedWindow) => { focusedWindow.webContents.onbeforeunload = null; focusedWindow.reload() }
+              },
+              {
+                label: '開発者ツール',
+                accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
+                click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools()
+              }
+            ]
+          }]
+        : []
+    )
+  ]
 
-Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate))
+  Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate))
 
-// Aboutメニューのダイアログ
+  // メニューと言えばメニューなのでAboutメニューのダイアログ
 
-app.setAboutPanelOptions({
-  applicationName: app.getName(),
-  applicationVersion: process.env.VUE_APP_VERSION,
-  copyright: ['Copyright', process.env.VUE_APP_COPYRIGHT].join(' '),
-  credits: '@piyotaicho https://github.com/piyotaicho/JOED/',
-  iconPath: '../public/icon.png'
-})
+  app.setAboutPanelOptions({
+    applicationName: app.getName(),
+    applicationVersion: process.env.VUE_APP_VERSION,
+    copyright: ['Copyright', process.env.VUE_APP_COPYRIGHT].join(' '),
+    credits: '@piyotaicho https://github.com/piyotaicho/JOED/',
+    iconPath: '../public/icon.png'
+  })
+}
 
 //
 // IPCハンドリング
@@ -435,7 +443,10 @@ function switchMenu (payload) {
 }
 
 //
-// ロックファイル制御
+// データベースの設定
+//
+
+// データベースロックファイル制御
 //
 function createLockfile () {
   if (appConfig.enableLocking) {
@@ -451,10 +462,6 @@ function removeLockfile () {
     } catch { }
   }
 }
-
-//
-// データベースの設定
-//
 
 // データベースインスタンスの作成
 //
@@ -508,197 +515,198 @@ function createDatabaseInstance () {
 //
 // IPCとデータベースのAPIラッパー
 //
-
-// Insert
-// @Object.Document : Object
-ipcMain.handle('Insert', (_, payload) => {
-  return new Promise((resolve, reject) => {
-    appConfig.databaseInstance
-      .insert(payload.Document, (error, newdocument) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(newdocument)
-        }
-      })
-  })
-})
-
-// Find
-// @Object.Query : Object
-// @Object.Projection : Object
-// @Object.Sort : Object
-// @Object.Skip : String, Number
-// @Object.Limit : String, Number
-ipcMain.handle('Find', (_, payload) => {
-  return new Promise((resolve, reject) => {
-    const query = payload.Query ? payload.Query : {}
-    const projection = payload.Projection ? payload.Projection : {}
-    const sort = payload.Sort ? payload.Sort : {}
-    const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
-    const limit = payload.Limit ? Number.parseInt(payload.Limit) : 0
-
-    appConfig.databaseInstance
-      .find(query)
-      .projection(projection)
-      .sort(sort)
-      .skip(skip)
-      .limit(limit)
-      .exec((error, founddocuments) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(founddocuments)
-        }
-      })
-  })
-})
-
-// FindOne
-// @Object.Query : Object
-// @Object.Projection : Object
-// @Object.Sort : Object
-// @Object.Skip : String, Number
-ipcMain.handle('FindOne', (_, payload) => {
-  return new Promise((resolve, reject) => {
-    const query = payload.Query ? payload.Query : {}
-    const projection = payload.Projection ? payload.Projection : {}
-    const sort = payload.Sort ? payload.Sort : {}
-    const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
-
-    appConfig.databaseInstance
-      .findOne(query)
-      .projection(projection)
-      .sort(sort)
-      .skip(skip)
-      .exec((error, founddocument) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(founddocument)
-        }
-      })
-  })
-})
-
-// FindOneByHash
-// @Object.Hash : String
-// @Object.SALT : Integer
-ipcMain.handle('FineOneByHash', (_, payload) => {
-  const Encoder = new TextEncoder()
-  return new Promise((resolve, reject) => {
-    appConfig.databaseInstance
-      .findOne({
-        $where: function () {
-          if (this.PatientId && this.DateOfProcedure) {
-            // 2021より実装変更:
-            // レコードのハッシュはユニークキー(PatientId, DateOfProcedure)から生成
-            const recordKeys = {
-              PatientId: this.PatientId,
-              DateOfProcedure: this.DateOfProcedure
-            }
-            // 2022よりUint8Arrayと64bitのシードを与える
-            const hash = (this.DateOfProcedure.substring(0, 4) >= '2022')
-              ? xxhash.h64(
-                Encoder.encode(JSON.stringify(recordKeys)).buffer,
-                payload.SALT.toString()
-              ).toString(36)
-              : xxhash.h64(JSON.stringify(recordKeys), payload.SALT).toString(36)
-            return payload.Hash === hash
+function registerIPChandlers () {
+  // Insert
+  // @Object.Document : Object
+  ipcMain.handle('Insert', (_, payload) => {
+    return new Promise((resolve, reject) => {
+      appConfig.databaseInstance
+        .insert(payload.Document, (error, newdocument) => {
+          if (error) {
+            reject(error)
           } else {
-            return false
+            resolve(newdocument)
           }
-        }
-      })
-      .projection({ DocumentId: 1 })
-      .exec((error, founddocument) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(founddocument !== null ? founddocument.DocumentId : undefined)
-        }
-      })
+        })
+    })
   })
-})
 
-// Count
-// @Object.Query : Object
-ipcMain.handle('Count', (_, payload) => {
-  return new Promise((resolve, reject) => {
-    const query = payload.Query ? payload.Query : {}
-    appConfig.databaseInstance
-      .count(query, (error, count) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(count)
-        }
-      })
+  // Find
+  // @Object.Query : Object
+  // @Object.Projection : Object
+  // @Object.Sort : Object
+  // @Object.Skip : String, Number
+  // @Object.Limit : String, Number
+  ipcMain.handle('Find', (_, payload) => {
+    return new Promise((resolve, reject) => {
+      const query = payload.Query ? payload.Query : {}
+      const projection = payload.Projection ? payload.Projection : {}
+      const sort = payload.Sort ? payload.Sort : {}
+      const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
+      const limit = payload.Limit ? Number.parseInt(payload.Limit) : 0
+
+      appConfig.databaseInstance
+        .find(query)
+        .projection(projection)
+        .sort(sort)
+        .skip(skip)
+        .limit(limit)
+        .exec((error, founddocuments) => {
+          if (error) {
+            reject(error)
+          } else {
+            resolve(founddocuments)
+          }
+        })
+    })
   })
-})
 
-// Update
-// @Object.Query : Object
-// @Object.Update : Object
-// @Object.Options : Object
-ipcMain.handle('Update', (_, payload) => {
-  return new Promise((resolve, reject) => {
-    const query = payload.Query ? payload.Query : {}
-    const update = payload.Update ? payload.Update : {}
-    const options = payload.Options ? payload.Options : {}
-    appConfig.databaseInstance
-      .update(query, update, options, (error, numrows) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(numrows)
-        }
-      })
+  // FindOne
+  // @Object.Query : Object
+  // @Object.Projection : Object
+  // @Object.Sort : Object
+  // @Object.Skip : String, Number
+  ipcMain.handle('FindOne', (_, payload) => {
+    return new Promise((resolve, reject) => {
+      const query = payload.Query ? payload.Query : {}
+      const projection = payload.Projection ? payload.Projection : {}
+      const sort = payload.Sort ? payload.Sort : {}
+      const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
+
+      appConfig.databaseInstance
+        .findOne(query)
+        .projection(projection)
+        .sort(sort)
+        .skip(skip)
+        .exec((error, founddocument) => {
+          if (error) {
+            reject(error)
+          } else {
+            resolve(founddocument)
+          }
+        })
+    })
   })
-})
 
-// Remove
-// @Object.Query : Object
-// @Object.Options : Object
-ipcMain.handle('Remove', (_, payload) => {
-  return new Promise((resolve, reject) => {
-    const query = payload.Query ? payload.Query : {}
-    const options = payload.Options ? payload.Options : {}
-    appConfig.databaseInstance
-      .remove(query, options, (error, numrows) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(numrows)
-        }
-      })
+  // FindOneByHash
+  // @Object.Hash : String
+  // @Object.SALT : Integer
+  ipcMain.handle('FineOneByHash', (_, payload) => {
+    const Encoder = new TextEncoder()
+    return new Promise((resolve, reject) => {
+      appConfig.databaseInstance
+        .findOne({
+          $where: function () {
+            if (this.PatientId && this.DateOfProcedure) {
+              // 2021より実装変更:
+              // レコードのハッシュはユニークキー(PatientId, DateOfProcedure)から生成
+              const recordKeys = {
+                PatientId: this.PatientId,
+                DateOfProcedure: this.DateOfProcedure
+              }
+              // 2022よりUint8Arrayと64bitのシードを与える
+              const hash = (this.DateOfProcedure.substring(0, 4) >= '2022')
+                ? xxhash.h64(
+                  Encoder.encode(JSON.stringify(recordKeys)).buffer,
+                  payload.SALT.toString()
+                ).toString(36)
+                : xxhash.h64(JSON.stringify(recordKeys), payload.SALT).toString(36)
+              return payload.Hash === hash
+            } else {
+              return false
+            }
+          }
+        })
+        .projection({ DocumentId: 1 })
+        .exec((error, founddocument) => {
+          if (error) {
+            reject(error)
+          } else {
+            resolve(founddocument !== null ? founddocument.DocumentId : undefined)
+          }
+        })
+    })
   })
-})
 
-//
-// アプリケーション設定 electron-store
-//
+  // Count
+  // @Object.Query : Object
+  ipcMain.handle('Count', (_, payload) => {
+    return new Promise((resolve, reject) => {
+      const query = payload.Query ? payload.Query : {}
+      appConfig.databaseInstance
+        .count(query, (error, count) => {
+          if (error) {
+            reject(error)
+          } else {
+            resolve(count)
+          }
+        })
+    })
+  })
 
-// LoadConfig
-// @Object.Key : String
-// @Object.DefaultConfig : Object
-ipcMain.handle('LoadConfig', (_, payload) =>
-  appConfig.electronStore.get(payload.Key, payload.DefaultConfig)
-)
+  // Update
+  // @Object.Query : Object
+  // @Object.Update : Object
+  // @Object.Options : Object
+  ipcMain.handle('Update', (_, payload) => {
+    return new Promise((resolve, reject) => {
+      const query = payload.Query ? payload.Query : {}
+      const update = payload.Update ? payload.Update : {}
+      const options = payload.Options ? payload.Options : {}
+      appConfig.databaseInstance
+        .update(query, update, options, (error, numrows) => {
+          if (error) {
+            reject(error)
+          } else {
+            resolve(numrows)
+          }
+        })
+    })
+  })
 
-// SaveConfig
-// @Object.Key : String
-// @Object.Config : Object
-ipcMain.handle('SaveConfig', (_, payload) =>
-  appConfig.electronStore.set(payload.Key, payload.Config)
-)
+  // Remove
+  // @Object.Query : Object
+  // @Object.Options : Object
+  ipcMain.handle('Remove', (_, payload) => {
+    return new Promise((resolve, reject) => {
+      const query = payload.Query ? payload.Query : {}
+      const options = payload.Options ? payload.Options : {}
+      appConfig.databaseInstance
+        .remove(query, options, (error, numrows) => {
+          if (error) {
+            reject(error)
+          } else {
+            resolve(numrows)
+          }
+        })
+    })
+  })
 
-//
-// Routerからのメニュー制御
-//
-ipcMain.on('SwitchMenu', (_, payload) => switchMenu(payload))
+  //
+  // アプリケーション設定 electron-store
+  //
 
-//
-// Renderが指定する外部リンクをシステムで開く
-//
-ipcMain.on('OpenURL', (_, target) => shell.openExternal(target))
+  // LoadConfig
+  // @Object.Key : String
+  // @Object.DefaultConfig : Object
+  ipcMain.handle('LoadConfig', (_, payload) =>
+    appConfig.electronStore.get(payload.Key, payload.DefaultConfig)
+  )
+
+  // SaveConfig
+  // @Object.Key : String
+  // @Object.Config : Object
+  ipcMain.handle('SaveConfig', (_, payload) =>
+    appConfig.electronStore.set(payload.Key, payload.Config)
+  )
+
+  //
+  // Routerからのメニュー制御
+  //
+  ipcMain.on('SwitchMenu', (_, payload) => switchMenu(payload))
+
+  //
+  // Renderが指定する外部リンクをシステムで開く
+  //
+  ipcMain.on('OpenURL', (_, target) => shell.openExternal(target))
+}
