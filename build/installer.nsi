@@ -11,6 +11,8 @@ Unicode true
 
     InstallDir "$LOCALAPPDATA\Programs\JOED5"
 
+    Var /Global NO_SANDBOX
+
     RequestExecutionLevel user
     ShowInstDetails show
     ShowUnInstDetails show
@@ -18,6 +20,7 @@ Unicode true
     !define MUI_WELCOMEPAGE_TITLE "${INSTALL_WELCOMEPAGE_TITLE}"
     !insertmacro MUI_PAGE_WELCOME
     !insertmacro MUI_PAGE_LICENSE "${BUILD_RESOURCES_DIR}\license.txt"
+    !define MUI_PAGE_CUSTOMFUNCTION_LEAVE verifyInstDir
     !insertmacro MUI_PAGE_DIRECTORY
     !insertmacro MUI_PAGE_INSTFILES
     !define MUI_FINISHPAGE_TITLE "${INSTALL_FINISHPAGE_TITLE}"
@@ -55,7 +58,7 @@ Unicode true
 
         # start menu
         CreateDirectory "${MENUDIRNAME}"
-        CreateShortCut "${MENUITEM1NAME}" "$INSTDIR\JOED5.exe" ""
+        CreateShortCut "${MENUITEM1NAME}" "$INSTDIR\JOED5.exe" "$NO_SANDBOX"
         IfFileExists "${MENUITEM2OLDNAME}" +1 +2
           DELETE "${MENUITEM2OLDNAME}"
         CreateShortCut "${MENUITEM2NAME}" "$INSTDIR\Uninstall.exe" ""
@@ -92,6 +95,31 @@ Unicode true
     Function un.DeleteDataFolder
         RMDIR /r "$APPDATA\JOED5"
         MessageBox MB_ICONINFORMATION|MB_OK "${MSG_MSGBOX}"
+    FunctionEnd
+
+    Function verifyInstDir
+        # check $INSTDIR is local drive or not
+        StrCpy $NO_SANDBOX ''
+
+        StrCpy $0 $INSTDIR 1
+        !if $0 == '/'
+            # UNC path or so
+            MessageBox MB_OKCANCEL ${INSTALL_NETWORKDRIVE_ALERT} IDCANCEL goback1 IDOK setoption1
+            goback1:
+                Abort
+            setoption1:
+                StrCpy $NO_SANDBOX '--no-sandbox'
+        !else
+            # check drive type
+            System::Call 'KERNEL32::GetDriveType(t "$0:\") i .r1'
+            !if $1 == ${DRIVE_REMOTE}
+                MessageBox MB_OKCANCEL ${INSTALL_NETWORKDRIVE_ALERT} IDCANCEL goback2 IDOK setoption2
+                goback2:
+                    Abort
+                setoption2:
+                    StrCpy $NO_SANDBOX '--no-sandbox'
+            !endif
+        !endif
     FunctionEnd
 !else
     !error "JOEDINSTALLER not defined."
