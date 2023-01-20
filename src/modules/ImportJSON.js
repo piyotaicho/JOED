@@ -1,4 +1,4 @@
-import parseProcedureTime from '@/modules/ProcedureTimes'
+import { parseProcedureTime, encodeProcedureTime } from '@/modules/ProcedureTimes'
 
 let year = ''
 let internalcounter = 1
@@ -78,11 +78,11 @@ function DateOfProcedure (CaseData, record) {
   if (record.DateOfProcedure) {
     try {
       CaseData.DateOfProcedure = '20' +
-      record.DateOfProcedure
-        .match(/^20([0-9]{2})[/-](0{0,1}[1-9]|1[0-2])[/-](0{0,1}[1-9]|[12][0-9]|3[01])$/)
-        .splice(1, 3)
-        .map(item => ('0' + item).slice(-2))
-        .join('-')
+        record.DateOfProcedure
+          .match(/^20([0-9]{2})[/-](0{0,1}[1-9]|1[0-2])[/-](0{0,1}[1-9]|[12][0-9]|3[01])$/)
+          .splice(1, 3)
+          .map(item => ('0' + item).slice(-2))
+          .join('-')
     } catch {
       throw new Error('日付の書式が不正です.')
     }
@@ -118,13 +118,8 @@ function BasicInformation (CaseData, record) {
 
 function ProcedureTime (CaseData, record) {
   try {
-    // 数値として読み込まれている可能性についても対応
-    const timestrmatches = record.ProcedureTime
-      .toString()
-      .match(/\s*(\d+)(分{0,1}(以上|(未満|まで))){0,1}/)
-    if (timestrmatches) {
-      const timevalue = Number(timestrmatches[1]) - (timestrmatches[4] !== undefined ? 1 : 0)
-      CaseData.ProcedureTime = parseProcedureTime(timevalue)
+    if (record.ProcedureTime) {
+      CaseData.ProcedureTime = encodeProcedureTime(parseProcedureTime(record.ProcedureTime))
     } else {
       throw new Error()
     }
