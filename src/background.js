@@ -42,8 +42,8 @@ if (!instanceLock) {
 // デフォルト path の documents を userData でオーバーライド
 app.setPath('documents', app.getPath('userData'))
 
-// コマンドライン解釈
-parseCommandlineoptions()
+// コマンドラインオプションの解析設定
+parseCommandLineOptions()
 
 // 初期設定をファイルから取得
 appConfig.electronStore = new ElectronStore(appConfig.storeConfig)
@@ -113,6 +113,9 @@ function registerAppEvents () {
   // ready: reateWindow
   app.on('ready', async () => {
     if (instanceLock) {
+      // コマンドラインディレクティブの実行
+      parseCommandLineDirectives()
+
       // ウインドウの作成
       if (isDevelopment && !process.env.IS_TEST) {
         // Install Vue Devtools
@@ -180,11 +183,14 @@ function registerAppEvents () {
 //
 // コマンドラインオプションの処理
 //
-function parseCommandlineoptions () {
+function parseCommandLineOptions () {
   // --datadir : データの保存ディレクトリの設定 setPath(documents)の指定
   if (app.commandLine.hasSwitch('datadir')) {
+    const datadirarg = app.commandLine.getSwitchValue('datadir')
     try {
-      const datadirarg = app.commandLine.getSwitchValue('datadir')
+      if (!path.isAbsolute(datadirarg)) {
+        throw new Error()
+      }
       if (fs.statSync(datadirarg).isDirectory()) {
         // 指定のフォルダがなければ例外
         app.setPath('documents', datadirarg)
@@ -194,7 +200,7 @@ function parseCommandlineoptions () {
         throw new Error()
       }
     } catch {
-      dialog.showMessageBoxSync({ title: 'JOED5', type: 'error', message: 'データ保存先として指定されたパスが不正です.' })
+      dialog.showErrorBox('JOED5', `データ保存先として指定されたパス(${datadirarg})が不正です.`)
       app.exit(-1)
     }
   }
@@ -229,11 +235,13 @@ function parseCommandlineoptions () {
         }
       }
     } catch {
-      dialog.showMessageBoxSync({ title: 'JOED5', type: 'error', message: '設定ファイルに指定されたパスが不正です.' })
+      dialog.showErrorBox('JOED5', '設定ファイルに指定されたパスが不正です.')
       app.exit(-1)
     }
   }
+}
 
+function parseCommandLineDirectives () {
   // drop-database : データベースファイルの削除 (=all でバックアップも削除, =lock で消し忘れたロックファイルのみ削除)
   if (app.commandLine.hasSwitch('drop-database')) {
     const DBfilename = path.join(app.getPath('documents'), 'joed.nedb')
@@ -286,7 +294,7 @@ function parseCommandlineoptions () {
       dialog.showMessageBoxSync({ title: 'JOED5', message: '作業領域をリフレッシュしました.' })
       app.exit(0)
     } catch {
-      dialog.showMessageBoxSync({ title: 'JOED5', type: 'error', message: '作業領域のリフレッシュ中にエラーが発生しました.\n作業が不十分な可能性があります.' })
+      dialog.showErrorBox('JOED5', '作業領域のリフレッシュ中にエラーが発生しました.\n作業が不十分な可能性があります.')
       app.exit(-1)
     }
   }
