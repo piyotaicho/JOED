@@ -19,12 +19,17 @@ Unicode true
 
     !define MUI_WELCOMEPAGE_TITLE "${INSTALL_WELCOMEPAGE_TITLE}"
     !insertmacro MUI_PAGE_WELCOME
+    
     !insertmacro MUI_PAGE_LICENSE "${BUILD_RESOURCES_DIR}\license.txt"
+    
     !define MUI_PAGE_CUSTOMFUNCTION_LEAVE verifyInstDir
     !insertmacro MUI_PAGE_DIRECTORY
+    
     !insertmacro MUI_PAGE_INSTFILES
+    
     !define MUI_FINISHPAGE_TITLE "${INSTALL_FINISHPAGE_TITLE}"
     !define MUI_FINISHPAGE_RUN "$INSTDIR\JOED5.exe"
+    !define MUI_FINISHPAGE_RUN_PARAMETERS "$NO_SANDBOX"
     !define MUI_FINISHPAGE_RUN_TEXT "${INSTALL_FINISHPAGE_RUN_TEXT}"
     !insertmacro MUI_PAGE_FINISH
 
@@ -93,33 +98,32 @@ Unicode true
     SectionEnd
 
     Function un.DeleteDataFolder
-        RMDIR /r "$APPDATA\JOED5"
-        MessageBox MB_ICONINFORMATION|MB_OK "${MSG_MSGBOX}"
+        MessageBox MB_YESNO "${REMOVE_DATA_FINAL_CONFIRM}" IDNO done IDYES proceed
+        proceed:
+            RMDIR /r "$APPDATA\JOED5"
+            MessageBox MB_ICONINFORMATION|MB_OK "${MSG_MSGBOX}"
+        done:
     FunctionEnd
 
     Function verifyInstDir
-        # check $INSTDIR is local drive or not
         StrCpy $NO_SANDBOX ''
 
-        StrCpy $0 $INSTDIR 1
-        !if $0 == '/'
-            # UNC path or so
-            MessageBox MB_OKCANCEL ${INSTALL_NETWORKDRIVE_ALERT} IDCANCEL goback1 IDOK setoption1
-            goback1:
+        StrCpy $0 $INSTDIR 2
+        # UNC
+        StrCmp $0 "\\" remote
+
+        # check drive type
+        StrCpy $0 "$0\"
+        System::Call 'KERNEL32::GetDriveType(tr0) i .r1'
+        IntCmp $1 ${DRIVE_REMOTE} remote noremote noremote
+
+        remote:
+            MessageBox MB_OKCANCEL ${INSTALL_NETWORKDRIVE_ALERT} IDCANCEL goback IDOK setoption
+            goback:
                 Abort
-            setoption1:
+            setoption:
                 StrCpy $NO_SANDBOX '--no-sandbox'
-        !else
-            # check drive type
-            System::Call 'KERNEL32::GetDriveType(t "$0:\") i .r1'
-            !if $1 == ${DRIVE_REMOTE}
-                MessageBox MB_OKCANCEL ${INSTALL_NETWORKDRIVE_ALERT} IDCANCEL goback2 IDOK setoption2
-                goback2:
-                    Abort
-                setoption2:
-                    StrCpy $NO_SANDBOX '--no-sandbox'
-            !endif
-        !endif
+        noremote:
     FunctionEnd
 !else
     !error "JOEDINSTALLER not defined."
