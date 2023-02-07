@@ -29,6 +29,7 @@
   !define UNINSTALL_FINISHPAGE_TITLE "症例登録システムを削除しました"
   !define UNINSTALL_FINISHPAGE_TEXT "ご協力ありがとうございました."
   !define UNINSTALL_FINISHPAGE_RUN_TEXT "設定とデータファイルも削除する場合はチェックしてください."
+  !define REMOVE_DATA_FINAL_CONFIRM "設定とデータファイルを削除します, よろしいですか？"
 
   !define MENUDIRNAME "$SMPROGRAMS\日本産科婦人科内視鏡学会"
   !define MENUITEM1NAME "$SMPROGRAMS\日本産科婦人科内視鏡学会\症例登録システム.lnk"
