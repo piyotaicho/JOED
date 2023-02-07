@@ -13,9 +13,14 @@ const fs = require('fs')
 const ElectronStore = require('electron-store')
 const DB = require('@seald-io/nedb')
 
+// 重複起動の抑制
+const instanceLock = app.requestSingleInstanceLock()
+if (!instanceLock) {
+  app.quit()
+}
+
 // バックエンドの変数
 const isDevelopment = process.env.NODE_ENV !== 'production'
-const instanceLock = app.requestSingleInstanceLock()
 let win = null
 let session = null
 const appConfig = {
@@ -33,11 +38,6 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
 
-// 重複起動の抑制
-if (!instanceLock) {
-  app.quit()
-}
-
 // 初期設定
 // デフォルト path の documents を userData でオーバーライド
 app.setPath('documents', app.getPath('userData'))
@@ -47,7 +47,6 @@ parseCommandLineOptions()
 
 // 初期設定をファイルから取得
 appConfig.electronStore = new ElectronStore(appConfig.storeConfig)
-appConfig.databaseInstance = createDatabaseInstance()
 
 // 起動
 registerAppEvents()
@@ -116,6 +115,9 @@ function registerAppEvents () {
       // コマンドラインディレクティブの実行
       parseCommandLineDirectives()
 
+      // データベースインスタンスの作成
+      appConfig.databaseInstance = createDatabaseInstance()
+
       // ウインドウの作成
       if (isDevelopment && !process.env.IS_TEST) {
         // Install Vue Devtools
@@ -125,7 +127,6 @@ function registerAppEvents () {
           console.error('Vue Devtools failed to install:', e.toString())
         }
       }
-
       createWindow()
     }
   })
@@ -239,6 +240,32 @@ function parseCommandLineOptions () {
       app.exit(-1)
     }
   }
+
+  // refresh : ワークディレクトリをリフレッシュする
+  if (app.commandLine.hasSwitch('refresh')) {
+    const libdir = app.getPath('userData')
+    const chromiumDataItems = [
+      'Cache', 'Code Cache', 'DawnCache', 'GPUCache',
+      'blob_storage', 'Local Storage', 'Network', 'Session Storage',
+      'Dictionaries', 'extensions',
+      'Local state', 'Preferences'
+    ]
+
+    try {
+      if (fs.existsSync(libdir)) {
+        for (const entry of chromiumDataItems) {
+          const removeTarget = path.join(libdir, entry)
+          if (fs.existsSync(removeTarget)) {
+            fs.rmSync(removeTarget, { recursive: true })
+          }
+        }
+      }
+      app.exit(0)
+    } catch {
+      dialog.showErrorBox('JOED5', '作業領域のリフレッシュ中にエラーが発生しました.\n作業が不十分な可能性があります.')
+      app.exit(-1)
+    }
+  }
 }
 
 function parseCommandLineDirectives () {
@@ -270,33 +297,6 @@ function parseCommandLineDirectives () {
     removeLockfile()
     dialog.showMessageBoxSync({ title: 'JOED5', message: 'ロックを解除しました.' })
     app.exit(0)
-  }
-
-  // refresh-work : ワークディレクトリをリフレッシュする
-  if (app.commandLine.hasSwitch('refresh')) {
-    const libdir = app.getPath('userData')
-    const items = [
-      'Cache', 'Code Cache', 'DawnCache', 'GPUCache',
-      'blob_storage', 'Local Storage', 'Network', 'Session Storage',
-      'Dictionaries', 'extensions',
-      'Local state', 'Preferences'
-    ]
-
-    try {
-      if (fs.existsSync(libdir)) {
-        for (const entry of items) {
-          const removeTarget = path.join(libdir, entry)
-          if (fs.existsSync(removeTarget)) {
-            fs.rmSync(removeTarget, { recursive: true })
-          }
-        }
-      }
-      dialog.showMessageBoxSync({ title: 'JOED5', message: '作業領域をリフレッシュしました.' })
-      app.exit(0)
-    } catch {
-      dialog.showErrorBox('JOED5', '作業領域のリフレッシュ中にエラーが発生しました.\n作業が不十分な可能性があります.')
-      app.exit(-1)
-    }
   }
 }
 
@@ -508,7 +508,7 @@ function createDatabaseInstance () {
   } catch (error) {
     // 致命的エラーなのでダイアログを出して終了する
     isDevelopment && console.log(error)
-    dialog.showMessageBoxSync(win, {
+    dialog.showMessageBoxSync({
       title: 'JOED5',
       type: 'error',
       buttons: ['OK'],
