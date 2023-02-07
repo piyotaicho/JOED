@@ -47,7 +47,6 @@ parseCommandLineOptions()
 
 // 初期設定をファイルから取得
 appConfig.electronStore = new ElectronStore(appConfig.storeConfig)
-appConfig.databaseInstance = createDatabaseInstance()
 
 // 起動
 registerAppEvents()
@@ -116,6 +115,9 @@ function registerAppEvents () {
       // コマンドラインディレクティブの実行
       parseCommandLineDirectives()
 
+      // データベースインスタンスの作成
+      appConfig.databaseInstance = createDatabaseInstance()
+
       // ウインドウの作成
       if (isDevelopment && !process.env.IS_TEST) {
         // Install Vue Devtools
@@ -125,7 +127,6 @@ function registerAppEvents () {
           console.error('Vue Devtools failed to install:', e.toString())
         }
       }
-
       createWindow()
     }
   })
