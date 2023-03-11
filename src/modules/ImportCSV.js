@@ -1,4 +1,4 @@
-import ProcedureTimeSelections from '@/modules/ProcedureTimes'
+import { encodeProcedureTime, parseProcedureTime } from '@/modules/ProcedureTimes'
 import { DateFormat } from '@/modules/CaseValidater'
 import { Migrate2019to2020 } from '@/modules/ImportMergeV4'
 
@@ -117,11 +117,8 @@ function BasicInformation (CaseData, record, ruleset) {
 function ProcedureTime (CaseData, record, ruleset) {
   const operationtime = getvalueByRule('手術時間', record, ruleset)
   if (operationtime !== undefined) {
-    const timestrmatches = operationtime.match(/\s*(\d+)(分{0,1}(以上|(未満|まで))){0,1}/)
-    if (timestrmatches !== null) {
-      const timevalue = Number(timestrmatches[1]) - (timestrmatches[4] !== undefined ? 1 : 0)
-      CaseData.ProcedureTime = ProcedureTimeSelections(timevalue)
-    }
+    CaseData.ProcedureTime = encodeProcedureTime(parseProcedureTime(operationtime))
+    console.log(`${operationtime} => ${CaseData.ProcedureTime}`)
   }
 }
 
