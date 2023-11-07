@@ -1280,17 +1280,17 @@
   resolved "https://registry.yarnpkg.com/@polka/url/-/url-1.0.0-next.21.tgz#5de5a2385a35309427f6011992b544514d559aa1"
   integrity sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==
 
-"@seald-io/binary-search-tree@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@seald-io/binary-search-tree/-/binary-search-tree-1.0.2.tgz#9f0e5cec5e0acf97f1b495f2f6d3476ddb6a94ed"
-  integrity sha512-+pYGvPFAk7wUR+ONMOlc6A+LUN4kOCFwyPLjyaeS7wVibADPHWYJNYsNtyIAwjF1AXQkuaXElnIc4XjKt55QZA==
+"@seald-io/binary-search-tree@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@seald-io/binary-search-tree/-/binary-search-tree-1.0.3.tgz#165a9a456eaa30d15885b25db83861bcce2c6a74"
+  integrity sha512-qv3jnwoakeax2razYaMsGI/luWdliBLHTdC6jU55hQt1hcFqzauH/HsBollQ7IR4ySTtYhT+xyHoijpA16C+tA==
 
-"@seald-io/nedb@3.1.0":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@seald-io/nedb/-/nedb-3.1.0.tgz#6105345a18596f6f9d69f46d7f572efdae32af8e"
-  integrity sha512-5G0hCQGJjOelOutvW1l4VD581XMhTPxpj1BUaCWTEM2MPXR9TzIr0MKMnEjnTA5nEKfujPyvVW7iF3etm1/gKQ==
+"@seald-io/nedb@4.0.2":
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/@seald-io/nedb/-/nedb-4.0.2.tgz#44bc5f9b86e44f7434c5af8064cc7f8e079fc3a8"
+  integrity sha512-gJ91fT1sgh2cLXYVcTSh7khZ8LdemI8+SojCdpZ5wy+DUQ4fSrEwGqOwbdV49NDs2BBO6GeBpSb8CnhG2IW1rw==
   dependencies:
-    "@seald-io/binary-search-tree" "^1.0.2"
+    "@seald-io/binary-search-tree" "^1.0.3"
     localforage "^1.9.0"
     util "^0.12.4"
 
@@ -4549,12 +4549,12 @@ electron-to-chromium@^1.4.251:
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.284.tgz#61046d1e4cab3a25238f6bf7413795270f125592"
   integrity sha512-M8WEXFuKXMYMVr45fo8mq0wUrrJHheiKZf6BArTKk9ZBYCKJEOU5H8cdWgDT+qCVZf7Na4lVUaZsA+h6uA9+PA==
 
-electron@21.3.3:
-  version "21.3.3"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-21.3.3.tgz#66ddb22c337d8182eeece8b3c256a751f8e5bf76"
-  integrity sha512-2a9l8mUQlzXH/9WZrGYDJTyJOliLKbmEuCrQ8bfX1McAQOmI6PDQxfHV4qFUtyCDUp5SHrq5nuvg0c1pIkDBhg==
+electron@22.3.27:
+  version "22.3.27"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-22.3.27.tgz#b77451a53f0c502e7559cceac28ac58eb289eef8"
+  integrity sha512-7Rht21vHqj4ZFRnKuZdFqZFsvMBCmDqmjetiMqPtF+TmTBiGne1mnstVXOA/SRGhN2Qy5gY5bznJKpiqogjM8A==
   dependencies:
-    "@electron/get" "^1.14.1"
+    "@electron/get" "^2.0.0"
     "@types/node" "^16.11.26"
     extract-zip "^2.0.1"
 

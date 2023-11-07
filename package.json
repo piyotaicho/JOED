@@ -19,7 +19,7 @@
   },
   "main": "background.js",
   "dependencies": {
-    "@seald-io/nedb": "3.1.0",
+    "@seald-io/nedb": "4.0.2",
     "core-js": "3.33.2",
     "difflib": "^0.2.4",
     "electron-builder": "24.6.4",
