@@ -5,9 +5,9 @@
       <div class="subtitle">ファイル種別の指定</div>
       <div>
         <select v-model="ImportMode">
+          <option value="json" selected>JOED5のバックアップ形式に準拠した jsonファイル</option>
           <option value="csv">ExcelやFilemaker等から出力した CSVファイル</option>
-          <option value="merge" selected>症例登録システム version4 で入力・出力した mergeファイル</option>
-          <option value="json">JOED5のバックアップ形式に準拠した jsonファイル</option>
+          <option value="merge">症例登録システム version4 で入力・出力した mergeファイル</option>
         </select>
       </div>
       <input-file @load="LoadFile" ButtonText="ファイルの指定" :AcceptFileTypes="FileExtentions[ImportMode]" />
