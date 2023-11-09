@@ -71,6 +71,9 @@ export function CreateDocument (record) {
   DiagnosesAndProcedures(CaseData, record)
   AEs(CaseData, record)
 
+  if (record.Notification) {
+    CaseData.Notification = (CaseData.Notification || '') + `${record.Notification}\n`
+  }
   return CaseData
 }
 
@@ -110,8 +113,9 @@ function BasicInformation (CaseData, record) {
   } else {
     CaseData.PatientId = 'I-' + ('000000' + internalcounter.toString(10)).slice(-6)
     CaseData.Imported = true
-    CaseData.Notification = (CaseData.Notification || '') +
-      '自動生成された患者IDです重複などに注意してください.'
+    CaseData.Notification = '自動生成された患者IDです重複などに注意してください.\n' +
+      (CaseData.Notification || '')
+
     internalcounter++
   }
 }
@@ -127,7 +131,7 @@ function ProcedureTime (CaseData, record) {
     // 手術時間がない場合などフラグを立てる.
     CaseData.Imported = true
     CaseData.Notification = (CaseData.Notification || '') +
-      '手術時間を設定して下さい.'
+      '手術時間を設定して下さい.\n'
   }
 }
 
@@ -147,7 +151,7 @@ function DiagnosesAndProcedures (CaseData, record) {
   } catch {
     CaseData.Imported = true
     CaseData.Notification = (CaseData.Notification || '') +
-      '手術診断・実施術式のインポートが出来ませんでした, 再入力を御願いします.'
+      '手術診断・実施術式のインポートが出来ませんでした, 再入力を御願いします.\n'
   }
 }
 
