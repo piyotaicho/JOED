@@ -5,7 +5,7 @@
       <div class="subtitle">ファイル種別の指定</div>
       <div>
         <select v-model="ImportMode">
-          <option value="json" selected>JOED5のバックアップ形式に準拠した jsonファイル</option>
+          <option value="json">JOED5のバックアップ形式に準拠した jsonファイル</option>
           <option value="csv">ExcelやFilemaker等から出力した CSVファイル</option>
           <option value="merge">症例登録システム version4 で入力・出力した mergeファイル</option>
         </select>
@@ -49,7 +49,7 @@ export default {
     return ({
       Processing: false,
       Committing: 0,
-      ImportMode: 'csv',
+      ImportMode: 'json',
       FileExtentions: {
         json: '.json',
         csv: '.csv,.mer',
