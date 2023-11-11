@@ -1,28 +1,33 @@
 {
   "name": "joed5",
-  "version": "1.3.1166",
+  "version": "1.3.1408",
   "description": "The procedures and adverse events regstration system provided by JSGOE (C) 2020-2023 P4mohnet and 日本産科婦人科内視鏡学会",
   "author": {
     "name": "Yasuhiro Yamamoto",
     "email": "p4@mohnet.com"
   },
+  "licenses": [
+    {
+      "license": "MIT"
+    }
+  ],
   "scripts": {
     "serve": "vue-cli-service serve --modern",
     "build": "vue-cli-service build --modern",
     "lint": "vue-cli-service lint",
-    "electron:build": "cross-env NODE_OPTIONS=--openssl-legacy-provider vue-cli-service electron:build --mode electron",
-    "electron:build.production": "cross-env NODE_OPTIONS=--openssl-legacy-provider vue-cli-service electron:build --mode electron.production",
-    "electron:serve": "cross-env NODE_OPTIONS=--openssl-legacy-provider vue-cli-service electron:serve --mode electron",
-    "electron:serve.production": "cross-env NODE_OPTIONS=--openssl-legacy-provider vue-cli-service electron:serve --mode electron.production",
-    "postinstall": "cross-env NODE_OPTIONS=--openssl-legacy-provider electron-builder install-app-deps",
-    "postuninstall": "cross-env NODE_OPTIONS=--openssl-legacy-provider electron-builder install-app-deps"
+    "electron:build": "vue-cli-service electron:build --mode electron",
+    "electron:build.production": "vue-cli-service electron:build --mode electron.production",
+    "electron:serve": "vue-cli-service electron:serve --mode electron",
+    "electron:serve.production": "vue-cli-service electron:serve --mode electron.production",
+    "postinstall": "electron-builder install-app-deps",
+    "postuninstall": "electron-builder install-app-deps"
   },
   "main": "background.js",
   "dependencies": {
     "@seald-io/nedb": "4.0.2",
     "core-js": "3.33.2",
     "difflib": "^0.2.4",
-    "electron-builder": "23.6.0",
+    "electron-builder": "24.6.4",
     "element-ui": "2.15.14",
     "encoding-japanese": "^2.0.0",
     "glob-parent": "^6.0.2",
@@ -47,8 +52,7 @@
     "@vue/cli-service": "^5.0.8",
     "@vue/eslint-config-standard": "^8.0.1",
     "babel-eslint": "^10.1.0",
-    "cross-env": "^7.0.3",
-    "electron": "21.3.3",
+    "electron": "22.3.27",
     "electron-devtools-installer": "^3.1.0",
     "electron-store": "8.1.0",
     "eslint": "8.53.0",
