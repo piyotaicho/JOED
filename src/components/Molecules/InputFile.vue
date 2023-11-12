@@ -1,15 +1,21 @@
-<template>
-  <div style="display: inline-block;">
-    <input type="file" ref="inputfile" style="display: none;" :accept="props.AcceptFileTypes || ''" @change="selectionMade" />
-    <el-button type="primary" @click="openFileDialog" :disabled="props.disabled">{{ButtonText || 'ファイルを選択'}}</el-button>
-  </div>
-</template>
-
 <script setup>
 import { ref, defineProps, defineEmits } from 'vue'
 import Encoding from 'encoding-japanese'
 
-const props = defineProps(['ButtonText', 'AcceptFileTypes', 'disabled'])
+const props = defineProps({
+  ButtonText: {
+    type: String,
+    default: 'ファイルを指定'
+  },
+  AcceptFileTypes: {
+    type: String,
+    default: ''
+  },
+  disabled: {
+    type: Boolean,
+    default: false
+  }
+})
 const emit = defineEmits(['load'])
 
 const inputfile = ref()
@@ -34,3 +40,10 @@ function selectionMade (event) {
   reader.readAsArrayBuffer(files[0])
 }
 </script>
+
+<template>
+  <div style="display: inline-block;">
+    <input type="file" ref="inputfile" style="display: none;" :accept="props.AcceptFileTypes" @change="selectionMade" />
+    <el-button type="primary" @click="openFileDialog" :disabled="props.disabled">{{ButtonText}}</el-button>
+  </div>
+</template>

@@ -1,3 +1,45 @@
+<script setup>
+import { reactive, computed } from 'vue'
+import { useStore } from '@/store'
+import InputSwitchField from '@/components/Molecules/InputSwitchField'
+import * as Popups from '@/modules/Popups'
+
+const store = useStore()
+
+const data = reactive({
+  showStartupDialog: false,
+  editJSOGId: false,
+  editNCDId: false,
+  revertView: false,
+
+  preserve: ''
+})
+
+data.showStartupDialog = store.getters['system/ShowStartupDialog']
+data.editJSOGId = store.getters['system/EditJSOGId']
+data.editNCDId = store.getters['system/EditNCDId']
+
+data.preserve = [data.showStartupDialog, data.editJSOGId, data.editNCDId, data.revertView].join('|')
+
+const changed = computed(() => data.preserve !== [data.showStartupDialog, data.editJSOGId, data.editNCDId, data.revertView].join('|'))
+
+async function commitSettings () {
+  store.commit('system/SetPreferences', {
+    ShowStartupDialog: data.showStartupDialog,
+    EditJSOGId: data.editJSOGId,
+    EditNCDId: data.editNCDId
+  })
+  if (data.revertView) {
+    store.commit('system/SetView', {})
+  }
+
+  await store.dispatch('system/SavePreferences')
+  data.preserve = [data.showStartupDialog, data.editJSOGId, data.editNCDId, data.revertView].join('|')
+
+  Popups.information('設定が変更されました.')
+}
+</script>
+
 <template>
   <div class="utility">
     <div class="utility-switches wide-label">
@@ -5,11 +47,11 @@
         症例表示画面の設定
       </div></div>
       <InputSwitchField
-        :value.sync="showStartupDialog"
+        :value.sync="data.showStartupDialog"
         title="リスト表示の起動時メッセージの表示"
         :options="{'しない': false, 'する': true}" />
       <InputSwitchField
-        :value.sync="revertView"
+        :value.sync="data.revertView"
         title="リスト表示内容の規定値を初期設定に戻す"
         :options="{'しない': false, 'する': true}" />
 
@@ -17,71 +59,17 @@
         症例編集画面の設定
       </div></div>
       <InputSwitchField
-        :value.sync="editJSOGId"
+        :value.sync="data.editJSOGId"
         title="日産婦腫瘍登録 症例番号の入力"
         :options="{'しない': false, 'する': true}" />
       <InputSwitchField
-        :value.sync="editNCDId"
+        :value.sync="data.editNCDId"
         title="ロボット支援下手術の NCD症例番号の入力"
         :options="{'しない': false, 'する': true}" />
     </div>
 
     <div>
-      <el-button type="primary" :disabled="!changed" @click="CommitSettings">上記設定を保存</el-button>
+      <el-button type="primary" :disabled="!changed" @click="commitSettings">上記設定を保存</el-button>
     </div>
   </div>
 </template>
-
-<script>
-import InputSwitchField from '@/components/Molecules/InputSwitchField'
-import * as Popups from '@/modules/Popups'
-
-export default {
-  name: 'SettingOfView',
-  components: {
-    InputSwitchField
-  },
-  data () {
-    return ({
-      showStartupDialog: false,
-      editJSOGId: true,
-      editNCDId: true,
-      revertView: false,
-
-      preserve: ''
-    })
-  },
-  created () {
-    const settings = this.$store.getters['system/Settings']
-    this.showStartupDialog = settings.ShowStartupDialog
-    this.editJSOGId = settings.EditJSOGId
-    this.editNCDId = settings.EditNCDId
-    this.Preserve()
-  },
-  computed: {
-    changed () {
-      return this.preserve !==
-        [this.showStartupDialog, this.editJSOGId, this.editNCDId, this.revertView].join('|')
-    }
-  },
-  methods: {
-    Preserve () {
-      this.preserve = [this.showStartupDialog, this.editJSOGId, this.editNCDId, this.revertView].join('|')
-    },
-    async CommitSettings () {
-      this.$store.commit('system/SetPreferences', {
-        ShowStartupDialog: this.showStartupDialog,
-        EditJSOGId: this.editJSOGId,
-        EditNCDId: this.editNCDId
-      })
-      if (this.revertView) {
-        this.$store.commit('system/SetView', {})
-      }
-      await this.$store.dispatch('system/SavePreferences')
-      this.Preserve()
-
-      Popups.information('設定が変更されました.')
-    }
-  }
-}
-</script>

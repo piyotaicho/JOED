@@ -7,16 +7,39 @@ import InputProcedureTime from '@/components/Molecules/InputProcedureTime'
 import AdditionalPatientInfo from './Organisms/AdditionalPatientInfo.vue'
 
 // プロパティ
-const props = defineProps([
-  'DateOfProcedure', // string
-  'PatientId', // string
-  'Name', // string
-  'Age', // number
-  'ProcedureTime', // string
-  'Denial', // boolean
-  'JSOGId', // string
-  'NCDId' // string
-])
+const props = defineProps({
+  DateOfProcedure: {
+    type: String,
+    default: ''
+  },
+  PatientId: {
+    type: String,
+    default: ''
+  },
+  Name: {
+    type: String,
+    default: ''
+  },
+  Age: {
+    type: Number
+  },
+  ProcedureTime: {
+    type: String,
+    default: ''
+  },
+  Denial: {
+    type: Boolean,
+    default: false
+  },
+  JSOGId: {
+    type: String,
+    default: ''
+  },
+  NCDId: {
+    type: String,
+    default: ''
+  }
+})
 
 const emit = defineEmits([
   'update:DateOfProcedure',

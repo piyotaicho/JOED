@@ -1,27 +1,24 @@
-<template>
-  <div style="display: flex; flex-direction: row; height: 2.4rem;">
-    <div class="label"><span>{{title || '数値を入力'}}</span></div>
-    <div class="field number-field">
-      <div>
-        <input type="text"
-          v-model="inputText"
-          :min="min"
-          :max="max"
-          :class="[(!inputText && props.required) ? 'vacant' : '']"
-          v-bind="$attrs"
-          />
-        <span class="number-field__control number-field__decrease" @click="decrease">&#xe790;</span>
-        <span class="number-field__control number-field__increase" @click="increase">&#xe78f;</span>
-      </div>
-    </div>
-</div>
-</template>
-
 <script setup>
 import { defineProps, defineEmits, computed } from 'vue'
 import { ZenToHanNumbers } from '@/modules/ZenHanChars'
 
-const props = defineProps(['value', 'title', 'min', 'max', 'required'])
+const props = defineProps({
+  value: {
+    type: [Number, String]
+  },
+  title: {
+    default: 'NUMBER FIELD'
+  },
+  min: {
+    type: Number
+  },
+  max: {
+    type: Number
+  },
+  required: {
+    default: false
+  }
+})
 
 const emit = defineEmits(['update:value'])
 
@@ -44,6 +41,25 @@ function decrease () {
   }
 }
 </script>
+
+<template>
+  <div style="display: flex; flex-direction: row; height: 2.4rem;">
+    <div class="label"><span>{{title || '数値を入力'}}</span></div>
+    <div class="field number-field">
+      <div>
+        <input type="text"
+          v-model="inputText"
+          :min="min"
+          :max="max"
+          :class="[(!inputText && props.required) ? 'vacant' : '']"
+          v-bind="$attrs"
+          />
+        <span class="number-field__control number-field__decrease" @click="decrease">&#xe790;</span>
+        <span class="number-field__control number-field__increase" @click="increase">&#xe78f;</span>
+      </div>
+    </div>
+</div>
+</template>
 
 <style lang="sass">
 div.number-field > div

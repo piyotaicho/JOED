@@ -1,28 +1,24 @@
-<template>
-  <div ref="datepicker" style="display: flex; flex-direction: row; height: 2.4rem;">
-    <div class="label"><span>手術日</span></div>
-    <template>
-      <Datepicker
-        v-model="dateOfProcedure"
-        wrapper-class="field"
-        placeholder="クリックでカレンダー"
-        :typeable="true"
-        format="yyyy-MM-dd"
-        :input-class="requiredClass"
-        :language="ja"
-        :disabled="disabled"
-        ref="datepicker"
-        />
-    </template>
-  </div>
-</template>
-
 <script setup>
 import { defineProps, defineEmits, onMounted, ref, computed } from 'vue'
 import Datepicker from 'vuejs-datepicker'
 import { ja } from 'vuejs-datepicker/dist/locale'
 
-const props = defineProps(['value', 'required', 'disabled', 'tabindex'])
+const props = defineProps({
+  value: {
+    type: String,
+    default: ''
+  },
+  required: {
+    default: false
+  },
+  disabled: {
+    type: Boolean,
+    default: false
+  },
+  tabindex: {
+    type: [Number, String]
+  }
+})
 const emit = defineEmits(['update:value'])
 
 // Set tabindex
@@ -53,6 +49,25 @@ const dateOfProcedure = computed({
 
 const requiredClass = computed(() => (props.required === true && props.value === '') ? 'vacant' : '')
 </script>
+
+<template>
+  <div ref="datepicker" style="display: flex; flex-direction: row; height: 2.4rem;">
+    <div class="label"><span>手術日</span></div>
+    <template>
+      <Datepicker
+        v-model="dateOfProcedure"
+        wrapper-class="field"
+        placeholder="クリックでカレンダー"
+        :typeable="true"
+        format="yyyy-MM-dd"
+        :input-class="requiredClass"
+        :language="ja"
+        :disabled="disabled"
+        ref="datepicker"
+        />
+    </template>
+  </div>
+</template>
 
 <style lang="sass">
 div.vdp-datepicker__calendar

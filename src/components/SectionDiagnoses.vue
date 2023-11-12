@@ -1,14 +1,5 @@
-<template>
-  <SectionBlock title="手術診断"
-    :container.sync="items"
-    @addnewitem="AddNewItem"
-    @edititem="EditItem"
-    @removeitem="RemoveItem">
-  </SectionBlock>
-</template>
-
 <script>
-import SectionBlock from '@/components/Molecules/Section'
+import SectionBlock from '@/components/Molecules/SectionBlock'
 
 export default {
   name: 'SectionDiagnoses',
@@ -42,3 +33,12 @@ export default {
   }
 }
 </script>
+
+<template>
+  <SectionBlock title="手術診断"
+    :container.sync="items"
+    @addnewitem="AddNewItem"
+    @edititem="EditItem"
+    @removeitem="RemoveItem">
+  </SectionBlock>
+</template>
