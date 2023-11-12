@@ -3,13 +3,13 @@
     <!-- <div class="title">施設の設定</div> -->
     <div class="utility-switches">
       <InputTextField
-        v-model="InstitutionName"
+        :value.sync="InstitutionName"
         title="施設名称"
         placeholder=" 未設定 "
         :required="true" />
 
       <InputTextField
-        v-model="InstitutionID"
+        :value.sync="InstitutionID"
         title="施設番号"
         placeholder=" 未設定 "
         :required="true">
@@ -61,7 +61,7 @@
 
     <div class="utility-switches">
       <InputTextField
-        v-model="JSOGoncologyboardID"
+        :value.sync="JSOGoncologyboardID"
         title="腫瘍登録施設番号"
         placeholder="日産婦の腫瘍登録施設番号" />
     </div>

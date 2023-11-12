@@ -1,36 +1,23 @@
 <template>
-  <div>
-    <div class="label"><slot name="title"><span>{{title}}</span></slot></div>
+  <div style="display: flex; flex-direction: row; height: 2.4rem;">
+    <div class="label"><slot name="title"><span>{{title || '文字入力'}}</span></slot></div>
     <div class="field">
       <input type="text"
-        v-model="InputText"
-        :class="[(!value && required) ? 'vacant' : '']"
+        v-model="inputText"
+        :class="[(!inputText && props.required) ? 'vacant' : '']"
         v-bind="$attrs"/>
     </div>
 </div>
 </template>
 
-<script>
-export default {
-  name: 'InputTextField',
-  props: {
-    required: {
-      default: false
-    },
-    value: {
-      required: true
-    },
-    title: {
-      default: 'TEXT FIELD'
-    }
-  },
-  computed: {
-    InputText: {
-      get () { return this.value },
-      set (newvalue) {
-        this.$emit('input', newvalue)
-      }
-    }
-  }
-}
+<script setup>
+import { defineProps, defineEmits, computed } from 'vue'
+
+const props = defineProps(['value', 'required', 'title'])
+const emit = defineEmits(['update:value'])
+
+const inputText = computed({
+  get: () => props.value,
+  set: (newvalue) => emit('update:value', newvalue)
+})
 </script>

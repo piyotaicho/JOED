@@ -2,7 +2,7 @@
   <div class="utility">
     <div class="utility-switches">
       <InputSwitchField
-        v-model="exportAsBackup"
+        :value.sync="exportAsBackup"
         title="出力する様式"
         :options="{ 学会提出データ: false, バックアップデータ: true }"
       />
@@ -17,7 +17,7 @@
       </div>
 
       <InputSwitchField
-        v-model="validateOnBackup"
+        :value.sync="validateOnBackup"
         :disabled="!exportAllFields"
         title="データのエラーチェック"
         :options="{ 行う: true, 行わない: false }"

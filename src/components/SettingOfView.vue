@@ -5,11 +5,11 @@
         症例表示画面の設定
       </div></div>
       <InputSwitchField
-        v-model="showStartupDialog"
+        :value.sync="showStartupDialog"
         title="リスト表示の起動時メッセージの表示"
         :options="{'しない': false, 'する': true}" />
       <InputSwitchField
-        v-model="revertView"
+        :value.sync="revertView"
         title="リスト表示内容の規定値を初期設定に戻す"
         :options="{'しない': false, 'する': true}" />
 
@@ -17,11 +17,11 @@
         症例編集画面の設定
       </div></div>
       <InputSwitchField
-        v-model="editJSOGId"
+        :value.sync="editJSOGId"
         title="日産婦腫瘍登録 症例番号の入力"
         :options="{'しない': false, 'する': true}" />
       <InputSwitchField
-        v-model="editNCDId"
+        :value.sync="editNCDId"
         title="ロボット支援下手術の NCD症例番号の入力"
         :options="{'しない': false, 'する': true}" />
     </div>

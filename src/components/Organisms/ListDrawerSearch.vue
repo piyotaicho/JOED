@@ -3,7 +3,7 @@
     <div class="subtilte-section">検索対象</div>
     <div>
       <InputSwitchField
-        v-model="IgnoreQuery"
+        :value.sync="IgnoreQuery"
         title=""
         :options="{ 全データ: true, 現在の表示設定: false }"
       />
@@ -36,7 +36,7 @@
     </div>
     <div>
       <InputSwitchField
-        v-model="UseRegexp"
+        :value.sync="UseRegexp"
         title=""
         :options="{ 部分一致: false, 正規表現: true }"
         :disabled="RegexpDisabled"

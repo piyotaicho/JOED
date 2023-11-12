@@ -3,25 +3,25 @@
     <!-- <div class="title">パスワード認証の設定</div> -->
     <div class="utility-switches">
       <InputSwitchField
-        v-model="UseAuthentication"
+        :value.sync="UseAuthentication"
         title="起動時のパスワード確認"
         :options="{'しない': false, 'する': true}" />
 
       <InputPasswordField
-        v-model.lazy="PasswordString"
+        :value.sync="PasswordString"
         title="現在のパスワード"
         placeholder="********"
         :required="true"
         v-if="passwordRequired" />
 
       <InputPasswordField
-        v-model.lazy="NewPasswordString"
+        :value.sync="NewPasswordString"
         title="新しいパスワード"
         placeholder="********"
         :required="true"
         v-if="UseAuthentication" />
       <InputPasswordField
-        v-model.lazy="NewPasswordStringVerify"
+        :value.sync="NewPasswordStringVerify"
         title="新しいパスワード(確認)"
         placeholder="********"
         :required="true"

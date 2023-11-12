@@ -1,27 +1,27 @@
 <template>
-  <div>
+  <div style="display: flex; flex-direction: row; height: 2.4rem;">
     <div class="label"><span class="required">手術時間</span></div>
     <div class="field">
-      <select v-model="ProcedureTime"
-        :class="[!ProcedureTime ? 'vacant' : '']"
+      <select v-model="procedureTime"
+        :class="[!procedureTime ? 'vacant' : '']"
         v-bind="$attrs"
-        @blur="ClearTypedValue()"
-        @keypress.esc="ClearTypedValue()"
-        @keypress.delete="TypeInChar('DEL')"
-        @keypress.48.prevent="TypeInChar('0')" @keypress.96.prevent="TypeInChar('0')"
-        @keypress.49.prevent="TypeInChar('1')" @keypress.97.prevent="TypeInChar('1')"
-        @keypress.50.prevent="TypeInChar('2')" @keypress.98.prevent="TypeInChar('2')"
-        @keypress.51.prevent="TypeInChar('3')" @keypress.99.prevent="TypeInChar('3')"
-        @keypress.52.prevent="TypeInChar('4')" @keypress.100.prevent="TypeInChar('4')"
-        @keypress.53.prevent="TypeInChar('5')" @keypress.101.prevent="TypeInChar('5')"
-        @keypress.54.prevent="TypeInChar('6')" @keypress.102.prevent="TypeInChar('6')"
-        @keypress.55.prevent="TypeInChar('7')" @keypress.103.prevent="TypeInChar('7')"
-        @keypress.56.prevent="TypeInChar('8')" @keypress.104.prevent="TypeInChar('8')"
-        @keypress.57.prevent="TypeInChar('9')" @keypress.105.prevent="TypeInChar('9')"
-        @keypress.58.prevent="TypeInChar(':')"
+        @blur="clearTypedValue()"
+        @keypress.esc="clearTypedValue()"
+        @keypress.delete="typeInChar('DEL')"
+        @keypress.48.prevent="typeInChar('0')" @keypress.96.prevent="typeInChar('0')"
+        @keypress.49.prevent="typeInChar('1')" @keypress.97.prevent="typeInChar('1')"
+        @keypress.50.prevent="typeInChar('2')" @keypress.98.prevent="typeInChar('2')"
+        @keypress.51.prevent="typeInChar('3')" @keypress.99.prevent="typeInChar('3')"
+        @keypress.52.prevent="typeInChar('4')" @keypress.100.prevent="typeInChar('4')"
+        @keypress.53.prevent="typeInChar('5')" @keypress.101.prevent="typeInChar('5')"
+        @keypress.54.prevent="typeInChar('6')" @keypress.102.prevent="typeInChar('6')"
+        @keypress.55.prevent="typeInChar('7')" @keypress.103.prevent="typeInChar('7')"
+        @keypress.56.prevent="typeInChar('8')" @keypress.104.prevent="typeInChar('8')"
+        @keypress.57.prevent="typeInChar('9')" @keypress.105.prevent="typeInChar('9')"
+        @keypress.58.prevent="typeInChar(':')"
       >
         <option value="" disabled style="display:none;">手術所要時間</option>
-        <option v-for="item in ProcedureTimeSelections"
+        <option v-for="item in procedureTimeSelections"
           :key="item"
           :value="item">
           {{item}}
@@ -31,49 +31,43 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { defineProps, defineEmits, computed, ref } from 'vue'
 import { ProcedureTimeSelections, encodeProcedureTime } from '@/modules/ProcedureTimes'
 
-export default {
-  name: 'InputProcedureTime',
-  props: {
-    value: {}
-  },
-  data () {
-    return ({
-      ProcedureTimeSelections: ProcedureTimeSelections(),
-      typedString: ''
-    })
-  },
-  computed: {
-    ProcedureTime: {
-      get () { return this.value },
-      set (newvalue) {
-        this.$emit('input', newvalue)
-      }
-    }
-  },
-  methods: {
-    TypeInChar (char) {
-      if (char === 'DEL') {
-        this.typedString = this.typedString.slice(0, -1)
-      } else {
-        this.typedString = (this.typedString + char).slice(-5)
-      }
+const props = defineProps(['value'])
+const emit = defineEmits(['update:value'])
 
-      const index = this.typedString.indexOf(':')
-      if (index !== -1) {
-        this.ProcedureTime = encodeProcedureTime(
-          Number(this.typedString.substring(0, index)) * 60 +
-          Number(this.typedString.substring(index + 1))
-        )
-      } else {
-        this.ProcedureTime = encodeProcedureTime(this.typedString)
-      }
-    },
-    ClearTypedValue () {
-      this.typedString = ''
-    }
+const procedureTimeSelections = ProcedureTimeSelections()
+
+// reactiveプロパティ
+const typedString = ref('')
+
+// 算出プロパティ
+const procedureTime = computed({
+  get: () => props.value,
+  set: (newvalue) => emit('update:value', newvalue)
+})
+
+function typeInChar (char) {
+  if (char === 'DEL') {
+    typedString.value = typedString.value.slice(0, -1)
+  } else {
+    typedString.value = (typedString.value + char).slice(-5)
   }
+
+  const index = typedString.value.indexOf(':')
+  if (index !== -1) {
+    procedureTime.value = encodeProcedureTime(
+      Number(typedString.value.substring(0, index)) * 60 +
+      Number(typedString.value.substring(index + 1))
+    )
+  } else {
+    procedureTime.value = encodeProcedureTime(typedString.value)
+  }
+}
+
+function clearTypedValue () {
+  typedString.value = ''
 }
 </script>
