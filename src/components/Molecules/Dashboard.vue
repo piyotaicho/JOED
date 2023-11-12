@@ -1,7 +1,29 @@
+<!-- eslint-disable vue/multi-word-component-names -->
+<script setup>
+
+import CloseButton from '@/components/Atoms/CloseButton'
+import DiagnosisMaster from '@/modules/Masters/DiagnosisMaster'
+import { defineEmits, computed } from 'vue'
+import { useStore } from '@/store'
+
+const store = useStore()
+const emit = defineEmits(['close'])
+
+const YearOfMaster = new DiagnosisMaster().Year()
+
+const InstituteName = computed(() => store.getters['system/InstitutionName'] || '(施設名称未設定)')
+
+const ViewCount = computed(() => store.getters.NumberOfCases)
+
+const TotalCount = computed(() => store.getters.TotalNumberOfCases)
+
+const close = () => emit('close')
+</script>
+
 <template>
   <div>
     <div class="dashboard">
-      <CloseButton @click="Close"/>
+      <CloseButton @click="close"/>
       <div class="dashboard-title" ref="title">{{InstituteName}}</div>
       <div class="dashboard-row">
         <span>{{YearOfMaster}}年版マスタ</span>
@@ -10,43 +32,6 @@
     </div>
   </div>
 </template>
-
-<script>
-import CloseButton from '@/components/Atoms/CloseButton'
-import DiagnosisMaster from '@/modules/Masters/DiagnosisMaster'
-
-export default {
-  name: 'ListDashboard',
-  components: {
-    CloseButton
-  },
-  created () {
-    const master = new DiagnosisMaster()
-    this.YearOfMaster = master.Year()
-  },
-  data () {
-    return ({
-      YearOfMaster: '0000'
-    })
-  },
-  computed: {
-    InstituteName () {
-      return this.$store.getters['system/InstitutionName'] || '(施設名称未設定)'
-    },
-    ViewCount () {
-      return this.$store.getters.NumberOfCases
-    },
-    TotalCount () {
-      return this.$store.getters.TotalNumberOfCases
-    }
-  },
-  methods: {
-    Close () {
-      this.$emit('close')
-    }
-  }
-}
-</script>
 
 <style lang="sass">
 div.dashboard

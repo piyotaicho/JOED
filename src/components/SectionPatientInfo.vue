@@ -21,7 +21,7 @@ const props = defineProps({
     default: ''
   },
   Age: {
-    type: Number
+    type: [Number, String]
   },
   ProcedureTime: {
     type: String,

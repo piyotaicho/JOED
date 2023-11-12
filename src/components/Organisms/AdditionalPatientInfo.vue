@@ -51,6 +51,20 @@ const valueNCDId = computed({
   }
 })
 
+const informMessage = computed(() => {
+  const message = []
+  if (props.Denial) {
+    message.push('登録拒否症例です.')
+  }
+  if (props.JSOGId !== '') {
+    message.push('腫瘍登録番号が入力されています.')
+  }
+  if (props.NCDId !== '') {
+    message.push('NCD症例識別コードが入力されています.')
+  }
+  return message.join()
+})
+
 const informIconColor = computed(() => {
   if (props.Denial) {
     return { color: 'var(--color-danger)' }
@@ -82,8 +96,13 @@ const informIconColor = computed(() => {
       </div>
       <!-- display button -->
       <div slot="reference" class="additonal-patient-info-button">
-        <div>
+        <div v-if="informMessage === ''">
           <i class="el-icon-info" :style="informIconColor"></i>
+        </div>
+        <div v-else>
+          <el-tooltip class="item" effect="dark" :content="informMessage" placement="top" >
+            <i class="el-icon-info" :style="informIconColor"></i>
+          </el-tooltip>
         </div>
       </div>
     </el-popover>

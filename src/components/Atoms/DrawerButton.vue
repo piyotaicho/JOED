@@ -1,30 +1,29 @@
-<template>
-  <div class="open-drawer-button"
-    :tabindex="tabindex"
-    @click="Click"
-    @keydown.enter="Click"
-    :accesskey="accesskey">
-  </div>
-</template>
+<script setup>
+import { defineProps, defineEmits } from 'vue'
 
-<script>
-export default {
-  name: 'DrawerButton',
-  props: {
-    tabindex: {
-      type: String, Number
-    },
-    accesskey: {
-      type: String
-    }
+const props = defineProps({
+  tabindex: {
+    type: String, Number
   },
-  methods: {
-    Click (event) {
-      this.$emit('click', event)
-    }
+  accesskey: {
+    type: String
   }
+})
+const emit = defineEmits(['click'])
+
+function click (event) {
+  emit('click', event)
 }
 </script>
+
+<template>
+  <div class="open-drawer-button"
+    :tabindex="props.tabindex"
+    @click="click"
+    @keydown.enter="click"
+    :accesskey="props.accesskey">
+  </div>
+</template>
 
 <style lang="sass">
 div.open-drawer-button

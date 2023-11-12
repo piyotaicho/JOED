@@ -1,47 +1,46 @@
+<script setup>
+import { defineProps, computed } from 'vue'
+
+const props = defineProps({
+  category: {
+    type: String,
+    required: true
+  },
+  notification: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const boxColorStyle = computed(() => {
+  const colorTable = {
+    腹腔鏡: '#8CF700',
+    腹腔鏡悪性: '#8CF700',
+    ロボット: '#00F063',
+    ロボット悪性: '#00F063',
+    子宮鏡: '#00BBFF',
+    卵管鏡: '#FFD000'
+  }
+  return { backgroundColor: colorTable[props.category] || '#DDDDDD' }
+})
+
+const notificationClass = computed(() => props.notification ? ['has-notification'] : [''])
+const malignancyClass = computed(() => {
+  switch (props.category) {
+    case '腹腔鏡悪性':
+    case 'ロボット悪性':
+      return 'category-malignancy'
+    default:
+      return ''
+  }
+})
+</script>
+
 <template>
-  <div class="casecategory" :class="[notification ? 'has-notification' : '']" :style="BoxColorStyle">
-    <div :class="MalignancyClass"></div>
+  <div class="casecategory" :class="notificationClass" :style="boxColorStyle">
+    <div :class="malignancyClass"></div>
   </div>
 </template>
-
-<script>
-export default {
-  name: 'CaseCategoryIdentifier',
-  props: {
-    category: {
-      required: true
-    },
-    notification: {
-      default: false
-    }
-  },
-  computed: {
-    BoxColorStyle () {
-      const colorTable = {
-        腹腔鏡: '#8CF700',
-        腹腔鏡悪性: '#8CF700',
-        ロボット: '#00F063',
-        ロボット悪性: '#00F063',
-        子宮鏡: '#00BBFF',
-        卵管鏡: '#FFD000'
-      }
-      return { backgroundColor: colorTable[this.category] || '#DDDDDD' }
-    },
-    NotificationClass () {
-      return this.notification ? 'has-notification' : ''
-    },
-    MalignancyClass () {
-      switch (this.category) {
-        case '腹腔鏡悪性':
-        case 'ロボット悪性':
-          return 'category-malignancy'
-        default:
-          return ''
-      }
-    }
-  }
-}
-</script>
 
 <style lang='sass'>
 div.casecategory

@@ -1,25 +1,25 @@
-<template>
-  <div class="closebutton" :class="bordered ? 'borderedButton' : ''" @keypress.enter="Click" @click="Click" :tabindex="this.tabindex"></div>
-</template>
+<script setup>
+import { defineProps, defineEmits } from 'vue'
 
-<script>
-export default {
-  name: 'CloseButton',
-  props: {
-    tabindex: {
-      type: [Number, String]
-    },
-    bordered: {
-      type: Boolean
-    }
+const props = defineProps({
+  tabindex: {
+    type: [Number, String]
   },
-  methods: {
-    Click () {
-      this.$emit('click')
-    }
+  bordered: {
+    type: Boolean
   }
+})
+const emit = defineEmits(['click'])
+
+function click () {
+  emit('click')
 }
 </script>
+
+<template>
+  <div class="closebutton" :class="props.bordered ? 'borderedButton' : ''" @keypress.enter="click" @click="click" :tabindex="props.tabindex"></div>
+</template>
+
 <style lang="sass">
 div.closebutton
   position: absolute

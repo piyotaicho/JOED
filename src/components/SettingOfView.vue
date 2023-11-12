@@ -42,7 +42,7 @@ async function commitSettings () {
 
 <template>
   <div class="utility">
-    <div class="utility-switches wide-label">
+    <div class="utility-switches">
       <div><div class="label"><i class="el-icon-arrow-down" style="padding-top: 0.36rem; margin-right: 0.6rem;"/>
         症例表示画面の設定
       </div></div>
@@ -64,7 +64,7 @@ async function commitSettings () {
         :options="{'しない': false, 'する': true}" />
       <InputSwitchField
         :value.sync="data.editNCDId"
-        title="ロボット支援下手術の NCD症例番号の入力"
+        title="ロボット支援下手術 NCD症例識別コードの入力"
         :options="{'しない': false, 'する': true}" />
     </div>
 

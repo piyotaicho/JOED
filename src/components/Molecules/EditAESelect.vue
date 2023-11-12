@@ -1,3 +1,21 @@
+<script setup>
+import { defineProps, defineEmits, computed } from 'vue'
+import EditAESelectValue from './EditAESelectValue.vue'
+
+const props = defineProps({
+  items: {
+    type: Array,
+    required: true
+  },
+  value: {}
+})
+const emit = defineEmits(['update:value'])
+const selectvalue = computed({
+  get: () => props.value,
+  set: (newvalue) => emit('update:value', newvalue)
+})
+</script>
+
 <template>
   <div>
     <template v-for="(linearray, lineindex) in items">
@@ -11,41 +29,9 @@
           v-for="(item, itemindex) in linearray"
           :key="itemindex"
           :item="item"
-          v-model="selectvalue"
+          :value.sync="selectvalue"
         />
       </div>
     </template>
   </div>
 </template>
-
-<script>
-import EditAESelectValue from './EditAESelectValue.vue'
-
-export default {
-  components: {
-    EditAESelectValue
-  },
-  props: {
-    items: {
-      type: Array,
-      required: true
-    },
-    value: {}
-  },
-  model: {
-    prop: 'value',
-    event: 'change'
-  },
-  computed: {
-    selectvalue: {
-      get () {
-        return this.value
-      },
-      set (newvalue) {
-        this.$emit('change', newvalue)
-      }
-    }
-  },
-  methods: {}
-}
-</script>

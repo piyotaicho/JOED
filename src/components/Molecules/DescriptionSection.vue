@@ -10,7 +10,7 @@
       <template v-if="IsMultipleSelection">
         <template v-for="item of Source">
           <div :key="item">
-            <LabeledCheckbox v-model="SelectedArrayValue" :value="item" :key="item">
+            <LabeledCheckbox :container.sync="SelectedArrayValue" :value="item" :key="item">
               {{ ItemCaption(item) }}
             </LabeledCheckbox>
           </div>

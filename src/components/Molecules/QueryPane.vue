@@ -1,60 +1,46 @@
 <template>
   <div class="QueryPane">
-    <div class="QueryPaneTitle"><slot name="title">{{title}}</slot></div>
+    <div class="QueryPaneTitle"><slot name="title">{{props.title}}</slot></div>
     <div class="QueryPaneList">
       <div>
-        <list-item v-for="(item, index) in container"
+        <list-item v-for="(item, index) in props.container"
           :key="index"
           :item="item"
-          :erasable="erasable"
-          @erase="erase(index)"
-          :draggable="draggable"
-          @dragged="dragged(index, $event)"
-          @dropped="dropped(index, $event)"
+          :erasable="props.erasable"
+          @erase="emit('erase', index)"
+          :draggable="props.draggable"
+          @dragged="emit('dragged', index, $event)"
+          @dropped="emit('dropped', index, $event)"
         />
       </div>
     </div>
   </div>
 </template>
 
-<script>
+<script setup>
+import { defineProps, defineEmits } from 'vue'
 import ListItem from '@/components/Molecules/QueryPaneListItem'
 
-export default {
-  name: 'QueryPane',
-  components: {
-    ListItem
+const props = defineProps({
+  title: {
+    type: String,
+    default: ''
   },
-  props: {
-    title: {
-      type: String,
-      default: ''
-    },
-    draggable: {
-      type: Boolean,
-      default: false
-    },
-    erasable: {
-      type: Boolean,
-      default: false
-    },
-    container: {
-      type: Array,
-      require: true
-    }
+  draggable: {
+    type: Boolean,
+    default: false
   },
-  methods: {
-    erase (index) {
-      this.$emit('erase', index)
-    },
-    dragged (index, dragevent) {
-      this.$emit('dragged', index, dragevent)
-    },
-    dropped (index, dragevent) {
-      this.$emit('dropped', index, dragevent)
-    }
+  erasable: {
+    type: Boolean,
+    default: false
+  },
+  container: {
+    type: Array,
+    require: true
   }
-}
+})
+
+const emit = defineEmits(['erase', 'dragged', 'dropped'])
 </script>
 
 <style lang="sass">

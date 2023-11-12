@@ -1,3 +1,47 @@
+<!-- eslint-disable vue/multi-word-component-names -->
+<script setup>
+import { useStore } from '@/store'
+import ExtLink from '@/components/Atoms/ExtLink'
+
+const store = useStore()
+
+// Copyright - webpackでトランスパイル時に置換される
+const CopyrightString = process.env.VUE_APP_COPYRIGHT
+
+const CoreList = [
+  // { name: '', href: '', version: '', license: ''}
+  { name: 'JOED5', href: 'https://github.com/piyotaicho/JOED', version: store.getters['system/ApplicationVersion'], license: 'MIT' },
+  { name: 'Vue.js', href: 'https://vuejs.org/', version: store.getters['system/VueVersion'], license: 'MIT' },
+  ...process.env.VUE_APP_ELECTRON
+    ? [
+        { name: 'Electron', href: 'https://www.electronjs.org/', version: window?.Versions.Electron(), license: 'MIT' },
+        { name: 'Chromium', href: 'https://www.chromium.org/Home/', version: window?.Versions.Chrome(), license: 'MIT' },
+        { name: 'Node.js', href: 'https://nodejs.org/', version: window?.Versions.Node(), license: 'MIT' },
+        { name: 'V8', href: 'https://v8.dev/', version: window?.Versions.V8(), license: 'Revised BSD' }
+      ]
+    : []
+]
+
+const ComponentList = [
+  // { name: '', href: '', license: '' },
+  { name: 'Vuex', href: 'https://vuex.vuejs.org/', license: 'MIT' },
+  { name: 'Vue Router', href: 'https://router.vuejs.org/', license: 'MIT' },
+  { name: 'Element', href: 'https://element.eleme.io/', license: 'MIT' },
+  { name: 'seald/nedb', href: 'https://github.com/seald/nedb', license: 'MIT' },
+  { name: 'Vue.Draggable', href: 'https://github.com/SortableJS/Vue.Draggable', license: 'MIT' },
+  { name: 'Datepicker', href: 'https://github.com/charliekassel/vuejs-datepicker', license: 'MIT' },
+  { name: 'Vue-infinite-loading', href: 'https://github.com/PeachScript/vue-infinite-loading', license: 'MIT' },
+  { name: 'xxhashjs', href: 'https://github.com/pierrec/js-xxhash', license: 'MIT' },
+  { name: 'Difflib.js', href: 'https://github.com/qiao/difflib.js', license: 'PSF' },
+  { name: 'encoding.js', href: 'https://github.com/polygonplanet/encoding.js', license: 'MIT' },
+  ...process.env.VUE_APP_ELECTRON
+    ? [
+        { name: 'electron store', href: 'https://github.com/sindresorhus/electron-store', license: 'MIT' }
+      ]
+    : []
+]
+</script>
+
 <template>
   <div class="utility">
     <h2>JOE-D 5について</h2>
@@ -37,51 +81,3 @@
     </ul>
   </div>
 </template>
-
-<script>
-import ExtLink from '@/components/Atoms/ExtLink'
-
-export default {
-  name: 'ShowAbout',
-  components: {
-    ExtLink
-  },
-  data () {
-    return ({
-      // webpackでトランスパイル時に置換される
-      CopyrightString: process.env.VUE_APP_COPYRIGHT,
-      CoreList: [
-        // { name: '', href: '', version: '', license: ''}
-        { name: 'JOED5', href: 'https://github.com/piyotaicho/JOED', version: this.$store.getters['system/ApplicationVersion'], license: 'MIT' },
-        { name: 'Vue.js', href: 'https://vuejs.org/', version: this.$store.getters['system/VueVersion'], license: 'MIT' },
-        ...process.env.VUE_APP_ELECTRON
-          ? [
-              { name: 'Electron', href: 'https://www.electronjs.org/', version: window?.Versions.Electron(), license: 'MIT' },
-              { name: 'Chromium', href: 'https://www.chromium.org/Home/', version: window?.Versions.Chrome(), license: 'MIT' },
-              { name: 'Node.js', href: 'https://nodejs.org/', version: window?.Versions.Node(), license: 'MIT' },
-              { name: 'V8', href: 'https://v8.dev/', version: window?.Versions.V8(), license: 'Revised BSD' }
-            ]
-          : []
-      ],
-      ComponentList: [
-        // { name: '', href: '', license: '' },
-        { name: 'Vuex', href: 'https://vuex.vuejs.org/', license: 'MIT' },
-        { name: 'Vue Router', href: 'https://router.vuejs.org/', license: 'MIT' },
-        { name: 'Element', href: 'https://element.eleme.io/', license: 'MIT' },
-        { name: 'seald/nedb', href: 'https://github.com/seald/nedb', license: 'MIT' },
-        { name: 'Vue.Draggable', href: 'https://github.com/SortableJS/Vue.Draggable', license: 'MIT' },
-        { name: 'Datepicker', href: 'https://github.com/charliekassel/vuejs-datepicker', license: 'MIT' },
-        { name: 'Vue-infinite-loading', href: 'https://github.com/PeachScript/vue-infinite-loading', license: 'MIT' },
-        { name: 'xxhashjs', href: 'https://github.com/pierrec/js-xxhash', license: 'MIT' },
-        { name: 'Difflib.js', href: 'https://github.com/qiao/difflib.js', license: 'PSF' },
-        { name: 'encoding.js', href: 'https://github.com/polygonplanet/encoding.js', license: 'MIT' },
-        ...process.env.VUE_APP_ELECTRON
-          ? [
-              { name: 'electron store', href: 'https://github.com/sindresorhus/electron-store', license: 'MIT' }
-            ]
-          : []
-      ]
-    })
-  }
-}
-</script>

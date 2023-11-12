@@ -1,90 +1,91 @@
+<script setup>
+import { defineProps, defineEmits, computed, onMounted, onBeforeUnmount, ref } from 'vue'
+
+document.getElementsByTagName('html')[0].style.overflowY = 'hidden'
+
+const props = defineProps({
+  alpha: {
+    type: [String, Number],
+    validator (val) {
+      return val >= 0 && val <= 100
+    },
+    default: 0
+  },
+  preventClose: {
+    type: Boolean,
+    default: false
+  }
+})
+const emit = defineEmits(['click'])
+
+const wrapper = ref()
+
+onMounted(() => {
+  // TheWrapper コンポーネントの内部以外のコントロールへの tabIndex を抑止する.
+  const myelements = Array.prototype.filter.call(
+    wrapper.value.getElementsByTagName('*'),
+    element => element.tabIndex === 0
+  )
+  // アプリケーションがdiv#appにマウントされていることが必須
+  const rootElement = document.getElementById('app')
+
+  if (myelements.length > 0) {
+    const documentelements = Array.prototype.filter.call(
+      rootElement.getElementsByTagName('*'),
+      element => element.tabIndex === 0
+    )
+    documentelements.forEach(element => {
+      if (Array.prototype.indexOf.call(myelements, element) === -1) {
+        element.tabIndex = -2
+      }
+    })
+  } else {
+    // TheWrapper コンポーネントが空っぽの場合はドキュメントの tabIndex を全部抑止
+    Array.prototype.filter.call(
+      rootElement.getElementsByTagName('*'),
+      element => element.tabIndex === 0
+    )
+      .forEach(element => { element.tabIndex = -2 })
+  }
+
+  // beforeUnloadの抑止をつける
+  if (props.preventClose) {
+    window.addEventListener('beforeunload', beforUnloadListener)
+  }
+})
+
+onBeforeUnmount(() => {
+  document.getElementsByTagName('html')[0].style.overflowY = 'auto'
+
+  // beforeUnloadの抑止を終了
+  if (props.preventClose) {
+    window.removeEventListener('beforeunload', beforUnloadListener)
+  }
+  // tabIndex の復帰
+  Array.prototype.filter.call(
+    document.getElementsByTagName('*'),
+    element => element.tabIndex === -2
+  )
+    .forEach(element => { element.tabIndex = 0 })
+})
+
+const wrapperStyle = computed(() => { return { 'background-color': 'rgba(0,0,0,' + props.alpha / 100 + ')' } })
+
+function beforUnloadListener (event) {
+  event.preventDefault()
+  event.returnValue = ''
+  return false
+}
+function click () {
+  emit('click')
+}
+</script>
+
 <template>
-  <div class="thewrapper" :style="Style" @click="Click" ref="wrapper">
+  <div class="thewrapper" :style="wrapperStyle" @click="click" ref="wrapper">
   <slot></slot>
   </div>
 </template>
-
-<script>
-export default {
-  name: 'TheWrapper',
-  props: {
-    alpha: {
-      type: [String, Number],
-      validator (val) {
-        return val >= 0 && val <= 100
-      },
-      default: 0
-    },
-    preventClose: {
-      type: Boolean,
-      default: false
-    }
-  },
-  created () {
-    document.getElementsByTagName('html')[0].style.overflowY = 'hidden'
-  },
-  mounted () {
-    // TheWrapper コンポーネントの内部以外のコントロールへの tabIndex を抑止する.
-    const myelements = Array.prototype.filter.call(
-      this.$refs.wrapper.getElementsByTagName('*'),
-      element => element.tabIndex === 0
-    )
-
-    if (myelements.length > 0) {
-      const documentelements = Array.prototype.filter.call(
-        this.$root.$el.getElementsByTagName('*'),
-        element => element.tabIndex === 0
-      )
-      documentelements.forEach(element => {
-        if (Array.prototype.indexOf.call(myelements, element) === -1) {
-          element.tabIndex = -2
-        }
-      })
-    } else {
-      // TheWrapper コンポーネントが空っぽの場合はドキュメントの tabIndex を全部抑止
-      Array.prototype.filter.call(
-        this.$root.$el.getElementsByTagName('*'),
-        element => element.tabIndex === 0
-      )
-        .forEach(element => { element.tabIndex = -2 })
-    }
-
-    // beforeUnloadの抑止をつける
-    if (this.preventClose) {
-      window.addEventListener('beforeunload', this.BeforeUnloadLister)
-    }
-  },
-  beforeDestroy () {
-    document.getElementsByTagName('html')[0].style.overflowY = 'auto'
-
-    // beforeUnloadの抑止を終了
-    if (this.preventClose) {
-      window.removeEventListener('beforeunload', this.BeforeUnloadLister)
-    }
-    // tabIndex の復帰
-    Array.prototype.filter.call(
-      document.getElementsByTagName('*'),
-      element => element.tabIndex === -2
-    )
-      .forEach(element => { element.tabIndex = 0 })
-  },
-  computed: {
-    Style () {
-      return 'background-color: rgba(0,0,0,' + this.alpha / 100 + ')'
-    }
-  },
-  methods: {
-    Click (event) {
-      this.$emit('click', event)
-    },
-    BeforeUnloadLister (event) {
-      event.preventDefault()
-      event.returnValue = ''
-      return false
-    }
-  }
-}
-</script>
 
 <style lang="sass">
 div.thewrapper

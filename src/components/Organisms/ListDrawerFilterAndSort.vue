@@ -27,13 +27,13 @@
 
     <div class="subtitle">表示する内容</div>
     <div class="menu-item-content" id="display-item-selection">
-      <div><LabeledCheckbox v-model="isFilterItemsEmpty">全て表示する</LabeledCheckbox></div>
+      <div><LabeledCheckbox :container.sync="isFilterItemsEmpty">全て表示する</LabeledCheckbox></div>
 
       <div>
         <div>カテゴリ</div>
         <div>
           <template v-for="(value, category) in Categories">
-            <LabeledCheckbox :key="category" v-model="FilterItems" :value="category"></LabeledCheckbox>
+            <LabeledCheckbox :container.sync="FilterItems" :value="category" :key="category"></LabeledCheckbox>
           </template>
         </div>
       </div>
@@ -42,7 +42,7 @@
         <div>年次</div>
         <div>
           <template v-for="(value, year) in Years">
-            <LabeledCheckbox v-model="FilterItems" :key="year" :value="year"></LabeledCheckbox>
+            <LabeledCheckbox :container.sync="FilterItems" :value="year" :key="year"></LabeledCheckbox>
           </template>
         </div>
       </div>
@@ -51,7 +51,7 @@
         <div>情報</div>
         <div>
           <template v-for="(value, condition) in Conditions">
-            <LabeledCheckbox :key="condition" v-model="FilterItems" :value="condition"></LabeledCheckbox>
+            <LabeledCheckbox :container.sync="FilterItems" :value="condition" :key="condition" ></LabeledCheckbox>
           </template>
         </div>
       </div>

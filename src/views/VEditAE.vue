@@ -29,7 +29,7 @@
               <input type="text" v-model="AE.BloodCount" :disabled="unknownBloodCounts" placeholder="出血量を入力してください"/> ml
             </div>
             <div>
-              <LabeledCheckbox :container="unknownBloodCounts" @change="UnknownBleedCountsChanged">出血量不明</LabeledCheckbox>
+              <LabeledCheckbox :container="unknownBloodCounts" @update:container="UnknownBleedCountsChanged">出血量不明</LabeledCheckbox>
             </div>
           </div>
           </template>
@@ -39,7 +39,7 @@
               <span>{{master.Components[component].Title}}</span>
             </div>
             <div class="w80 AEcheckboxes">
-              <EditAESelect v-model="AE[master.Components[component].Element]" :items="master.Components[component].Items" />
+              <EditAESelect :value.sync="AE[master.Components[component].Element]" :items="master.Components[component].Items" />
             </div>
           </template>
         </div>
@@ -69,7 +69,7 @@
               <el-divider class="AEgrading-divider" content-position="left">
                 {{course.Title}}
               </el-divider>
-              <EditAESelect v-model="AE.Course" :items="course.Items" />
+              <EditAESelect :value.sync="AE.Course" :items="course.Items" />
            </div>
           </template>
 

@@ -1,20 +1,20 @@
+<!-- eslint-disable vue/multi-word-component-names -->
+<script setup>
+import { defineProps } from 'vue'
+
+const props = defineProps({
+  report: {
+    type: String,
+    default: ''
+  }
+})
+</script>
+
 <template>
   <div class="ReportArea">
-    <pre>{{report}}</pre>
+    <pre>{{props.report}}</pre>
   </div>
 </template>
-
-<script>
-export default {
-  name: 'ReportViewer',
-  props: {
-    report: {
-      type: String,
-      default: ''
-    }
-  }
-}
-</script>
 
 <style lang="sass">
 div.ReportArea

@@ -1,56 +1,48 @@
 <template>
   <label class="LabeledCheckbox"
-    :disabled="disabled"
-    :tabindex="tabindex"
-    @keydown.enter.exact="Click"
-    @keydown.space.exact.prevent="Click">
+    :disabled="props.disabled"
+    :tabindex="props.tabindex"
+    @keydown.enter.exact="changeState"
+    @keydown.space.exact.prevent="changeState">
     <input type="checkbox" class="LabeledCheckbox"
-      ref="input"
-      v-model="CheckboxValue"
-      :disabled="disabled"
-      :value="value">
+      ref="inputElement"
+      v-model="checkboxValue"
+      :disabled="props.disabled"
+      :value="props.value">
     <span>
       <slot>{{typeof(value)==='boolean'?'':value}}</slot>
     </span>
   </label>
 </template>
 
-<script>
-export default {
-  Name: 'LabeledCheckbox',
-  model: {
-    prop: 'container',
-    event: 'change'
+<script setup>
+import { defineProps, defineEmits, computed, ref } from 'vue'
+
+const props = defineProps({
+  container: {},
+  value: {
+    default: true
   },
-  props: {
-    container: {},
-    value: {
-      default: true
-    },
-    disabled: {
-      type: Boolean,
-      default: false
-    },
-    tabindex: {
-      type: [Number, String],
-      default: 0
-    }
+  disabled: {
+    type: Boolean,
+    default: false
   },
-  computed: {
-    CheckboxValue: {
-      get () {
-        return this.container
-      },
-      set (value) {
-        this.$emit('change', value)
-      }
-    }
-  },
-  methods: {
-    Click (event) {
-      this.$refs.input.click()
-    }
+  tabindex: {
+    type: [Number, String],
+    default: 0
   }
+})
+const emit = defineEmits(['update:container'])
+
+const inputElement = ref()
+
+const checkboxValue = computed({
+  get: () => props.container,
+  set: (newValue) => emit('update:container', newValue)
+})
+
+function changeState () {
+  inputElement.value.click()
 }
 </script>
 
