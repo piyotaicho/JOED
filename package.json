@@ -37,7 +37,7 @@
     "url-parse": "1.5.10",
     "vue": "2.7.13",
     "vue-infinite-loading": "^2.4.5",
-    "vue-router": "3.5.3",
+    "vue-router": "3.6.5",
     "vuedraggable": "^2.24.0",
     "vuejs-datepicker": "^1.6.2",
     "vuex": "^3.5.1",
