@@ -1,0 +1,159 @@
+<script setup>
+import { computed, defineProps, defineEmits } from 'vue'
+import InputDateOfProcedure from '@/components/Molecules/InputDateOfProcedure'
+import InputTextField from '@/components/Molecules/InputTextField'
+import InputNumberField from '@/components/Molecules/InputNumberField'
+import InputProcedureTime from '@/components/Molecules/InputProcedureTime'
+import AdditionalPatientInfo from './Organisms/AdditionalPatientInfo.vue'
+
+// プロパティ
+const props = defineProps([
+  'DateOfProcedure', // string
+  'PatientId', // string
+  'Name', // string
+  'Age', // number
+  'ProcedureTime', // string
+  'Denial', // boolean
+  'JSOGId', // string
+  'NCDId' // string
+])
+
+const emit = defineEmits([
+  'update:DateOfProcedure',
+  'update:PatientId',
+  'update:Name',
+  'update:Age',
+  'update:ProcedureTime',
+  'update:Denial',
+  'update:JSOGId',
+  'update:NCDId'
+])
+
+// computed as v handler
+const valueDateOfProcedure = computed({
+  get () {
+    return props.DateOfProcedure || ''
+  },
+  set (newValue) {
+    emit('update:DateOfProcedure', newValue)
+  }
+})
+
+const valuePatientId = computed({
+  get () {
+    return props.PatientId || ''
+  },
+  set (newValue) {
+    emit('update:PatientId', newValue)
+  }
+})
+
+const valueName = computed({
+  get () {
+    return props.Name || ''
+  },
+  set (newValue) {
+    emit('update:Name', newValue)
+  }
+})
+
+const valueAge = computed({
+  get () {
+    return props.Age || undefined
+  },
+  set (newValue) {
+    emit('update:Age', newValue)
+  }
+})
+
+const valueProcedureTime = computed({
+  get () {
+    return props.ProcedureTime || ''
+  },
+  set (newValue) {
+    emit('update:ProcedureTime', newValue)
+  }
+})
+
+const valueDenial = computed({
+  get () {
+    return props.Denial || false
+  },
+  set (newValue) {
+    emit('update:Denial', newValue)
+  }
+})
+
+const valueJSOGId = computed({
+  get () {
+    return props.JSOGId
+  },
+  set (newValue) {
+    emit('update:JSOGId', newValue)
+  }
+})
+
+const valueNCDId = computed({
+  get () {
+    return props.NCDId
+  },
+  set (newValue) {
+    emit('update:NCDId', newValue)
+  }
+})
+</script>
+
+<template>
+  <div class="patient-info-section">
+    <div class="patient-info-section-left">
+      <InputDateOfProcedure :value.sync="valueDateOfProcedure" :required="true"/>
+      <div style="display: flex; flex-direction: row;">
+        <div style="flex-grow: 2;">
+          <InputTextField title="患者ID" :required="true" :value.sync="valuePatientId" placeholder="施設の患者ID"/>
+        </div>
+        <div style="width: 2rem;">
+          <AdditionalPatientInfo :Denial.sync="valueDenial" :JSOGId.sync="valueJSOGId" :NCDId.sync="valueNCDId"/>
+        </div>
+      </div>
+      <InputTextField title="患者名" :value.sync="valueName"/>
+      <InputNumberField title="年齢" :value.sync="valueAge" :min="1" :max="120"/>
+    </div>
+    <div class="patient-info-section-right">
+      <div><!-- space --></div>
+      <div><!-- space --></div>
+      <div><!-- space --></div>
+      <InputProcedureTime :value.sync="valueProcedureTime"/>
+    </div>
+  </div>
+</template>
+
+<style lang="sass">
+div.patient-info-section
+  display: flex
+  flex-direction: row
+  input[type="text"]
+    width: 100%
+  select
+    width: 100%
+    height: 2rem
+  .label
+    width: 8rem
+    text-align: right
+    padding-top: 0.2rem
+    margin-right: 1.4rem
+  .field
+    width: 15.5rem
+  .number
+    width: 3rem
+
+div.patient-info-section-left
+  width: 50%
+  display: flex
+  flex-direction: column
+
+div.patient-info-section-right
+  width: 50%
+  display: flex
+  flex-direction: column
+
+</style>

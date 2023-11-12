@@ -2,18 +2,16 @@
   <div>
     <div class="edit-dialog" ref="edit">
       <div class="edit-top">
-        <div class="edit-top-left">
-          <InputDateOfProcedure v-model="CaseData.DateOfProcedure" :required="true"/>
-          <InputTextField title="患者ID" :required="true" v-model="CaseData.PatientId" placeholder="施設の患者ID"/>
-          <InputTextField title="患者名" v-model="CaseData.Name"/>
-          <InputNumberField title="年齢" v-model="CaseData.Age" :min="1" :max="120"/>
-        </div>
-        <div class="edit-top-right">
-          <InputTextField title="腫瘍登録番号" v-model="CaseData.JSOGId" placeholder="腫瘍登録患者No." :disabled="skipJSOGId && CaseData.JSOGId === ''"/>
-          <InputTextField title="NCD症例識別コード" v-model="CaseData.NCDId" placeholder="NCD症例識別コード" :disabled="skipNCDId && CaseData.NCDId === ''"/>
-          <div><!-- spacer --></div>
-          <InputProcedureTime v-model="CaseData.ProcedureTime"/>
-        </div>
+        <SectionPatientInfo
+          :DateOfProcedure.sync="CaseData.DateOfProcedure"
+          :PatientId.sync="CaseData.PatientId"
+          :Name.sync="CaseData.Name"
+          :Age.sync="CaseData.Age"
+          :Denial.sync="CaseData.Denial"
+          :ProcedureTime.sync="CaseData.ProcedureTime"
+          :JSOGId.sync="CaseData.JSOGId"
+          :NCDId.sync="CaseData.NCDId"
+        />
       </div>
 
       <SectionDiagnoses
@@ -109,13 +107,10 @@
 </template>
 
 <script>
+import SectionPatientInfo from '../components/SectionPatientInfo.vue'
 import SectionDiagnoses from '@/components/SectionDiagnoses'
 import SectionProcedures from '@/components/SectionProcedures'
 import SectionAEs from '@/components/SectionAEs'
-import InputTextField from '@/components/Molecules/InputTextField'
-import InputNumberField from '@/components/Molecules/InputNumberField'
-import InputProcedureTime from '@/components/Molecules/InputProcedureTime'
-import InputDateOfProcedure from '@/components/Molecules/InputDateOfProcedure'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 
 import { ZenToHan } from '@/modules/ZenHanChars'
@@ -125,10 +120,7 @@ import { ValidateCase } from '@/modules/CaseValidater'
 export default {
   name: 'VEdit',
   components: {
-    InputTextField,
-    InputNumberField,
-    InputProcedureTime,
-    InputDateOfProcedure,
+    SectionPatientInfo,
     SectionDiagnoses,
     SectionProcedures,
     SectionAEs,
@@ -156,7 +148,8 @@ export default {
         Diagnoses: [],
         Procedures: [],
         AEs: [],
-        Notification: ''
+        Notification: '',
+        Denial: false
       },
       prevUid: 0,
       nextUid: 0,
@@ -227,12 +220,6 @@ export default {
     },
     isEditingExistingItem () {
       return (this.uid > 0)
-    },
-    skipJSOGId () {
-      return !this.$store.getters['system/EditJSOGId']
-    },
-    skipNCDId () {
-      return !this.$store.getters['system/EditNCDId']
     }
   },
   methods: {
@@ -538,34 +525,7 @@ div.edit-dialog
 
 div.edit-top
   padding-right: 3rem
-  display: flex
-  flex-direction: row
-  input[type="text"]
-    width: 100%
-  select
-    width: 100%
-    height: 2rem
-  & > div
-    display: flex
-    flex-direction: column
-    & > div
-      display: flex
-      flex-direction: row
-      height: 2.4rem
-    .label
-      width: 40%
-      text-align: right
-      padding-top: 0.2rem
-    .field
-      margin-left: 2rem
-      width: 60%
-      .number
-        width: 3rem
-
-div.edit-top-left
-  width: 40%
-div.edit-top-right
-  width: 60%
+  padding-left: 1rem
 
 div.edititem
   position: relative
