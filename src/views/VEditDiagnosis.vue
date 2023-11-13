@@ -12,7 +12,7 @@
       />
 
       <FreewordSection
-        v-model="freewordText"
+        :value.sync="freewordText"
         :disabled="!UserEditingAllowed"
         @click-search="SetCandidateItemsByFreeword"/>
     </EditSection>
@@ -24,7 +24,7 @@ import Master from '@/modules/Masters/DiagnosisMaster'
 import * as Popups from '@/modules/Popups'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import EditSection from '@/components/Molecules/EditSection'
-import ThreePaneSelections from '@/components/Molecules/3PaneSelections'
+import ThreePaneSelections from '@/components/Molecules/ThreePaneSelections'
 import FreewordSection from '@/components/Molecules/EditSectionFreeword'
 
 const DiagnosesTree = new Master()

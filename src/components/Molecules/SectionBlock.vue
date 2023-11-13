@@ -24,20 +24,14 @@ const items = computed({
   set: (value) => emit('update:container', value)
 })
 
-function addNewItem () {
-  emit('addnewitem')
-}
+const addNewItem = () => emit('addnewitem')
 
-function editItem (index, item) {
-  emit('edititem', {
-    ItemIndex: index,
-    ItemValue: item
-  })
-}
+const editItem = (index, item) => emit('edititem', {
+  ItemIndex: index,
+  ItemValue: item
+})
 
-function removeItem (index) {
-  emit('removeitem', index)
-}
+const removeItem = (index) => emit('removeitem', index)
 </script>
 
 <style lang="sass">

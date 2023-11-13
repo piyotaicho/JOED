@@ -1,15 +1,64 @@
+<script setup>
+import { defineProps, defineEmits, defineExpose, ref, computed } from 'vue'
+
+const props = defineProps({
+  value: {
+    type: String,
+    default: null
+  },
+  title: {
+    type: String,
+    default: '項目'
+  },
+  items: {
+    type: Array,
+    default: () => [],
+    required: true
+  },
+  lines: {
+    type: [String, Number],
+    default: 8
+  },
+  disabled: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const emit = defineEmits(['change-selection', 'change', 'dblclick', 'keypress-enter'])
+
+const selectElement = ref()
+
+const paneValue = computed({
+  get: () => props.value,
+  set: (value) => emit('change-selection', value)
+})
+
+const change = (value) => emit('change', value)
+
+const dblClick = (value) => emit('dblclick', value)
+
+const enter = (value) => emit('keypress-enter', value)
+
+const clearSelection = () => { selectElement.value.selectedIndex = -1 }
+
+defineExpose({
+  clearSelection
+})
+</script>
+
 <template>
   <div>
-    <div class="subtitle">{{title}}</div>
+    <div class="subtitle">{{props.title}}</div>
     <select tabindex="0"
-      ref="SelectPane" :size="lines"
-      v-model="PaneValue"
-      @change="Change()"
-      @keypress.enter="Enter()"
-      @dblclick="DblClick()"
+      ref="selectElement" :size="props.lines"
+      v-model="paneValue"
+      @change="change"
+      @keypress.enter="enter"
+      @dblclick="dblClick"
       :disabled="disabled">
-      <option v-if="items.length===0" disabled :value="null"/>
-      <option v-for="(item,key,index) in items"
+      <option v-if="props.items.length===0" disabled :value="null"></option>
+      <option v-for="(item,key,index) in props.items"
         :key="index"
         :value="item">
         {{item}}
@@ -17,60 +66,3 @@
     </select>
   </div>
 </template>
-
-<script>
-export default {
-  name: 'SelectPane',
-  model: {
-    prop: 'value',
-    event: 'change-selection'
-  },
-  props: {
-    value: {
-      type: String,
-      default: null
-    },
-    title: {
-      type: String,
-      default: '項目'
-    },
-    items: {
-      type: Array,
-      default: () => [],
-      required: true
-    },
-    lines: {
-      type: [String, Number],
-      default: 8
-    },
-    disabled: {
-      type: Boolean,
-      default: false
-    }
-  },
-  computed: {
-    PaneValue: {
-      get () {
-        return this.value
-      },
-      set (value) {
-        this.$emit('change-selection', value)
-      }
-    }
-  },
-  methods: {
-    Change (value) {
-      this.$emit('change', value)
-    },
-    DblClick (value) {
-      this.$emit('dblclick', value)
-    },
-    Enter (value) {
-      this.$emit('keypress-enter', value)
-    },
-    Clear () {
-      this.$refs.SelectPane.selectedIndex = -1
-    }
-  }
-}
-</script>

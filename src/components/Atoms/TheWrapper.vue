@@ -71,7 +71,7 @@ onBeforeUnmount(() => {
 
 const wrapperStyle = computed(() => { return { 'background-color': 'rgba(0,0,0,' + props.alpha / 100 + ')' } })
 
-function beforUnloadListener (event) {
+const beforUnloadListener = (event) => {
   event.preventDefault()
   event.returnValue = ''
   return false

@@ -11,9 +11,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['click'])
 
-function click (event) {
-  emit('click', event)
-}
+const click = (event) => emit('click', event)
+
 </script>
 
 <template>

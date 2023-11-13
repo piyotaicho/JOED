@@ -41,7 +41,7 @@ const checkboxValue = computed({
   set: (newValue) => emit('update:container', newValue)
 })
 
-function changeState () {
+const changeState = () => {
   inputElement.value.click()
 }
 </script>

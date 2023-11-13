@@ -16,7 +16,7 @@ const procedureTime = computed({
   set: (newvalue) => emit('update:value', newvalue)
 })
 
-function typeInChar (char) {
+const typeInChar = (char) => {
   if (char === 'DEL') {
     typedString.value = typedString.value.slice(0, -1)
   } else {
@@ -34,7 +34,7 @@ function typeInChar (char) {
   }
 }
 
-function clearTypedValue () {
+const clearTypedValue = () => {
   typedString.value = ''
 }
 </script>

@@ -25,6 +25,7 @@ const boxColorStyle = computed(() => {
 })
 
 const notificationClass = computed(() => props.notification ? ['has-notification'] : [''])
+
 const malignancyClass = computed(() => {
   switch (props.category) {
     case '腹腔鏡悪性':

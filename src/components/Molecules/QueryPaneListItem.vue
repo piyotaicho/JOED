@@ -39,20 +39,16 @@ const labels = computed(() => {
   }
 })
 
-function erase () {
-  emit('erase')
-}
+const erase = () => emit('erase')
 
-function dragged (event) {
-  emit('dragged', event)
-}
+const dragged = (event) => emit('dragged', event)
 
-function dropped (event) {
+const dropped = (event) => {
   changeStyle(false)
   emit('dropped', event)
 }
 
-function changeStyle (status) {
+const changeStyle = (status) => {
   if (status) {
     // true - dragoverの状態
     draggableItem.value.classList.add('ondrag')
