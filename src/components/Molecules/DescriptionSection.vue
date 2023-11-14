@@ -3,7 +3,7 @@ import { defineProps, defineEmits, computed } from 'vue'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 
 const props = defineProps({
-  Container: {
+  container: {
     type: Object,
     // {
     //   Title: string,
@@ -15,29 +15,29 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:Container'])
+const emit = defineEmits(['update:container'])
 
-const selectionItems = computed(() => props.Container?.Options || [])
+const selectionItems = computed(() => props.container?.Options || [])
 
 const isMultipleSelection = computed(() =>
-  this.Container?.SelectionMode === 'any' ||
-  this.Container?.SelectionMode === 'anyornone'
+  props.container?.SelectionMode === 'any' ||
+  props.container?.SelectionMode === 'anyornone'
 )
 
 const selectedArrayValue = computed({
-  get: () => props.Container?.Value ? this.Container.Value : [],
+  get: () => props.container?.Value ? props.container.Value : [],
   set: (value) => emitValue(value)
 })
 
 const selectedSingleValue = computed({
   get: () => {
-    if (!props.Container?.Value || props.Container.Value.length === 0) {
+    if (!props.container?.Value || props.container.Value.length === 0) {
       return undefined
     } else {
-      if (props.Container.Value.length > 1) {
-        emitValue(props.Container.Value[0])
+      if (props.container.Value.length > 1) {
+        emitValue(props.container.Value[0])
       }
-      return props.Container.Value[0]
+      return props.container.Value[0]
     }
   },
   set: (value) => emitValue(value)
@@ -49,14 +49,14 @@ const emitValue = (value) => {
   const newvalue = []
   if (value === undefined || typeof value === 'string') {
     // SELECTから
-    if (value && props.Container.Options.indexOf(value) !== -1) {
+    if (value && props.container.Options.indexOf(value) !== -1) {
       newvalue.push(value)
     }
   }
   if (Array.isArray(value)) {
     // CHECKBOXから
     // Optionsからvalueに該当するものをピックアップ > Optionsの順番を維持して保持
-    const filtedvalue = props.Container.Options.filter(
+    const filtedvalue = props.container.Options.filter(
       (option) => value.indexOf(option) !== -1
     )
     if (filtedvalue.length > 0 || newvalue.SelectionMode === 'anyornone') {
@@ -64,8 +64,8 @@ const emitValue = (value) => {
     }
   }
 
-  const newContainer = Object.assign(props.Container, { Value: newvalue })
-  emit('update:Container', newContainer)
+  const newcontainer = Object.assign(props.container, { Value: newvalue })
+  emit('update:container', newcontainer)
 }
 </script>
 
@@ -74,7 +74,7 @@ const emitValue = (value) => {
     <div class="w30"></div>
     <div class="w20 selectionbox">
       <div>
-        <span>{{ props.Container.Title }}</span>
+        <span>{{ props.container.Title }}</span>
       </div>
     </div>
     <div class="w40 selectionbox">

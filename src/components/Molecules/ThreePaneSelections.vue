@@ -113,9 +113,9 @@ const clearPane3 = () => pane3.value.clearSelection()
         ref="pane1"
         :size="props.Lines"
         :title="props.Pane1Title"
-        v-model="pane1Selection"
+        :value.sync="pane1Selection"
         :items="props.Pane1Items"
-        @change="pane1Changed()"
+        @change="pane1Changed"
         :disabled="props.disabled"
         >
       </SelectPane>
@@ -125,9 +125,9 @@ const clearPane3 = () => pane3.value.clearSelection()
         ref="pane2"
         :size="props.Lines"
         :title="props.Pane2Title"
-        v-model="pane2Selection"
+        :value.sync="pane2Selection"
         :items="props.Pane2Items"
-        @change="pane2Changed()"
+        @change="pane2Changed"
         :disabled="disabled"
        >
       </SelectPane>
@@ -137,11 +137,11 @@ const clearPane3 = () => pane3.value.clearSelection()
         ref="pane3"
         :size="props.Lines"
         :title="props.Pane3Title"
-        v-model="pane3Selection"
+        :value.sync="pane3Selection"
         :items="props.Pane3Items"
-        @change="pane3Changed()"
-        @keypress-enter="pane3DblClick()"
-        @dblclick="pane3DblClick()"
+        @change="pane3Changed"
+        @keypress-enter="pane3DblClick"
+        @dblclick="pane3DblClick"
         :disabled="disabled"
         >
       </SelectPane>

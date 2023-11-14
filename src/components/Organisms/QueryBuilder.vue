@@ -1,199 +1,175 @@
 <template>
   <div class="QueryBuilder">
     <QueryPane title="登録項目"
-      :container="this.listRecord"
+      :container="fieldPaneContent"
       :erasable="true"
       @erase="removeAssignment"
       @dropped="itemDropped"
       />
+
     <QueryPane
       :draggable="true"
-      :container="this.listContainer"
-      @dragged="CSVitemDragged"
-      v-show="source === 'CSV'">
+      :container="paneMode === 'csv' ? csvPaneContent : generatorFunctionsKeys"
+      @dragged="itemDragged">
       <template #title>
         <div class="sourceTitle">
           <span>CSVファイルのフィールド</span>
-          <el-switch v-model="source"
-            inactive-value="CSV"
+          <el-switch v-model="paneMode"
+            inactive-value="csv"
             active-value="functions"></el-switch>
           <span>生成値</span>
-          <div class="record_control">
+
+          <div class="record_control" v-show="paneMode === 'csv'">
             <span></span>
-            <span @click="CSVcursor('prev')">◀</span>
-            <span @click="CSVcursor('home')">インデックス</span>
-            <span @click="CSVcursor('next')">▶</span>
+            <span @click="moveCursor('prev')">◀</span>
+            <span @click="moveCursor('home')">インデックス</span>
+            <span @click="moveCursor('next')">▶</span>
           </div>
-        </div>
-      </template>
-    </QueryPane>
-    <QueryPane
-      :draggable="true"
-      :container="listFunctions"
-      @dragged="functionalitemDragged"
-      v-show="source === 'functions'">
-      <template #title>
-        <div class="sourceTitle">
-          <span>CSVファイルのフィールド</span>
-          <el-switch v-model="source"
-            inactive-value="CSV"
-            active-value="functions"></el-switch>
-          <span>生成値</span>
         </div>
       </template>
     </QueryPane>
   </div>
 </template>
 
-<script>
+<script setup>
+import { defineProps, defineEmits, ref, computed } from 'vue'
 import QueryPane from '@/components/Molecules/QueryPane'
 import { prompt } from '@/modules/Popups'
+import { fieldNames, generatorFunctions } from '@/modules/ImportCSV.js'
 
-function encodeRowName (value) {
+const props = defineProps({
+  csv: {
+    type: Array,
+    require: true
+  },
+  csvHeader: {
+    type: Boolean,
+    default: false
+  },
+  ruleset: {
+    type: String
+  }
+})
+
+const emit = defineEmits(['set', 'delete'])
+
+/**
+ * Excel型(A...Z,AA...AZ,BA...)のカラムラベル生成
+ * @param {Number} value
+ */
+function encodeToColumnLabel (value) {
   const rowlabel = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
   if (value >= rowlabel.length) {
-    const prefix = encodeRowName(((value / rowlabel.length) | 0) - 1)
+    const prefix = encodeToColumnLabel(((value / rowlabel.length) | 0) - 1)
     return prefix + rowlabel[value % rowlabel.length]
   } else {
     return rowlabel[value]
   }
 }
 
-export default {
-  name: 'QueryBuilder',
-  components: {
-    QueryPane
-  },
-  props: {
-    records: {
-      type: Array,
-      require: true
-    },
-    functions: {
-      type: Object
-    },
-    CSV: {
-      type: Array,
-      require: true
-    },
-    CSVhasTitleRow: {
-      type: Boolean,
-      default: false
-    },
-    ruleset: {
-      type: Object
+const generatorFunctionsKeys = Object.keys(generatorFunctions)
+
+const paneMode = ref('csv')
+const previewIndex = ref(-1)
+
+const ruleset = computed(() => JSON.parse(props.ruleset))
+
+const csvPaneContent = computed(() => {
+  if (previewIndex.value === -1) {
+    return csvColumnLabel.value
+  } else {
+    return props?.csv ? props.csv[previewIndex.value] : []
+  }
+})
+
+const csvColumnLabel = computed(() => {
+  if (props.csvHeader) {
+    return props.csv[0]
+  } else {
+    return props.csv[0].map((element, index) => '列' + encodeToColumnLabel(index))
+  }
+})
+
+const fieldPaneContent = computed(() => fieldNames.map(
+  fieldName => {
+    const assignedvalue = ruleset.value[fieldName]
+    if (!assignedvalue) {
+      return { [fieldName]: '' }
+    } else {
+      let labelText = ''
+      switch (true) {
+        case assignedvalue?.column !== undefined:
+          labelText = csvColumnLabel.value[assignedvalue.column]
+          break
+        case assignedvalue?.constants !== undefined:
+          labelText = '"' + (assignedvalue.title ? assignedvalue.title : assignedvalue.constants) + '"'
+          break
+        case assignedvalue?.compute !== undefined:
+          labelText = assignedvalue.title
+          break
+      }
+      return { [fieldName]: '\u25C0 ' + labelText }
     }
-  },
-  data () {
-    return {
-      // recordAssignment: {},
-      source: 'CSV',
-      previewIndex: -1
-    }
-  },
-  computed: {
-    recordAssignment () {
-      return this.ruleset
-    },
-    listFunctions () {
-      return Object.keys(this.functions)
-    },
-    listContainer () {
-      if (this.previewIndex === -1) {
-        return this.listContainerTitle
-      } else {
-        return this.CSV[this.previewIndex]
-      }
-    },
-    listContainerTitle () {
-      if (this.CSVhasTitleRow) {
-        return this.CSV[0]
-      } else {
-        return this.CSV[0].map((element, index) => '列' + encodeRowName(index))
-      }
-    },
-    listRecord () {
-      return this.records
-        .map(item => {
-          const assignedvalue = this.recordAssignment[item]
-          if (!assignedvalue) {
-            return { [item]: '' }
-          } else {
-            let labelvalue = ''
-            if (assignedvalue.column !== undefined) {
-              labelvalue = this.listContainerTitle[assignedvalue.column]
-            }
-            if (assignedvalue.constants !== undefined) {
-              labelvalue = '"' + (assignedvalue.title ? assignedvalue.title : assignedvalue.constants) + '"'
-            }
-            if (assignedvalue.compute !== undefined) {
-              labelvalue = assignedvalue.title
-            }
-            return { [item]: '\u25C0 ' + labelvalue }
-          }
-        })
-    }
-  },
-  methods: {
-    CSVcursor (vector) {
-      if (vector === 'home') {
-        this.previewIndex = -1
-      } else {
-        const nextindex = this.previewIndex + (vector === 'prev' ? -1 : 1)
-        this.previewIndex = nextindex < 0 ? 0 : (nextindex >= this.CSV.length ? this.CSV.length - 1 : nextindex)
-      }
-      this.$nextTick(() => {})
-    },
-    removeAssignment (index) {
-      if (this.recordAssignment[this.records[index]]) {
-        // this.$delete(this.recordAssignment, this.records[index])
-        this.$emit('delete', this.records[index])
-      }
-    },
-    async itemDropped (index, dragevent) {
-      try {
-        const data = JSON.parse(dragevent.dataTransfer.getData('text/plain'))
-        // ドロップされるオブジェクトは column:, constants:, compute: のいずれか
-        if (
-          data.column !== undefined ||
-          data.constants !== undefined ||
-          data.compute !== undefined
-        ) {
-          // ユーザ入力の定数の場合は prompt で入力を促す
-          if (data.constants === '$') {
-            let inputvalue = null
-            if (data.rule !== undefined) {
-              inputvalue = await prompt(data.title, data.rule)
-            } else {
-              inputvalue = await prompt(data.title)
-            }
-            if (inputvalue !== null) {
-              // this.$set(this.recordAssignment, this.records[index], { constants: inputvalue })
-              this.$emit('set', this.records[index], { constants: inputvalue })
-            }
-          } else {
-            // this.$set(this.recordAssignment, this.records[index], data)
-            this.$emit('set', this.records[index], data)
-          }
-        }
-      } catch {
-        // 全く想定外のドロップを受けたときには無視
-      }
-    },
-    functionalitemDragged (index, dragevent) {
-      dragevent.dataTransfer.setData(
-        'text/plain',
-        JSON.stringify(this.functions[Object.keys(this.functions)[index]])
-      )
-    },
-    CSVitemDragged (index, dragevent) {
-      dragevent.dataTransfer.setData(
-        'text/plain',
-        JSON.stringify({ column: index })
-      )
-    }
+  })
+)
+
+const moveCursor = (vector) => {
+  if (vector === 'home') {
+    previewIndex.value = -1
+  } else {
+    const lastIndex = props?.csv ? props.csv.length : 0
+    const nextIndex = previewIndex.value + (vector === 'prev' ? -1 : 1)
+    previewIndex.value = nextIndex < 0 ? 0 : (nextIndex >= lastIndex ? lastIndex - 1 : nextIndex)
   }
 }
+
+const removeAssignment = (index) => {
+  if (ruleset.value[fieldNames[index]]) {
+    emit('delete', fieldNames[index])
+  }
+}
+
+const itemDropped = async (index, dragevent) => {
+  try {
+    const data = JSON.parse(dragevent.dataTransfer.getData('text/plain'))
+    // ドロップされるオブジェクトは column:, constants:, compute: のいずれか
+    if (
+      data.column !== undefined ||
+      data.constants !== undefined ||
+      data.compute !== undefined
+    ) {
+      // ユーザ入力の定数の場合は prompt で入力を促す
+      if (data.constants === '$') {
+        let inputvalue = null
+        if (data.rule !== undefined) {
+          inputvalue = await prompt(data.title, data.rule)
+        } else {
+          inputvalue = await prompt(data.title)
+        }
+
+        if (inputvalue !== null) {
+          emit('set', fieldNames[index], { constants: inputvalue })
+        }
+      } else {
+        emit('set', fieldNames[index], data)
+      }
+    }
+  } catch {
+    // 全く想定外のドロップを受けたときには無視
+  }
+}
+
+const itemDragged = (index, dragevent) => dragDataTransfer(
+  paneMode.value === 'csv'
+    ? { column: index }
+    : generatorFunctions[generatorFunctionsKeys[index]],
+  dragevent
+)
+
+const dragDataTransfer = (data, dragevent) => dragevent.dataTransfer.setData(
+  'text/plain',
+  JSON.stringify(data)
+)
 </script>
 
 <style lang="sass">

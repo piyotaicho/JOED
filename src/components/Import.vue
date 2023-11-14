@@ -7,7 +7,7 @@ import ImportCSV from '@/components/Molecules/ImportCSV'
 import ImportMergeV4 from '@/components/Molecules/ImportMergeV4'
 import StepIndicator from '@/components/Molecules/StepIndicator'
 import TheWrapper from '@/components/Atoms/TheWrapper'
-import { computed, nextTick, ref, reactive, watch } from 'vue'
+import { nextTick, ref, reactive, watch } from 'vue'
 import { useStore } from '@/store'
 
 const store = useStore()
@@ -44,16 +44,6 @@ const updateStreamData = (content) => {
   resetState()
   data.FileStream = content
 }
-
-const csvRuleset = computed({
-  get: () => store.getters['system/SavedCSVrule'],
-  set: (value) => {
-    store.commit('system/SetPreferences', { csvRuleset: value })
-    store.dispatch('system/SavePreferences')
-  }
-})
-
-const storeCSVruleset = (value) => { csvRuleset.value = value }
 
 const updateCreatedDocument = (newdocuments) => data.CreatedDocument.splice(0, data.CreatedDocument.length, ...newdocuments)
 
@@ -131,10 +121,12 @@ const commit = async () => {
     </div>
 
     <!-- Importerセクション -->
-    <import-CSV v-if="importMode === 'csv'" :stream="data.FileStream" :disabled="!data.FileStream" :preserved-rule="csvRuleset"
-      @done="updateCreatedDocument" @store="storeCSVruleset" />
-    <import-merge-v4 v-if="importMode === 'merge'" :stream="data.FileStream" :disabled="!data.FileStream" @done="updateCreatedDocument" />
-    <import-JSON v-if="importMode === 'json'" :stream="data.FileStream" :disabled="!data.FileStream" @done="updateCreatedDocument" />
+    <import-CSV v-if="importMode === 'csv'"
+      :stream="data.FileStream" :disabled="!data.FileStream" @done="updateCreatedDocument" />
+    <import-merge-v4 v-if="importMode === 'merge'"
+      :stream="data.FileStream" :disabled="!data.FileStream" @done="updateCreatedDocument" />
+    <import-JSON v-if="importMode === 'json'"
+      :stream="data.FileStream" :disabled="!data.FileStream" @done="updateCreatedDocument" />
 
     <div>
       <el-button type="primary" :disabled="data.CreatedDocument.length === 0 || data.Committing > 0"

@@ -25,13 +25,13 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['change-selection', 'change', 'dblclick', 'keypress-enter'])
+const emit = defineEmits(['update:value', 'change', 'dblclick', 'keypress-enter'])
 
 const selectElement = ref()
 
 const paneValue = computed({
   get: () => props.value,
-  set: (value) => emit('change-selection', value)
+  set: (value) => emit('update:value', value)
 })
 
 const change = (value) => emit('change', value)

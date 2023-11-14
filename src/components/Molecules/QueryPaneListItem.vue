@@ -31,7 +31,8 @@ const labels = computed(() => {
       if (Array.isArray(props.item)) {
         return [...props.item]
       } else {
-        return [Object.keys(props.item)[0], props.item[Object.keys(props.item)[0]]]
+        const label = Object.keys(props.item)[0]
+        return [label, props.item[label]]
       }
 
     default:

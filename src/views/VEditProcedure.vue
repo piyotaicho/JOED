@@ -17,7 +17,7 @@
 
       <!-- 追加情報セクション -->
       <DescriptionSection
-        :Container.sync="description"
+        :container.sync="description"
         v-if="description.Title !== ''"
       />
 
@@ -37,7 +37,7 @@
           </div>
           <div class="w10"></div>
         </div>
-        <DescriptionSection :Container.sync="additionalProcedure.description" />
+        <DescriptionSection :container.sync="additionalProcedure.description" />
       </template>
 
       <FreewordSection
@@ -55,7 +55,7 @@ import * as Popups from '@/modules/Popups'
 
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import EditSection from '@/components/Molecules/EditSection'
-import ThreePaneSelections from '@/components/Molecules/ThreeSelections'
+import ThreePaneSelections from '@/components/Molecules/ThreePaneSelections'
 import DescriptionSection from '@/components/Molecules/DescriptionSection'
 import FreewordSection from '@/components/Molecules/EditSectionFreeword'
 

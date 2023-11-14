@@ -1,13 +1,14 @@
 <script setup>
-import { defineProps, defineEmits, reactive, computed, watch, nextTick } from 'vue'
+import { defineProps, defineEmits, shallowRef, reactive, computed, watch, nextTick, triggerRef } from 'vue'
+import { useStore } from '@/store'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import QueryBuilder from '@/components/Organisms/QueryBuilder'
 import ReportViewer from '@/components/Atoms/Reports'
 import { parseCSV } from '@/modules/CSV'
 import { CreateDocument, Migrate } from '@/modules/ImportCSV.js'
-import { DateFormatPattern } from '@/modules/CaseValidater'
 import * as Popups from '@/modules/Popups'
 
+const store = useStore()
 const props = defineProps({
   disabled: {
     type: Boolean,
@@ -16,68 +17,33 @@ const props = defineProps({
   stream: {
     type: String,
     required: true
-  },
-  preservedRule: {
-    type: String,
-    default: '{}'
   }
 })
 
-const emit = defineEmits([])
+const emit = defineEmits(['store', 'done'])
 
 const data = reactive({
   Processing: -1,
   LogMessages: [],
-  CSVhasTitle: true,
-  ReplaceStrings: false,
-  RuleSet: {},
-  records: []
+  CsvHeader: true,
+  PerformMigration: false,
+  CsvArray: []
 })
 
-watch(props.stream, async () => await resetState())
+// RuleSetの更新は必ずメソッドを経由するのでshallowRefでdeep対応する
+const RuleSet = shallowRef({})
 
-const recordTitle = [
-  '手術日 (必須)', 'ID (必須)',
-  '患者名', '年齢', '腫瘍登録番号', 'NCD症例識別コード',
-  '手術時間',
-  '合併症の有無',
+const rulesetJson = computed(() => JSON.stringify(RuleSet.value))
 
-  '手術診断1', '手術診断1カテゴリ', '手術診断1良性/悪性',
-  '実施手術1', '実施手術1カテゴリ', '実施手術1良性/悪性',
+const stream = computed(() => props.stream)
+watch(stream, async () => await resetState())
 
-  '手術診断2', '手術診断2カテゴリ', '手術診断2良性/悪性',
-  '実施手術2', '実施手術2カテゴリ', '実施手術2良性/悪性',
-
-  '手術診断3', '手術診断3カテゴリ', '手術診断3良性/悪性',
-  '実施手術3', '実施手術3カテゴリ', '実施手術3良性/悪性',
-
-  '手術診断4', '手術診断4カテゴリ', '手術診断4良性/悪性',
-  '実施手術4', '実施手術4カテゴリ', '実施手術4良性/悪性'
-]
-
-const functions = {
-  '自動生成 - ID': { compute: 'ID', title: '自動生成' },
-  '定数 - 日付(ユーザ入力)': { constants: '$', title: 'yyyy-mm-dd の形式で日付文字列を入力して下さい.', rule: DateFormatPattern },
-  '定数 - 文字列(ユーザ入力)': { constants: '$', title: '任意の文字列を入力可能です.' },
-  '定数 - 数値(ユーザ入力)': { constants: '$', title: '任意の数値を入力可能です.', rule: '^[1-9][0-9]*$' }, // HARDCODED
-  '定数 - あり': { constants: false, title: 'あり' },
-  '定数 - なし': { constants: false, title: 'なし' },
-  '定数 - 腹腔鏡': { constants: '腹腔鏡' },
-  '定数 - ロボット': { constants: 'ロボット' },
-  '定数 - 腹腔鏡悪性': { constants: '腹腔鏡悪性' },
-  '定数 - ロボット悪性': { constants: 'ロボット悪性' },
-  '定数 - 子宮鏡': { constants: '子宮鏡' },
-  '定数 - 卵管鏡': { constants: '卵管鏡' },
-  '定数 - 良性': { constants: '良性' },
-  '定数 - 悪性': { constants: '悪性' }
-}
-
-const CSV = computed(() => props.records.length > 0 ? data.records : [[]])
+const csvArray = computed(() => data.CsvArray.length > 0 ? data.CsvArray : [[]])
 
 const disableProcess = computed(() => {
   if (
     !props.disabled &&
-    data.records.length > 0
+    data.CsvArray.length > 0
   ) {
     return false
   } else {
@@ -88,20 +54,29 @@ const disableProcess = computed(() => {
 const resetState = async () => {
   data.Processing = -1
   data.LogMessages.splice(0)
-  data.records.splice(0)
+  data.CsvArray.splice(0)
 
   try {
-    data.records.splice(0, 0, ...parseCSV(props.stream))
+    data.CsvArray.splice(0, 0, ...parseCSV(props.stream))
   } catch (error) {
     Popups.alert(error.message)
   }
 
-  if (data.preservedRule !== '{}' && await Popups.confirmYesNo('保存されたルールを利用しますか?')) {
-    updateRuleset(JSON.parse(props.preservedRule))
+  // ファイルを再ロード 編集中のルールを破棄するか確認
+  if (
+    Object.keys(RuleSet.value).length > 0 &&
+    await Popups.confirmYesNo('現在のルールを利用しますか?') === false) {
+    updateRuleset({})
   } else {
-    if (Object.keys(data.RuleSet).length > 0 && await Popups.confirmYesNo('現在のルールを利用しますか?') === false) {
-      updateRuleset({})
-    }
+    return
+  }
+
+  // 保存済みルールの利用を確認
+  const preservedRuleSet = store.getters['system/SavedCSVrule']
+  if (
+    (preservedRuleSet !== '' || preservedRuleSet !== '{}') &&
+    await Popups.confirmYesNo('保存されたルールを利用しますか?')) {
+    updateRuleset(JSON.parse(preservedRuleSet))
   }
 }
 
@@ -110,17 +85,17 @@ const convertStream = async () => {
   const ImportedDocuments = []
   try {
     data.ProcessStep = 0
-    data.LogMessages.push('ファイルにはタイトル行を含めて' + data.records.length + '行の情報があります.')
+    data.LogMessages.push('ファイルにはタイトル行を含めて' + data.CsvArray.length + '行の情報があります.')
 
     data.ProcessStep++
     await nextTick()
 
     // ルールセットの確認
-    if (data.RuleSet['手術日 (必須)'] && data.RuleSet['ID (必須)']) {
+    if (RuleSet.value['手術日 (必須)'] && RuleSet.value['ID (必須)']) {
       for (const title of ['手術診断', '実施手術']) {
         for (const index of ['1', '2', '3', '4']) {
-          if (data.RuleSet[title + index]) {
-            if (!data.RuleSet[title + index + 'カテゴリ']) {
+          if (RuleSet.value[title + index]) {
+            if (!RuleSet.value[title + index + 'カテゴリ']) {
               throw new Error(title + index + 'に対応するカテゴリの割り当てがありません.')
             }
           }
@@ -132,14 +107,14 @@ const convertStream = async () => {
 
     // レコード毎にドキュメントを作成
     for (
-      let index = data.CSVhasTitle ? 1 : 0;
-      index < data.records.length;
+      let index = data.CsvHeader ? 1 : 0;
+      index < data.CsvArray.length;
       index++
     ) {
-      const record = data.records[index]
+      const record = data.CsvArray[index]
       try {
-        const newdocument = CreateDocument(record, data.RuleSet)
-        if (data.ReplaceStrings) {
+        const newdocument = CreateDocument(record, RuleSet.value)
+        if (data.PerformMigration) {
           // 2019以前の登録で使用されていたルールのうち単純置換のものを置換する
           // ただしDateOfProcedure > 2019に限る
           Migrate(newdocument)
@@ -164,26 +139,29 @@ const convertStream = async () => {
 }
 
 const updateRuleset = async (rule) => {
-  for (const key of Object.keys(data.RuleSet)) {
-    deleteRuleSetProperty(key)
+  for (const key of Object.keys(RuleSet.value)) {
+    delete RuleSet.value[key]
   }
   for (const key of Object.keys(rule)) {
-    setRuleSetPropertyValue(key, rule[key])
+    RuleSet.value[key] = rule[key]
   }
-  await nextTick()
+  triggerRef(RuleSet)
 }
 
-const setRuleSetPropertyValue = async (key, value) => {
-  data.RuleSet[key] = value
-  await nextTick()
+const setRuleSetProperty = async (key, value) => {
+  RuleSet.value[key] = value
+  triggerRef(RuleSet)
 }
 
 const deleteRuleSetProperty = async (key) => {
-  delete data.RuleSet[key]
-  await nextTick()
+  delete RuleSet.value[key]
+  triggerRef(RuleSet)
 }
 
-const storeRuleset = () => emit('store', JSON.stringify(data.RuleSet))
+const storeRuleset = () => {
+  store.commit('system/SetPreferences', { csvRuleset: rulesetJson.value })
+  store.dispatch('system/SavePreferences')
+}
 </script>
 
 <template>
@@ -194,21 +172,19 @@ const storeRuleset = () => emit('store', JSON.stringify(data.RuleSet))
       手術実施日と患者IDは重複入力確認のため必須入力です.<br/>
       完全な入力は原理的に不可能ですので,全ての入力に編集と確認の操作が必要になります.<br/>
     </div>
-    <div style="padding-bottom: 1rem;" v-show="data.records.length > 0">
+    <div style="padding-bottom: 1rem;" v-show="data.CsvArray.length > 0">
       <div>
-        <LabeledCheckbox :container.sync="data.CSVhasTitle" :value="true">CSVファイルの先頭行はフィールド名</LabeledCheckbox>
+        <LabeledCheckbox :container.sync="data.CsvHeader" :value="true">CSVファイルの先頭行はフィールド名</LabeledCheckbox>
       </div>
       <QueryBuilder
-      :records="recordTitle"
-      :functions="functions"
-      :CSV="CSV"
-      :CSVhasTitleRow="data.CSVhasTitle"
-      :ruleset="data.RuleSet"
-      @change="updateRuleset"
-      @set="setRuleSetPropertyValue"
-      @delete="deleteRuleSetProperty"
+        :csv="csvArray"
+        :csvHeader="data.CsvHeader"
+        :ruleset="rulesetJson"
+        @change="updateRuleset"
+        @set="setRuleSetProperty"
+        @delete="deleteRuleSetProperty"
       />
-      <LabeledCheckbox :container.sync="data.ReplaceStrings" :value="false">診断名称・実施手術の入力に対して基本的な置換操作を行う</LabeledCheckbox>
+      <LabeledCheckbox :container.sync="data.PerformMigration" :value="false">診断名称・実施手術の入力に対して基本的な置換操作を行う</LabeledCheckbox>
       <el-tooltip placement="top-start" :tabindex="-1">
         <template #content><div>チョコレート嚢胞→子宮内膜症性嚢胞, 子宮外妊娠→異所性妊娠 など<br/>2019年以前の登録で利用されていた内容のうち表記変更のあったものを一律に置換します.</div></template>
         <i class="el-icon-question" style="padding-top: 0.36rem; margin-left: 0.6rem;"/>
@@ -220,7 +196,7 @@ const storeRuleset = () => emit('store', JSON.stringify(data.RuleSet))
       <el-button type="primary" :disabled="props.disabled" @click="storeRuleset">ルールを保存</el-button>
     </div>
     <div class="progress-views">
-      <ReportViewer :report="LogMessages.join('\n')" v-show="data.LogMessages.length > 0"/>
+      <ReportViewer :report="data.LogMessages.join('\n')" v-show="data.LogMessages.length > 0"/>
     </div>
   </div>
 </template>

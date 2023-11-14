@@ -7,8 +7,8 @@
           :key="index"
           :item="item"
           :erasable="props.erasable"
-          @erase="emit('erase', index)"
           :draggable="props.draggable"
+          @erase="emit('erase', index)"
           @dragged="emit('dragged', index, $event)"
           @dropped="emit('dropped', index, $event)"
         />
