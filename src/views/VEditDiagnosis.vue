@@ -36,7 +36,7 @@ export default {
       default: -1
     },
     ItemValue: {
-      type: Object
+      type: String
     },
     year: {
       type: String,
@@ -59,28 +59,29 @@ export default {
     FreewordSection
   },
   created () {
+    const ItemValue = JSON.parse(this.ItemValue || '{}')
     if (this.ItemIndex > -1) {
       // ItemIndex != -1 の場合は新規ではなく再編集
       // Chainの解釈
-      if (this.ItemValue.Chain) {
+      if (ItemValue.Chain) {
         if (this.ItemValue.Chain[0]) {
-          this.category = this.ItemValue.Chain[0]
-          if (this.ItemValue.Chain[1]) {
-            this.target = this.ItemValue.Chain[1]
+          this.category = ItemValue.Chain[0]
+          if (ItemValue.Chain[1]) {
+            this.target = ItemValue.Chain[1]
           }
         }
       }
 
-      if (this.catgegory !== '' && this.ItemValue.Text !== '') {
+      if (this.catgegory !== '' && ItemValue.Text !== '') {
         // カテゴリが選択されているので選択リストの展開
         this.SetCandidateItemsBySelection()
 
-        if (this.candidates.includes(this.ItemValue.Text)) {
+        if (this.candidates.includes(ItemValue.Text)) {
           // 選択肢に該当項目そのものがある場合選択する
-          this.selectedItem = this.ItemValue.Text
+          this.selectedItem = ItemValue.Text
         } else {
           // 選択肢に入力されている項目がなければ自由入力に展開する
-          this.freewordText = this.ItemValue.Text
+          this.freewordText = ItemValue.Text
         }
       }
     }
@@ -180,7 +181,7 @@ export default {
       }
       // 新しいレコードが作成されていたら登録, そうでなければなにもしない.
       if (temporaryItem.Text) {
-        this.$emit('data-upsert', 'Diagnoses', this.ItemIndex, temporaryItem)
+        this.$emit('data-upsert', 'Diagnoses', this.ItemIndex, JSON.stringify(temporaryItem))
         this.GoBack()
       }
     },

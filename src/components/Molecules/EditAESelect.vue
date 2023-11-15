@@ -28,7 +28,7 @@ const selectvalue = computed({
         <EditAESelectValue
           v-for="(item, itemindex) in linearray"
           :key="itemindex"
-          :item="item"
+          :item="JSON.stringify(item)"
           :value.sync="selectvalue"
         />
       </div>

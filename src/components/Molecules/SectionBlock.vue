@@ -18,7 +18,8 @@ const props = defineProps({
     default: true
   }
 })
-const emit = defineEmits(['update:container', 'addnewitem', 'edititem', 'removeitem'])
+const emit = defineEmits(['addnewitem', 'edititem', 'removeitem', 'update:container'])
+
 const items = computed({
   get: () => props.container,
   set: (value) => emit('update:container', value)
@@ -33,6 +34,35 @@ const editItem = (index, item) => emit('edititem', {
 
 const removeItem = (index) => emit('removeitem', index)
 </script>
+
+<template>
+  <div class="section">
+    <span class="section-title">{{props.title}} ： </span>
+    <slot name="beforeitemlist"></slot>
+    <template v-if="draggable">
+      <draggableContent handle=".handle" v-model="items">
+        <div class="section-item-list"
+          v-for="(item, index) in items"
+          :key="index">
+          <slot :item="item" :index="index">
+            <SectionItem :item="item" @remove="removeItem(index)" @edit="editItem(index, item)" editable/>
+          </slot>
+        </div>
+      </draggableContent>
+    </template>
+    <template v-else>
+      <div class="section-item-list"
+        v-for="(item, index) in items"
+        :key="index">
+        <slot :item="item" :index="index">
+          <SectionItem :item="item" @remove="removeItem(index)" @edit="editItem(index, item)"/>
+        </slot>
+      </div>
+    </template>
+    <slot name="afteritemlist"></slot>
+    <NewEntryButton @click="addNewItem()" tabindex="0" />
+  </div>
+</template>
 
 <style lang="sass">
 div.section
@@ -79,32 +109,3 @@ div.section
   div.section-item-list:first-of-type div.section-item:first-of-type
       border-left: black 0.25rem solid
 </style>
-
-<template>
-  <div class="section">
-    <span class="section-title">{{props.title}} ： </span>
-    <slot name="beforeitemlist"></slot>
-    <template v-if="draggable">
-      <draggableContent handle=".handle" v-model="items">
-        <div class="section-item-list"
-          v-for="(item, index) in items"
-          :key="index">
-          <slot :item="item" :index="index">
-            <SectionItem :item="item" @remove="removeItem(index)" @edit="editItem(index, item)" editable/>
-          </slot>
-        </div>
-      </draggableContent>
-    </template>
-    <template v-else>
-      <div class="section-item-list"
-        v-for="(item, index) in items"
-        :key="index">
-        <slot :item="item" :index="index">
-          <SectionItem :item="item" @remove="removeItem(index)" @edit="editItem(index, item)"/>
-        </slot>
-      </div>
-    </template>
-    <slot name="afteritemlist"></slot>
-    <NewEntryButton @click="addNewItem()" tabindex="0" />
-  </div>
-</template>

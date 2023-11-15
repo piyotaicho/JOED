@@ -1,3 +1,73 @@
+<script setup>
+import { defineProps, defineEmits, watch, ref, toRef } from 'vue'
+import ReportViewer from '@/components/Atoms/Reports'
+import { phraseTitledCSV } from '@/modules/CSV'
+import { ValidateRecords, CreateDocument } from '@/modules/ImportMergeV4.js'
+import * as Popups from '@/modules/Popups'
+
+const props = defineProps({
+  disabled: {
+    type: Boolean,
+    default: false
+  },
+  stream: {
+    type: String,
+    required: true
+  }
+})
+
+const emit = defineEmits(['done'])
+
+const stream = toRef(props, 'stream')
+watch(stream, async () => ResetState())
+
+const Processing = ref(true)
+const LogMessages = ref([])
+
+const ResetState = () => {
+  Processing.value = false
+  LogMessages.value.splice(0)
+}
+
+const ProcessStream = async () => {
+  const ImportedDocuments = []
+  try {
+    Processing.value = true
+    // mergeファイル(quoted, titled CSV)の読み込み
+    // 不正なCSVファイル(フィールド数が違うなど)では例外を発生する.
+    const records = phraseTitledCSV(stream.value)
+
+    // CSVのフォーマット確認
+    LogMessages.value.push(
+      'ファイルには' + ValidateRecords(records) + '件のレコードが含まれています.'
+    )
+    if (!records[0].ID) {
+      LogMessages.value.push('指定されたファイルは提出用データです.患者IDは自動生成されます.')
+    }
+    if (!records[0]['手術日']) {
+      LogMessages.value.push('指定されたファイルは手術日の設定のない提出用データです.仮の手術日を手術年から自動生成します.')
+    }
+
+    // レコード毎にドキュメントを作成
+    for (const record of records) {
+      try {
+        ImportedDocuments.push(CreateDocument(record))
+      } catch (error) {
+        if (!(await Popups.confirm('指定されたファイル中に不適切なレコードがあります.\n残りの処理を続行しますか?'))) {
+          throw new Error('不適切なレコード\n', record.map(field => '"' + field + '"').join(','))
+        }
+      }
+    }
+    LogMessages.value.push(`${ImportedDocuments.length}件のレコードが登録用に準備でされました.`)
+
+    // 作成したドキュメントを親コンポーネントに送る
+    emit('done', ImportedDocuments)
+  } catch (error) {
+    Popups.alert(error.message)
+  }
+}
+</script>
+
 <template>
   <div>
     <div>
@@ -10,86 +80,10 @@
       </ul>
     </div>
     <div>
-      <el-button type="primary" :disabled="disabled || Processing " @click="ProcessStream">ファイルの読み込みと変換</el-button>
+      <el-button type="primary" :disabled="props.disabled || Processing " @click="ProcessStream">ファイルの読み込みと変換</el-button>
     </div>
     <div class="progress-views">
       <ReportViewer :report="LogMessages.join('\n')" v-show="LogMessages.length > 0"/>
     </div>
   </div>
 </template>
-
-<script>
-import ReportViewer from '@/components/Atoms/Reports'
-import { phraseTitledCSV } from '@/modules/CSV'
-import { ValidateRecords, CreateDocument } from '@/modules/ImportMergeV4.js'
-import * as Popups from '@/modules/Popups'
-
-export default {
-  name: 'ImportMergeV4',
-  components: { ReportViewer },
-  props: {
-    disabled: {
-      type: Boolean,
-      default: false
-    },
-    stream: {
-      type: String,
-      required: true
-    }
-  },
-  data () {
-    return ({
-      Processing: true,
-      LogMessages: []
-    })
-  },
-  watch: {
-    stream () {
-      this.ResetState()
-    }
-  },
-  methods: {
-    ResetState () {
-      this.Processing = false
-      this.LogMessages.splice(0)
-    },
-    async ProcessStream () {
-      const ImportedDocuments = []
-      try {
-        this.Processing = true
-        // mergeファイル(quoted, titled CSV)の読み込み
-        // 不正なCSVファイル(フィールド数が違うなど)では例外を発生する.
-        const records = phraseTitledCSV(this.stream)
-
-        // CSVのフォーマット確認
-        this.LogMessages.push(
-          'ファイルには' + ValidateRecords(records) + '件のレコードが含まれています.'
-        )
-        if (!records[0].ID) {
-          this.LogMessages.push('指定されたファイルは提出用データです.患者IDは自動生成されます.')
-        }
-        if (!records[0]['手術日']) {
-          this.LogMessages.push('指定されたファイルは手術日の設定のない提出用データです.仮の手術日を手術年から自動生成します.')
-        }
-
-        // レコード毎にドキュメントを作成
-        for (const record of records) {
-          try {
-            ImportedDocuments.push(CreateDocument(record))
-          } catch (error) {
-            if (!(await Popups.confirm('指定されたファイル中に不適切なレコードがあります.\n残りの処理を続行しますか?'))) {
-              throw new Error('不適切なレコード\n', record.map(field => '"' + field + '"').join(','))
-            }
-          }
-        }
-        this.LogMessages.push(`${ImportedDocuments.length}件のレコードが登録用に準備でされました.`)
-
-        // 作成したドキュメントを親コンポーネントに送る
-        this.$emit('done', ImportedDocuments)
-      } catch (error) {
-        Popups.alert(error.message)
-      }
-    }
-  }
-}
-</script>

@@ -1,7 +1,7 @@
 <template>
   <el-tooltip placement="top-start" :open-delay="700">
     <template v-slot:content>
-      <DescriptionOfAE :item="item"/>
+      <DescriptionOfAE :item="props.item"/>
     </template>
 
     <div class="section-item" tabindex="0" @keydown.delete="RemoveItem">
@@ -20,22 +20,19 @@
   </el-tooltip>
 </template>
 
-<script>
+<script setup>
+import { defineProps, defineEmits, computed } from 'vue'
 import DescriptionOfAE from '@/components/Molecules/DescriptionOfAE'
 
-export default {
-  name: 'SectionAEItem',
-  components: { DescriptionOfAE },
-  props: {
-    item: {
-      type: Object,
-      required: true
-    }
-  },
-  methods: {
-    RemoveItem () {
-      this.$emit('remove')
-    }
+const props = defineProps({
+  item: {
+    type: String,
+    required: true
   }
-}
+})
+const emit = defineEmits(['remove'])
+
+const item = computed(() => JSON.parse(props.item))
+
+const RemoveItem = () => emit('remove')
 </script>

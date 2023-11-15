@@ -3,7 +3,7 @@
     <div class="subtilte-section">検索対象</div>
     <div>
       <InputSwitchField
-        :value.sync="IgnoreQuery"
+        :value.sync="setting.IgnoreQuery"
         title=""
         :options="{ 全データ: true, 現在の表示設定: false }"
       />
@@ -11,7 +11,7 @@
     <div class="menu-item-content">
       <div>
         <div>
-          <select v-model="Field">
+          <select v-model="setting.Field">
             <option value="" disabled style="display: none;">検索する項目を選択してください.</option>
             <option value="Id">患者ID</option>
             <option value="Name">患者名</option>
@@ -32,11 +32,11 @@
       </span>
     </div>
     <div class="menu-item-content">
-      <input type="text" v-model="Search" />
+      <input type="text" v-model="setting.Search" />
     </div>
     <div>
       <InputSwitchField
-        :value.sync="UseRegexp"
+        :value.sync="setting.UseRegexp"
         title=""
         :options="{ 部分一致: false, 正規表現: true }"
         :disabled="RegexpDisabled"
@@ -44,16 +44,19 @@
     </div>
 
     <div class="menu-item-bottom">
-      <el-button type="primary" :disabled="Field === '' || Search.trim() === ''" @click="performQuery">検索</el-button>
+      <el-button type="primary" :disabled="setting.Field === '' || setting.Search.trim() === ''" @click="performQuery">検索</el-button>
       <el-button type="success" :disabled="!SearchActivated" @click="cancelQuery">検索の解除</el-button>
     </div>
   </div>
 </template>
 
 <script>
+import { computed, reactive } from 'vue'
+import { useStore } from '@/store'
 import InputSwitchField from '@/components/Molecules/InputSwitchField'
 
-function makeRegex (str = '', regex = false) {
+// private 定数 関数
+const makeRegex = (str = '', regex = false) => {
   let queryRegex
   if (regex) {
     try {
@@ -156,7 +159,7 @@ const SearchSetting = {
     regexp: false,
     multiple: false,
     createquery: (query) => {
-      if (query.trim().length > 0) {
+      if (query && query.trim().length > 0) {
         return { Hash: query.trim() }
       } else {
         return undefined
@@ -166,75 +169,83 @@ const SearchSetting = {
 }
 
 export default {
-  name: 'ListSearch',
   components: {
     InputSwitchField
   },
-  data () {
-    return ({
+  emits: ['changed'],
+  setup (_props, { emit }) {
+    const store = useStore()
+    const setting = reactive({
       IgnoreQuery: false,
       UseRegexp: false,
       Field: '',
       Search: ''
     })
-  },
-  created () {
-    if (this.$store.getters.ViewSettings.Search) {
-      const settings = JSON.parse(this.$store.getters.ViewSettings.Search.Preserve || '{}')
 
-      Object.keys(this.$data).forEach(key => {
-        if (settings[key] !== undefined) {
-          this.$data[key] = settings[key]
-        }
-      })
+    const created = () => {
+      if (store.getters.ViewSettings.Search) {
+        const preservedSearch = JSON.parse(store.getters.ViewSettings.Search.Preserve || '{}')
+
+        Object.keys(setting).forEach(key => {
+          if (preservedSearch[key] !== undefined) {
+            setting[key] = preservedSearch[key]
+          }
+        })
+      }
     }
-  },
-  computed: {
-    SearchActivated () {
-      return this.$store.getters.SearchActivated
-    },
-    RegexpDisabled () {
-      return (
-        SearchSetting[this.Field] &&
-        SearchSetting[this.Field].regexp !== undefined
-      )
-        ? !SearchSetting[this.Field].regexp
-        : true
-    },
-    MultipleQueryAccepted () {
-      return (
-        SearchSetting[this.Field] &&
-        SearchSetting[this.Field].multiple !== undefined
-      )
-        ? SearchSetting[this.Field].multiple
-        : false
-    }
-  },
-  methods: {
-    performQuery () {
-      if (this.Field && this.Search) {
+    created()
+
+    const SearchActivated = computed(() => store.getters.SearchActivated)
+
+    const RegexpDisabled = computed(() => {
+      const preset = SearchSetting[setting.Field]
+
+      if (preset && preset.regexp !== undefined) {
+        return !preset.regexp
+      } else {
+        return true
+      }
+    })
+
+    const MultipleQueryAccepted = computed(() => {
+      const preset = SearchSetting[setting.Field]
+
+      if (preset && preset.multiple !== undefined) {
+        return SearchSetting[setting.Field].multiple
+      } else {
+        return false
+      }
+    })
+
+    const performQuery = () => {
+      if (setting.Field && setting.Search) {
         const query = Object.entries(
-          SearchSetting[this.Field].createquery(this.Search, this.UseRegexp) || {}
+          SearchSetting[setting.Field].createquery(setting.Search, setting.UseRegexp) || {}
         )[0]
 
         if (query && query.length === 2) {
-          this.$store.commit('SetSearch', {
-            IgnoreQuery: this.IgnoreQuery,
+          store.commit('SetSearch', {
+            IgnoreQuery: setting.IgnoreQuery,
             Filter: {
               Field: query[0],
               Value: query[1]
             },
-            Preserve: JSON.stringify(this.$data)
+            Preserve: JSON.stringify(setting)
           })
-          this.$emit('changed')
+          emit('changed')
         }
       }
-    },
-    cancelQuery () {
-      this.$store.commit('SetSearch', {
+    }
+
+    const cancelQuery = () => {
+      store.commit('SetSearch', {
         Filter: {}
       })
-      this.$emit('changed')
+      emit('changed')
+    }
+
+    return {
+      setting, SearchActivated, RegexpDisabled, MultipleQueryAccepted, performQuery, cancelQuery
     }
   }
 }

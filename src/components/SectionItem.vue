@@ -4,7 +4,7 @@ import CaseDocumentHandler from '@/modules/DbItemHandler'
 
 const props = defineProps({
   item: {
-    type: Object,
+    type: String,
     required: true
   },
   draggable: {
@@ -18,12 +18,13 @@ const props = defineProps({
 })
 const emit = defineEmits(['remove', 'edit'])
 
-const title = computed(() => CaseDocumentHandler.ItemValue(props.item))
+const item = computed(() => JSON.parse(props.item || '""'))
+const title = computed(() => CaseDocumentHandler.ItemValue(item.value))
 const description = computed(() => {
-  if (props.item?.Description) {
-    return (Array.isArray(props.item.Description) && props.item.Description.length > 1)
-      ? props.item.Description.map(item => item.replace(/[[\]]/g, '')).join(', ')
-      : props.item.Description[0].replace(/[[\]]/g, '')
+  if (item.value?.Description) {
+    return (Array.isArray(item.value.Description) && item.value.Description.length > 1)
+      ? item.value.Description.map(item => item.replace(/[[\]]/g, '')).join(', ')
+      : item.value.Description[0].replace(/[[\]]/g, '')
   }
   return ''
 })
@@ -42,7 +43,7 @@ function editItem () {
 <template>
   <div class="section-item" tabindex="0" @keydown.delete="removeItem" @keydown.enter="editItem">
     <i class="handle el-icon-d-caret" v-if="props.draggable"/>
-    <slot :item="props.item">
+    <slot :item="item">
       <span>{{title}}</span>
       <span v-if="description !== ''">
         ( {{description}} )

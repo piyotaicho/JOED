@@ -2,6 +2,7 @@
 import { defineProps, defineEmits, ref, computed } from 'vue'
 import CloseButton from '@/components/Atoms/CloseButton'
 
+// props are NON-reactive
 const props = defineProps({
   item: {
     type: [String, Number, Array, Object],

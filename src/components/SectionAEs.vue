@@ -1,57 +1,38 @@
-<script>
+<script setup>
+import { defineProps, defineEmits, computed } from 'vue'
 import SectionBlock from '@/components/Molecules/SectionBlock'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import SectionAEItem from '@/components/SectionAEItem'
 
-export default {
-  name: 'SectionAEs',
-  components: {
-    SectionBlock, LabeledCheckbox, SectionAEItem
+const props = defineProps({
+  container: {
+    type: Array,
+    required: true
   },
-  props: {
-    container: {
-      type: Array,
-      required: true
-    },
-    optionValue: {
-      type: Boolean,
-      required: false,
-      default: false
-    }
-  },
-  computed: {
-    items: {
-      get () {
-        return this.container
-      },
-      set (value) {
-        this.$emit('update:container', value)
-      }
-    },
-    option: {
-      get () {
-        return this.optionValue
-      },
-      set (value) {
-        this.$emit('update:optionValue', value)
-      }
-    }
-  },
-  methods: {
-    AddNewItem () {
-      this.$emit('addnewitem')
-    },
-    RemoveItem (index) {
-      this.$emit('removeitem', index)
-    }
+  optionValue: {
+    type: Boolean,
+    required: false,
+    default: false
   }
-}
+})
+
+const emit = defineEmits(['update:optionValue', 'addnewitem', 'removeitem'])
+
+const items = computed(() => props.container)
+
+const option = computed({
+  get: () => props.optionValue,
+  set: (value) => emit('update:optionValue', value)
+})
+
+const AddNewItem = () => emit('addnewitem')
+const RemoveItem = (index) => emit('removeitem', index)
 </script>
 
 <template>
   <SectionBlock title="合併症"
     :draggable="false"
-    :container.sync="items"
+    :container="items"
     @addnewitem='AddNewItem()'>
     <template #beforeitemlist>
       <LabeledCheckbox :container.sync="option">合併症なし</LabeledCheckbox>

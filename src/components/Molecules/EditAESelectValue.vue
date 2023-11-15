@@ -4,7 +4,7 @@ import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 
 const props = defineProps({
   item: {
-    type: [Object, String],
+    type: String,
     required: true
   },
   value: {}
@@ -12,14 +12,22 @@ const props = defineProps({
 
 const emit = defineEmits(['update:value'])
 
-const itemlabel = computed(() => (typeof this.item === 'object')
-  ? props.item.Text
-  : props.item
+const parsedItem = computed(() => {
+  try {
+    return JSON.parse(props.item)
+  } catch {
+    return ''
+  }
+})
+
+const itemlabel = computed(() => (typeof parsedItem.value === 'object')
+  ? parsedItem.value.Text
+  : parsedItem.value
 )
 
-const itemvalue = computed(() => (typeof this.item === 'object')
-  ? props.item.Value
-  : props.item
+const itemvalue = computed(() => (typeof parsedItem.value === 'object')
+  ? parsedItem.value.Value
+  : parsedItem.value
 )
 
 const checkboxvalue = computed({

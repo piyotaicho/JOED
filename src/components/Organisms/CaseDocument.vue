@@ -30,95 +30,87 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { defineProps, onMounted, ref, computed } from 'vue'
+import { useStore } from '@/store'
+import { useRouter } from 'vue-router/composables'
 import CategoryIdentifier from '@/components/Atoms/CaseCategoryIdentifier'
 import * as Popups from '@/modules/Popups'
 import CaseDocumentHandler from '@/modules/DbItemHandler'
 
-export default {
-  name: 'CaseDocument',
-  props: {
-    uid: {
-      required: true
-    }
-  },
-  data () {
-    return {
-      Loading: true
-    }
-  },
-  mounted () {
-    if (this.uid > 0) {
-      this.$store
-        .dispatch('FetchDocument', { DocumentId: this.uid })
-        .then(_ => {
-          this.Loading = false
-          this.$nextTick(() => {})
-        })
-        .catch(e => e)
-    }
-  },
-  computed: {
-    ItemDocument () {
-      return this.Loading ? {} : this.$store.getters.CaseDocument(this.uid)
-    },
-    Category () {
-      return this.Loading ? '' : this.ItemDocument.TypeOfProcedure
-    },
-    DateOfProcedure () {
-      return this.Loading ? '' : this.ItemDocument.DateOfProcedure
-    },
-    PersonalInformation () {
-      return this.Loading
-        ? {
-            Id: '',
-            Name: 'データを取得中',
-            Age: ''
-          }
-        : {
-            Id: this.ItemDocument.PatientId,
-            Name: this.ItemDocument.Name ? this.ItemDocument.Name : '',
-            Age: this.ItemDocument.Age ? '( ' + Number(this.ItemDocument.Age) + '歳 )' : ''
-          }
-    },
-    Diagnosis () {
-      return this.Loading ? '' : CaseDocumentHandler.ItemValue(this.ItemDocument.Diagnoses[0])
-    },
-    Procedure () {
-      return this.Loading ? '' : CaseDocumentHandler.ItemValue(this.ItemDocument.Procedures[0])
-    },
-    PresentAE () {
-      return !this.Loading && this.ItemDocument.PresentAE
-    },
-    Notification () {
-      return !this.Loading && this.ItemDocument.Notification
-    }
-  },
-  methods: {
-    MoveToEditView () {
-      if (!this.Loading) {
-        this.$router.push({ name: 'edit', params: { uid: this.uid } })
+const store = useStore()
+const router = useRouter()
+
+const props = defineProps({
+  uid: {
+    required: true
+  }
+})
+
+const Loading = ref(true)
+
+const uid = computed(() => Number(props.uid))
+
+onMounted(() => {
+  if (uid.value > 0) {
+    store
+      .dispatch('FetchDocument', { DocumentId: Number(uid.value) })
+      .then(_ => {
+        Loading.value = false
+      })
+      .catch(e => e)
+  }
+})
+
+const ItemDocument = computed(() => Loading.value ? {} : store.getters.CaseDocument(uid.value))
+
+const Category = computed(() => Loading.value ? '' : ItemDocument.value.TypeOfProcedure)
+
+const DateOfProcedure = computed(() => Loading.value ? '' : ItemDocument.value.DateOfProcedure)
+
+const PersonalInformation = computed(() => {
+  return Loading.value
+    ? {
+        Id: '',
+        Name: 'データを取得中',
+        Age: ''
       }
-    },
-    RemoveDocumentKeypress (event) {
-      if (!event.repeat) {
-        if (this.$store.getters['system/Platform'] === 'darwin'
-          ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) // macOS - command
-          : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) // Windows - Ctrl
-        ) {
-          this.RemoveDocument()
-        }
+    : {
+        Id: ItemDocument.value.PatientId,
+        Name: ItemDocument.value.Name || '',
+        Age: ItemDocument.value.Age ? '( ' + Number(ItemDocument.value.Age) + '歳 )' : ''
       }
-    },
-    async RemoveDocument () {
-      if (await Popups.confirm('この症例を削除します.よろしいですか?')) {
-        this.Loading = true
-        this.$store.dispatch('RemoveDocument', { DocumentId: this.uid })
-      }
+})
+
+const Diagnosis = computed(() => Loading.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value.Diagnoses[0]))
+
+const Procedure = computed(() => Loading.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value.Procedures[0]))
+
+const PresentAE = computed(() => !Loading.value && ItemDocument.value.PresentAE)
+
+const Notification = computed(() => !Loading.value && ItemDocument.value.Notification)
+
+const MoveToEditView = () => {
+  if (!Loading.value) {
+    router.push({ name: 'edit', params: { uid: uid.value } })
+  }
+}
+
+const RemoveDocumentKeypress = (event) => {
+  if (!event.repeat) {
+    if (store.getters['system/Platform'] === 'darwin'
+      ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) // macOS - command
+      : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) // Windows - Ctrl
+    ) {
+      RemoveDocument()
     }
-  },
-  components: {
-    CategoryIdentifier
+  }
+}
+
+const RemoveDocument = async () => {
+  if (await Popups.confirm('この症例を削除します.よろしいですか?')) {
+    Loading.value = true
+    store.dispatch('RemoveDocument', { DocumentId: uid.value })
   }
 }
 </script>

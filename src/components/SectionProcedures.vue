@@ -10,32 +10,22 @@ const props = defineProps({
     required: true
   }
 })
-
-const emit = defineEmits(['update:container', 'addnewitem', 'edititem', 'removeitem'])
+const emit = defineEmits(['addnewitem', 'edititem', 'removeitem', 'update:container'])
 
 const items = computed({
   get: () => props.container,
   set: (value) => emit('update:container', value)
 })
 
-function addNewItem () {
-  emit('addnewitem')
-}
+const addNewItem = () => emit('addnewitem')
 
-function editItem (index, item) {
-  emit('edititem', {
-    ItemIndex: index,
-    ItemValue: item
-  })
-}
+const editItem = (index, item) => emit('edititem', { ItemIndex: index, ItemValue: item })
 
-function removeItem (index) {
-  emit('removeitem', index)
-}
+const removeItem = (index) => emit('removeitem', index)
 
-async function removeAdditionalItemEntry (index) {
+const removeAdditionalItemEntry = async (index) => {
   if (await confirmYesNo('付随する手術も併せて削除されます.')) {
-    this.RemoveItem(index)
+    removeItem(index)
   }
 }
 </script>

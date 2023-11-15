@@ -79,122 +79,114 @@
   </TheWrapper>
 </template>
 
-<script>
+<script setup>
+import { defineProps, defineEmits, reactive, ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router/composables'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import EditSection from '@/components/Molecules/EditSection'
 import EditAESelect from '@/components/Molecules/EditAESelect'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
-
+//
 import AEmaster from '@/modules/Masters/AE'
 import { ZenToHanNumbers } from '@/modules/ZenHanChars'
 import { alert } from '@/modules/Popups'
 
-export default {
-  components: {
-    TheWrapper,
-    EditSection,
-    EditAESelect,
-    LabeledCheckbox
-  },
-  props: {
-    ItemIndex: {
-      type: Number,
-      default: -1
-    },
-    ItemValue: {
-      type: Object
-    },
-    year: {
-      type: [String, Number]
-    }
-  },
-  data () {
-    return {
-      Category: '',
-      AE: {
-        Title: [],
-        Cause: [],
-        Location: [],
-        BloodCount: '',
-        Grade: '',
-        Course: []
-      },
-      unknownBloodCounts: false,
-      master: undefined
-    }
-  },
-  created () {
-    this.$set(this, 'master', new AEmaster(this.year))
-  },
-  mounted () {
-    this.$refs.firstelement.focus()
-  },
-  computed: {
-    components () {
-      if (this.Category === '') {
-        return []
-      } else {
-        return this.master.Category.find(element => element.Value === this.Category).Components
-      }
-    },
-    showByGrading () {
-      return value => {
-        return this.AE.Grade ? Number(this.AE.Grade[0]) >= (value || undefined) : !value
-      }
-    }
+const router = useRouter()
 
+const props = defineProps({
+  ItemIndex: {
+    type: Number,
+    default: -1
   },
-  methods: {
-    CategoryChanged () {
-      this.AE.Title.splice(0)
-      this.AE.Cause.splice(0)
-      this.AE.Location.splice(0)
-      this.AE.BloodCount = ''
-    },
-    UnknownBleedCountsChanged (value) {
-      if (value) {
-        this.unknownBloodCounts = true
-        this.AE.BloodCount = '不明'
-      } else {
-        this.unknownBloodCounts = false
-        if (this.AE.BloodCount === '不明') {
-          this.AE.BloodCount = ''
-        }
-      }
-    },
-    GoBack () {
-      this.$router.replace('./')
-    },
-    async CommitChanges () {
-      // 出血量を念のため半角数字にトリム
-      if (this.AE.BloodCount !== '不明' && this.AE.BloodCount !== '') {
-        this.AE.BloodCount = ZenToHanNumbers(this.AE.BloodCount.trim())
-      }
-      await this.$nextTick()
+  ItemValue: {
+    type: String
+  },
+  year: {
+    type: [String, Number]
+  }
+})
+const emit = defineEmits(['data-upsert'])
 
-      // ドキュメントの雛型を作成
-      const documentAEItem = { Category: this.Category }
-      for (const key in this.AE) {
-        if (Array.isArray(this.AE[key])
-          ? this.AE[key].length > 0
-          : this.AE[key] !== ''
-        ) {
-          documentAEItem[key] = this.AE[key]
-        }
-      }
+const Category = ref('')
+const AE = reactive({
+  Title: [],
+  Cause: [],
+  Location: [],
+  BloodCount: '',
+  Grade: '',
+  Course: []
+})
+const unknownBloodCounts = ref(false)
 
-      // エラーチェック
-      try {
-        this.master.validate(documentAEItem)
-      } catch (e) {
-        alert(e.message, this)
-        return
-      }
+// マスタは non-reactive (props.yearがこのコンポーネント実行中に変わることはない)
+const master = new AEmaster(props.year)
 
-      this.$emit('data-upsert', 'AEs', this.ItemIndex, documentAEItem)
-      this.GoBack()
+const firstelement = ref()
+
+onMounted(() => firstelement.value.focus())
+
+const components = computed(() => {
+  if (Category.value === '') {
+    return []
+  } else {
+    return master.Category.find(element => element.Value === Category.value).Components
+  }
+})
+
+const showByGrading = computed(() => (value) => {
+  return AE.Grade ? Number(AE.Grade[0]) >= (value || undefined) : !value
+})
+
+const CategoryChanged = () => {
+  AE.Title.splice(0)
+  AE.Cause.splice(0)
+  AE.Location.splice(0)
+  AE.BloodCount = ''
+}
+
+const UnknownBleedCountsChanged = (value) => {
+  if (value) {
+    unknownBloodCounts.value = true
+    AE.BloodCount = '不明'
+  } else {
+    unknownBloodCounts.value = false
+    if (AE.BloodCount === '不明') {
+      AE.BloodCount = ''
     }
   }
+}
+
+const GoBack = () => {
+  router.replace('./')
+}
+
+const CommitChanges = async () => {
+  // 出血量を念のため半角数字にトリム
+  if (AE.BloodCount !== '不明' && AE.BloodCount !== '') {
+    AE.BloodCount = ZenToHanNumbers(AE.BloodCount.trim())
+  }
+
+  // ドキュメントの雛型を作成
+  const documentAEItem = { Category: Category.value }
+  for (const key in AE) {
+    if (Array.isArray(AE[key])
+      ? AE[key].length > 0
+      : AE[key] !== ''
+    ) {
+      documentAEItem[key] = AE[key]
+    }
+  }
+
+  // エラーチェック
+  try {
+    master.validate(documentAEItem)
+  } catch (e) {
+    alert(e.message)
+    return
+  }
+
+  emit('data-upsert', 'AEs', props.ItemIndex, JSON.stringify(documentAEItem))
+  GoBack()
 }
 </script>
 

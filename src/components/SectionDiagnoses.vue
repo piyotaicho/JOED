@@ -1,37 +1,25 @@
-<script>
+<script setup>
+import { defineProps, defineEmits, computed } from 'vue'
 import SectionBlock from '@/components/Molecules/SectionBlock'
 
-export default {
-  name: 'SectionDiagnoses',
-  components: { SectionBlock },
-  props: {
-    container: {
-      type: Array,
-      required: true
-    }
-  },
-  computed: {
-    items: {
-      get () {
-        return this.container
-      },
-      set (value) {
-        this.$emit('update:container', value)
-      }
-    }
-  },
-  methods: {
-    AddNewItem () {
-      this.$emit('addnewitem')
-    },
-    EditItem (value) {
-      this.$emit('edititem', value)
-    },
-    RemoveItem (index) {
-      this.$emit('removeitem', index)
-    }
+const props = defineProps({
+  container: {
+    type: Array,
+    required: true
   }
-}
+})
+const emit = defineEmits(['addnewitem', 'edititem', 'removeitem', 'update:container'])
+
+const items = computed({
+  get: () => props.container,
+  set: (value) => emit('update:container', value)
+})
+
+const AddNewItem = () => emit('addnewitem')
+
+const EditItem = (value) => emit('edititem', value)
+
+const RemoveItem = (index) => emit('removeitem', index)
 </script>
 
 <template>

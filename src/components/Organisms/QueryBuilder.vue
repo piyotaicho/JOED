@@ -94,7 +94,7 @@ const fieldPaneContent = computed(() => fieldNames.map(
   fieldName => {
     const assignedvalue = ruleset.value[fieldName]
     if (!assignedvalue) {
-      return { [fieldName]: '' }
+      return [fieldName, '']
     } else {
       let labelText = ''
       switch (true) {
@@ -108,7 +108,7 @@ const fieldPaneContent = computed(() => fieldNames.map(
           labelText = assignedvalue.title
           break
       }
-      return { [fieldName]: '\u25C0 ' + labelText }
+      return [fieldName, '\u25C0 ' + labelText]
     }
   })
 )
