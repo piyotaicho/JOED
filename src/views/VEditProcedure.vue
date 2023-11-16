@@ -8,7 +8,7 @@
         @pane1change="CategoryIsChanged()"
         :Pane2.sync="target"
         :Pane2Items="TargetOrgans"
-        @pane2change="SetCandidateListBySelection()"
+        @pane2change="SetCandidateItemsBySelection()"
         :Pane3.sync="selectedItemText"
         :Pane3Items="candidates"
         @pane3change="OnCandidateSelected()"
@@ -52,7 +52,7 @@
       <FreewordSection
         :value.sync="freewordText"
         :disabled="!UserEditingAllowed"
-        @click-search="SetCandidateListByFreeword"
+        @click-search="SetCandidateItemsByFreeword"
         ref="freewordSection"
       />
     </EditSection>
@@ -71,7 +71,7 @@ import ThreePaneSelections from '@/components/Molecules/ThreePaneSelections'
 import DescriptionSection from '@/components/Molecules/DescriptionSection'
 import FreewordSection from '@/components/Molecules/EditSectionFreeword'
 
-const ProceduresTree = new Master()
+const ProceduresMaster = new Master()
 
 const router = useRouter()
 
@@ -113,21 +113,20 @@ const additionalProcedure = reactive({
   Value: []
 })
 
-const Categories = computed(() => ProceduresTree.Categories())
+const Categories = computed(() => ProceduresMaster.Categories())
 
-const TargetOrgans = computed(() => ProceduresTree.Targets(category.value))
+const TargetOrgans = computed(() => ProceduresMaster.Targets(category.value))
 
 const UserEditingAllowed = computed(() => !!category.value && !selectedItemText.value)
 
 const ClearSelectedEntry = async () => {
   selectedItemText.value = ''
-  setDescriptionSection(undefined)
+  setDescription(undefined)
   additionalProcedure.Title = ''
-  setDescriptionSection(
+  setDescription(
     undefined,
     additionalProcedure
   )
-  await nextTick()
 }
 
 const CategoryIsChanged = async () => {
@@ -140,24 +139,24 @@ const CategoryIsChanged = async () => {
     target.value = TargetOrgans.value[0]
     await nextTick()
 
-    SetCandidateListBySelection()
+    SetCandidateItemsBySelection()
   } else {
     target.value = ''
     await nextTick()
   }
 }
 
-const SetCandidateListBySelection = async () => {
-  candidates.value = ProceduresTree.Items(
+const SetCandidateItemsBySelection = async () => {
+  candidates.value = ProceduresMaster.Items(
     category.value, target.value, props.year
   ).map(item => item.Text)
 
   await ClearSelectedEntry()
 }
 
-const SetCandidateListByFreeword = async () => {
+const SetCandidateItemsByFreeword = async () => {
   if (UserEditingAllowed.value && freewordText.value) {
-    const matches = ProceduresTree.Matches(
+    const matches = ProceduresMaster.Matches(
       freewordText.value,
       category.value,
       target.value || '',
@@ -171,18 +170,18 @@ const SetCandidateListByFreeword = async () => {
 
 const OnCandidateSelected = async () => {
   if (selectedItemText.value) {
-    const masterItem = ProceduresTree.getItem(
+    const masterItem = ProceduresMaster.getItem(
       selectedItemText.value,
       category.value,
       target.value,
       props.year
     )
-    await setDescriptionSection(masterItem)
-    await setAdditionalProcedureSection(masterItem)
+    await setDescription(masterItem)
+    await setAdditionalProcedure(masterItem)
   }
 }
 
-const setDescriptionSection = async (item, descriptionObj = description, splicedefault = true) => {
+const setDescription = async (item, descriptionObj = description, splicedefault = true) => {
   // descriptionの設定を削除
   descriptionObj.Value.splice(0)
   descriptionObj.Options.splice(0)
@@ -209,19 +208,19 @@ const setDescriptionSection = async (item, descriptionObj = description, spliced
   await nextTick()
 }
 
-const setAdditionalProcedureSection = async (item) => {
+const setAdditionalProcedure = async (item) => {
   const procedureTitle = Master.getAdditioninalProcedure(item)
   if (procedureTitle) {
     // Textに術式名を保存し付随種々の情報を展開
     additionalProcedure.Text = procedureTitle
 
-    const additionalItem = ProceduresTree.getItem(
+    const additionalItem = ProceduresMaster.getItem(
       procedureTitle,
       category.value,
       target.value,
       props.year
     )
-    await setDescriptionSection(
+    await setDescription(
       additionalItem,
       additionalProcedure,
       false
@@ -229,7 +228,7 @@ const setAdditionalProcedureSection = async (item) => {
   } else {
     additionalProcedure.Text = ''
 
-    await setDescriptionSection(
+    await setDescription(
       undefined,
       additionalProcedure
     )
@@ -251,7 +250,7 @@ const CommitChanges = async () => {
 
     // 選択枝の重複確認情報があればマスタから引用して保存
     const ditto = Master.getDittos(
-      ProceduresTree.getItem(
+      ProceduresMaster.getItem(
         temporaryItem.Text,
         temporaryItem.Chain[0],
         temporaryItem.Chain[1],
@@ -311,7 +310,7 @@ const CommitChanges = async () => {
   } else {
     if (freewordText.value.trim() !== '') {
       // 自由入力は兎にも角にも候補入力を優先させる.
-      SetCandidateListByFreeword()
+      SetCandidateItemsByFreeword()
       await nextTick()
 
       if (
@@ -365,7 +364,7 @@ onMounted(async () => {
     await nextTick()
 
     // カテゴリとあれば対象に応じた選択リストの生成
-    await SetCandidateListBySelection()
+    await SetCandidateItemsBySelection()
 
     // 入力値の解釈
     const text = item?.Text || ''
