@@ -282,7 +282,7 @@ const RemoveListItem = (target, index) => {
 
 const UpdateList = (target, index, value) => {
   if (['Diagnoses', 'Procedures', 'AEs'].indexOf(target) >= 0) {
-    const isEmptyValue = value === undefined || (typeof value === 'string' && value === '')
+    const isEmptyValue = typeof value === 'undefined' || (typeof value === 'string' && value === '')
     if (index >= 0) {
       if (CaseData[target][index] !== undefined) {
         // 空データが与えられた場合は当該インデックスを削除
@@ -361,13 +361,14 @@ const StoreCase = async (temporary = false) => {
 
     // データベース登録に用いるレコードドキュメントを生成
     const newDocument = {}
-    Object.keys(CaseData).forEach(key => {
+    for (const key in CaseData) {
+      // ArrayはObject[]なのでJSON文字列化する
       if (Array.isArray(CaseData[key])) {
         newDocument[key] = CaseData[key].map(item => JSON.parse(item))
       } else {
         newDocument[key] = CaseData[key]
       }
-    })
+    }
 
     // 連番 (新規ドキュメントのuidは0もしくは00があるのでNumberで処理する)
     newDocument.DocumentId = uid.value

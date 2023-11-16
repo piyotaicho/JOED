@@ -1,22 +1,3 @@
-<template>
-  <div class="QueryPane">
-    <div class="QueryPaneTitle"><slot name="title">{{props.title}}</slot></div>
-    <div class="QueryPaneList">
-      <div>
-        <list-item v-for="(item, index) in props.container"
-          :key="index"
-          :item="item"
-          :erasable="props.erasable"
-          :draggable="props.draggable"
-          @erase="emit('erase', index)"
-          @dragged="emit('dragged', index, $event)"
-          @dropped="emit('dropped', index, $event)"
-        />
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { defineProps, defineEmits } from 'vue'
 import ListItem from '@/components/Molecules/QueryPaneListItem'
@@ -42,6 +23,25 @@ const props = defineProps({
 
 const emit = defineEmits(['erase', 'dragged', 'dropped'])
 </script>
+
+<template>
+  <div class="QueryPane">
+    <div class="QueryPaneTitle"><slot name="title">{{props.title}}</slot></div>
+    <div class="QueryPaneList">
+      <div>
+        <list-item v-for="(item, index) in props.container"
+          :key="index"
+          :item="item"
+          :erasable="props.erasable"
+          :draggable="props.draggable"
+          @erase="emit('erase', index)"
+          @dragged="emit('dragged', index, $event)"
+          @dropped="emit('dropped', index, $event)"
+        />
+      </div>
+    </div>
+  </div>
+</template>
 
 <style lang="sass">
 div.QueryPane

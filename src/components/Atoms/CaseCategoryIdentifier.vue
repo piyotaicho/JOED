@@ -7,8 +7,7 @@ const props = defineProps({
     required: true
   },
   notification: {
-    type: Boolean,
-    default: false
+    type: String
   }
 })
 
@@ -24,7 +23,7 @@ const boxColorStyle = computed(() => {
   return { backgroundColor: colorTable[props.category] || '#DDDDDD' }
 })
 
-const notificationClass = computed(() => props.notification ? ['has-notification'] : [''])
+const notificationClass = computed(() => (props?.notification || props.notification !== '') ? ['has-notification'] : [''])
 
 const malignancyClass = computed(() => {
   switch (props.category) {

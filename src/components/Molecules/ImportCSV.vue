@@ -139,10 +139,10 @@ const convertStream = async () => {
 }
 
 const updateRuleset = async (rule) => {
-  for (const key of Object.keys(RuleSet.value)) {
+  for (const key in RuleSet.value) {
     delete RuleSet.value[key]
   }
-  for (const key of Object.keys(rule)) {
+  for (const key in rule) {
     RuleSet.value[key] = rule[key]
   }
   triggerRef(RuleSet)

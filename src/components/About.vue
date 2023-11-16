@@ -5,7 +5,7 @@ import ExtLink from '@/components/Atoms/ExtLink'
 
 const store = useStore()
 
-// Copyright - webpackでトランスパイル時に置換される
+// Copyright - トランスパイル時に置換される
 const CopyrightString = process.env.VUE_APP_COPYRIGHT
 
 const CoreList = [

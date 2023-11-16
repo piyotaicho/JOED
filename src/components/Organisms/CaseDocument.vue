@@ -1,35 +1,3 @@
-<template>
-  <div class="caseitem" :id="'doc' + uid.toString(10)" tabindex="0"
-  @keypress.enter="MoveToEditView()"
-  @keydown.o="MoveToEditView()"
-  @dblclick="MoveToEditView()"
-  @keydown.x="RemoveDocumentKeypress($event)">
-    <div class="caseitem-icon">
-      <CategoryIdentifier :category="Category" :notification="Notification"/>
-    </div>
-    <div class="caseitem-description">
-      <div class="caseitem-row">
-        <span class="w20"> {{DateOfProcedure}} </span>
-        <span class="w20"> {{PersonalInformation.Id}} </span>
-        <span class="w30 truncatable"> {{PersonalInformation.Name}} </span>
-        <span class="w10"> {{PersonalInformation.Age}} </span>
-        <span class="w20"></span>
-      </div>
-      <div class="caseitem-row">
-        <span class="w40 truncatable"> {{Diagnosis}} </span>
-        <span class="w40 truncatable"> {{Procedure}} </span>
-        <span class="w20 caution-badge" v-show="PresentAE"> 合併症あり </span>
-      </div>
-    </div>
-    <div class="caseitem-controller">
-        <i class="el-icon-loading button-font" v-if="Loading"/>
-        <i class="el-icon-edit button-font"
-         v-if="!Loading"
-        @click="MoveToEditView()"/>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { defineProps, onMounted, ref, computed } from 'vue'
 import { useStore } from '@/store'
@@ -88,7 +56,7 @@ const Procedure = computed(() => Loading.value ? '' : CaseDocumentHandler.ItemVa
 
 const PresentAE = computed(() => !Loading.value && ItemDocument.value.PresentAE)
 
-const Notification = computed(() => !Loading.value && ItemDocument.value.Notification)
+const Notification = computed(() => Loading.value ? '' : (ItemDocument.value?.Notification || ''))
 
 const MoveToEditView = () => {
   if (!Loading.value) {
@@ -114,6 +82,38 @@ const RemoveDocument = async () => {
   }
 }
 </script>
+
+<template>
+  <div class="caseitem" :id="'doc' + uid.toString(10)" tabindex="0"
+  @keypress.enter="MoveToEditView()"
+  @keydown.o="MoveToEditView()"
+  @dblclick="MoveToEditView()"
+  @keydown.x="RemoveDocumentKeypress($event)">
+    <div class="caseitem-icon">
+      <CategoryIdentifier :category="Category" :notification="Notification"/>
+    </div>
+    <div class="caseitem-description">
+      <div class="caseitem-row">
+        <span class="w20"> {{DateOfProcedure}} </span>
+        <span class="w20"> {{PersonalInformation.Id}} </span>
+        <span class="w30 truncatable"> {{PersonalInformation.Name}} </span>
+        <span class="w10"> {{PersonalInformation.Age}} </span>
+        <span class="w20"></span>
+      </div>
+      <div class="caseitem-row">
+        <span class="w40 truncatable"> {{Diagnosis}} </span>
+        <span class="w40 truncatable"> {{Procedure}} </span>
+        <span class="w20 caution-badge" v-show="PresentAE"> 合併症あり </span>
+      </div>
+    </div>
+    <div class="caseitem-controller">
+        <i class="el-icon-loading button-font" v-if="Loading"/>
+        <i class="el-icon-edit button-font"
+         v-if="!Loading"
+        @click="MoveToEditView()"/>
+    </div>
+  </div>
+</template>
 
 <style lang="sass">
 div.caseitem

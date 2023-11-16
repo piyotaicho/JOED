@@ -44,10 +44,10 @@ const props = defineProps({
 const emit = defineEmits([
   'update:DateOfProcedure',
   'update:PatientId',
-  'update:Name',
-  'update:Age',
+  'update:name',
+  'update:age',
   'update:ProcedureTime',
-  'update:Denial',
+  'update:denial',
   'update:JSOGId',
   'update:NCDId'
 ])
@@ -76,7 +76,7 @@ const valueName = computed({
     return props.Name || ''
   },
   set (newValue) {
-    emit('update:Name', newValue)
+    emit('update:name', newValue)
   }
 })
 
@@ -85,7 +85,7 @@ const valueAge = computed({
     return props.Age || undefined
   },
   set (newValue) {
-    emit('update:Age', newValue)
+    emit('update:age', newValue)
   }
 })
 
@@ -103,7 +103,7 @@ const valueDenial = computed({
     return props.Denial || false
   },
   set (newValue) {
-    emit('update:Denial', newValue)
+    emit('update:denial', newValue)
   }
 })
 

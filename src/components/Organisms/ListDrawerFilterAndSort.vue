@@ -1,77 +1,3 @@
-<template>
-  <div class="menu-item">
-    <div class="subtitle">表示の順番</div>
-    <div class="menu-item-content">
-      <div>
-        <select v-model="data.Sort.Item">
-          <option value="DocumentId">登録順</option>
-          <option value="DateOfProcedure">手術日</option>
-          <option value="ProcedureTime">手術時間</option>
-          <option value="TypeOfProcedure">カテゴリ</option>
-          <option value="Age">年齢</option>
-          <option value="PatientId">施設の患者ID</option>
-        </select>
-      </div>
-
-      <div>
-        <el-switch
-          v-model="data.Sort.Order"
-          active-text="昇順"
-          :active-value="1"
-          active-color="var(--color-primary)"
-          inactive-text="降順"
-          :inactive-value="-1"
-          inactive-color="var(--color-primary)" />
-      </div>
-    </div>
-
-    <div class="subtitle">表示する内容</div>
-    <div class="menu-item-content" id="display-item-selection">
-      <div><LabeledCheckbox :container.sync="isFilterItemsEmpty">全て表示する</LabeledCheckbox></div>
-
-      <div>
-        <div>カテゴリ</div>
-        <div>
-          <template v-for="(value, category) in data.Categories">
-            <LabeledCheckbox :container.sync="FilterItems" :value="category" :key="category"></LabeledCheckbox>
-          </template>
-        </div>
-      </div>
-
-      <div>
-        <div>年次</div>
-        <div>
-          <template v-for="(value, year) in data.Years">
-            <LabeledCheckbox :container.sync="FilterItems" :value="year" :key="year"></LabeledCheckbox>
-          </template>
-        </div>
-      </div>
-
-      <div>
-        <div>情報</div>
-        <div>
-          <template v-for="(value, condition) in data.Conditions">
-            <LabeledCheckbox :container.sync="FilterItems" :value="condition" :key="condition" ></LabeledCheckbox>
-          </template>
-        </div>
-      </div>
-
-    </div>
-    <div class="menu-item-bottom">
-      <el-dropdown split-button type="primary" @click="Apply()">
-        設定
-        <template v-slot:dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item @click.native="Store()">現在の表示設定を規定として保存</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
-
-      <el-button type="success" style="margin-left: 0.715rem;" @click="Revert()">規定の設定に戻す</el-button>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { defineEmits, onMounted, ref, computed, nextTick } from 'vue'
 import { useStore } from '@/store'
@@ -91,7 +17,8 @@ const data = ref({
   Conditions: {
     合併症あり: { Field: 'PresentAE', Value: true },
     読み込み症例: { Field: 'Imported', Value: true },
-    情報あり: { Field: 'Notification', Value: { $exists: true } }
+    情報あり: { Field: 'Notification', Value: { $exists: true } },
+    登録拒否: { Field: 'Denial', value: true }
   },
   Sort: {
     Item: 'DocumentId',
@@ -198,3 +125,77 @@ const DisableSearch = async () => {
   }
 }
 </script>
+
+<template>
+  <div class="menu-item">
+    <div class="subtitle">表示の順番</div>
+    <div class="menu-item-content">
+      <div>
+        <select v-model="data.Sort.Item">
+          <option value="DocumentId">登録順</option>
+          <option value="DateOfProcedure">手術日</option>
+          <option value="ProcedureTime">手術時間</option>
+          <option value="TypeOfProcedure">カテゴリ</option>
+          <option value="Age">年齢</option>
+          <option value="PatientId">施設の患者ID</option>
+        </select>
+      </div>
+
+      <div>
+        <el-switch
+          v-model="data.Sort.Order"
+          active-text="昇順"
+          :active-value="1"
+          active-color="var(--color-primary)"
+          inactive-text="降順"
+          :inactive-value="-1"
+          inactive-color="var(--color-primary)" />
+      </div>
+    </div>
+
+    <div class="subtitle">表示する内容</div>
+    <div class="menu-item-content" id="display-item-selection">
+      <div><LabeledCheckbox :container.sync="isFilterItemsEmpty">全て表示する</LabeledCheckbox></div>
+
+      <div>
+        <div>カテゴリ</div>
+        <div>
+          <template v-for="(value, category) in data.Categories">
+            <LabeledCheckbox :container.sync="FilterItems" :value="category" :key="category"></LabeledCheckbox>
+          </template>
+        </div>
+      </div>
+
+      <div>
+        <div>年次</div>
+        <div>
+          <template v-for="(value, year) in data.Years">
+            <LabeledCheckbox :container.sync="FilterItems" :value="year" :key="year"></LabeledCheckbox>
+          </template>
+        </div>
+      </div>
+
+      <div>
+        <div>情報</div>
+        <div>
+          <template v-for="(value, condition) in data.Conditions">
+            <LabeledCheckbox :container.sync="FilterItems" :value="condition" :key="condition" ></LabeledCheckbox>
+          </template>
+        </div>
+      </div>
+
+    </div>
+    <div class="menu-item-bottom">
+      <el-dropdown split-button type="primary" @click="Apply()">
+        設定
+        <template v-slot:dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item @click.native="Store()">現在の表示設定を規定として保存</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+
+      <el-button type="success" style="margin-left: 0.715rem;" @click="Revert()">規定の設定に戻す</el-button>
+    </div>
+  </div>
+</template>
