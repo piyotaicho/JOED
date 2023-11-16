@@ -9,18 +9,21 @@
         @pane2change="SetCandidateItemsBySelection()"
         :Pane3.sync="selectedItem" :Pane3Items="candidates"
         @pane3dblclick="CommitChanges()"
+        ref="paneSection"
       />
 
       <FreewordSection
         :value.sync="freewordText"
         :disabled="!UserEditingAllowed"
-        @click-search="SetCandidateItemsByFreeword"/>
+        @click-search="SetCandidateItemsByFreeword"
+        ref="freewordSection"
+      />
     </EditSection>
   </TheWrapper>
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, computed, nextTick } from 'vue'
+import { defineProps, defineEmits, ref, computed, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router/composables'
 import Master from '@/modules/Masters/DiagnosisMaster'
 import * as Popups from '@/modules/Popups'
@@ -47,42 +50,14 @@ const props = defineProps({
   }
 })
 const emit = defineEmits(['data-upsert'])
+const paneSection = ref()
+const freewordSection = ref()
 
 const category = ref('')
 const target = ref('')
 const candidates = ref([])
 const selectedItem = ref('')
 const freewordText = ref('')
-
-const created = () => {
-  const item = JSON.parse(props.ItemValue || '{}')
-  if (props.ItemIndex > -1) {
-    // ItemIndex != -1 の場合は新規ではなく再編集
-    // Chainの解釈
-    if (item.Chain) {
-      if (item.Chain[0]) {
-        category.value = item.Chain[0]
-        if (item.Chain[1]) {
-          target.value = item.Chain[1]
-        }
-      }
-    }
-
-    if (category.value !== '' && (item?.Text || '') !== '') {
-      // カテゴリが選択されているので選択リストの展開
-      SetCandidateItemsBySelection()
-
-      if (item?.Text && candidates.value.includes(item.Text)) {
-        // 選択肢に該当項目そのものがある場合選択する
-        selectedItem.value = item.Text
-      } else {
-        // 選択肢に入力されている項目がなければ自由入力に展開する
-        freewordText.value = (item?.Text || '')
-      }
-    }
-  }
-}
-created()
 
 const Categories = computed(() => DiagnosesMaster.Categories())
 const TargetOrgans = computed(() => DiagnosesMaster.Targets(category.value))
@@ -170,4 +145,34 @@ const CommitChanges = async () => {
 }
 
 const GoBack = () => router.replace('./')
+
+onMounted(async () => {
+  const item = JSON.parse(props.ItemValue || '{}')
+  if (props.ItemIndex > -1) {
+    // ItemIndex != -1 の場合は新規ではなく再編集
+
+    // カテゴリ・対象の解釈
+    const dummyChain = [...(item?.Chain || []), ' ', ' ']
+    category.value = dummyChain[0]
+    target.value = dummyChain[1]
+    await nextTick()
+
+    // カテゴリとあれば対象に応じた選択リストの生成
+    await SetCandidateItemsBySelection()
+
+    if (item?.Text && candidates.value.includes(item.Text)) {
+      // 選択肢に該当項目そのものがある場合選択する
+      selectedItem.value = item.Text
+      freewordText.value = ''
+      await nextTick()
+      paneSection.value.$el.getElementsByTagName('select')[2].focus()
+    } else {
+      // 選択肢に入力されている項目がなければ自由入力に展開する
+      selectedItem.value = ''
+      freewordText.value = item.Text
+      await nextTick()
+      freewordSection.value.open()
+    }
+  }
+})
 </script>

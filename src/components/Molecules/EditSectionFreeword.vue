@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, ref, onMounted, computed, nextTick } from 'vue'
+import { defineProps, defineEmits, defineExpose, ref, onMounted, computed, nextTick } from 'vue'
 
 const props = defineProps({
   value: {
@@ -33,7 +33,14 @@ const toggle = () => {
   }
 }
 
+const open = async () => {
+  expandInput.value = true
+  await nextTick()
+  inputElement.value.focus()
+}
 const search = () => emit('click-search')
+
+defineExpose({ open })
 </script>
 
 <template>

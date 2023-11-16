@@ -13,6 +13,7 @@
         :Pane3Items="candidates"
         @pane3change="OnCandidateSelected()"
         @pane3dblclick="CommitChanges()"
+        ref="paneSection"
       />
 
       <!-- 追加情報セクション -->
@@ -52,6 +53,7 @@
         :value.sync="freewordText"
         :disabled="!UserEditingAllowed"
         @click-search="SetCandidateListByFreeword"
+        ref="freewordSection"
       />
     </EditSection>
   </TheWrapper>
@@ -87,6 +89,8 @@ const props = defineProps({
   }
 })
 const emit = defineEmits(['data-upsert'])
+const paneSection = ref()
+const freewordSection = ref()
 
 const category = ref('')
 const target = ref('')
@@ -412,8 +416,13 @@ onMounted(async () => {
         }
       }
     }
-    // リアクティブの発火
+    // リアクティブの発火と選択枝にフォーカス
     await nextTick()
+    paneSection.value.$el.getElementsByTagName('select')[2].focus()
+  }
+  // 自由入力にフォーカス
+  if (freewordText.value !== '') {
+    freewordSection.value.open()
   }
 })
 </script>
