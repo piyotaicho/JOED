@@ -226,23 +226,23 @@ const isNoAEs = computed({
 
 const isEditingExistingItem = computed(() => uid.value > 0)
 
-const BackToList = (uid) => {
-  if (uid.value === 0) {
+const BackToList = (currentUid) => {
+  if (currentUid === 0) {
     router.push({ name: 'list' })
   } else {
-    router.push({ name: 'list', hash: (`#doc${uid.value}`) })
+    router.push({ name: 'list', hash: (`#doc${currentUid}`) })
   }
 }
 
-const AnotherEdit = (uid) => {
-  if (uid.value > 0) {
-    router.push({ name: 'edit', params: { uid: uid.value } })
+const editAnother = (targetUid) => {
+  if (targetUid > 0) {
+    router.push({ name: 'edit', params: { uid: targetUid } })
   }
   // HACK:
   // 新規(uid = '0')→新規(uid = '0')ではApp.vueで定義したRouterKeyが重複するための quick hack.
   // uid = '00' も uid > 0 がjavascriptの型変換ではfalseで新規扱いになるのでそれを利用する.
-  if (uid.value === 0) {
-    router.push({ name: 'edit', params: { uid: (props.uid === '00') ? '0' : '00' } })
+  if (targetUid === 0) {
+    router.push({ name: 'edit', params: { uid: (props.uid.toString() === '00') ? '0' : '00' } })
   }
 }
 
@@ -319,13 +319,13 @@ const CommitCase = async (to = '') => {
       switch (to) {
         case 'new':
         case 'temporarynew':
-          AnotherEdit(0)
+          editAnother(0)
           break
         case 'prev':
-          if (prevUid.value !== 0) AnotherEdit(prevUid.value)
+          if (prevUid.value !== 0) editAnother(prevUid.value)
           break
         case 'next':
-          if (nextUid.value !== 0) AnotherEdit(nextUid.value)
+          if (nextUid.value !== 0) editAnother(nextUid.value)
           break
         default:
           BackToList(uid.value)
@@ -344,10 +344,10 @@ const CancelEditing = async (to = '') => {
   if (preserve === JSON.stringify(CaseData) || await Popups.confirm('項目が編集中です.移動しますか?')) {
     switch (to) {
       case 'prev':
-        if (prevUid.value !== 0) AnotherEdit(prevUid.value)
+        if (prevUid.value !== 0) editAnother(prevUid.value)
         break
       case 'next':
-        if (nextUid.value !== 0) this.AnotherEdit(nextUid.value)
+        if (nextUid.value !== 0) editAnother(nextUid.value)
         break
       default:
         BackToList(uid.value)
