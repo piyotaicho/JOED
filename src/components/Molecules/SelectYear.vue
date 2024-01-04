@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useStore } from '@/store'
 
 const store = useStore()

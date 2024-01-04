@@ -3,7 +3,7 @@
 
 import CloseButton from '@/components/Atoms/CloseButton'
 import DiagnosisMaster from '@/modules/Masters/DiagnosisMaster'
-import { defineEmits, computed } from 'vue'
+import { computed } from 'vue'
 import { useStore } from '@/store'
 
 const store = useStore()

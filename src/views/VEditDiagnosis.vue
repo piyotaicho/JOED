@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, computed, nextTick, onMounted } from 'vue'
+import { ref, computed, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router/composables'
 import Master from '@/modules/Masters/DiagnosisMaster'
 import * as Popups from '@/modules/Popups'

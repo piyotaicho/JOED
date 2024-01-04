@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, computed } from 'vue'
+import { ref, computed } from 'vue'
 import QueryPane from '@/components/Molecules/QueryPane'
 import { prompt } from '@/modules/Popups'
 import { fieldNames, generatorFunctions } from '@/modules/ImportCSV.js'

@@ -1,5 +1,5 @@
 <script setup>
-import { defineEmits, onMounted, ref, computed, nextTick } from 'vue'
+import { onMounted, ref, computed, nextTick } from 'vue'
 import { useStore } from '@/store'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import { CategoriesOfProcedure } from '@/modules/CaseValidater'

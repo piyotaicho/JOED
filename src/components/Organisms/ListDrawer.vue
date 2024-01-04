@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, ref, computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useStore } from '@/store'
 import { useRouter } from 'vue-router/composables'
 import ListDashboard from '@/components/Molecules/Dashboard'

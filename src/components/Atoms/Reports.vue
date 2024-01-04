@@ -1,7 +1,5 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
-import { defineProps } from 'vue'
-
 const props = defineProps({
   report: {
     type: String,

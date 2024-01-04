@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, computed } from 'vue'
+import { computed } from 'vue'
 import SectionBlock from '@/components/Molecules/SectionBlock'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import SectionAEItem from '@/components/SectionAEItem'

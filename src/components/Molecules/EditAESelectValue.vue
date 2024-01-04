@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, computed } from 'vue'
+import { computed } from 'vue'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 
 const props = defineProps({

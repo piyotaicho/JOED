@@ -60,7 +60,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, reactive, computed, nextTick, onMounted } from 'vue'
+import { ref, reactive, computed, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router/composables'
 import Master from '@/modules/Masters/ProcedureMaster'
 import * as Popups from '@/modules/Popups'

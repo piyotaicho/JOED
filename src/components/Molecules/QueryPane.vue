@@ -1,5 +1,4 @@
 <script setup>
-import { defineProps, defineEmits } from 'vue'
 import ListItem from '@/components/Molecules/QueryPaneListItem'
 
 const props = defineProps({

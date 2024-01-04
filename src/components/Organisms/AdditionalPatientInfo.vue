@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 // vue2.7 + compositionAPI store hack
 import { useStore } from '@/store'
 import InputSwitchField from '../Molecules/InputSwitchField.vue'

@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, ref, computed, nextTick, onMounted } from 'vue'
+import { ref, computed, nextTick, onMounted } from 'vue'
 import SelectPane from '@/components/Molecules/SelectPane'
 
 const props = defineProps({

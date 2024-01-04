@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, computed } from 'vue'
+import { computed } from 'vue'
 import SectionBlock from '@/components/Molecules/SectionBlock'
 import SectionItem from '@/components/SectionItem'
 import { confirmYesNo } from '@/modules/Popups'

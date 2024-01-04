@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, computed } from 'vue'
+import { computed } from 'vue'
 import DescriptionOfAE from '@/components/Molecules/DescriptionOfAE'
 
 const props = defineProps({

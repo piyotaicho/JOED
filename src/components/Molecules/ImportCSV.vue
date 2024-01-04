@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, shallowRef, reactive, computed, watch, nextTick, triggerRef } from 'vue'
+import { shallowRef, reactive, computed, watch, nextTick, triggerRef } from 'vue'
 import { useStore } from '@/store'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import QueryBuilder from '@/components/Organisms/QueryBuilder'

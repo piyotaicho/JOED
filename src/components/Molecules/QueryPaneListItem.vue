@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, ref, computed } from 'vue'
+import { ref, computed } from 'vue'
 import CloseButton from '@/components/Atoms/CloseButton'
 
 // props are NON-reactive

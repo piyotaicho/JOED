@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useStore } from '@/store'
 import { useRouter } from 'vue-router/composables'
 import CategoryIdentifier from '@/components/Atoms/CaseCategoryIdentifier'

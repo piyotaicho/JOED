@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import Datepicker from 'vuejs-datepicker'
 import { ja } from 'vuejs-datepicker/dist/locale'
 

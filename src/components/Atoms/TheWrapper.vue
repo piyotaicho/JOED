@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, computed, onMounted, onBeforeUnmount, ref } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 
 document.getElementsByTagName('html')[0].style.overflowY = 'hidden'
 

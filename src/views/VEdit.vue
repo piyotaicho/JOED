@@ -107,7 +107,7 @@
 </template>
 
 <script setup>
-import { defineProps, reactive, ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { reactive, ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from '@/store'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router/composables'
 import SectionPatientInfo from '../components/SectionPatientInfo.vue'

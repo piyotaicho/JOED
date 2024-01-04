@@ -1,10 +1,10 @@
 <script setup>
-import { computed, defineProps, defineEmits } from 'vue'
+import { computed } from 'vue'
 import InputDateOfProcedure from '@/components/Molecules/InputDateOfProcedure'
 import InputTextField from '@/components/Molecules/InputTextField'
 import InputNumberField from '@/components/Molecules/InputNumberField'
 import InputProcedureTime from '@/components/Molecules/InputProcedureTime'
-import AdditionalPatientInfo from './Organisms/AdditionalPatientInfo.vue'
+import AdditionalPatientInfo from './Organisms/AdditionalPatientInfo'
 
 // プロパティ
 const props = defineProps({
@@ -142,9 +142,9 @@ const valueNCDId = computed({
       <InputNumberField title="年齢" :value.sync="valueAge" :min="1" :max="120"/>
     </div>
     <div class="patient-info-section-right">
-      <div><!-- space --></div>
-      <div><!-- space --></div>
-      <div><!-- space --></div>
+      <div style="position: relative; height: 2.4rem;"><!-- space --></div>
+      <div style="position: relative; height: 2.4rem;"><!-- space --></div>
+      <div style="position: relative; height: 2.4rem;"><!-- space --></div>
       <InputProcedureTime :value.sync="valueProcedureTime"/>
     </div>
   </div>

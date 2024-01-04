@@ -1,6 +1,6 @@
 <script setup>
 // 編集セクションの登録・取り消しボタン部分(とキーボードショートカット)の大きな雛型 slotに内容を
-import { defineEmits, onMounted, onBeforeUnmount } from 'vue'
+import { onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from '@/store'
 
 const store = useStore()

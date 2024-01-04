@@ -81,7 +81,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, reactive, ref, computed, onMounted } from 'vue'
+import { reactive, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router/composables'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import EditSection from '@/components/Molecules/EditSection'
