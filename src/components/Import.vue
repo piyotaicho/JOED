@@ -132,9 +132,9 @@ const commit = async () => {
       <el-button type="primary" :disabled="data.CreatedDocument.length === 0 || data.Committing > 0"
         @click="commit">変換したデータの登録</el-button>
     </div>
-    <div class="progress-views">
+    <div class="progress-views" v-show="data.Committing > 0">
       <step-indicator :step="1" :stepcount="data.Committing" icon="el-icon-eleme" description="登録">
-        <el-progress v-show="data.Committing > 0" :percentage="data.ProgressBar" />
+        <el-progress  :percentage="data.ProgressBar" />
       </step-indicator>
     </div>
 
