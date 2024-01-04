@@ -1,6 +1,6 @@
 {
   "name": "joed5",
-  "version": "1.4.1416",
+  "version": "1.4.1464",
   "description": "The procedures and adverse events regstration system provided by JSGOE (C) 2020-2023 P4mohnet and 日本産科婦人科内視鏡学会",
   "author": {
     "name": "Yasuhiro Yamamoto",
@@ -33,7 +33,7 @@
     "glob-parent": "^6.0.2",
     "is-svg": "5.0.0",
     "path-browserify": "^1.0.1",
-    "sass-loader": "13.3.2",
+    "sass-loader": "13.3.3",
     "url-parse": "1.5.10",
     "vue": "2.7.15",
     "vue-infinite-loading": "^2.4.5",
@@ -56,16 +56,16 @@
     "electron-devtools-installer": "^3.1.0",
     "electron-store": "8.1.0",
     "eslint": "8.53.0",
-    "eslint-plugin-import": "2.29.0",
+    "eslint-plugin-import": "2.29.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-standard": "^5.0.0",
     "eslint-plugin-vue": "^9.18.1",
-    "sass": "1.69.5",
+    "sass": "1.69.7",
     "terser-webpack-plugin": "^5.3.6",
     "vue-cli-plugin-electron-builder": "^2.1.1",
     "vue-cli-plugin-element": "^1.0.1",
-    "vue-template-compiler": "2.7.15"
+    "vue-template-compiler": "2.7.16"
   },
   "eslintConfig": {
     "root": true,
