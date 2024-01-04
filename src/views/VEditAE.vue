@@ -17,8 +17,8 @@
       </div>
 
       <!-- コンポーネントの展開 -->
-      <template v-for="component of components">
-        <div class="flex-content" :key="component">
+      <template v-for="(component, compoIndex) of components">
+        <div class="flex-content" :key="compoIndex">
           <!-- Bloodcount はスペシャルコンポーネント -->
           <template v-if="component === 'Bloodcount'">
           <div class="w20 subtitle">
@@ -64,8 +64,9 @@
         </div>
         <div class="w80">
           <div v-show="showByGrading(0)"><i class="el-icon-more" style="transform: rotate(90deg)"></i></div>
-          <template v-for="course in master.Courses">
-            <div :key="course.Title" v-show="showByGrading(course.Min)">
+          <template v-for="(course, courseIndex) in master.Courses">
+            <!-- eslint-disable-next-line vue/no-v-for-template-key-on-child -->
+            <div :key="courseIndex" v-show="showByGrading(course.Min)">
               <el-divider class="AEgrading-divider" content-position="left">
                 {{course.Title}}
               </el-divider>
