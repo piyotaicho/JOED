@@ -96,10 +96,10 @@ const Process = async () => {
     const documentIds = await CheckConsistency()
     status.processStep++
 
-    const exportitems = await CreateExportData(documentIds)
+    const { exportItems, countOfDenial } = await CreateExportData(documentIds)
     status.processStep++
 
-    exportText.value = await CreateHeader(exportitems)
+    exportText.value = await CreateHeader(exportItems, countOfDenial)
     status.processStep++
   } catch (error) {
     await nextTick()
@@ -239,10 +239,11 @@ const CheckConsistency = async () => {
 //
 const CreateExportData = async (documentIds) => {
   status.progressCreateData = 0
-  const ExportItems = []
+  const exportItems = []
   const exportJSOGId = store.getters['system/ExportJSOGId']
   const exportNCDId = store.getters['system/ExportNCDId']
   const Encoder = new TextEncoder()
+  let countOfDenial = 0
 
   for (const index in documentIds) {
     status.progressCreateData = parseInt(index * 100.0 / documentIds.length)
@@ -255,9 +256,15 @@ const CreateExportData = async (documentIds) => {
 
     if (setting.exportAllFields) {
       // 生データの出力
-      ExportItems.push(exportdocument)
+      exportItems.push(exportdocument)
     } else {
       // 提出用データを出力
+
+      // 登録拒否症例は出力データに含めない
+      if (exportdocument?.Denial === true) {
+        countOfDenial++
+        continue
+      }
 
       // 2021より実装変更:
       // ユニークキー(PatientId, DateOfProcedure)からレコードのハッシュを作成する.
@@ -287,7 +294,7 @@ const CreateExportData = async (documentIds) => {
         ).toString(36)
       }
 
-      ExportItems.push(
+      exportItems.push(
         {
           ...CaseDocumentHandler.ExportCase(
             exportdocument,
@@ -305,12 +312,12 @@ const CreateExportData = async (documentIds) => {
     }
   }
   status.progressCreateData = 100
-  return ExportItems
+  return { exportItems, countOfDenial }
 }
 
 // Step 5 - データヘッダの作成
 //
-const CreateHeader = async (exportItem) => {
+const CreateHeader = async (exportItem, countOfDenial) => {
   if (!setting.exportAllFields) {
     const length = exportItem.length
 
@@ -330,6 +337,7 @@ const CreateHeader = async (exportItem) => {
         TimeStamp,
         Year: setting.exportYear || 'ALL',
         NumberOfCases: exportItem.length,
+        CountOfDenial: countOfDenial,
         Version: store.getters['system/ApplicationVersion'],
         Plathome: store.getters['system/Plathome'],
         hash
