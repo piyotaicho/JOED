@@ -118,7 +118,7 @@ const Download = async () => {
   ) {
     // ブラウザの機能でダウンロードさせる.
     const temporaryElementA = document.createElement('A')
-    temporaryElementA.href = URL.createObjectURL(new Blob([setting.exportText]), { type: 'application/json' })
+    temporaryElementA.href = URL.createObjectURL(new Blob([exportText.value]), { type: 'application/json' })
     temporaryElementA.download = 'joed-export-data.json'
     temporaryElementA.style.display = 'none'
     document.body.appendChild(temporaryElementA)
