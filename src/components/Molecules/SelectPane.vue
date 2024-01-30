@@ -1,5 +1,5 @@
 <script setup>
-import { defineExpose, ref, computed } from 'vue'
+import { ref, computed } from 'vue'
 
 const props = defineProps({
   value: {

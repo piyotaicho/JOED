@@ -1,5 +1,5 @@
 <script setup>
-import { defineExpose, ref, onMounted, computed, nextTick } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 
 const props = defineProps({
   value: {
