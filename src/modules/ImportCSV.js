@@ -187,6 +187,7 @@ function Diagnoses (CaseData, record, ruleset) {
         throw new Error(field + 'に対するカテゴリの指定が必要です.')
       } else {
         // 良悪性区分が未指定の場合 カテゴリに含まれていないかを検索
+        category = category.toString()
         if (benignormalignancy === undefined) {
           const guess = category.search(/[良悪]性/)
           if (guess !== -1) {
@@ -221,7 +222,7 @@ function Procedures (CaseData, record, ruleset) {
       const temporaryfield = {}
 
       // 実施術式の取得
-      let text = ConvertCharacters(procedure)
+      let text = ConvertCharacters(procedure).toString()
       if (text.search(/\[.*\]/) !== -1) {
         // 1.3- [] 内にカンマ区切りで保持された付随情報を展開する
         const descriptions = text.substring(text.search(/\[/) + 1, text.search(/\]/)).split(/\w*,\w*/).map(item => item.trim())
@@ -272,7 +273,7 @@ function Procedures (CaseData, record, ruleset) {
 function AEs (CaseData, record, ruleset) {
   const hasAE = getvalueByRule('合併症の有無', record, ruleset)
   if (hasAE !== undefined) {
-    if (hasAE.search(/(合併症)?[無な]し|no/i) !== -1) {
+    if (hasAE.toString().search(/(合併症)?[無な]し|no/i) !== -1) {
       CaseData.PresentAE = false
     } else {
       CaseData.PresentAE = true
