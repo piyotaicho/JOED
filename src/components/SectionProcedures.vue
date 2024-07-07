@@ -28,19 +28,22 @@ const removeAdditionalItemEntry = async (index) => {
     removeItem(index)
   }
 }
+
+const hasAdditionalProcedure = (item) => item.toString().includes(',"AdditionalProcedure":{')
+const additionalProcedure = (item) => JSON.stringify((JSON.parse(item || '')?.AdditionalProcedure) || '')
 </script>
 
 <template>
   <SectionBlock title="実施手術"
     :container.sync="items"
     @addnewitem="addNewItem">
-    <template #default="itemprops">
-      <template v-if="!itemprops.item.AdditionalProcedure">
-        <SectionItem :item="itemprops.item" @remove="removeItem(itemprops.index)" @edit="editItem(itemprops.index, itemprops.item)" editable/>
+    <template #default="slotprops">
+      <template v-if="hasAdditionalProcedure(slotprops.item)">
+        <SectionItem :item="slotprops.item" @remove="removeAdditionalItemEntry(slotprops.index)" @edit="editItem(slotprops.index, slotprops.item)" editable/>
+        <SectionItem :item="additionalProcedure(slotprops.item)" @remove="removeAdditionalItemEntry(slotprops.index)"/>
       </template>
       <template v-else>
-        <SectionItem :item="itemprops.item" @remove="removeAdditionalItemEntry(itemprops.index)" @edit="editItem(itemprops.index, itemprops.item)" editable/>
-        <SectionItem :item="itemprops.item.AdditionalProcedure" @remove="removeAdditionalItemEntry(itemprops.index)"/>
+        <SectionItem :item="slotprops.item" @remove="removeItem(slotprops.index)" @edit="editItem(slotprops.index, slotprops.item)" editable/>
       </template>
     </template>
   </SectionBLock>
