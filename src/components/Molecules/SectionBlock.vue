@@ -10,7 +10,7 @@ const props = defineProps({
     required: true
   },
   container: {
-    type: Array,
+    type: Array, // String[]
     required: true
   },
   draggable: {

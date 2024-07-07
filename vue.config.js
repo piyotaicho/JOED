@@ -68,6 +68,7 @@ module.exports = {
     },
     resolve: {
       alias: {
+        // nedbとconfigの実装を対象環境により切り替える大切なalias
         depmodules: path.resolve(__dirname,
           process.env.VUE_APP_ELECTRON
             ? 'src/modules/electron/'
