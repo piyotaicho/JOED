@@ -300,16 +300,36 @@ export async function ValidateAEs (item, year) {
   }
 
   // 重複確認～BloodCount,Grade,Courseを除いた部分で評価
-  const values = item?.AEs
-    .map(record => [record.Category,
-      ...record?.Title || [],
-      ...record?.Cause || [],
-      ...record?.Location || []
-    ].join(','))
+  // 出血の重複を回避
+  const checkValues = item?.AEs
+    .map(
+      record => record.Category === '出血'
+        ? record.Category
+        : [
+            record.Category,
+            ...(record?.Title || []).sort(),
+            ...(record?.Cause || []).sort(),
+            ...(record?.Location || []).sort()
+          ].join(',')
+    )
 
-  if (values.length !== (new Set(values)).size) {
-    throw Error('合併症の登録内容に重複があります.')
+  // 2項目以上の登録がなければ重複は無い
+  if (checkValues.length > 1) {
+    const dupValues = (Array.from(new Set(checkValues))).reduce(
+      (originalValues, value) => {
+        originalValues.splice(originalValues.indexOf(value), 1)
+        return originalValues
+      },
+      [...checkValues]
+    )
+    if (dupValues.length > 0) {
+      throw Error(`合併症の登録に ${dupValues.map(value => (value.split(','))[0]).join(', ')} の重複があります.`)
+    }
   }
+
+  // if (values.length !== (new Set(values)).size) {
+  //   throw Error('合併症の登録内容に重複があります.')
+  // }
 
   // 登録内容の整合性確認
   const Master = new AEmaster(year)
