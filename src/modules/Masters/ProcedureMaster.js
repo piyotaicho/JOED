@@ -2,8 +2,8 @@ import Master from '@/modules/Masters/Master'
 import { ZenToHan } from '@/modules/ZenHanChars'
 import * as difflib from 'difflib'
 
-export const LastUpdate = '2022-05-05'
-const defaultReference = '2022'
+export const LastUpdate = '2024-12-01'
+const defaultReference = '2024'
 
 // Description の Values: [] のフォーマット
 //
@@ -119,6 +119,11 @@ export default class ProcedureMaster extends Master {
             Text: '腹腔鏡下子宮瘢痕部修復術',
             ValidFrom: '2022',
             Kcode: ['K882-02-00']
+          },
+          // 2024 新規
+          {
+            Text: '腹腔鏡下子宮頸管縫縮術',
+            ValidFrom: '2024'
           },
           // 2020 新規
           {
@@ -358,6 +363,18 @@ export default class ProcedureMaster extends Master {
           {
             Text: 'Second Look Operation',
             ValidTo: '2019'
+          },
+          // 2024 新規
+          {
+            Text: '骨盤内臓全摘',
+            Kcode: ['K877-02'],
+            Ditto: [
+              '腟式子宮全摘出術(LAVH)', '子宮全摘出術(TLH,LH)',
+              '腹腔鏡下広汎子宮全摘出術', '腹腔鏡下準広汎子宮全摘出術',
+              '腹腔鏡下単純子宮全摘出術', '腹腔鏡下付属器摘出術',
+              '他の診療科との合同手術'
+            ],
+            ValidFrom: '2024'
           },
           {
             Text: '他の悪性疾患の予防的切除術',
