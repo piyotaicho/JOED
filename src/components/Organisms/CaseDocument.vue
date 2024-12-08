@@ -41,12 +41,14 @@ const PersonalInformation = computed(() => {
     ? {
         Id: '',
         Name: 'データを取得中',
-        Age: ''
+        Age: '',
+        Denial: undefined
       }
     : {
         Id: ItemDocument.value.PatientId,
         Name: ItemDocument.value.Name || '',
-        Age: ItemDocument.value.Age ? '( ' + Number(ItemDocument.value.Age) + '歳 )' : ''
+        Age: ItemDocument.value.Age ? '( ' + Number(ItemDocument.value.Age) + '歳 )' : '',
+        Denial: ItemDocument.value.Denial
       }
 })
 
@@ -95,7 +97,14 @@ const RemoveDocument = async () => {
     <div class="caseitem-description">
       <div class="caseitem-row">
         <span class="w20"> {{DateOfProcedure}} </span>
-        <span class="w20"> {{PersonalInformation.Id}} </span>
+        <template v-if="PersonalInformation.Denial === true">
+          <el-tooltip placement="top-start" :open-delay="700" content="この症例の登録拒否が設定されています">
+            <span class="w20 caution-font"> {{PersonalInformation.Id}} </span>
+          </el-tooltip>
+        </template>
+        <template v-else>
+          <span class="w20"> {{PersonalInformation.Id}} </span>
+        </template>
         <span class="w30 truncatable"> {{PersonalInformation.Name}} </span>
         <span class="w10"> {{PersonalInformation.Age}} </span>
         <span class="w20"></span>
@@ -157,4 +166,7 @@ div.caseitem-controller
   color: white
 .button-font
   font-size: 1.4rem
+.caution-font
+  color: var(--color-danger)
+  font-weight: 600
 </style>
