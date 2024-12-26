@@ -609,6 +609,18 @@ export default class ProcedureMaster extends Master {
               Selection: 'one'
             }
           },
+          // 2024 新規
+          {
+            Text: 'ロボット支援下骨盤内臓全摘',
+            Kcode: ['K877-02'],
+            Ditto: [
+              '腟式子宮全摘出術(LAVH)', '子宮全摘出術(TLH,LH)',
+              '腹腔鏡下広汎子宮全摘出術', '腹腔鏡下準広汎子宮全摘出術',
+              '腹腔鏡下単純子宮全摘出術', '腹腔鏡下付属器摘出術',
+              '他の診療科との合同手術'
+            ],
+            ValidFrom: '2024'
+          },
           {
             Text: '治療のために開腹手術へ移行(合併症を除く)'
           },
