@@ -35,7 +35,7 @@ const RemoveItem = (index) => emit('removeitem', index)
     :container="items"
     @addnewitem='AddNewItem()'>
     <template #beforeitemlist>
-      <LabeledCheckbox :container.sync="option">合併症なし</LabeledCheckbox>
+      <LabeledCheckbox :container.sync="option" id="noAEcheckbox">合併症なし</LabeledCheckbox>
       <div class="section-item-list" style="display: none;"><div class="item-description"></div></div>
     </template>
     <template #default="itemprops">

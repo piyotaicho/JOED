@@ -476,7 +476,7 @@ const keyboardEventListener = async (event) => {
   ) {
     switch (event.code) {
       case 'Digit3':
-        sectionAEs.value.getElementsByTagName('label')[0].focus()
+        document.getElementById('noAEcheckbox').click()
         break
       case 'KeyJ':
         await CommitCase('next')
