@@ -120,11 +120,6 @@ export default class ProcedureMaster extends Master {
             ValidFrom: '2022',
             Kcode: ['K882-02-00']
           },
-          // 2024 新規
-          {
-            Text: '腹腔鏡下子宮頸管縫縮術',
-            ValidFrom: '2024'
-          },
           // 2020 新規
           {
             Text: '他の診療科との合同手術',
