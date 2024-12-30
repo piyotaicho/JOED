@@ -485,16 +485,15 @@ function createDatabaseInstance () {
     app.exit(-1)
   }
 
-  // データベースファイルのバックアップを作る(３世代まで)
-  // 原則としてバックアップ作成に関わるエラーは全て無視.
-  try {
-    fs.copyFileSync(DBfilename + '.2', DBfilename + '.3')
-  } catch { }
+  // データベースファイルのバックアップを作る(5世代まで)
+  // 原則としてバックアップ作成に関わるエラーは全て無視する.
+  const backupGeneration = 5
 
-  try {
-    fs.copyFileSync(DBfilename + '.1', DBfilename + '.2')
-  } catch { }
-
+  for (let i = (backupGeneration - 1); i > 0; i--) {
+    try {
+      fs.copyFileSync(DBfilename + `.${i}`, DBfilename + `.${i + 1}`)
+    } catch { }
+  }
   try {
     fs.copyFileSync(DBfilename, DBfilename + '.1')
   } catch { }
@@ -506,7 +505,7 @@ function createDatabaseInstance () {
       autoload: true
     })
   } catch (error) {
-    // 致命的エラーなのでダイアログを出して終了する
+    // データベースファイルが作成できないのは致命的エラーなのでダイアログを出して終了する
     isDevelopment && console.log(error)
     dialog.showMessageBoxSync({
       title: 'JOED5',
