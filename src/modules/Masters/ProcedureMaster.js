@@ -32,7 +32,7 @@ export default class ProcedureMaster extends Master {
             Text: '異所性妊娠手術(その他)',
             Ditto: ['異所性妊娠手術(卵管摘出術)', '異所性妊娠手術(卵管線状切開術)'],
             ValidFrom: '2020',
-            Kcode: ['K912-00-02']
+            Kcode: ['K9 12-00-02']
           },
           {
             Text: '腟式子宮全摘出術(LAVH)',
@@ -669,7 +669,6 @@ export default class ProcedureMaster extends Master {
           // 2024 新規
           {
             Text: 'ロボット支援下骨盤内臓全摘',
-            Kcode: ['K877-02'],
             Ditto: [
               '腟式子宮全摘出術(LAVH)', '子宮全摘出術(TLH,LH)',
               '腹腔鏡下広汎子宮全摘出術', '腹腔鏡下準広汎子宮全摘出術',
