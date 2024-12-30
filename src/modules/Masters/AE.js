@@ -327,6 +327,11 @@ export default class AEmaster {
     // マスターのプロパティ設定おわり
   }
 
+  // マスタ共通メソッド デフォルト年次を取得
+  Year () {
+    return this.YearofMaster
+  }
+
   // 合併症オブジェクトの妥当性検証
   // エラーの際は例外を発生.
   //

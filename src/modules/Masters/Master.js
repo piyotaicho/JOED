@@ -2,16 +2,16 @@
   診断・術式マスタオブジェクト
 
   @param {object} 基本となるオブジェクトテンプレート
-  @param {string} オブジェクトツリーの日付シリアル - 最初の4文字は年号を示す
+  @param {string} オブジェクトツリーの年次指定文字列 2010年以降の2000年代に限定
 */
 
 export default class Master {
   constructor (initialTree = {}, Year = '') {
     // マスタ年次の設定
-    if (/^20[0-9]{2}/.test(Year)) {
-      Object.defineProperty(this, 'YearofMaster', { value: Year.substring(0, 4) })
+    if (/^20[1-9]\d$/.test(Year)) {
+      Object.defineProperty(this, 'YearofMaster', { value: Year })
     } else {
-      throw Error('マスターの日付シリアル指定に問題があります.')
+      throw Error('マスターの年次シリアル指定に問題があります.')
     }
 
     // 列挙可能変更不可プロパティとして initialTree への参照を設定

@@ -3,13 +3,15 @@
 
 import CloseButton from '@/components/Atoms/CloseButton'
 import DiagnosisMaster from '@/modules/Masters/DiagnosisMaster'
+import ProcedureMaster from '@/modules/Masters/ProcedureMaster'
+import AEMaster from '@/modules/Masters/AE'
 import { computed } from 'vue'
 import { useStore } from '@/store'
 
 const store = useStore()
 const emit = defineEmits(['close'])
 
-const YearOfMaster = new DiagnosisMaster().Year()
+const YearOfMaster = [(new DiagnosisMaster()).Year(), (new ProcedureMaster()).Year(), (new AEMaster()).Year()].sort()[2]
 
 const InstituteName = computed(() => store.getters['system/InstitutionName'] || '(施設名称未設定)')
 
