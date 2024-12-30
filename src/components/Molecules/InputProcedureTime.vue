@@ -28,7 +28,31 @@ const procedureTime = computed({
 const popoverContent = computed(() => typedString.value === '' ? '' : `直接入力中: ${typedString.value}`)
 
 /**
- * キーボードイベントを処理して入力文字列を作成する
+ * キーボードイベントを処理して入力文字列処理へ渡す
+ */
+const handleKeydown = (event) => {
+  const keyMap = {
+    0: '0',
+    1: '1',
+    2: '2',
+    3: '3',
+    4: '4',
+    5: '5',
+    6: '6',
+    7: '7',
+    8: '8',
+    9: '9',
+    Delete: 'DEL',
+    ':': ':'
+  }
+  if (keyMap[event.key] !== undefined) {
+    typeInChar(keyMap[event.key])
+  }
+}
+
+/**
+ * 入力を受け取って文字列を生成する
+ * @param char 入力文字
  */
 const typeInChar = (char) => {
   // キー入力文字列を生成
@@ -42,16 +66,19 @@ const typeInChar = (char) => {
     if (typedString.value === '') {
       selectionCandidate.value = ''
     }
-    typedString.value = (typedString.value + char).slice(-5)
+    typedString.value = typedString.value + char
   }
 
-  // 適当に計算した分の値から値の候補を設定
-  const index = typedString.value.indexOf(':')
-  if (index !== -1) {
-    selectionCandidate.value = encodeProcedureTime(
-      Number(typedString.value.substring(0, index)) * 60 +
-      Number(typedString.value.substring(index + 1))
-    )
+  // 入力文字列から候補選択
+  const hourSepIndex = typedString.value.indexOf(':')
+  if (hourSepIndex !== -1) {
+    const hour = Number(typedString.value.substring(0, hourSepIndex))
+    const minuteSepIndex = typedString.value.indexOf(':', hourSepIndex + 1)
+    const minute = minuteSepIndex === -1
+      ? Number(typedString.value.substring(hourSepIndex + 1)) % 60
+      : Number(typedString.value.substring(hourSepIndex + 1, minuteSepIndex)) % 60
+
+    selectionCandidate.value = encodeProcedureTime((hour * 60) + minute)
   } else {
     selectionCandidate.value = encodeProcedureTime(typedString.value)
   }
@@ -68,7 +95,7 @@ const acceptValue = () => {
 }
 
 /**
- * 手動入力値関連を削除
+ * 手動入力値を削除
  */
 const clearTypedValue = () => {
   typedString.value = ''
@@ -85,19 +112,10 @@ const clearTypedValue = () => {
           :class="[!procedureTime ? 'vacant' : '']"
           v-bind="$attrs"
           @blur="acceptValue()"
+          @keyup.enter="acceptValue()"
           @keyup.esc="clearTypedValue()"
           @keyup.backspace="typeInChar('DEL')"
-          @keypress.48.prevent="typeInChar('0')" @keypress.96.prevent="typeInChar('0')"
-          @keypress.49.prevent="typeInChar('1')" @keypress.97.prevent="typeInChar('1')"
-          @keypress.50.prevent="typeInChar('2')" @keypress.98.prevent="typeInChar('2')"
-          @keypress.51.prevent="typeInChar('3')" @keypress.99.prevent="typeInChar('3')"
-          @keypress.52.prevent="typeInChar('4')" @keypress.100.prevent="typeInChar('4')"
-          @keypress.53.prevent="typeInChar('5')" @keypress.101.prevent="typeInChar('5')"
-          @keypress.54.prevent="typeInChar('6')" @keypress.102.prevent="typeInChar('6')"
-          @keypress.55.prevent="typeInChar('7')" @keypress.103.prevent="typeInChar('7')"
-          @keypress.56.prevent="typeInChar('8')" @keypress.104.prevent="typeInChar('8')"
-          @keypress.57.prevent="typeInChar('9')" @keypress.105.prevent="typeInChar('9')"
-          @keypress.:.prevent="typeInChar(':')"
+          @keydown.prevent="handleKeydown($event)"
           v-popover:popover
         >
           <option value="" disabled style="display:none;">手術所要時間</option>
