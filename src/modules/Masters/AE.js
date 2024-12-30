@@ -46,14 +46,14 @@ export default class AEmaster {
             Text: '機器の不具合・破損に伴う合併症・偶発症',
             Value: '機器の不具合・破損',
             Components: ['Devices', 'Injuries', 'Locations'],
-            Optional: 'Injuries'
+            Optional: ['Injuries']
           },
           {
             Text: '機器の誤操作に伴う合併症・偶発症',
             Value: '機器の誤操作',
             Components: ['Devices', 'Injuries', 'Locations'],
             // 2022年より変更 内容の必須化
-            Optional: (this.YearofMaster >= '2022' ? '' : 'Injuries')
+            Optional: (this.YearofMaster >= '2022' ? [] : ['Injuries'])
           },
           {
             Text: '術中使用した薬剤に伴う合併症',
@@ -78,7 +78,10 @@ export default class AEmaster {
         writable: false,
         enumerable: true,
         value: {
-          // Bloodcount: - これは特別扱い
+          Bloodcount: {
+            Title: '出血量',
+            Element: 'BloodCount'
+          },
           Injuries: {
             Title: '発生した合併症',
             Element: 'Title',
@@ -334,47 +337,53 @@ export default class AEmaster {
       // データがそもそもおかしい
       throw Error('合併症入力にカテゴリ設定のない不正なデータです.')
     }
-    if (AE.Category === '出血') {
-      // 出血量については他とvaludationが異なる
-      if (!/^(不明|([1-9]\d+|[5-9])\d{2})$/.test(AE?.BloodCount)) {
-        throw Error('出血量の入力内容が不正です.')
-      }
-    } else {
-      // 合併症カテゴリの設計オブジェクトを取得
-      const categorySchema = this.Category.find(element => element.Value === AE.Category)
-      if (categorySchema) {
-        // 合併症設計のコンポーネント毎に入力があるか検証
-        for (const component of categorySchema.Components) {
-          const propertyName = this.Components[component].Element
-          if (AE[propertyName] === undefined || AE[propertyName].length === 0) {
-            if (component === categorySchema.Optional) {
-              // 空白な必須入力ではないコンポーネントの出現以降は検証しない
-              break
-            } else {
-              throw Error('合併症 ' + categorySchema.Text + 'の入力が不十分です.')
-            }
-          } else {
-            // 入力があるので内容を検証する
-            const items = this.Components[component].Items
-              .flat(2)
-              .map(item => (typeof item === 'object') ? item.Value : item)
-            for (const item of AE[propertyName]) {
-              if (items.indexOf(item) === -1) {
-                throw Error('合併症 ' + categorySchema.Text + 'の内容(' + item + ')がマスタにありません.')
-              }
+
+    // 合併症カテゴリの設計オブジェクトを取得
+    const categorySchema = this.Category.find(element => element.Value === AE.Category)
+    if (!categorySchema) {
+      // 指定されたカテゴリがない
+      throw Error(`入力された合併症カテゴリ(${AE.Category})に該当するカテゴリがマスタにありません.`)
+    }
+
+    const foundErrors = []
+
+    // 合併症設計のコンポーネント毎に入力があるか検証
+    const schemaComponents = categorySchema.Components
+    const optionalComponents = categorySchema.Optional || []
+
+    for (const component of schemaComponents) {
+      const propertyName = this.Components[component].Element
+      if (AE[propertyName] === undefined || AE[propertyName].length === 0) {
+        // 該当するコンポーネントの入力なし
+        if (!optionalComponents.includes(component)) {
+          foundErrors.push(`${this.Components[component].Title} の入力が不十分です.`)
+        }
+      } else {
+        // 該当するコンポーネントの入力あり
+        if (component === 'Bloodcount') {
+          if (AE.Category !== '出血') {
+            foundErrors.push('出血量が入力されています.')
+          }
+          if (!/^(不明|([1-9]\d+|[5-9])\d{2})$/.test(AE?.BloodCount)) {
+            foundErrors.push('出血量の入力内容が不正です.')
+          }
+        } else {
+          const items = this.Components[component].Items
+            .flat(2)
+            .map(item => (typeof item === 'object') ? item.Value : item)
+          for (const item of AE[propertyName]) {
+            if (items.indexOf(item) === -1) {
+              foundErrors.push(`${this.Components[component].Title} の選択内容(${item})がマスタにありません.`)
             }
           }
         }
-      } else {
-        // 指定されたカテゴリがない
-        throw Error('入力された合併症カテゴリ(' + AE.Category + ')に該当するカテゴリがマスタにありません.')
       }
     }
 
     // グレードと転帰の確認 - 最高グレードに相当する転帰が選択されている
     if (AE?.Grade && AE?.Course?.length > 0) {
       if (!/^([1245]|3[ab])$/i.test(AE.Grade)) {
-        throw Error('Gradeの指定が不正です.')
+        foundErrors.push('Gradeの指定が不正です.')
       }
 
       const grade = Number(AE.Grade.toString()[0] | 0)
@@ -387,18 +396,24 @@ export default class AEmaster {
               ? element === course
               : element?.Value === course) !== -1)
         if (courseelement === undefined) {
-          throw Error('転帰(' + course + ')が合併症マスタにありません.')
+          foundErrors.push(`転帰(${course})が合併症マスタにありません.`)
         } else {
           min = min < courseelement.Min ? courseelement.Min : min
           max = max < courseelement.Max ? courseelement.Max : max
         }
       }
       if (grade < min || grade > max) {
-        throw Error('合併症の程度と転帰が不一致です.')
+        foundErrors.push('合併症の程度と転帰が不一致です.')
       }
     } else {
-      throw Error('合併症の程度・転帰の入力が不十分です.')
+      foundErrors.push('合併症の程度・転帰の入力が不十分です.')
     }
+
+    // 各論チェックにエラーがあったら例外を発生する
+    if (foundErrors.length > 0) {
+      throw new Error(`合併症 [${categorySchema.Text}]\n${foundErrors.join('\n')}`)
+    }
+
     // ここまでたどり着いたら問題なし
     return true
   }
