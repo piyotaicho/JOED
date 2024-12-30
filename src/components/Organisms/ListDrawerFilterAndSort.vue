@@ -18,7 +18,7 @@ const data = ref({
     合併症あり: { Field: 'PresentAE', Value: true },
     読み込み症例: { Field: 'Imported', Value: true },
     情報あり: { Field: 'Notification', Value: { $exists: true } },
-    登録拒否: { Field: 'Denial', value: true }
+    登録拒否: { Field: 'Denial', Value: true }
   },
   Sort: {
     Item: 'DocumentId',
@@ -35,7 +35,11 @@ function initData () {
     data.value.Categories[categorylabel] = { Field: 'TypeOfProcedure', Value: categorylabel }
   })
 }
+
+// onCreated: オブジェクト生成時の初期設定
 initData()
+
+// onMounted: 既存の設定の反映
 onMounted(async () => await ImportSettings())
 
 const isFilterItemsEmpty = computed({
@@ -48,6 +52,9 @@ const isFilterItemsEmpty = computed({
   }
 })
 
+/**
+ * 現在の表示設定をstoreからインポート
+ */
 const ImportSettings = async () => {
   // 年次データを更新
   await store.dispatch('GetYears')
@@ -87,6 +94,9 @@ const ImportSettings = async () => {
   }
 }
 
+/**
+ * 現在の表示設定をstoreに保存
+ */
 const Apply = async () => {
   const FilterObjects = FilterItems.value
     .map(filter => data.value.Categories[filter] || data.value.Years[filter] || data.value.Conditions[filter])
@@ -98,6 +108,9 @@ const Apply = async () => {
   emit('changed')
 }
 
+/**
+ * 現在の表示設定を規定として保存
+ */
 const Store = async () => {
   try {
     await store.dispatch('system/SaveCurrentView')
@@ -106,6 +119,9 @@ const Store = async () => {
   } catch {}
 }
 
+/**
+ * storeに保存された規定の表示設定に戻す
+ */
 const Revert = async () => {
   store.commit('SetFilters', {})
   store.commit('SetSort', {})
@@ -115,6 +131,9 @@ const Revert = async () => {
   nextTick()
 }
 
+/**
+ * 検索が実行されている場合, 検索のみを解除する(ソート・フィルタリングは継続)
+ */
 const DisableSearch = async () => {
   if (store.getters.SearchActivated) {
     if (await Popups.confirmYesNo('検索が実行されています.\n検索を解除しますか?')) {

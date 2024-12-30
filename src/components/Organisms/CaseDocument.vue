@@ -98,7 +98,7 @@ const RemoveDocument = async () => {
       <div class="caseitem-row">
         <span class="w20"> {{DateOfProcedure}} </span>
         <template v-if="PersonalInformation.Denial === true">
-          <el-tooltip placement="top-start" :open-delay="700" content="この症例の登録拒否が設定されています">
+          <el-tooltip placement="top-start" :open-delay="700" content="この症例には登録拒否が設定されています">
             <span class="w20 caution-font"> {{PersonalInformation.Id}} </span>
           </el-tooltip>
         </template>
