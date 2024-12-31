@@ -94,7 +94,6 @@ const iconColor = computed(() => {
 const focusInput = () => {
   // スイッチへフォーカスする
   const inputElement = switchField.value.$el.getElementsByTagName('input')[0]
-  console.dir(inputElement)
   inputElement.focus()
 }
 </script>

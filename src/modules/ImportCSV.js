@@ -154,7 +154,6 @@ function ProcedureTime (CaseData, record, ruleset) {
   const operationtime = getvalueByRule('手術時間', record, ruleset)
   if (operationtime !== undefined) {
     CaseData.ProcedureTime = encodeProcedureTime(parseProcedureTime(operationtime))
-    console.log(`${operationtime} => ${CaseData.ProcedureTime}`)
   }
 }
 

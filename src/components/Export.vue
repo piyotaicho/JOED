@@ -96,7 +96,6 @@ const Process = async () => {
     jsonText.value = await CreateHeader(exportItems, countOfDenial)
     status.processStep++
   } catch (error) {
-    console.error(error)
     await nextTick()
     Popups.error(error.message)
   } finally {
@@ -224,7 +223,6 @@ const CheckConsistency = async () => {
           })
       )
     } catch (error) {
-      console.error(error.message)
       store.dispatch('dbUpdate',
         {
           Query: { DocumentId: documentIds[index] },
