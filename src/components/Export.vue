@@ -12,14 +12,13 @@ import { ValidateCase } from '@/modules/CaseValidater'
 
 const store = useStore()
 
-const baseElement = ref()
 const setting = reactive({
-  exportYear: '',
-  exportAllFields: false,
-  validateOnBackup: true
+  year: '',
+  backup: false,
+  validate: true
 })
 
-const exportText = ref('')
+const jsonText = ref('')
 
 const status = reactive({
   processing: false,
@@ -31,11 +30,13 @@ const status = reactive({
 })
 
 watch(
-  () => setting?.exportAllFields,
+  () => setting.backup,
   (newValue, oldValue) => {
     if (oldValue !== newValue) {
-      if (setting.exportYear === 'ALL') {
-        setting.exportYear = ''
+      status.processStep = undefined
+      jsonText.value = ''
+      if (setting.year === 'ALL') {
+        setting.year = ''
       }
     }
   },
@@ -43,40 +44,33 @@ watch(
 )
 
 watch(
-  () => setting?.exportYear,
+  () => setting.year,
   () => {
     status.processStep = undefined
-    exportText.value = ''
+    jsonText.value = ''
   },
   { immediate: true }
 )
 
 const exportAsBackup = computed({
-  get: () => setting.exportAllFields,
+  get: () => setting.backup,
   set: async (newvalue) => {
     if (newvalue && await Popups.confirm('不用意に全てのフィールドのデータを出力するのは,個人情報保護の観点からお薦め出来ません.\nそれでも出力しますか?')) {
-      setting.exportAllFields = true
+      setting.backup = true
     } else {
-      setting.exportAllFields = false
+      setting.backup = false
     }
   }
 })
 
-const baseQuery = computed(() => {
-  const query = {
-    DocumentId: { $gt: 0 }
-  }
-  if (setting.exportYear !== '') {
-    if (setting.exportYear !== 'ALL') {
-      query.DateOfProcedure = { $regex: new RegExp('^' + setting.exportYear + '-') }
-    }
-  }
-  return query
-})
-
-const readyToExport = computed(() => exportText.value.length > 4)
+const readyToExport = computed(() => jsonText.value.length > 4)
 
 const Process = async () => {
+  if (setting.year === '') {
+    await Popups.error('年次が選択されていません.')
+    return
+  }
+
   if (status.processing) return
 
   status.processing = true
@@ -84,7 +78,7 @@ const Process = async () => {
   status.progressCheckConsistency = 0
   status.progressCreateData = 0
   status.showPreview = false
-  exportText.value = ''
+  jsonText.value = ''
 
   try {
     await CheckSystemConfiguration()
@@ -99,9 +93,10 @@ const Process = async () => {
     const { exportItems, countOfDenial } = await CreateExportData(documentIds)
     status.processStep++
 
-    exportText.value = await CreateHeader(exportItems, countOfDenial)
+    jsonText.value = await CreateHeader(exportItems, countOfDenial)
     status.processStep++
   } catch (error) {
+    console.error(error)
     await nextTick()
     Popups.error(error.message)
   } finally {
@@ -109,8 +104,12 @@ const Process = async () => {
   }
 }
 
+/**
+ * ダウンロード処理
+ */
 const Download = async () => {
-  if (!setting.exportAllFields ||
+  // バックアップでは取扱の警告を表示
+  if (!setting.backup ||
     (
       await Popups.confirmYesNo('保存されるデータにはID番号・氏名・年齢などの個人情報が含まれている可能性があります.\n処理を続行しますか?') &&
       await Popups.confirm('出力されたファイルの取り扱いは厳重行ってください.')
@@ -118,7 +117,7 @@ const Download = async () => {
   ) {
     // ブラウザの機能でダウンロードさせる.
     const temporaryElementA = document.createElement('A')
-    temporaryElementA.href = URL.createObjectURL(new Blob([exportText.value]), { type: 'application/json' })
+    temporaryElementA.href = URL.createObjectURL(new Blob([jsonText.value]), { type: 'application/json' })
     temporaryElementA.download = 'joed-export-data.json'
     temporaryElementA.style.display = 'none'
     document.body.appendChild(temporaryElementA)
@@ -131,7 +130,7 @@ const Download = async () => {
 //
 const CheckSystemConfiguration = async () => {
   // バックアップデータでエラーチェックなしの場合 このチェックはスキップ
-  if (setting.exportAllFields && !setting.validateOnBackup) {
+  if (setting.backup && !setting.validate) {
     return
   }
 
@@ -146,17 +145,24 @@ const CheckSystemConfiguration = async () => {
 // インポートデータ( Imported )で特になんの問題も無くインポートできたもの以外には Notification がある
 const CheckImportedRecords = async () => {
   // バックアップデータでエラーチェックなしでは チェックをスキップする
-  if (setting.exportAllFields && !setting.validateOnBackup) {
+  if (setting.backup && !setting.validate) {
     return
   }
 
   const count = await store.dispatch('dbCount', {
     Query:
-      {
-        Imported: { $exists: true },
-        ...baseQuery.value
-      }
+      setting.year === 'ALL'
+        ? {
+            DocumentId: { $gt: 0 },
+            Imported: { $exists: true }
+          }
+        : {
+            DocumentId: { $gt: 0 },
+            Imported: { $exists: true },
+            DateOfProcedure: { $regex: new RegExp('^' + setting.year + '-') }
+          }
   })
+
   if (count > 0) {
     throw new Error('要確認の症例が ' + count + ' 症例あります.\n確認を御願いします.')
   }
@@ -174,7 +180,14 @@ const CheckConsistency = async () => {
   const querydocuments = (
     await store.dispatch('dbFind',
       {
-        Query: baseQuery.value,
+        Query: setting.year === 'ALL'
+          ? {
+              DocumentId: { $gt: 0 }
+            }
+          : {
+              DocumentId: { $gt: 0 },
+              DateOfProcedure: { $regex: new RegExp('^' + setting.year + '-') }
+            },
         Projection: { DocumentId: 1, PatientId: 1, DateOfProcedure: 1, _id: 0 }
       }) ||
     []
@@ -194,7 +207,7 @@ const CheckConsistency = async () => {
   const documentIds = querydocuments.map(item => item.DocumentId)
 
   // バックアップデータでエラーチェックなしでは これ以上のチェックをスキップする
-  if (setting.exportAllFields && !setting.validateOnBackup) {
+  if (setting.backup && !setting.validate) {
     return documentIds
   }
 
@@ -240,9 +253,6 @@ const CheckConsistency = async () => {
 const CreateExportData = async (documentIds) => {
   status.progressCreateData = 0
   const exportItems = []
-  const exportJSOGId = store.getters['system/ExportJSOGId']
-  const exportNCDId = store.getters['system/ExportNCDId']
-  const Encoder = new TextEncoder()
   let countOfDenial = 0
 
   for (const index in documentIds) {
@@ -254,7 +264,7 @@ const CreateExportData = async (documentIds) => {
       }
     )
 
-    if (setting.exportAllFields) {
+    if (setting.backup) {
       // 生データの出力
       exportItems.push(exportdocument)
     } else {
@@ -266,46 +276,22 @@ const CreateExportData = async (documentIds) => {
         continue
       }
 
+      // hash生成
       // 2021より実装変更:
       // ユニークキー(PatientId, DateOfProcedure)からレコードのハッシュを作成する.
-      // 2022より64bitのシードを与えるように変更
+      // 2022より明確に64bitのシードを与えるように変更:
       // 今後のライブラリ変更に備えてdataを入力前にUint8Arrayに変更
-      let hashString = ''
-      if (setting.exportYear >= '2022') {
-        hashString = HHX.h64(
-          Encoder.encode(
-            JSON.stringify(
-              {
-                PatientId: exportdocument.PatientId,
-                DateOfProcedure: exportdocument.DateOfProcedure
-              })
-          ).buffer,
-          store.getters['system/SALT'].toString()
-        ).toString(36)
-      } else {
-        hashString = HHX.h64(
-          JSON.stringify(
-            {
-              PatientId: exportdocument.PatientId,
-              DateOfProcedure: exportdocument.DateOfProcedure
-            }
-          ),
-          store.getters['system/SALT']
-        ).toString(36)
-      }
+      const hashString = store.getters['system/generateHash'](
+        JSON.stringify({
+          PatientId: exportdocument.PatientId,
+          DateOfProcedure: exportdocument.DateOfProcedure
+        }),
+        setting.year <= '2021'
+      )
 
       exportItems.push(
         {
-          ...CaseDocumentHandler.ExportCase(
-            exportdocument,
-            setting.exportYear >= '2022'
-              ? {}
-              : {
-                  omitNCDId: !exportNCDId,
-                  omitJSOGId: !exportJSOGId,
-                  anonymizeJSOGId: !exportJSOGId
-                }
-          ),
+          ...CaseDocumentHandler.ExportCase(exportdocument),
           hash: hashString
         }
       )
@@ -318,26 +304,26 @@ const CreateExportData = async (documentIds) => {
 // Step 5 - データヘッダの作成
 //
 const CreateHeader = async (exportItem, countOfDenial) => {
-  if (!setting.exportAllFields) {
+  if (!setting.backup) {
     const length = exportItem.length
 
     if (length > 0) {
       const TimeStamp = Date.now()
       const Encoder = new TextEncoder()
 
-      const exportText = JSON.stringify(exportItem, ' ', 2)
+      const jsonText = JSON.stringify(exportItem, ' ', 2)
       // ヘッダが保持するドキュメント部分のハッシュ値
       const hash = HHX.h64(
-        Encoder.encode(exportText).buffer,
+        Encoder.encode(jsonText).buffer,
         TimeStamp.toString()).toString(16)
 
       exportItem.unshift({
         InstitutionName: store.getters['system/InstitutionName'],
         InstitutionID: store.getters['system/InstitutionID'],
         TimeStamp,
-        Year: setting.exportYear || 'ALL',
+        Year: setting.year || 'ALL',
         NumberOfCases: exportItem.length,
-        CountOfDenial: countOfDenial,
+        NumberOfDenial: countOfDenial,
         Version: store.getters['system/ApplicationVersion'],
         Plathome: store.getters['system/Plathome'],
         hash
@@ -349,7 +335,7 @@ const CreateHeader = async (exportItem, countOfDenial) => {
 </script>
 
 <template>
-  <div ref="baseElement" class="utility">
+  <div class="utility">
     <div class="utility-switches">
       <InputSwitchField
         :value.sync="exportAsBackup"
@@ -361,14 +347,14 @@ const CreateHeader = async (exportItem, countOfDenial) => {
         <div class="label">出力する年次</div>
         <SelectYear
           class="field"
-          :value.sync="setting.exportYear"
-          :accept-all="exportAsBackup"
+          :value.sync="setting.year"
+          :selection-all="exportAsBackup"
         />
       </div>
 
       <InputSwitchField
-        :value.sync="setting.validateOnBackup"
-        :disabled="!setting.exportAllFields"
+        :value.sync="setting.validate"
+        :disabled="!exportAsBackup"
         title="データのエラーチェック"
         :options="{ 行う: true, 行わない: false }"
       />
@@ -377,7 +363,7 @@ const CreateHeader = async (exportItem, countOfDenial) => {
         <el-button
           type="primary"
           @click="Process()"
-          :disabled="!setting.exportYear || status.processing"
+          :disabled="!setting.year || status.processing"
           >出力データの作成</el-button
         >
       </div>
@@ -417,16 +403,10 @@ const CreateHeader = async (exportItem, countOfDenial) => {
 
     <el-collapse-transition>
       <div v-show="readyToExport">
-        <el-dropdown split-button type="primary" @click="Download()">
-          出力先を指定してファイルの出力
-          <template v-slot:dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item @click.native="status.showPreview = true"
-                >出力先結果の確認</el-dropdown-item
-              >
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
+        <el-button-group>
+          <el-button type="primary" @click="Download()">出力先を指定してファイルの出力</el-button>
+          <el-button type="primary" @click="status.showPreview = true">出力結果の表示</el-button>
+        </el-button-group>
       </div>
     </el-collapse-transition>
 
@@ -436,7 +416,7 @@ const CreateHeader = async (exportItem, countOfDenial) => {
         <div id="preview">
           画面のクリックで戻ります.
           <hr />
-          <pre>{{ exportText }}</pre>
+          <pre>{{ jsonText }}</pre>
         </div>
       </div>
     </TheWrapper>
