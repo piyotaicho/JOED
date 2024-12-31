@@ -135,7 +135,7 @@ const valueNCDId = computed({
           <InputTextField title="患者ID" :required="true" :value.sync="valuePatientId" placeholder="施設の患者ID"/>
         </div>
         <div style="width: 2rem;">
-          <AdditionalPatientInfo :Denial.sync="valueDenial" :JSOGId.sync="valueJSOGId" :NCDId.sync="valueNCDId"/>
+          <AdditionalPatientInfo :Denial.sync="valueDenial" :JSOGId.sync="valueJSOGId" :NCDId.sync="valueNCDId" :DateOfProcedure="valueDateOfProcedure" :PatientId="valuePatientId"/>
         </div>
       </div>
       <InputTextField title="患者名" :value.sync="valueName"/>

@@ -18,6 +18,12 @@ const props = defineProps({
   },
   NCDId: {
     type: String
+  },
+  DateOfProcedure: {
+    type: String
+  },
+  PatientId: {
+    type: String
   }
 })
 
@@ -35,6 +41,19 @@ const Denial = computed({
   set: (newValue) => emit('update:denial', newValue)
 })
 
+const hashString = computed(() => {
+  if (props?.Denial && props.DateOfProcedure && props.PatientId) {
+    return store.getters['system/generateHash'](
+      JSON.stringify({
+        DateOfProcedure: props.DateOfProcedure,
+        PatientId: props.PatientId
+      }),
+      props.DateOfProcedure.substring(0, 4) <= '2021'
+    )
+  } else {
+    return undefined
+  }
+})
 const editJSOGId = computed(() => store.getters['system/EditJSOGId'])
 const JSOGId = computed({
   get: () => props?.JSOGId || '',
@@ -92,6 +111,9 @@ const focusInput = () => {
             style="display: flex; flex-direction: row; height: 2.4rem; div.field { border: 1px solid red; };"
             ref="switchField"
           />
+        <div v-if="Denial">
+          <InputTextField title="レコード識別子" :value="hashString" readonly/>
+        </div>
         <div>
           <InputTextField title="腫瘍登録番号" :value.sync="JSOGId" placeholder="腫瘍登録患者No." :disabled="!editJSOGId && JSOGId === ''"/>
         </div>
