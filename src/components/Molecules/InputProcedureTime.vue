@@ -43,7 +43,8 @@ const handleKeydown = (event) => {
     8: '8',
     9: '9',
     Delete: 'DEL',
-    ':': ':'
+    ':': ':',
+    ';': ':' // USキーボードの場合
   }
   if (keyMap[event.key] !== undefined) {
     typeInChar(keyMap[event.key])
@@ -114,8 +115,8 @@ const clearTypedValue = () => {
           @blur="acceptValue()"
           @keyup.enter="acceptValue()"
           @keyup.esc="clearTypedValue()"
-          @keyup.backspace="typeInChar('DEL')"
-          @keydown.prevent="handleKeydown($event)"
+          @keyup.exact.backspace="typeInChar('DEL')"
+          @keydown.exact.prevent="handleKeydown($event)"
           v-popover:popover
         >
           <option value="" disabled style="display:none;">手術所要時間</option>
