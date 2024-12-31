@@ -8,15 +8,14 @@ import AEMaster from '@/modules/Masters/AE'
 import { computed } from 'vue'
 import { useStore } from '@/store'
 
-const store = useStore()
 const emit = defineEmits(['close'])
 
+// 一番新しいマスタの年次を取得する
 const YearOfMaster = [(new DiagnosisMaster()).Year(), (new ProcedureMaster()).Year(), (new AEMaster()).Year()].sort()[2]
 
+const store = useStore()
 const InstituteName = computed(() => store.getters['system/InstitutionName'] || '(施設名称未設定)')
-
 const ViewCount = computed(() => store.getters.NumberOfCases)
-
 const TotalCount = computed(() => store.getters.TotalNumberOfCases)
 
 const close = () => emit('close')

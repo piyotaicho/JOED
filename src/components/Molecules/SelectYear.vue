@@ -7,7 +7,7 @@ const props = defineProps({
   value: {
     required: true
   },
-  acceptAll: {
+  selectionAll: {
     type: Boolean,
     default: true
   }
@@ -41,7 +41,7 @@ const SelectedValue = computed({
 <template>
   <div>
     <select v-model="SelectedValue">
-      <option value="ALL" v-if="props.acceptAll">すべて</option>
+      <option value="ALL" v-if="props.selectionAll">すべて</option>
       <option v-for="item in selections"
         :key="item.year" :value="item.year">
         {{item.year}}年 ({{item.count}}件)
