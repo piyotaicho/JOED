@@ -129,12 +129,48 @@ if (props.ItemValue) {
   try {
     const item = JSON.parse(props.ItemValue)
     Category.value = item.Category
+    if (Category.value === '') {
+      throw new Error()
+    }
+
+    const components = master.Category.find(element => element.Value === Category.value)?.Components || []
+    if (components.length === 0) {
+      throw new TypeError()
+    }
+
     for (const key in AE) {
       if (item[key] !== undefined) {
+        // Grade と BloodCount はそのままコピー
         if (key === 'Grade' || key === 'BloodCount') {
           AE[key] = item[key]
-        } else {
-          AE[key].push(...item[key])
+          continue
+        }
+        if (key === 'Course') {
+          // マスタの転帰選択肢を展開
+          const courseitems = master.Courses
+            .map(element => element.Items)
+            .flat(2)
+            .map(item => typeof item === 'object' ? item.Value : item)
+          // マスタの転帰選択肢に含まれるものだけを値として採用
+          for (const value of item[key]) {
+            if (courseitems.includes(value)) {
+              AE[key].push(value)
+            }
+          }
+          continue
+        }
+        // そのほかコンポーネントのマスタ選択肢を展開
+        const masteritems = components
+          .map(component => master.Components[component])
+          .filter(component => component.Element === key)
+          .map(component => component.Items)
+          .flat(3)
+          .map(item => typeof item === 'string' ? item : item.Value)
+        // マスタの選択肢に含まれるものだけを値として採用
+        for (const value of item[key]) {
+          if (masteritems.includes(value)) {
+            AE[key].push(value)
+          }
         }
       }
     }
