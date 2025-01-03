@@ -7,7 +7,7 @@
           <span>合併症の分類</span>
         </div>
         <div class="w80">
-          <select v-model="Category" @change="CategoryChanged()" ref="firstelement">
+          <select v-model="Category" @change="categoryChanged()" ref="firstelement">
             <option value="" disabled style="display:none;">リストから選択</option>
             <option v-for="item of master.Category" :key="item.Value" :value="item.Value">
               {{item.Text}}
@@ -29,7 +29,7 @@
               <input type="text" v-model="AE.BloodCount" :disabled="unknownBloodCounts" placeholder="出血量を入力してください"/> ml
             </div>
             <div>
-              <LabeledCheckbox :container="unknownBloodCounts" @update:container="UnknownBleedCountsChanged">出血量不明</LabeledCheckbox>
+              <LabeledCheckbox :container="unknownBloodCounts" @update:container="unknownBleedCountsChanged">出血量不明</LabeledCheckbox>
             </div>
           </div>
           </template>
@@ -119,18 +119,37 @@ const AE = reactive({
 })
 const unknownBloodCounts = ref(false)
 
+const firstelement = ref()
+
 // マスタは non-reactive (props.yearがこのコンポーネント実行中に変わることはない)
 const master = new AEmaster(props.year)
 
-const firstelement = ref()
+// 規定値が与えられた場合の初期値の展開
+if (props.ItemValue) {
+  try {
+    const item = JSON.parse(props.ItemValue)
+    Category.value = item.Category
+    for (const key in AE) {
+      if (item[key] !== undefined) {
+        if (key === 'Grade' || key === 'BloodCount') {
+          AE[key] = item[key]
+        } else {
+          AE[key].push(...item[key])
+        }
+      }
+    }
+  } catch {
+    // NOP
+  }
+}
 
 onMounted(() => firstelement.value.focus())
 
 const components = computed(() => {
-  if (Category.value === '') {
+  if (Category.value === '' || master === undefined) {
     return []
   } else {
-    return master.Category.find(element => element.Value === Category.value).Components
+    return master.Category.find(element => element.Value === Category.value)?.Components || []
   }
 })
 
@@ -138,14 +157,14 @@ const showByGrading = computed(() => (value) => {
   return AE.Grade ? Number(AE.Grade[0]) >= (value || undefined) : !value
 })
 
-const CategoryChanged = () => {
+const categoryChanged = () => {
   AE.Title.splice(0)
   AE.Cause.splice(0)
   AE.Location.splice(0)
   AE.BloodCount = ''
 }
 
-const UnknownBleedCountsChanged = (value) => {
+const unknownBleedCountsChanged = (value) => {
   if (value) {
     unknownBloodCounts.value = true
     AE.BloodCount = '不明'

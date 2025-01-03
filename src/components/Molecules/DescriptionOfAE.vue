@@ -33,7 +33,7 @@ const item = computed(() => JSON.parse(props.item || '{}'))
   line-height: 1.15rem
 
 div.AE-popper
-  max-width: 30rem
+  max-width: 40rem
   div:nth-child(2),:nth-last-child(2)
     margin-top: 0.5rem
 </style>

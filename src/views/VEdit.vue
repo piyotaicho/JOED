@@ -33,6 +33,7 @@
         :container="CaseData.AEs"
         :optionValue.sync="isNoAEs"
         @addnewitem="EditSection('AE')"
+        @edititem="EditSection('AE', $event)"
         @removeitem="RemoveListItem('AEs', $event)"
       />
 

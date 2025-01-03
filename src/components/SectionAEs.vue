@@ -16,7 +16,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:optionValue', 'addnewitem', 'removeitem'])
+const emit = defineEmits(['update:optionValue', 'addnewitem', 'edititem', 'removeitem'])
 
 const items = computed(() => props.container)
 
@@ -25,21 +25,25 @@ const option = computed({
   set: (value) => emit('update:optionValue', value)
 })
 
-const AddNewItem = () => emit('addnewitem')
-const RemoveItem = (index) => emit('removeitem', index)
+const addNewItem = () => emit('addnewitem')
+const editItem = (index, item) => emit('edititem', {
+  ItemIndex: index,
+  ItemValue: item
+})
+const removeItem = (index) => emit('removeitem', index)
 </script>
 
 <template>
   <SectionBlock title="合併症"
     :draggable="false"
     :container="items"
-    @addnewitem='AddNewItem()'>
+    @addnewitem='addNewItem()'>
     <template #beforeitemlist>
       <LabeledCheckbox :container.sync="option" id="noAEcheckbox">合併症なし</LabeledCheckbox>
       <div class="section-item-list" style="display: none;"><div class="item-description"></div></div>
     </template>
     <template #default="itemprops">
-      <SectionAEItem :item="itemprops.item" @remove="RemoveItem(itemprops.index)" />
+      <SectionAEItem :item="itemprops.item" @edit="editItem(itemprops.index, itemprops.item)" @remove="removeItem(itemprops.index)" />
     </template>
   </SectionBlock>
 </template>
