@@ -26,10 +26,10 @@
           </div>
           <div class="w80 AEcheckboxes">
             <div>
-              <input type="text" v-model="AE.BloodCount" :disabled="unknownBloodCounts" placeholder="出血量を入力してください"/> ml
+              <input type="text" v-model="AE.BloodCount" :disabled="inaccurateBloodCount" placeholder="出血量を入力してください"/> ml
             </div>
             <div>
-              <LabeledCheckbox :container="unknownBloodCounts" @update:container="unknownBleedCountsChanged">出血量不明</LabeledCheckbox>
+              <LabeledCheckbox :container="inaccurateBloodCount" @update:container="unknownBleedCountsChanged">出血量不明</LabeledCheckbox>
             </div>
           </div>
           </template>
@@ -87,7 +87,7 @@ import TheWrapper from '@/components/Atoms/TheWrapper'
 import EditSection from '@/components/Molecules/EditSection'
 import EditAESelect from '@/components/Molecules/EditAESelect'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
-//
+import { Notification } from 'element-ui'
 import AEmaster from '@/modules/Masters/AE'
 import { ZenToHanNumbers } from '@/modules/ZenHanChars'
 import { alert } from '@/modules/Popups'
@@ -117,12 +117,15 @@ const AE = reactive({
   Grade: '',
   Course: []
 })
-const unknownBloodCounts = ref(false)
+const inaccurateBloodCount = ref(false)
 
 const firstelement = ref()
 
 // マスタは non-reactive (props.yearがこのコンポーネント実行中に変わることはない)
 const master = new AEmaster(props.year)
+
+// 規定値から省かれた値があるときに通知する為のフラグ
+let irregularItemValue = false
 
 // 規定値が与えられた場合の初期値の展開
 if (props.ItemValue) {
@@ -140,25 +143,32 @@ if (props.ItemValue) {
 
     for (const key in AE) {
       if (item[key] !== undefined) {
-        // Grade と BloodCount はそのままコピー
-        if (key === 'Grade' || key === 'BloodCount') {
-          AE[key] = item[key]
+        // Course はGradeにあわせて変化するのであとで別に処理する
+        if (key === 'Course') {
           continue
         }
-        if (key === 'Course') {
-          // マスタの転帰選択肢を展開
-          const courseitems = master.Courses
-            .map(element => element.Items)
-            .flat(2)
-            .map(item => typeof item === 'object' ? item.Value : item)
-          // マスタの転帰選択肢に含まれるものだけを値として採用
-          for (const value of item[key]) {
-            if (courseitems.includes(value)) {
-              AE[key].push(value)
-            }
+
+        // Grade は値に問題が無ければそのままコピー
+        if (key === 'Grade') {
+          if (/([1245]|3[ab])/.test(item.Grade)) {
+            AE.Grade = item.Grade
+          } else {
+            irregularItemValue = true
           }
           continue
         }
+
+        // BloodCount は不明を解釈してコピー
+        if (key === 'BloodCount') {
+          if (item.BloodCount === '不明') {
+            inaccurateBloodCount.value = true
+          } else {
+            inaccurateBloodCount.value = false
+          }
+          AE.BloodCount = item.BloodCount
+          continue
+        }
+
         // そのほかコンポーネントのマスタ選択肢を展開
         const masteritems = components
           .map(component => master.Components[component])
@@ -166,11 +176,32 @@ if (props.ItemValue) {
           .map(component => component.Items)
           .flat(3)
           .map(item => typeof item === 'string' ? item : item.Value)
+
         // マスタの選択肢に含まれるものだけを値として採用
         for (const value of item[key]) {
           if (masteritems.includes(value)) {
             AE[key].push(value)
+          } else {
+            irregularItemValue = true
           }
+        }
+      }
+    }
+
+    // Courseを処理(Gradeの入力がなければ展開しない)
+    if (item?.Course !== undefined && AE.Grade !== '') {
+      // マスタの転帰選択肢を展開
+      const courseitems = master.Courses
+        .filter(element => element.Max <= Number(AE.Grade[0]) || element.Min <= Number(AE.Grade[0]))
+        .map(element => element.Items)
+        .flat(2)
+        .map(item => typeof item === 'object' ? item.Value : item)
+      // マスタの転帰選択肢に含まれるものだけを値として採用
+      for (const value of item.Course) {
+        if (courseitems.includes(value)) {
+          AE.Course.push(value)
+        } else {
+          irregularItemValue = true
         }
       }
     }
@@ -179,7 +210,16 @@ if (props.ItemValue) {
   }
 }
 
-onMounted(() => firstelement.value.focus())
+onMounted(() => {
+  if (irregularItemValue) {
+    Notification({
+      title: 'マスタとの整合性に問題があります',
+      message: 'マスタと整合のない既存の入力は自動的に削除されました.',
+      duration: 5000
+    })
+  }
+  firstelement.value.focus()
+})
 
 const components = computed(() => {
   if (Category.value === '' || master === undefined) {
@@ -202,10 +242,10 @@ const categoryChanged = () => {
 
 const unknownBleedCountsChanged = (value) => {
   if (value) {
-    unknownBloodCounts.value = true
+    inaccurateBloodCount.value = true
     AE.BloodCount = '不明'
   } else {
-    unknownBloodCounts.value = false
+    inaccurateBloodCount.value = false
     if (AE.BloodCount === '不明') {
       AE.BloodCount = ''
     }
