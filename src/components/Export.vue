@@ -5,6 +5,7 @@ import { useStore } from '@/store'
 import InputSwitchField from '@/components/Molecules/InputSwitchField'
 import SelectYear from '@/components/Molecules/SelectYear'
 import TheWrapper from '@/components/Atoms/TheWrapper'
+import ViewerOverlay from '@/components/Molecules/ViewerOverlay.vue'
 import CaseDocumentHandler from '@/modules/DbItemHandler'
 import * as Popups from '@/modules/Popups'
 import HHX from 'xxhashjs'
@@ -199,7 +200,7 @@ const CheckConsistency = async () => {
       .filter((item, index, self) => self.indexOf(item) !== index)
 
     if (dupcheck.length > 0) {
-      throw new Error('同一日付に同一IDの登録があります.重複登録の可能性があります.\n' + dupcheck.join(',\n'))
+      throw new Error('同一の日付に同一IDの登録があります.重複登録の可能性があります.\n' + dupcheck.join(',\n'))
     }
   }
 
@@ -409,15 +410,9 @@ const CreateHeader = async (exportItem, countOfDenial) => {
     </el-collapse-transition>
 
     <TheWrapper prevent-close v-if="status.processing" />
-    <TheWrapper v-if="status.showPreview" alpha="60" @click="status.showPreview = false">
-      <div>
-        <div id="preview">
-          画面のクリックで戻ります.
-          <hr />
-          <pre>{{ jsonText }}</pre>
-        </div>
-      </div>
-    </TheWrapper>
+    <template v-if="status.showPreview">
+      <ViewerOverlay @click="status.showPreview = false">{{ jsonText }}</ViewerOverlay>
+    </template>
   </div>
 </template>
 
