@@ -389,7 +389,7 @@ const store = new Vuex.Store({
         }
       } catch (error) {
         if (error.message === 'DUP') {
-          throw new Error(`同一日(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
+          throw new Error(`同一の日付(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
         } else {
           if (process.env.NODE_ENV !== 'production') {
             console.error(error)
@@ -469,12 +469,12 @@ const store = new Vuex.Store({
         })
         for (const document of documents) {
           if (document.DocumentId !== payload.DocumentId) {
-            throw new Error('同一日に同一IDの症例は登録できません.')
+            throw new Error('同一の日付に同一IDの症例は登録できません.')
           }
         }
       } catch (error) {
         if (error.message === 'DUP') {
-          throw new Error(`同一日(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
+          throw new Error(`同一の日付(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
         } else {
           if (process.env.NODE_ENV !== 'production') {
             console.error(error)
