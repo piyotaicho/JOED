@@ -156,7 +156,7 @@ const DisableSearch = async () => {
           <option value="ProcedureTime">手術時間</option>
           <option value="TypeOfProcedure">カテゴリ</option>
           <option value="Age">年齢</option>
-          <option value="PatientId">施設の患者ID</option>
+          <option value="PatientId">患者ID</option>
         </select>
       </div>
 
