@@ -5,7 +5,7 @@ import InputFile from '@/components/Molecules/InputFile'
 import ImportJSON from '@/components/Molecules/ImportJSON'
 import ImportCSV from '@/components/Molecules/ImportCSV'
 import ImportMergeV4 from '@/components/Molecules/ImportMergeV4'
-import StepIndicator from '@/components/Molecules/StepIndicator'
+import ViewerOverlay from '@/components/Molecules/ViewerOverlay.vue'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import { nextTick, ref, reactive, watch } from 'vue'
 import { useStore } from '@/store'
@@ -24,7 +24,9 @@ const data = reactive({
   FileStream: '',
   DocumentupdateCreatedDocument: false,
   CreatedDocument: [],
-  ProgressBar: 0
+  count: 0,
+  errors: [],
+  errorText: ''
 })
 
 watch(importMode, () => resetState())
@@ -37,7 +39,26 @@ const resetState = () => {
 
   data.FileStream = ''
   data.CreatedDocument.splice(0)
-  data.ProgressBar = 0
+
+  data.count = 0
+  data.errors.splice(0)
+  data.errorText = ''
+}
+
+const clickViewer = () => {
+  data.errorText = ''
+}
+
+const saveErrorText = () => {
+  if (data.errorText !== '') {
+    const temporaryElementA = document.createElement('A')
+    temporaryElementA.href = URL.createObjectURL(new Blob([data.errorText]), { type: 'text/plain' })
+    temporaryElementA.download = 'import-error-report.txt'
+    temporaryElementA.style.display = 'none'
+    document.body.appendChild(temporaryElementA)
+    temporaryElementA.click()
+    document.body.removeChild(temporaryElementA)
+  }
 }
 
 const updateStreamData = (content) => {
@@ -56,13 +77,13 @@ const commit = async () => {
   data.ProgressBar = 0
   data.Processing = true
 
-  let count = 0
-  const errors = []
+  data.count = 0
+  data.errors.splice(0)
 
   for (const record of data.CreatedDocument) {
     await store.dispatch('UpsertDocument', record)
-      .then(_ => { data.ProgressBar = Math.round(++count * 100 / data.CreatedDocument.length) })
-      .catch(error => errors.push(error.message || error))
+      .then(_ => data.count++)
+      .catch(error => data.errors.push(error.message || error))
   }
 
   data.ImportProgress = 100
@@ -70,12 +91,14 @@ const commit = async () => {
   data.Processing = false
   await nextTick(() => {})
 
-  const message = count + ' 例を登録しました.'
-  if (errors.length > 0) {
-    let exportText = message + '\n' + errors.length + ' 件の登録に失敗しました.'
-    if (await Popups.confirmAnyOk(exportText, 'エラー内容をファイルに保存') === false) {
+  const message = data.count + ' 例を登録しました.'
+  if (data.errors.length === 0) {
+    Popups.information(message)
+  } else {
+    let exportText = message + '\n' + data.errors.length + ' 件の登録に失敗しました.'
+    if (await Popups.confirmAnyOk(exportText, 'エラー内容を表示') === false) {
       // errorsを保存
-      const countChars = errors.length.toString().length
+      const countChars = data.errors.length.toString().length
       const spaces = ((n) => {
         let s = ''
         for (let i = 0; i < n; i++) {
@@ -84,20 +107,11 @@ const commit = async () => {
         return s
       })(countChars)
 
-      exportText += '\n---\n' + errors.map((str, index) =>
+      exportText += '\n---\n' + data.errors.map((str, index) =>
         (spaces + (index + 1).toString()).slice(-countChars) + ': ' + str
       ).join('\n')
-      // ブラウザの機能でダウンロードさせる.
-      const temporaryElementA = document.createElement('A')
-      temporaryElementA.href = URL.createObjectURL(new Blob([exportText]), { type: 'text/plain' })
-      temporaryElementA.download = 'import-error-report.txt'
-      temporaryElementA.style.display = 'none'
-      document.body.appendChild(temporaryElementA)
-      temporaryElementA.click()
-      document.body.removeChild(temporaryElementA)
+      data.errorText = exportText
     }
-  } else {
-    Popups.information(message)
   }
 
   data.CreatedDocument.splice(0)
@@ -132,12 +146,10 @@ const commit = async () => {
       <el-button type="primary" :disabled="data.CreatedDocument.length === 0 || data.Committing > 0"
         @click="commit">変換したデータの登録</el-button>
     </div>
-    <div class="progress-views" v-show="data.Committing > 0">
-      <step-indicator :step="1" :stepcount="data.Committing" icon="el-icon-eleme" description="登録">
-        <el-progress  :percentage="data.ProgressBar" />
-      </step-indicator>
-    </div>
 
+    <template v-if="data.errorText !== ''">
+      <ViewerOverlay buttonLabel="ファイルに保存" @click="clickViewer()" @buttonClick="saveErrorText()">{{data.errorText}}</ViewerOverlay>
+    </template>
     <TheWrapper prevent-close v-if="data.Processing" />
   </div>
 </template>
