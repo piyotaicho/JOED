@@ -1,6 +1,7 @@
 # NSIS installer configuration for JOED5
 # - require installer.nsh to define Japanese messages.
 Unicode true
+ManifestDPIAware true
 !include MUI2.nsh
 
 !ifdef JOEDINSTALLER
