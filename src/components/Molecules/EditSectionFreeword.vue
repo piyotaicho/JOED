@@ -1,8 +1,53 @@
+<script setup>
+import { ref, onMounted, computed, nextTick } from 'vue'
+
+const props = defineProps({
+  value: {
+    type: String
+  },
+  disabled: {
+    type: Boolean,
+    default: true
+  }
+})
+const emit = defineEmits(['update:value', 'click-search'])
+
+const expandInput = ref(false)
+const inputElement = ref()
+
+onMounted(() => {
+  if (props.value !== '') {
+    expandInput.value = true
+  }
+})
+
+const typedValue = computed({
+  get: () => props.value,
+  set: (value) => emit('update:value', value)
+})
+
+const toggle = () => {
+  expandInput.value = !expandInput.value
+  if (expandInput.value) {
+    nextTick(() => inputElement.value.focus())
+  }
+}
+
+const open = async () => {
+  expandInput.value = true
+  await nextTick()
+  inputElement.value.focus()
+}
+const search = () => emit('click-search')
+
+defineExpose({ open })
+</script>
+
 <template>
   <div class="flex-content inputbox">
     <div class="w20"></div>
     <div class="w20 subtitle">
-      <div class="invisible-button" @click="Toggle">
+      <div class="invisible-button" @click="toggle">
         <span>自由入力</span>
         <span style="padding-left: 1rem;">
           <i :class="[expandInput ? 'el-icon-d-arrow-left' : 'el-icon-d-arrow-right']"/>
@@ -12,62 +57,16 @@
     <div class="w40" v-show="expandInput">
         <input type="text"
           v-model="typedValue"
-          :disabled="disabled"
+          :disabled="props.disabled"
           placeholder="カテゴリ選択後に入力・検索可能になります"
-          ref="input"
+          ref="inputElement"
         />
     </div>
     <div class="w20" v-show="expandInput">
-      <el-button type="primary" @click="OnSearch" icon="el-icon-search" :disabled="disabled">候補を検索</el-button>
+      <el-button type="primary" @click="search" icon="el-icon-search" :disabled="props.disabled">候補を検索</el-button>
     </div>
   </div>
 </template>
-
-<script>
-export default {
-  name: 'FreewordSection',
-  model: {
-    prop: 'value',
-    event: 'change'
-  },
-  props: {
-    value: {
-      type: String
-    },
-    disabled: {
-      type: Boolean,
-      default: true
-    }
-  },
-  data () {
-    return {
-      expandInput: false
-    }
-  },
-  mounted () {
-    if (this.value !== '') {
-      this.$set(this, 'expandInput', true)
-    }
-  },
-  computed: {
-    typedValue: {
-      get () { return this.value },
-      set (value) { this.$emit('change', value) }
-    }
-  },
-  methods: {
-    Toggle () {
-      this.expandInput = !this.expandInput
-      if (this.expandInput) {
-        this.$nextTick().then(_ => this.$refs.input.focus())
-      }
-    },
-    OnSearch () {
-      this.$emit('click-search')
-    }
-  }
-}
-</script>
 
 <style lang="sass">
 div.invisible-button

@@ -1,8 +1,44 @@
 import { encodeProcedureTime, parseProcedureTime } from '@/modules/ProcedureTimes'
-import { DateFormat } from '@/modules/CaseValidater'
+import { DateFormat, DateFormatPattern } from '@/modules/CaseValidater'
 import { Migrate2019to2020 } from '@/modules/ImportMergeV4'
 
 let staticCount = 0
+
+export const fieldNames = [
+  '手術日 (必須)', 'ID (必須)',
+  '患者名', '年齢', '腫瘍登録番号', 'NCD症例識別コード',
+  '手術時間',
+  '合併症の有無',
+
+  '手術診断1', '手術診断1カテゴリ', '手術診断1良性/悪性',
+  '実施手術1', '実施手術1カテゴリ', '実施手術1良性/悪性',
+
+  '手術診断2', '手術診断2カテゴリ', '手術診断2良性/悪性',
+  '実施手術2', '実施手術2カテゴリ', '実施手術2良性/悪性',
+
+  '手術診断3', '手術診断3カテゴリ', '手術診断3良性/悪性',
+  '実施手術3', '実施手術3カテゴリ', '実施手術3良性/悪性',
+
+  '手術診断4', '手術診断4カテゴリ', '手術診断4良性/悪性',
+  '実施手術4', '実施手術4カテゴリ', '実施手術4良性/悪性'
+]
+
+export const generatorFunctions = {
+  '自動生成 - ID': { compute: 'ID', title: '自動生成' },
+  '定数 - 日付(ユーザ入力)': { constants: '$', title: 'yyyy-mm-dd の形式で日付文字列を入力して下さい.', rule: DateFormatPattern },
+  '定数 - 文字列(ユーザ入力)': { constants: '$', title: '任意の文字列を入力可能です.' },
+  '定数 - 数値(ユーザ入力)': { constants: '$', title: '任意の数値を入力可能です.', rule: '^[1-9][0-9]*$' }, // HARDCODED
+  '定数 - あり': { constants: false, title: 'あり' },
+  '定数 - なし': { constants: false, title: 'なし' },
+  '定数 - 腹腔鏡': { constants: '腹腔鏡' },
+  '定数 - ロボット': { constants: 'ロボット' },
+  '定数 - 腹腔鏡悪性': { constants: '腹腔鏡悪性' },
+  '定数 - ロボット悪性': { constants: 'ロボット悪性' },
+  '定数 - 子宮鏡': { constants: '子宮鏡' },
+  '定数 - 卵管鏡': { constants: '卵管鏡' },
+  '定数 - 良性': { constants: '良性' },
+  '定数 - 悪性': { constants: '悪性' }
+}
 
 export function CreateDocument (record = [], ruleset = {}) {
   // インポートデータのフラグとメッセージ
@@ -118,7 +154,6 @@ function ProcedureTime (CaseData, record, ruleset) {
   const operationtime = getvalueByRule('手術時間', record, ruleset)
   if (operationtime !== undefined) {
     CaseData.ProcedureTime = encodeProcedureTime(parseProcedureTime(operationtime))
-    console.log(`${operationtime} => ${CaseData.ProcedureTime}`)
   }
 }
 

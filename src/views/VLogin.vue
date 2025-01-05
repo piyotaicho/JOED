@@ -1,67 +1,63 @@
+<script setup>
+import { onMounted, computed, ref } from 'vue'
+import { useStore } from '@/store'
+import { useRouter } from 'vue-router/composables'
+import LargeIcon from '@/components/Atoms/LargeIcon'
+
+const store = useStore()
+const router = useRouter()
+
+const tilte = computed(() => [
+  '日本産科婦人科内視鏡学会',
+  '症例登録システム ' +
+  store.getters['system/ApplicationName'] +
+  ' version ' +
+  store.getters['system/ApplicationVersion']
+])
+
+const password = ref('')
+const loginFailed = ref(false)
+
+const disablePasswordField = ref(false)
+
+onMounted(async () => {
+  // 初回起動時
+  await store.dispatch('password/Authenticate', { PasswordString: '' })
+  disablePasswordField.value = !store.getters.isPasswordRequired
+})
+
+async function performAuthentication () {
+  await store.dispatch('password/Authenticate', { PasswordString: password.value })
+    .then(_ => {
+      router.push({ name: 'list' })
+    })
+    .catch(_ => { loginFailed.value = true })
+}
+</script>
+
 <template>
   <div class="login-dialog">
     <div class="w30" id="auth-logo"><LargeIcon/></div>
     <div class="w70" id="auth">
-      <div class="title">{{Title[0]}}</div>
-      <div class="subtitle">{{Title[1]}}</div>
+      <div class="title">{{tilte[0]}}</div>
+      <div class="subtitle">{{tilte[1]}}</div>
 
       <div>
         <label>
           パスワード :
-          <el-badge value="パスワードが違います" :hidden="!LoginFailed">
-            <input type="password" v-model="Password" id="password-entry-box" @keyup.13="PerformAuthentication" :disabled="StateLess" />
+          <el-badge value="パスワードが違います" :hidden="!loginFailed">
+            <input type="password" v-model="password" id="password-entry-box"
+              @keyup.13="performAuthentication" :disabled="disablePasswordField" />
           </el-badge>
         </label>
       </div>
 
       <div>
-          <el-button type="primary" style="float: right" @click="PerformAuthentication">ログイン</el-button>
+          <el-button type="primary" style="float: right" @click="performAuthentication">ログイン</el-button>
       </div>
     </div>
   </div>
 </template>
-
-<script>
-import LargeIcon from '@/components/Atoms/LargeIcon'
-
-export default {
-  name: 'ViewLogin',
-  components: {
-    LargeIcon
-  },
-  data () {
-    return ({
-      Password: '',
-      LoginFailed: false
-    })
-  },
-  created () {
-    this.$store.dispatch('password/Authenticate', { PasswordString: '' })
-      .catch(_ => {})
-  },
-  computed: {
-    Title () {
-      return [
-        '日本産科婦人科内視鏡学会',
-        '症例登録システム ' +
-        this.$store.getters['system/ApplicationName'] +
-        ' version ' +
-        this.$store.getters['system/ApplicationVersion']
-      ]
-    },
-    StateLess () {
-      return !this.$store.getters['password/isPasswordRequired']
-    }
-  },
-  methods: {
-    PerformAuthentication () {
-      this.$store.dispatch('password/Authenticate', { PasswordString: this.Password })
-        .then(_ => this.$router.push({ name: 'list' }))
-        .catch(_ => { this.LoginFailed = true })
-    }
-  }
-}
-</script>
 
 <style lang="sass">
 div.login-dialog

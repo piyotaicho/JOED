@@ -34,38 +34,31 @@ const store = new Vuex.Store({
   },
   getters: {
     // 現在queryで設定されているドキュメントの DocumentId を配列で返す.
-    //
     Uids (state) {
       return state.DocumentIds.List
     },
     // 現在表示されているドキュメントの DocumentId を配列で返す.
-    //
     PagedUids (state) {
       return state.DocumentIds.List.slice(0, state.DocumentIds.Range)
     },
     // 現在表示されているドキュメントの数
-    //
     PagedUidsRange (state) {
       return state.DocumentIds.Range
     },
     // 現在表示対象のドキュメントリストのシリアル値
-    //
     DisplayIdentifier (state) {
       return state.DocumentIds.Identifier
     },
     // 現在queryで設定されているドキュメントの数を返す.
-    //
     NumberOfCases (state) {
       return state.DocumentIds.List.length
     },
     // データベースが保持しているドキュメントの数を返す.
-    //
     TotalNumberOfCases (state) {
       return state.DocumentIds.TotalCount
     },
     // 指定された DocumentId の前後の DocumentId を返す.
     // 存在しないものは 0.
-    //
     NextUids (state, getters) {
       return function (currentUid) {
         const index = state.DocumentIds.List.indexOf(currentUid)
@@ -81,7 +74,6 @@ const store = new Vuex.Store({
       }
     },
     // DocumentId をもつドキュメントを取得する. ロードされていない場合は空のオブジェクトが返る.
-    //
     // @param {Number or Object}
     CaseDocument (state) {
       return function (payload) {
@@ -96,7 +88,6 @@ const store = new Vuex.Store({
       }
     },
     // Listの表示設定を取得
-    //
     ViewSettings (state) {
       return {
         Filters: state.Filters,
@@ -105,12 +96,10 @@ const store = new Vuex.Store({
       }
     },
     // 検索が有効かを取得
-    //
     SearchActivated (state) {
       return Object.keys(state.Search.Filter).length > 0
     },
     // 現在のView設定からのクエリを作成する
-    //
     ViewQuery (state) {
       const filters = (state.Filters && [...state.Filters]) || []
       const sort = (state.Sort && { ...state.Sort }) || { DocumentId: -1 }
@@ -400,7 +389,7 @@ const store = new Vuex.Store({
         }
       } catch (error) {
         if (error.message === 'DUP') {
-          throw new Error(`同一日(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
+          throw new Error(`同一の日付(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
         } else {
           if (process.env.NODE_ENV !== 'production') {
             console.error(error)
@@ -480,12 +469,12 @@ const store = new Vuex.Store({
         })
         for (const document of documents) {
           if (document.DocumentId !== payload.DocumentId) {
-            throw new Error('同一日に同一IDの症例は登録できません.')
+            throw new Error('同一の日付に同一IDの症例は登録できません.')
           }
         }
       } catch (error) {
         if (error.message === 'DUP') {
-          throw new Error(`同一日(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
+          throw new Error(`同一の日付(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
         } else {
           if (process.env.NODE_ENV !== 'production') {
             console.error(error)
@@ -569,3 +558,4 @@ const store = new Vuex.Store({
 })
 
 export default store
+export const useStore = () => store

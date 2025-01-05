@@ -1,6 +1,53 @@
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter, useRoute, onBeforeRouteUpdate } from 'vue-router/composables'
+import { useStore } from '@/store'
+import ExportData from '@/components/Export'
+import ImportData from '@/components/Import'
+
+const store = useStore()
+const router = useRouter()
+const route = useRoute()
+
+const selectedTabName = ref(route.name || '')
+
+onMounted(() => document.addEventListener('keydown', keyEventLister, true))
+onBeforeUnmount(() => document.removeEventListener('keydown', keyEventLister, true))
+onBeforeRouteUpdate((to, from, next) => {
+  if (to.name !== from.name) {
+    selectedTabName.value = to.name
+    next()
+  }
+})
+
+const selectedTab = computed({
+  get: () => selectedTabName.value,
+  set: (newRouteName) => {
+    router.push({ name: newRouteName })
+      .then(_ => { selectedTabName.value = newRouteName })
+      .catch(_ => {})
+  }
+})
+
+function keyEventLister (event) {
+  if (store.getters['system/Platform'] === 'darwin'
+    ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) // macOS - command
+    : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) // Windows - Ctrl
+  ) {
+    if (event.code === 'KeyU') {
+      goBack()
+    }
+  }
+}
+
+function goBack () {
+  router.push({ name: 'list' })
+}
+</script>
+
 <template>
   <div>
-    <el-tabs v-model="SelectedTab" tab-position="left">
+    <el-tabs v-model="selectedTab" tab-position="left">
       <el-tab-pane name="list">
         <template v-slot:label>
           <span><i class="el-icon-d-arrow-left" /> 戻る</span>
@@ -15,61 +62,3 @@
     </el-tabs>
   </div>
 </template>
-
-<script>
-import ExportData from '@/components/Export'
-import ImportData from '@/components/Import'
-
-export default {
-  name: 'ViewUtilities',
-  components: {
-    ExportData, ImportData
-  },
-  data () {
-    return ({
-      SelectedTabName: ''
-    })
-  },
-  created () {
-    this.SelectedTabName = this.$route.name
-  },
-  mounted () {
-    document.addEventListener('keydown', this.EventLister, true)
-  },
-  beforeDestroy () {
-    document.removeEventListener('keydown', this.EventLister, true)
-  },
-  beforeRouteUpdate (to, from, next) {
-    if (to.name !== from.name) {
-      this.SelectedTabName = to.name
-      next()
-    }
-  },
-  computed: {
-    SelectedTab: {
-      get () {
-        return this.SelectedTabName
-      },
-      set (value) {
-        this.SelectedTabName = value
-        this.$router.push({ name: value }).catch(_ => {})
-      }
-    }
-  },
-  methods: {
-    EventLister (event) {
-      if (this.$store.getters['system/Platform'] === 'darwin'
-        ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) // macOS - command
-        : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) // Windows - Ctrl
-      ) {
-        if (event.code === 'KeyU') {
-          this.goBack()
-        }
-      }
-    },
-    goBack () {
-      this.$router.push({ name: 'list' })
-    }
-  }
-}
-</script>

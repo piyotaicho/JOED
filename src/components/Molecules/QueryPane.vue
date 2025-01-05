@@ -1,61 +1,46 @@
+<script setup>
+import ListItem from '@/components/Molecules/QueryPaneListItem'
+
+const props = defineProps({
+  title: {
+    type: String,
+    default: ''
+  },
+  draggable: {
+    type: Boolean,
+    default: false
+  },
+  erasable: {
+    type: Boolean,
+    default: false
+  },
+  container: {
+    type: Array,
+    require: true
+  }
+})
+
+const emit = defineEmits(['erase', 'dragged', 'dropped'])
+</script>
+
 <template>
   <div class="QueryPane">
-    <div class="QueryPaneTitle"><slot name="title">{{title}}</slot></div>
+    <div class="QueryPaneTitle"><slot name="title">{{props.title}}</slot></div>
     <div class="QueryPaneList">
       <div>
-        <list-item v-for="(item, index) in container"
+        <list-item v-for="(item, index) in props.container"
           :key="index"
           :item="item"
-          :erasable="erasable"
-          @erase="erase(index)"
-          :draggable="draggable"
-          @dragged="dragged(index, $event)"
-          @dropped="dropped(index, $event)"
+          :erasable="props.erasable"
+          :draggable="props.draggable"
+          @erase="emit('erase', index)"
+          @dragged="emit('dragged', index, $event)"
+          @dropped="emit('dropped', index, $event)"
         />
       </div>
     </div>
   </div>
 </template>
-
-<script>
-import ListItem from '@/components/Molecules/QueryPaneListItem'
-
-export default {
-  name: 'QueryPane',
-  components: {
-    ListItem
-  },
-  props: {
-    title: {
-      type: String,
-      default: ''
-    },
-    draggable: {
-      type: Boolean,
-      default: false
-    },
-    erasable: {
-      type: Boolean,
-      default: false
-    },
-    container: {
-      type: Array,
-      require: true
-    }
-  },
-  methods: {
-    erase (index) {
-      this.$emit('erase', index)
-    },
-    dragged (index, dragevent) {
-      this.$emit('dragged', index, dragevent)
-    },
-    dropped (index, dragevent) {
-      this.$emit('dropped', index, dragevent)
-    }
-  }
-}
-</script>
 
 <style lang="sass">
 div.QueryPane

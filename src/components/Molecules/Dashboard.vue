@@ -1,7 +1,30 @@
+<!-- eslint-disable vue/multi-word-component-names -->
+<script setup>
+
+import CloseButton from '@/components/Atoms/CloseButton'
+import DiagnosisMaster from '@/modules/Masters/DiagnosisMaster'
+import ProcedureMaster from '@/modules/Masters/ProcedureMaster'
+import AEMaster from '@/modules/Masters/AE'
+import { computed } from 'vue'
+import { useStore } from '@/store'
+
+const emit = defineEmits(['close'])
+
+// 一番新しいマスタの年次を取得する
+const YearOfMaster = [(new DiagnosisMaster()).Year(), (new ProcedureMaster()).Year(), (new AEMaster()).Year()].sort()[2]
+
+const store = useStore()
+const InstituteName = computed(() => store.getters['system/InstitutionName'] || '(施設名称未設定)')
+const ViewCount = computed(() => store.getters.NumberOfCases)
+const TotalCount = computed(() => store.getters.TotalNumberOfCases)
+
+const close = () => emit('close')
+</script>
+
 <template>
   <div>
     <div class="dashboard">
-      <CloseButton @click="Close"/>
+      <CloseButton @click="close"/>
       <div class="dashboard-title" ref="title">{{InstituteName}}</div>
       <div class="dashboard-row">
         <span>{{YearOfMaster}}年版マスタ</span>
@@ -10,43 +33,6 @@
     </div>
   </div>
 </template>
-
-<script>
-import CloseButton from '@/components/Atoms/CloseButton'
-import DiagnosisMaster from '@/modules/Masters/DiagnosisMaster'
-
-export default {
-  name: 'ListDashboard',
-  components: {
-    CloseButton
-  },
-  created () {
-    const master = new DiagnosisMaster()
-    this.YearOfMaster = master.Year()
-  },
-  data () {
-    return ({
-      YearOfMaster: '0000'
-    })
-  },
-  computed: {
-    InstituteName () {
-      return this.$store.getters['system/InstitutionName'] || '(施設名称未設定)'
-    },
-    ViewCount () {
-      return this.$store.getters.NumberOfCases
-    },
-    TotalCount () {
-      return this.$store.getters.TotalNumberOfCases
-    }
-  },
-  methods: {
-    Close () {
-      this.$emit('close')
-    }
-  }
-}
-</script>
 
 <style lang="sass">
 div.dashboard

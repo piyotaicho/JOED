@@ -1,3 +1,27 @@
+<script setup>
+import { computed } from 'vue'
+import SectionBlock from '@/components/Molecules/SectionBlock'
+
+const props = defineProps({
+  container: {
+    type: Array,
+    required: true
+  }
+})
+const emit = defineEmits(['addnewitem', 'edititem', 'removeitem', 'update:container'])
+
+const items = computed({
+  get: () => props.container,
+  set: (value) => emit('update:container', value)
+})
+
+const AddNewItem = () => emit('addnewitem')
+
+const EditItem = (value) => emit('edititem', value)
+
+const RemoveItem = (index) => emit('removeitem', index)
+</script>
+
 <template>
   <SectionBlock title="手術診断"
     :container.sync="items"
@@ -6,39 +30,3 @@
     @removeitem="RemoveItem">
   </SectionBlock>
 </template>
-
-<script>
-import SectionBlock from '@/components/Molecules/Section'
-
-export default {
-  name: 'SectionDiagnoses',
-  components: { SectionBlock },
-  props: {
-    container: {
-      type: Array,
-      required: true
-    }
-  },
-  computed: {
-    items: {
-      get () {
-        return this.container
-      },
-      set (value) {
-        this.$emit('update:container', value)
-      }
-    }
-  },
-  methods: {
-    AddNewItem () {
-      this.$emit('addnewitem')
-    },
-    EditItem (value) {
-      this.$emit('edititem', value)
-    },
-    RemoveItem (index) {
-      this.$emit('removeitem', index)
-    }
-  }
-}
-</script>

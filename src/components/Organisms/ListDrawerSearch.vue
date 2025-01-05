@@ -1,59 +1,10 @@
-<template>
-  <div class="menu-item">
-    <div class="subtilte-section">検索対象</div>
-    <div>
-      <InputSwitchField
-        v-model="IgnoreQuery"
-        title=""
-        :options="{ 全データ: true, 現在の表示設定: false }"
-      />
-    </div>
-    <div class="menu-item-content">
-      <div>
-        <div>
-          <select v-model="Field">
-            <option value="" disabled style="display: none;">検索する項目を選択してください.</option>
-            <option value="Id">患者ID</option>
-            <option value="Name">患者名</option>
-            <option value="Diagnoses">手術診断</option>
-            <option value="DiagnosesMain">手術診断 (主たる診断のみ)</option>
-            <option value="Procedures">実施手術</option>
-            <option value="ProceduresMain">実施手術 (主たる手術のみ)</option>
-            <option value="Hash">問い合わせレコード識別子</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <div class="subtilte-section">
-      検索内容
-      <span style="font-size: 0.8rem;" v-show="MultipleQueryAccepted">
-        区切り文字で区切って複数の検索が可能です.
-      </span>
-    </div>
-    <div class="menu-item-content">
-      <input type="text" v-model="Search" />
-    </div>
-    <div>
-      <InputSwitchField
-        v-model="UseRegexp"
-        title=""
-        :options="{ 部分一致: false, 正規表現: true }"
-        :disabled="RegexpDisabled"
-      />
-    </div>
-
-    <div class="menu-item-bottom">
-      <el-button type="primary" :disabled="Field === '' || Search.trim() === ''" @click="performQuery">検索</el-button>
-      <el-button type="success" :disabled="!SearchActivated" @click="cancelQuery">検索の解除</el-button>
-    </div>
-  </div>
-</template>
-
 <script>
+import { computed, reactive } from 'vue'
+import { useStore } from '@/store'
 import InputSwitchField from '@/components/Molecules/InputSwitchField'
 
-function makeRegex (str = '', regex = false) {
+// private 定数 関数
+const makeRegex = (str = '', regex = false) => {
   let queryRegex
   if (regex) {
     try {
@@ -62,6 +13,7 @@ function makeRegex (str = '', regex = false) {
       queryRegex = new RegExp()
     }
   } else {
+    // 文字列の正規表現シンタックスをエスケープして文字列検索パターンを生成
     queryRegex = new RegExp(str.replace(/[\\/.*+?^$-|()\][]/g, c => '\\' + c), 'i')
   }
   return queryRegex
@@ -156,7 +108,7 @@ const SearchSetting = {
     regexp: false,
     multiple: false,
     createquery: (query) => {
-      if (query.trim().length > 0) {
+      if (query && query.trim().length > 0) {
         return { Hash: query.trim() }
       } else {
         return undefined
@@ -166,76 +118,136 @@ const SearchSetting = {
 }
 
 export default {
-  name: 'ListSearch',
   components: {
     InputSwitchField
   },
-  data () {
-    return ({
+  emits: ['changed'],
+  setup (_props, { emit }) {
+    const store = useStore()
+    const setting = reactive({
       IgnoreQuery: false,
       UseRegexp: false,
       Field: '',
       Search: ''
     })
-  },
-  created () {
-    if (this.$store.getters.ViewSettings.Search) {
-      const settings = JSON.parse(this.$store.getters.ViewSettings.Search.Preserve || '{}')
 
-      Object.keys(this.$data).forEach(key => {
-        if (settings[key] !== undefined) {
-          this.$data[key] = settings[key]
+    const created = () => {
+      if (store.getters.ViewSettings.Search) {
+        const preservedSearch = JSON.parse(store.getters.ViewSettings.Search.Preserve || '{}')
+
+        for (const key in setting) {
+          if (preservedSearch[key] !== undefined) {
+            setting[key] = preservedSearch[key]
+          }
         }
-      })
+      }
     }
-  },
-  computed: {
-    SearchActivated () {
-      return this.$store.getters.SearchActivated
-    },
-    RegexpDisabled () {
-      return (
-        SearchSetting[this.Field] &&
-        SearchSetting[this.Field].regexp !== undefined
-      )
-        ? !SearchSetting[this.Field].regexp
-        : true
-    },
-    MultipleQueryAccepted () {
-      return (
-        SearchSetting[this.Field] &&
-        SearchSetting[this.Field].multiple !== undefined
-      )
-        ? SearchSetting[this.Field].multiple
-        : false
-    }
-  },
-  methods: {
-    performQuery () {
-      if (this.Field && this.Search) {
+    created()
+
+    const SearchActivated = computed(() => store.getters.SearchActivated)
+
+    const RegexpDisabled = computed(() => {
+      const preset = SearchSetting[setting.Field]
+
+      if (preset && preset.regexp !== undefined) {
+        return !preset.regexp
+      } else {
+        return true
+      }
+    })
+
+    const MultipleQueryAccepted = computed(() => {
+      const preset = SearchSetting[setting.Field]
+
+      if (preset && preset.multiple !== undefined) {
+        return SearchSetting[setting.Field].multiple
+      } else {
+        return false
+      }
+    })
+
+    const performQuery = () => {
+      if (setting.Field && setting.Search) {
         const query = Object.entries(
-          SearchSetting[this.Field].createquery(this.Search, this.UseRegexp) || {}
+          SearchSetting[setting.Field].createquery(setting.Search, setting.UseRegexp) || {}
         )[0]
 
         if (query && query.length === 2) {
-          this.$store.commit('SetSearch', {
-            IgnoreQuery: this.IgnoreQuery,
+          store.commit('SetSearch', {
+            IgnoreQuery: setting.IgnoreQuery,
             Filter: {
               Field: query[0],
               Value: query[1]
             },
-            Preserve: JSON.stringify(this.$data)
+            Preserve: JSON.stringify(setting)
           })
-          this.$emit('changed')
+          emit('changed')
         }
       }
-    },
-    cancelQuery () {
-      this.$store.commit('SetSearch', {
+    }
+
+    const cancelQuery = () => {
+      store.commit('SetSearch', {
         Filter: {}
       })
-      this.$emit('changed')
+      emit('changed')
+    }
+
+    return {
+      setting, SearchActivated, RegexpDisabled, MultipleQueryAccepted, performQuery, cancelQuery
     }
   }
 }
 </script>
+
+<template>
+  <div class="menu-item">
+    <div class="subtilte-section">検索対象</div>
+    <div>
+      <InputSwitchField
+        :value.sync="setting.IgnoreQuery"
+        title=""
+        :options="{ 全データ: true, 現在の表示設定: false }"
+      />
+    </div>
+    <div class="menu-item-content">
+      <div>
+        <div>
+          <select v-model="setting.Field">
+            <option value="" disabled style="display: none;">検索する項目を選択してください.</option>
+            <option value="Id">患者ID</option>
+            <option value="Name">患者名</option>
+            <option value="Diagnoses">手術診断</option>
+            <option value="DiagnosesMain">手術診断 (主たる診断のみ)</option>
+            <option value="Procedures">実施手術</option>
+            <option value="ProceduresMain">実施手術 (主たる手術のみ)</option>
+            <option value="Hash">問い合わせレコード識別子</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="subtilte-section">
+      検索内容
+      <span style="font-size: 0.8rem;" v-show="MultipleQueryAccepted">
+        区切り文字で区切って複数の検索が可能です.
+      </span>
+    </div>
+    <div class="menu-item-content">
+      <input type="text" v-model="setting.Search" />
+    </div>
+    <div>
+      <InputSwitchField
+        :value.sync="setting.UseRegexp"
+        title=""
+        :options="{ 部分一致: false, 正規表現: true }"
+        :disabled="RegexpDisabled"
+      />
+    </div>
+
+    <div class="menu-item-bottom">
+      <el-button type="primary" :disabled="setting.Field === '' || setting.Search.trim() === ''" @click="performQuery">検索</el-button>
+      <el-button type="success" :disabled="!SearchActivated" @click="cancelQuery">検索の解除</el-button>
+    </div>
+  </div>
+</template>

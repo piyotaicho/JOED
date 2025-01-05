@@ -1,30 +1,26 @@
+<script setup>
+const props = defineProps({
+  tabindex: {
+    type: String, Number
+  },
+  accesskey: {
+    type: String
+  }
+})
+const emit = defineEmits(['click'])
+
+const click = (event) => emit('click', event)
+
+</script>
+
 <template>
   <div class="open-drawer-button"
-    :tabindex="tabindex"
-    @click="Click"
-    @keydown.enter="Click"
-    :accesskey="accesskey">
+    :tabindex="props.tabindex"
+    @click="click"
+    @keydown.enter="click"
+    :accesskey="props.accesskey">
   </div>
 </template>
-
-<script>
-export default {
-  name: 'DrawerButton',
-  props: {
-    tabindex: {
-      type: String, Number
-    },
-    accesskey: {
-      type: String
-    }
-  },
-  methods: {
-    Click (event) {
-      this.$emit('click', event)
-    }
-  }
-}
-</script>
 
 <style lang="sass">
 div.open-drawer-button

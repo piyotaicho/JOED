@@ -1,170 +1,155 @@
+<!-- eslint-disable vue/multi-word-component-names -->
+<script setup>
+import * as Popups from '@/modules/Popups'
+import InputFile from '@/components/Molecules/InputFile'
+import ImportJSON from '@/components/Molecules/ImportJSON'
+import ImportCSV from '@/components/Molecules/ImportCSV'
+import ImportMergeV4 from '@/components/Molecules/ImportMergeV4'
+import ViewerOverlay from '@/components/Molecules/ViewerOverlay.vue'
+import TheWrapper from '@/components/Atoms/TheWrapper'
+import { nextTick, ref, reactive, watch } from 'vue'
+import { useStore } from '@/store'
+
+const store = useStore()
+
+const importMode = ref('json')
+const data = reactive({
+  Processing: false,
+  Committing: 0,
+  FileExtentions: {
+    json: '.json',
+    csv: '.csv,.mer',
+    merge: '.mer'
+  },
+  FileStream: '',
+  DocumentupdateCreatedDocument: false,
+  CreatedDocument: [],
+  count: 0,
+  errors: [],
+  errorText: ''
+})
+
+watch(importMode, () => resetState())
+
+const resetState = () => {
+  data.Processing = false
+  data.Committing = 0
+
+  data.DocumentupdateCreatedDocument = false
+
+  data.FileStream = ''
+  data.CreatedDocument.splice(0)
+
+  data.count = 0
+  data.errors.splice(0)
+  data.errorText = ''
+}
+
+const clickViewer = () => {
+  data.errorText = ''
+}
+
+const saveErrorText = () => {
+  if (data.errorText !== '') {
+    const temporaryElementA = document.createElement('A')
+    temporaryElementA.href = URL.createObjectURL(new Blob([data.errorText]), { type: 'text/plain' })
+    temporaryElementA.download = 'import-error-report.txt'
+    temporaryElementA.style.display = 'none'
+    document.body.appendChild(temporaryElementA)
+    temporaryElementA.click()
+    document.body.removeChild(temporaryElementA)
+  }
+}
+
+const updateStreamData = (content) => {
+  resetState()
+  data.FileStream = content
+}
+
+const updateCreatedDocument = (newdocuments) => data.CreatedDocument.splice(0, data.CreatedDocument.length, ...newdocuments)
+
+const commit = async () => {
+  if (data.CreatedDocument.length === 0) {
+    return
+  }
+
+  data.Committing = 1
+  data.ProgressBar = 0
+  data.Processing = true
+
+  data.count = 0
+  data.errors.splice(0)
+
+  for (const record of data.CreatedDocument) {
+    await store.dispatch('UpsertDocument', record)
+      .then(_ => data.count++)
+      .catch(error => data.errors.push(error.message || error))
+  }
+
+  data.ImportProgress = 100
+  data.Committing = 2
+  data.Processing = false
+  await nextTick(() => {})
+
+  const message = data.count + ' 例を登録しました.'
+  if (data.errors.length === 0) {
+    Popups.information(message)
+  } else {
+    let exportText = message + '\n' + data.errors.length + ' 件の登録に失敗しました.'
+    if (await Popups.confirmAnyOk(exportText, 'エラー内容を表示') === false) {
+      // errorsを保存
+      const countChars = data.errors.length.toString().length
+      const spaces = ((n) => {
+        let s = ''
+        for (let i = 0; i < n; i++) {
+          s += ' '
+        }
+        return s
+      })(countChars)
+
+      exportText += '\n---\n' + data.errors.map((str, index) =>
+        (spaces + (index + 1).toString()).slice(-countChars) + ': ' + str
+      ).join('\n')
+      data.errorText = exportText
+    }
+  }
+
+  data.CreatedDocument.splice(0)
+  nextTick(() => {})
+}
+</script>
+
 <template>
   <div class="utility">
     <div>
       <div class="title">データ読み込み</div>
       <div class="subtitle">ファイル種別の指定</div>
       <div>
-        <select v-model="ImportMode">
+        <select v-model="importMode">
           <option value="json">JOED5のバックアップ形式に準拠した jsonファイル</option>
           <option value="csv">ExcelやFilemaker等から出力した CSVファイル</option>
           <option value="merge">症例登録システム version4 で入力・出力した mergeファイル</option>
         </select>
       </div>
-      <input-file @load="LoadFile" ButtonText="ファイルの指定" :AcceptFileTypes="FileExtentions[ImportMode]" />
+      <input-file @load="updateStreamData" ButtonText="ファイルの指定" :AcceptFileTypes="data.FileExtentions[importMode]" />
     </div>
 
     <!-- Importerセクション -->
-    <import-CSV v-if="ImportMode === 'csv'" :stream="FileStream" :disabled="!FileStream" :preserved-rule="CSVruleset"
-      @done="Processed" @store="storeCSVruleset" />
-    <import-merge-v4 v-if="ImportMode === 'merge'" :stream="FileStream" :disabled="!FileStream" @done="Processed" />
-    <import-JSON v-if="ImportMode === 'json'" :stream="FileStream" :disabled="!FileStream" @done="Processed" />
+    <import-CSV v-if="importMode === 'csv'"
+      :stream="data.FileStream" :disabled="!data.FileStream" @done="updateCreatedDocument" />
+    <import-merge-v4 v-if="importMode === 'merge'"
+      :stream="data.FileStream" :disabled="!data.FileStream" @done="updateCreatedDocument" />
+    <import-JSON v-if="importMode === 'json'"
+      :stream="data.FileStream" :disabled="!data.FileStream" @done="updateCreatedDocument" />
 
     <div>
-      <el-button type="primary" :disabled="CreatedDocument.length === 0 || Committing > 0"
-        @click="CommitImported">変換したデータの登録</el-button>
-    </div>
-    <div class="progress-views">
-      <step-indicator :step="1" :stepcount="Committing" icon="el-icon-eleme" description="登録">
-        <el-progress v-show="Committing > 0" :percentage="ProgressBar" />
-      </step-indicator>
+      <el-button type="primary" :disabled="data.CreatedDocument.length === 0 || data.Committing > 0"
+        @click="commit">変換したデータの登録</el-button>
     </div>
 
-    <TheWrapper prevent-close v-if="Processing" />
+    <template v-if="data.errorText !== ''">
+      <ViewerOverlay buttonLabel="ファイルに保存" @click="clickViewer()" @buttonClick="saveErrorText()">{{data.errorText}}</ViewerOverlay>
+    </template>
+    <TheWrapper prevent-close v-if="data.Processing" />
   </div>
 </template>
-
-<script>
-import * as Popups from '@/modules/Popups'
-import InputFile from '@/components/Molecules/InputFile'
-import ImportJSON from '@/components/Molecules/ImportJSON'
-import ImportCSV from '@/components/Molecules/ImportCSV'
-import ImportMergeV4 from '@/components/Molecules/ImportMergeV4'
-import StepIndicator from '@/components/Molecules/StepIndicator'
-import TheWrapper from '@/components/Atoms/TheWrapper'
-
-export default {
-  name: 'ImportData',
-  components: { InputFile, StepIndicator, ImportJSON, ImportCSV, ImportMergeV4, TheWrapper },
-  data () {
-    return ({
-      Processing: false,
-      Committing: 0,
-      ImportMode: 'json',
-      FileExtentions: {
-        json: '.json',
-        csv: '.csv,.mer',
-        merge: '.mer'
-      },
-      FileStream: '',
-      DocumentProcessed: false,
-      CreatedDocument: [],
-      ProgressBar: 0
-    })
-  },
-  watch: {
-    ImportMode () {
-      this.ResetState()
-    }
-  },
-  computed: {
-    StepCommit () {
-      if (this.CreatedDocument.length === 0) {
-        return -1
-      }
-      if (this.Committing) {
-        return 0
-      } else {
-        return 1
-      }
-    },
-    CSVruleset: {
-      get () {
-        return this.$store.getters['system/SavedCSVrule']
-      },
-      set (value) {
-        this.$store.commit('system/SetPreferences', { CSVruleset: value })
-        this.$store.dispatch('system/SavePreferences')
-      }
-    }
-  },
-  methods: {
-    ResetState () {
-      this.Processing = false
-      this.Committing = 0
-
-      this.DocumentProcessed = false
-
-      this.FileStream = ''
-      this.CreatedDocument.splice(0)
-      this.ProgressBar = 0
-    },
-    LoadFile (content) {
-      this.ResetState()
-      this.FileStream = content
-    },
-    Processed (newdocuments) {
-      this.CreatedDocument.splice(0)
-      this.CreatedDocument.splice(0, 0, ...newdocuments)
-    },
-    storeCSVruleset (value) {
-      this.CSVruleset = value
-    },
-    async CommitImported () {
-      if (this.CreatedDocument.length === 0) {
-        return
-      }
-
-      this.Committing = 1
-      this.ProgressBar = 0
-      this.Processing = true
-
-      let count = 0
-      const errors = []
-
-      for (const record of this.CreatedDocument) {
-        await this.$store.dispatch('UpsertDocument', record)
-          .then(_ => { this.ProgressBar = Math.round(++count * 100 / this.CreatedDocument.length) })
-          .catch(error => errors.push(error.message || error))
-      }
-
-      this.ImportProgress = 100
-      this.Committing = 2
-      this.Processing = false
-      await this.$nextTick()
-
-      const message = count + ' 例を登録しました.'
-      if (errors.length > 0) {
-        let exportText = message + '\n' + errors.length + ' 件の登録に失敗しました.'
-        if (await Popups.confirmAnyOk(exportText, 'エラー内容をファイルに保存') === false) {
-          // errorsを保存
-          const countChars = errors.length.toString().length
-          const spaces = ((n) => {
-            let s = ''
-            for (let i = 0; i < n; i++) {
-              s += ' '
-            }
-            return s
-          })(countChars)
-
-          exportText += '\n---\n' + errors.map((str, index) =>
-            (spaces + (index + 1).toString()).slice(-countChars) + ': ' + str
-          ).join('\n')
-          // ブラウザの機能でダウンロードさせる.
-          const temporaryElementA = document.createElement('A')
-          temporaryElementA.href = URL.createObjectURL(new Blob([exportText]), { type: 'text/plain' })
-          temporaryElementA.download = 'import-error-report.txt'
-          temporaryElementA.style.display = 'none'
-          document.body.appendChild(temporaryElementA)
-          temporaryElementA.click()
-          document.body.removeChild(temporaryElementA)
-        }
-      } else {
-        Popups.information(message)
-      }
-
-      this.CreatedDocument.splice(0)
-      this.$nextTick(() => { })
-    }
-  }
-}
-</script>

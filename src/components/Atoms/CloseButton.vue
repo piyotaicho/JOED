@@ -1,25 +1,21 @@
+<script setup>
+const props = defineProps({
+  tabindex: {
+    type: [Number, String]
+  },
+  bordered: {
+    type: Boolean
+  }
+})
+const emit = defineEmits(['click'])
+
+const click = () => emit('click')
+</script>
+
 <template>
-  <div class="closebutton" :class="bordered ? 'borderedButton' : ''" @keypress.enter="Click" @click="Click" :tabindex="this.tabindex"></div>
+  <div class="closebutton" :class="props.bordered ? 'borderedButton' : ''" @keypress.enter="click" @click="click" :tabindex="props.tabindex"></div>
 </template>
 
-<script>
-export default {
-  name: 'CloseButton',
-  props: {
-    tabindex: {
-      type: [Number, String]
-    },
-    bordered: {
-      type: Boolean
-    }
-  },
-  methods: {
-    Click () {
-      this.$emit('click')
-    }
-  }
-}
-</script>
 <style lang="sass">
 div.closebutton
   position: absolute

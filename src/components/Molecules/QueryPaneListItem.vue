@@ -1,7 +1,70 @@
+<script setup>
+import { ref, computed } from 'vue'
+import CloseButton from '@/components/Atoms/CloseButton'
+
+// props are NON-reactive
+const props = defineProps({
+  item: {
+    type: [String, Number, Array, Object],
+    default: ''
+  },
+  draggable: {
+    type: Boolean,
+    default: false
+  },
+  erasable: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const emit = defineEmits(['erase', 'dragged', 'dropped'])
+
+const draggableItem = ref()
+
+const labels = computed(() => {
+  switch (typeof props.item) {
+    case 'number':
+    case 'string':
+      return [props.item.toString()]
+
+    case 'object':
+      if (Array.isArray(props.item)) {
+        return [...props.item]
+      } else {
+        const label = Object.keys(props.item)[0]
+        return [label, props.item[label]]
+      }
+
+    default:
+      return ['']
+  }
+})
+
+const erase = () => emit('erase')
+
+const dragged = (event) => emit('dragged', event)
+
+const dropped = (event) => {
+  changeStyle(false)
+  emit('dropped', event)
+}
+
+const changeStyle = (status) => {
+  if (status) {
+    // true - dragoverの状態
+    draggableItem.value.classList.add('ondrag')
+  } else {
+    // false - dragoverが何らかの要因(drop, leave)で解除
+    draggableItem.value.classList.remove('ondrag')
+  }
+}
+</script>
+
 <template>
   <div class="QueryPaneListItem"
-    ref="item"
-    :draggable="draggable"
+    ref="draggableItem"
+    :draggable="props.draggable"
     @dragover.prevent="changeStyle(true)"
     @dragleave.prevent="changeStyle(false)"
     @dragenter.prevent
@@ -15,78 +78,11 @@
         </div>
       </slot>
     </div>
-    <div class="QueryPaneListItemEraseButton" v-if="erasable" >
+    <div class="QueryPaneListItemEraseButton" v-if="props.erasable" >
       <CloseButton @click="erase" bordered></CloseButton>
     </div>
   </div>
 </template>
-
-<script>
-import CloseButton from '@/components/Atoms/CloseButton'
-
-export default {
-  name: 'QueryPaneLisyItem',
-  components: {
-    CloseButton
-  },
-  props: {
-    item: {
-      type: [String, Number, Array, Object],
-      default: ''
-    },
-    draggable: {
-      type: Boolean,
-      default: false
-    },
-    erasable: {
-      type: Boolean,
-      default: false
-    }
-  },
-  computed: {
-    labels () {
-      switch (typeof this.item) {
-        case 'number':
-        case 'string':
-          return [this.item.toString()]
-
-        case 'object':
-          if (Array.isArray(this.item)) {
-            return [...this.item]
-          } else {
-            return [Object.keys(this.item)[0], this.item[Object.keys(this.item)[0]]]
-          }
-
-        default:
-          return ['']
-      }
-    }
-  },
-  methods: {
-    erase () {
-      this.$emit('erase')
-    },
-    dummyEventHandler () {
-    },
-    dragged (event) {
-      this.$emit('dragged', event)
-    },
-    dropped (event) {
-      this.changeStyle(false)
-      this.$emit('dropped', event)
-    },
-    changeStyle (status) {
-      if (status) {
-        // true - dragoverの状態
-        this.$refs.item.classList.add('ondrag')
-      } else {
-        // false - dragoverが何らかの要因(drop, leave)で解除
-        this.$refs.item.classList.remove('ondrag')
-      }
-    }
-  }
-}
-</script>
 
 <style lang="sass">
 div.QueryPaneListItem

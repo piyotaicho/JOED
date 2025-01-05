@@ -7,7 +7,7 @@
           <span>合併症の分類</span>
         </div>
         <div class="w80">
-          <select v-model="Category" @change="CategoryChanged()" ref="firstelement">
+          <select v-model="Category" @change="categoryChanged()" ref="firstelement">
             <option value="" disabled style="display:none;">リストから選択</option>
             <option v-for="item of master.Category" :key="item.Value" :value="item.Value">
               {{item.Text}}
@@ -17,8 +17,8 @@
       </div>
 
       <!-- コンポーネントの展開 -->
-      <template v-for="component of components">
-        <div class="flex-content" :key="component">
+      <template v-for="(component, compoIndex) of components">
+        <div class="flex-content" :key="compoIndex">
           <!-- Bloodcount はスペシャルコンポーネント -->
           <template v-if="component === 'Bloodcount'">
           <div class="w20 subtitle">
@@ -26,10 +26,10 @@
           </div>
           <div class="w80 AEcheckboxes">
             <div>
-              <input type="text" v-model="AE.BloodCount" :disabled="unknownBloodCounts" placeholder="出血量を入力してください"/> ml
+              <input type="text" v-model="AE.BloodCount" :disabled="inaccurateBloodCount" placeholder="出血量を入力してください"/> ml
             </div>
             <div>
-              <LabeledCheckbox :container="unknownBloodCounts" @change="UnknownBleedCountsChanged">出血量不明</LabeledCheckbox>
+              <LabeledCheckbox :container="inaccurateBloodCount" @update:container="unknownBleedCountsChanged">出血量不明</LabeledCheckbox>
             </div>
           </div>
           </template>
@@ -39,7 +39,7 @@
               <span>{{master.Components[component].Title}}</span>
             </div>
             <div class="w80 AEcheckboxes">
-              <EditAESelect v-model="AE[master.Components[component].Element]" :items="master.Components[component].Items" />
+              <EditAESelect :value.sync="AE[master.Components[component].Element]" :items="master.Components[component].Items" />
             </div>
           </template>
         </div>
@@ -64,12 +64,13 @@
         </div>
         <div class="w80">
           <div v-show="showByGrading(0)"><i class="el-icon-more" style="transform: rotate(90deg)"></i></div>
-          <template v-for="course in master.Courses">
-            <div :key="course.Title" v-show="showByGrading(course.Min)">
+          <template v-for="(course, courseIndex) in master.Courses">
+            <!-- eslint-disable-next-line vue/no-v-for-template-key-on-child -->
+            <div :key="courseIndex" v-show="showByGrading(course.Min)">
               <el-divider class="AEgrading-divider" content-position="left">
                 {{course.Title}}
               </el-divider>
-              <EditAESelect v-model="AE.Course" :items="course.Items" />
+              <EditAESelect :value.sync="AE.Course" :items="course.Items" />
            </div>
           </template>
 
@@ -79,122 +80,209 @@
   </TheWrapper>
 </template>
 
-<script>
+<script setup>
+import { reactive, ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router/composables'
 import TheWrapper from '@/components/Atoms/TheWrapper'
 import EditSection from '@/components/Molecules/EditSection'
 import EditAESelect from '@/components/Molecules/EditAESelect'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
-
+import { Notification } from 'element-ui'
 import AEmaster from '@/modules/Masters/AE'
 import { ZenToHanNumbers } from '@/modules/ZenHanChars'
 import { alert } from '@/modules/Popups'
 
-export default {
-  components: {
-    TheWrapper,
-    EditSection,
-    EditAESelect,
-    LabeledCheckbox
+const router = useRouter()
+
+const props = defineProps({
+  ItemIndex: {
+    type: Number,
+    default: -1
   },
-  props: {
-    ItemIndex: {
-      type: Number,
-      default: -1
-    },
-    ItemValue: {
-      type: Object
-    },
-    year: {
-      type: [String, Number]
-    }
+  ItemValue: {
+    type: String
   },
-  data () {
-    return {
-      Category: '',
-      AE: {
-        Title: [],
-        Cause: [],
-        Location: [],
-        BloodCount: '',
-        Grade: '',
-        Course: []
-      },
-      unknownBloodCounts: false,
-      master: undefined
-    }
-  },
-  created () {
-    this.$set(this, 'master', new AEmaster(this.year))
-  },
-  mounted () {
-    this.$refs.firstelement.focus()
-  },
-  computed: {
-    components () {
-      if (this.Category === '') {
-        return []
-      } else {
-        return this.master.Category.find(element => element.Value === this.Category).Components
-      }
-    },
-    showByGrading () {
-      return value => {
-        return this.AE.Grade ? Number(this.AE.Grade[0]) >= (value || undefined) : !value
-      }
+  year: {
+    type: [String, Number]
+  }
+})
+const emit = defineEmits(['data-upsert'])
+
+const Category = ref('')
+const AE = reactive({
+  Title: [],
+  Cause: [],
+  Location: [],
+  BloodCount: '',
+  Grade: '',
+  Course: []
+})
+const inaccurateBloodCount = ref(false)
+
+const firstelement = ref()
+
+// マスタは non-reactive (props.yearがこのコンポーネント実行中に変わることはない)
+const master = new AEmaster(props.year)
+
+// 規定値から省かれた値があるときに通知する為のフラグ
+let irregularItemValue = false
+
+// 規定値が与えられた場合の初期値の展開
+if (props.ItemValue) {
+  try {
+    const item = JSON.parse(props.ItemValue)
+    Category.value = item.Category
+    if (Category.value === '') {
+      throw new Error()
     }
 
-  },
-  methods: {
-    CategoryChanged () {
-      this.AE.Title.splice(0)
-      this.AE.Cause.splice(0)
-      this.AE.Location.splice(0)
-      this.AE.BloodCount = ''
-    },
-    UnknownBleedCountsChanged (value) {
-      if (value) {
-        this.unknownBloodCounts = true
-        this.AE.BloodCount = '不明'
-      } else {
-        this.unknownBloodCounts = false
-        if (this.AE.BloodCount === '不明') {
-          this.AE.BloodCount = ''
+    const components = master.Category.find(element => element.Value === Category.value)?.Components || []
+    if (components.length === 0) {
+      throw new TypeError()
+    }
+
+    for (const key in AE) {
+      if (item[key] !== undefined) {
+        // Course はGradeにあわせて変化するのであとで別に処理する
+        if (key === 'Course') {
+          continue
+        }
+
+        // Grade は値に問題が無ければそのままコピー
+        if (key === 'Grade') {
+          if (/([1245]|3[ab])/.test(item.Grade)) {
+            AE.Grade = item.Grade
+          } else {
+            irregularItemValue = true
+          }
+          continue
+        }
+
+        // BloodCount は不明を解釈してコピー
+        if (key === 'BloodCount') {
+          if (item.BloodCount === '不明') {
+            inaccurateBloodCount.value = true
+          } else {
+            inaccurateBloodCount.value = false
+          }
+          AE.BloodCount = item.BloodCount
+          continue
+        }
+
+        // そのほかコンポーネントのマスタ選択肢を展開
+        const masteritems = components
+          .map(component => master.Components[component])
+          .filter(component => component.Element === key)
+          .map(component => component.Items)
+          .flat(3)
+          .map(item => typeof item === 'string' ? item : item.Value)
+
+        // マスタの選択肢に含まれるものだけを値として採用
+        for (const value of item[key]) {
+          if (masteritems.includes(value)) {
+            AE[key].push(value)
+          } else {
+            irregularItemValue = true
+          }
         }
       }
-    },
-    GoBack () {
-      this.$router.replace('./')
-    },
-    async CommitChanges () {
-      // 出血量を念のため半角数字にトリム
-      if (this.AE.BloodCount !== '不明' && this.AE.BloodCount !== '') {
-        this.AE.BloodCount = ZenToHanNumbers(this.AE.BloodCount.trim())
-      }
-      await this.$nextTick()
+    }
 
-      // ドキュメントの雛型を作成
-      const documentAEItem = { Category: this.Category }
-      for (const key in this.AE) {
-        if (Array.isArray(this.AE[key])
-          ? this.AE[key].length > 0
-          : this.AE[key] !== ''
-        ) {
-          documentAEItem[key] = this.AE[key]
+    // Courseを処理(Gradeの入力がなければ展開しない)
+    if (item?.Course !== undefined && AE.Grade !== '') {
+      // マスタの転帰選択肢を展開
+      const courseitems = master.Courses
+        .filter(element => element.Max <= Number(AE.Grade[0]) || element.Min <= Number(AE.Grade[0]))
+        .map(element => element.Items)
+        .flat(2)
+        .map(item => typeof item === 'object' ? item.Value : item)
+      // マスタの転帰選択肢に含まれるものだけを値として採用
+      for (const value of item.Course) {
+        if (courseitems.includes(value)) {
+          AE.Course.push(value)
+        } else {
+          irregularItemValue = true
         }
       }
+    }
+  } catch {
+    // NOP
+  }
+}
 
-      // エラーチェック
-      try {
-        this.master.validate(documentAEItem)
-      } catch (e) {
-        alert(e.message, this)
-        return
-      }
+onMounted(() => {
+  if (irregularItemValue) {
+    Notification({
+      title: 'マスタとの整合性に問題があります',
+      message: 'マスタと整合のない既存の入力は自動的に削除されました.',
+      duration: 5000
+    })
+  }
+  firstelement.value.focus()
+})
 
-      this.$emit('data-upsert', 'AEs', this.ItemIndex, documentAEItem)
-      this.GoBack()
+const components = computed(() => {
+  if (Category.value === '' || master === undefined) {
+    return []
+  } else {
+    return master.Category.find(element => element.Value === Category.value)?.Components || []
+  }
+})
+
+const showByGrading = computed(() => (value) => {
+  return AE.Grade ? Number(AE.Grade[0]) >= (value || undefined) : !value
+})
+
+const categoryChanged = () => {
+  AE.Title.splice(0)
+  AE.Cause.splice(0)
+  AE.Location.splice(0)
+  AE.BloodCount = ''
+}
+
+const unknownBleedCountsChanged = (value) => {
+  if (value) {
+    inaccurateBloodCount.value = true
+    AE.BloodCount = '不明'
+  } else {
+    inaccurateBloodCount.value = false
+    if (AE.BloodCount === '不明') {
+      AE.BloodCount = ''
     }
   }
+}
+
+const GoBack = () => {
+  router.replace('./')
+}
+
+const CommitChanges = async () => {
+  // 出血量を念のため半角数字にトリム
+  if (AE.BloodCount !== '不明' && AE.BloodCount !== '') {
+    AE.BloodCount = ZenToHanNumbers(AE.BloodCount.trim())
+  }
+
+  // ドキュメントの雛型を作成
+  const documentAEItem = { Category: Category.value }
+  for (const key in AE) {
+    if (Array.isArray(AE[key])
+      ? AE[key].length > 0
+      : AE[key] !== ''
+    ) {
+      documentAEItem[key] = AE[key]
+    }
+  }
+
+  // エラーチェック
+  try {
+    master.validate(documentAEItem)
+  } catch (e) {
+    alert(e.message)
+    return
+  }
+
+  emit('data-upsert', 'AEs', props.ItemIndex, JSON.stringify(documentAEItem))
+  GoBack()
 }
 </script>
 

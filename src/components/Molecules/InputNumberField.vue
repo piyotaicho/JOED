@@ -1,66 +1,65 @@
+<script setup>
+import { computed } from 'vue'
+import { ZenToHanNumbers } from '@/modules/ZenHanChars'
+
+const props = defineProps({
+  value: {
+    type: [Number, String]
+  },
+  title: {
+    default: 'NUMBER FIELD'
+  },
+  min: {
+    type: Number
+  },
+  max: {
+    type: Number
+  },
+  required: {
+    default: false
+  }
+})
+
+const emit = defineEmits(['update:value'])
+
+const inputText = computed({
+  get () { return props.value },
+  set (newvalue) {
+    emit('update:value', ZenToHanNumbers(newvalue))
+  }
+})
+
+function increase () {
+  const newValue = Number(ZenToHanNumbers(props.value) || 0) + 1
+  inputText.value = ((props.max !== undefined && newValue >= props.max) ? props.max : newValue).toString(10)
+}
+
+function decrease () {
+  if (props.value) {
+    const newValue = Number(ZenToHanNumbers(props.value)) - 1
+    inputText.value = ((props.min !== undefined && newValue <= props.min) ? props.min : newValue).toString(10)
+  }
+}
+</script>
+
 <template>
-  <div>
-    <div class="label"><span>{{title}}</span></div>
+  <div style="display: flex; flex-direction: row; height: 2.4rem;">
+    <div class="label"><span>{{title || '数値を入力'}}</span></div>
     <div class="field number-field">
       <div>
         <input type="text"
-          v-model="InputText"
+          v-model="inputText"
           :min="min"
           :max="max"
-          :class="[(!value && required) ? 'vacant' : '']"
+          :class="[(!inputText && props.required) ? 'vacant' : '']"
           v-bind="$attrs"
           />
-        <span class="number-field__control number-field__decrease" @click="Decrease">&#xe790;</span>
-        <span class="number-field__control number-field__increase" @click="Increase">&#xe78f;</span>
+        <span class="number-field__control number-field__decrease" @click="decrease">&#xe790;</span>
+        <span class="number-field__control number-field__increase" @click="increase">&#xe78f;</span>
       </div>
     </div>
 </div>
 </template>
-
-<script>
-import { ZenToHanNumbers } from '@/modules/ZenHanChars'
-
-export default {
-  name: 'InputNumberField',
-  props: {
-    value: {
-      type: [Number, String]
-    },
-    title: {
-      default: 'NUMBER FIELD'
-    },
-    min: {
-      type: Number
-    },
-    max: {
-      type: Number
-    },
-    required: {
-      default: false
-    }
-  },
-  computed: {
-    InputText: {
-      get () { return this.value },
-      set (newvalue) {
-        this.$emit('input', ZenToHanNumbers(newvalue))
-      }
-    }
-  },
-  methods: {
-    Increase () {
-      const newValue = Number(ZenToHanNumbers(this.value) || 0) + 1
-      this.InputText = (newValue >= this.max ? this.max : newValue).toString(10)
-    },
-    Decrease () {
-      if (this.value) {
-        const newValue = Number(ZenToHanNumbers(this.value)) - 1
-        this.InputText = (newValue <= this.min ? this.min : newValue).toString(10)
-      }
-    }
-  }
-}
-</script>
 
 <style lang="sass">
 div.number-field > div
@@ -74,6 +73,7 @@ span.number-field__control
   text-align: center
   font-family: 'element-icons'
   line-heigt: 14px
+  color: var(--color-primary)
 span.number-field__increase
   top: 2px
   border-bottom: solid 1px var(--border-color-base)

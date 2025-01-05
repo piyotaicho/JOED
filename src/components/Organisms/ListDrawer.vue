@@ -1,9 +1,71 @@
+<script setup>
+import { ref, computed } from 'vue'
+import { useStore } from '@/store'
+import { useRouter } from 'vue-router/composables'
+import ListDashboard from '@/components/Molecules/Dashboard'
+import FilterAndSort from '@/components/Organisms/ListDrawerFilterAndSort'
+import ListSearch from '@/components/Organisms/ListDrawerSearch'
+import { Notification } from 'element-ui'
+
+const store = useStore()
+const router = useRouter()
+
+const props = defineProps({
+  visible: {
+    type: Boolean
+  }
+})
+
+const emit = defineEmits(['close', 'changed'])
+// non-reactive value
+const webApp = !process.env.VUE_APP_ELECTRON
+const collapseNames = ['view', 'search',
+  ...(webApp ? ['management', 'settings'] : [])] // 'view'|'search'|'management'|'settings'
+
+const view = ref('view')
+
+const searchActivated = computed(() => store.getters.SearchActivated)
+
+const DrawerOpened = () => {
+  view.value = searchActivated.value ? 'search' : view.value
+}
+
+const CloseDrawer = () => emit('close')
+
+const CollapseChanged = (itemname) => {
+  if (collapseNames.indexOf(itemname) > -1) {
+    view.value = itemname
+
+    if (itemname === 'management') {
+      router.push({ name: 'export' })
+    }
+    if (itemname === 'settings') {
+      router.push({ name: 'settings' })
+    }
+  }
+}
+
+const UpdateView = () => {
+  store.dispatch('ReloadDocumentList').then(_ => {
+    emit('changed')
+
+    Notification({
+      title: '表示条件が変更されました',
+      message: store.getters.NumberOfCases > 0
+        ? store.getters.NumberOfCases + '件表示します.'
+        : '表示する症例はありません.',
+      duration: 2000
+    })
+  })
+}
+</script>
+
 <template>
   <el-drawer
     size="26rem"
     direction="ltr"
     :with-header="false"
-    :visible="visible"
+    :visible="props.visible"
     :destroy-on-close="true"
     @open="DrawerOpened"
     @close="CloseDrawer">
@@ -23,70 +85,11 @@
         </el-collapse-item>
 
         <el-collapse-item title="データの処理" name="management" v-if="webApp"/>
-
         <el-collapse-item title="環境設定" name="settings" v-if="webApp"/>
       </el-collapse>
     </div>
   </el-drawer>
 </template>
-
-<script>
-import ListDashboard from '@/components/Molecules/Dashboard'
-import FilterAndSort from '@/components/Organisms/ListDrawerFilterAndSort'
-import ListSearch from '@/components/Organisms/ListDrawerSearch'
-
-export default {
-  name: 'ListDrawer',
-  components: {
-    ListDashboard, FilterAndSort, ListSearch
-  },
-  props: {
-    visible: {
-      type: Boolean
-    }
-  },
-  data () {
-    return ({
-      view: 'view',
-      webApp: !process.env.VUE_APP_ELECTRON
-    })
-  },
-  computed: {
-    searchActivated () {
-      return this.$store.getters.SearchActivated
-    }
-  },
-  methods: {
-    DrawerOpened () {
-      this.view = this.searchActivated ? 'search' : this.view
-    },
-    CloseDrawer () {
-      this.$emit('close')
-    },
-    CollapseChanged (itemname) {
-      this.view = itemname
-      if (itemname === 'management') {
-        this.$router.push({ name: 'export' })
-      }
-      if (itemname === 'settings') {
-        this.$router.push({ name: 'settings' })
-      }
-    },
-    UpdateView (payload) {
-      this.$store.dispatch('ReloadDocumentList').then(_ => {
-        this.$emit('changed')
-        this.$notify({
-          title: '表示条件が変更されました',
-          message: this.$store.getters.NumberOfCases > 0
-            ? this.$store.getters.NumberOfCases + '件表示します.'
-            : '表示する症例はありません.',
-          duration: 2000
-        })
-      })
-    }
-  }
-}
-</script>
 
 <style lang="sass">
 // override element's styles

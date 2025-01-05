@@ -1,31 +1,26 @@
 <template>
     <div class="new-entry-button"
-      :tabindex="tabindex"
-      @click="Click"
-      @keydown.enter="Click"
-      @keydown.space="Click"
-      :accesskey="accesskey">
+      :tabindex="props.tabindex"
+      @click="cclickButton"
+      @keydown.enter="cclickButton"
+      @keydown.space="cclickButton"
+      :accesskey="props.accesskey">
     </div>
 </template>
 
-<script>
-export default {
-  name: 'NewEntryButton',
-  props: {
-    tabindex: {
-      type: [String, Number],
-      default: 0
-    },
-    accesskey: {
-      type: String
-    }
+<script setup>
+const props = defineProps({
+  tabindex: {
+    type: [String, Number],
+    default: 0
   },
-  methods: {
-    Click (event) {
-      this.$emit('click', event)
-    }
+  accesskey: {
+    type: String
   }
-}
+})
+const emit = defineEmits(['click'])
+
+const cclickButton = (event) => emit('click', event)
 </script>
 
 <style lang="sass">

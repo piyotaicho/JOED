@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import HHX from 'xxhashjs'
 import { LoadConfig, SaveConfig } from 'depmodules/config'
 
 export default {
@@ -28,6 +29,25 @@ export default {
     // システム固有のソルト値
     SALT (state) {
       return state.settings.Salt
+    },
+    // SALTを用いてハッシュ化する
+    // @param {object} $.key - ハッシュ化する文字列 $.compatibility - 2021年以前の互換性を持たせるか
+    generateHash (state) {
+      return function (value, compatibility = false) {
+        const Encoder = new TextEncoder()
+        // 2021年以前はsaltを数値として渡していたためJavaScriptの浮動小数点のビット数制限を受ける
+        if (compatibility) {
+          return HHX.h64(
+            Encoder.encode(value).buffer,
+            String(state.settings.Salt)
+          ).toString(36)
+        } else {
+          return HHX.h64(
+            Encoder.encode(value).buffer,
+            String(state.settings.Salt)
+          ).toString(36)
+        }
+      }
     },
     // APP_NAMEの中継
     ApplicationName () {
@@ -77,7 +97,7 @@ export default {
     InstitutionName (state) {
       return state.settings.InstitutionName
     },
-    // 施設番号
+    // 施設コード
     InstitutionID (state) {
       return state.settings.InstitutionID
     },
@@ -93,15 +113,6 @@ export default {
     // NCD登録番号の編集可否
     EditNCDId (state) {
       return state.settings.EditNCDId
-    },
-
-    // 日産婦腫瘍登録番号の生データ出力可否
-    ExportJSOGId (state) {
-      return state.settings.UnlockExportJSOGId
-    },
-    // NCD登録番号の生データ出力可否
-    ExportNCDId (state) {
-      return state.settings.UnlockExportNCDId
     },
 
     // 起動時のメッセージダイアログ表示の有無

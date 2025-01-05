@@ -1,72 +1,65 @@
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+  step: {
+    type: Number
+  },
+  stepcount: {
+    type: Number
+  },
+  icon: {
+    type: String,
+    default: 'StepIndicatorDot'
+  },
+  description: {
+    type: String
+  },
+  disabled: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const IconStyle = computed(() => {
+  const colorTable = {
+    DISABLED: 'var(--color-text-placeholder)',
+    YET: 'var(--color-text-regular)',
+    NORMAL: 'var(--color-text-regular)',
+    PROCESSING: 'var(--color-warning)',
+    DONE: 'var(--color-success)'
+  }
+
+  switch (true) {
+    case (props.disabled):
+      return { color: colorTable.DISABLED }
+
+    case (props.step === undefined):
+      return (props.stepcount === undefined || props.stepcount === 0)
+        ? { color: colorTable.NORMAL }
+        : { color: colorTable.DONE }
+
+    case (props.stepcount === undefined || props.stepcount < props.step):
+      return { color: colorTable.YET }
+
+    case (props.stepcount === props.step):
+      return { color: colorTable.PROCESSING }
+
+    default: // stepcount > step
+      return { color: colorTable.DONE }
+  }
+})
+</script>
+
 <template>
   <div class="StepIndicator">
     <div class="StepIndicatorDescription">
-      <div class="StepIndicatorIcon"><div :class="icon" :style="IconStyle"></div></div>
-      <div class="StepIndicatorDescriptionContent"><slot name="description">{{description}}</slot></div>
+      <div class="StepIndicatorIcon"><div :class="props.icon" :style="IconStyle"></div></div>
+      <div class="StepIndicatorDescriptionContent"><slot name="description">{{props.description}}</slot></div>
     </div>
     <div class="StepIndicatorSlot"><slot name="default"></slot></div>
   </div>
 </template>
-
-<script>
-export default {
-  name: 'StepIndicator',
-  props: {
-    step: {
-      type: Number
-    },
-    stepcount: {
-      type: Number
-    },
-    icon: {
-      type: String,
-      default: 'StepIndicatorDot'
-    },
-    description: {
-      type: String
-    },
-    disabled: {
-      type: Boolean,
-      default: false
-    }
-  },
-  computed: {
-    IconStyle () {
-      const ColorSchime = {
-        DISABLED: 'var(--color-text-placeholder)',
-        YET: 'var(--color-text-regular)',
-        NORMAL: 'var(--color-text-regular)',
-        PROCESSING: 'var(--color-warning)',
-        DONE: 'var(--color-success)'
-      }
-
-      // if (this.icon === 'StepIndicatorDot') {
-      //   return { background: ColorSchime[this.StepStatus] }
-      // } else {
-      return { color: ColorSchime[this.StepStatus] }
-      // }
-    },
-    StepStatus () {
-      if (this.disabled) {
-        return 'DISABLED'
-      }
-      if (this.step === undefined) {
-        return (this.stepcount === undefined || this.stepcount === 0)
-          ? 'NORMAL'
-          : 'DONE'
-      }
-      if (this.stepcount === undefined || this.stepcount < this.step) {
-        return 'YET'
-      }
-      if (this.stepcount === this.step) {
-        return 'PROCESSING'
-      }
-      // if (stepcount > step)
-      return 'DONE'
-    }
-  }
-}
-</script>
 
 <style lang="sass">
 div.StepIndicatorDescription

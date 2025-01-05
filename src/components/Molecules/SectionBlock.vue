@@ -1,82 +1,68 @@
+<script setup>
+import { computed } from 'vue'
+import NewEntryButton from '@/components/Atoms/NewEntryButton'
+import SectionItem from '@/components/SectionItem'
+import draggableContent from 'vuedraggable'
+
+const props = defineProps({
+  title: {
+    type: String,
+    required: true
+  },
+  container: {
+    type: Array, // String[]
+    required: true
+  },
+  draggable: {
+    type: Boolean,
+    default: true
+  }
+})
+const emit = defineEmits(['addnewitem', 'edititem', 'removeitem', 'update:container'])
+
+const items = computed({
+  get: () => props.container,
+  set: (value) => emit('update:container', value)
+})
+
+const addNewItem = () => emit('addnewitem')
+
+const editItem = (index, item) => emit('edititem', {
+  ItemIndex: index,
+  ItemValue: item
+})
+
+const removeItem = (index) => emit('removeitem', index)
+</script>
+
 <template>
   <div class="section">
-    <span class="section-title">{{title}} ： </span>
+    <span class="section-title">{{props.title}} ： </span>
     <slot name="beforeitemlist"></slot>
     <template v-if="draggable">
-      <draggable handle=".handle" v-model="items">
+      <draggableContent handle=".handle" v-model="items">
         <div class="section-item-list"
           v-for="(item, index) in items"
           :key="index">
           <slot :item="item" :index="index">
-            <SectionItem :item="item" @remove="RemoveItem(index)" @edit="EditItem(index, item)" editable/>
+            <SectionItem :item="item" @remove="removeItem(index)" @edit="editItem(index, item)" editable/>
           </slot>
         </div>
-      </draggable>
+      </draggableContent>
     </template>
     <template v-else>
       <div class="section-item-list"
         v-for="(item, index) in items"
         :key="index">
         <slot :item="item" :index="index">
-          <SectionItem :item="item" @remove="RemoveItem(index)" @edit="EditItem(index, item)"/>
+          <SectionItem :item="item" @remove="removeItem(index)" @edit="editItem(index, item)"/>
         </slot>
       </div>
     </template>
     <slot name="afteritemlist"></slot>
-    <NewEntryButton @click="AddNewItem()" tabindex="0" />
+    <NewEntryButton @click="addNewItem()" tabindex="0" />
   </div>
 </template>
-
-<script>
-import NewEntryButton from '@/components/Atoms/NewEntryButton'
-import draggable from 'vuedraggable'
-import SectionItem from '@/components/SectionItem'
-
-export default {
-  name: 'SectionBLock',
-  components: {
-    draggable, SectionItem, NewEntryButton
-  },
-  props: {
-    title: {
-      type: String,
-      required: true
-    },
-    container: {
-      type: Array,
-      required: true
-    },
-    draggable: {
-      type: Boolean,
-      default: true
-    }
-  },
-  computed: {
-    items: {
-      get () {
-        return this.container
-      },
-      set (value) {
-        this.$emit('update:container', value)
-      }
-    }
-  },
-  methods: {
-    AddNewItem () {
-      this.$emit('addnewitem')
-    },
-    EditItem (index, item) {
-      this.$emit('edititem', {
-        ItemIndex: index,
-        ItemValue: item
-      })
-    },
-    RemoveItem (index) {
-      this.$emit('removeitem', index)
-    }
-  }
-}
-</script>
 
 <style lang="sass">
 div.section

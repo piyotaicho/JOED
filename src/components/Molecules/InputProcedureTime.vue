@@ -1,79 +1,132 @@
+<script setup>
+import { computed, ref } from 'vue'
+import { ProcedureTimeSelections, encodeProcedureTime } from '@/modules/ProcedureTimes'
+
+const props = defineProps(['value'])
+const emit = defineEmits(['update:value'])
+
+const procedureTimeSelections = ProcedureTimeSelections()
+
+// reactiveプロパティ
+// キー入力文字列
+const typedString = ref('')
+// キー入力からの候補選択
+const selectionCandidate = ref('')
+
+// 算出プロパティ
+
+// 選択値候補があればプロパティよりもそちらを優先
+const procedureTime = computed({
+  get: () => selectionCandidate.value !== '' ? selectionCandidate.value : props.value,
+  set: (newvalue) => {
+    emit('update:value', newvalue)
+    clearTypedValue()
+  }
+})
+
+// ツールチップの文字列
+const popoverContent = computed(() => typedString.value === '' ? '' : `直接入力中: ${typedString.value}`)
+
+/**
+ * キーボードイベントを処理して入力文字列処理へ渡す
+ */
+const handleKeydown = (event) => {
+  const keyMap = {
+    0: '0',
+    1: '1',
+    2: '2',
+    3: '3',
+    4: '4',
+    5: '5',
+    6: '6',
+    7: '7',
+    8: '8',
+    9: '9',
+    Delete: 'DEL',
+    ':': ':',
+    ';': ':' // USキーボードの場合
+  }
+  if (keyMap[event.key] !== undefined) {
+    typeInChar(keyMap[event.key])
+  }
+}
+
+/**
+ * 入力を受け取って文字列を生成する
+ * @param char 入力文字
+ */
+const typeInChar = (char) => {
+  // キー入力文字列を生成
+  if (char === 'DEL') {
+    typedString.value = typedString.value.slice(0, -1)
+    if (typedString.value === '') {
+      selectionCandidate.value = ''
+      return
+    }
+  } else {
+    if (typedString.value === '') {
+      selectionCandidate.value = ''
+    }
+    typedString.value = typedString.value + char
+  }
+
+  // 入力文字列から候補選択
+  const hourSepIndex = typedString.value.indexOf(':')
+  if (hourSepIndex !== -1) {
+    const hour = Number(typedString.value.substring(0, hourSepIndex))
+    const minuteSepIndex = typedString.value.indexOf(':', hourSepIndex + 1)
+    const minute = minuteSepIndex === -1
+      ? Number(typedString.value.substring(hourSepIndex + 1)) % 60
+      : Number(typedString.value.substring(hourSepIndex + 1, minuteSepIndex)) % 60
+
+    selectionCandidate.value = encodeProcedureTime((hour * 60) + minute)
+  } else {
+    selectionCandidate.value = encodeProcedureTime(typedString.value)
+  }
+}
+
+/**
+ * 手動入力値をそのまま採用する
+ */
+const acceptValue = () => {
+  if (selectionCandidate.value !== '') {
+    procedureTime.value = selectionCandidate.value
+  }
+  clearTypedValue()
+}
+
+/**
+ * 手動入力値を削除
+ */
+const clearTypedValue = () => {
+  typedString.value = ''
+  selectionCandidate.value = ''
+}
+</script>
+
 <template>
-  <div>
+  <div style="display: flex; flex-direction: row; height: 2.4rem;">
     <div class="label"><span class="required">手術時間</span></div>
     <div class="field">
-      <select v-model="ProcedureTime"
-        :class="[!ProcedureTime ? 'vacant' : '']"
-        v-bind="$attrs"
-        @blur="ClearTypedValue()"
-        @keypress.esc="ClearTypedValue()"
-        @keypress.delete="TypeInChar('DEL')"
-        @keypress.48.prevent="TypeInChar('0')" @keypress.96.prevent="TypeInChar('0')"
-        @keypress.49.prevent="TypeInChar('1')" @keypress.97.prevent="TypeInChar('1')"
-        @keypress.50.prevent="TypeInChar('2')" @keypress.98.prevent="TypeInChar('2')"
-        @keypress.51.prevent="TypeInChar('3')" @keypress.99.prevent="TypeInChar('3')"
-        @keypress.52.prevent="TypeInChar('4')" @keypress.100.prevent="TypeInChar('4')"
-        @keypress.53.prevent="TypeInChar('5')" @keypress.101.prevent="TypeInChar('5')"
-        @keypress.54.prevent="TypeInChar('6')" @keypress.102.prevent="TypeInChar('6')"
-        @keypress.55.prevent="TypeInChar('7')" @keypress.103.prevent="TypeInChar('7')"
-        @keypress.56.prevent="TypeInChar('8')" @keypress.104.prevent="TypeInChar('8')"
-        @keypress.57.prevent="TypeInChar('9')" @keypress.105.prevent="TypeInChar('9')"
-        @keypress.58.prevent="TypeInChar(':')"
-      >
-        <option value="" disabled style="display:none;">手術所要時間</option>
-        <option v-for="item in ProcedureTimeSelections"
-          :key="item"
-          :value="item">
-          {{item}}
-        </option>
-      </select>
+      <el-tooltip ref="popover" placement="top" offset="2" :manual="true" transition="none" :value="typedString !== ''" :content="popoverContent">
+        <select v-model="procedureTime"
+          :class="[!procedureTime ? 'vacant' : '']"
+          v-bind="$attrs"
+          @blur="acceptValue()"
+          @keyup.enter="acceptValue()"
+          @keyup.esc="clearTypedValue()"
+          @keyup.exact.backspace="typeInChar('DEL')"
+          @keydown.exact.prevent="handleKeydown($event)"
+          v-popover:popover
+        >
+          <option value="" disabled style="display:none;">手術所要時間</option>
+          <option v-for="item in procedureTimeSelections"
+            :key="item"
+            :value="item">
+            {{item}}
+          </option>
+        </select>
+      </el-tooltip>
     </div>
   </div>
 </template>
-
-<script>
-import { ProcedureTimeSelections, encodeProcedureTime } from '@/modules/ProcedureTimes'
-
-export default {
-  name: 'InputProcedureTime',
-  props: {
-    value: {}
-  },
-  data () {
-    return ({
-      ProcedureTimeSelections: ProcedureTimeSelections(),
-      typedString: ''
-    })
-  },
-  computed: {
-    ProcedureTime: {
-      get () { return this.value },
-      set (newvalue) {
-        this.$emit('input', newvalue)
-      }
-    }
-  },
-  methods: {
-    TypeInChar (char) {
-      if (char === 'DEL') {
-        this.typedString = this.typedString.slice(0, -1)
-      } else {
-        this.typedString = (this.typedString + char).slice(-5)
-      }
-
-      const index = this.typedString.indexOf(':')
-      if (index !== -1) {
-        this.ProcedureTime = encodeProcedureTime(
-          Number(this.typedString.substring(0, index)) * 60 +
-          Number(this.typedString.substring(index + 1))
-        )
-      } else {
-        this.ProcedureTime = encodeProcedureTime(this.typedString)
-      }
-    },
-    ClearTypedValue () {
-      this.typedString = ''
-    }
-  }
-}
-</script>

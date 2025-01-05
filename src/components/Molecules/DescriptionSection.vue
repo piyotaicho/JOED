@@ -1,25 +1,127 @@
+<script setup>
+import { computed, nextTick } from 'vue'
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
+
+const props = defineProps({
+  title: {
+    type: String
+  },
+  selectionMode: {
+    type: String, // 'one'|'any'|anyornone' = 'one',
+    default: 'one'
+  },
+  options: {
+    type: Array
+  },
+  value: {
+    type: Array
+  }
+})
+
+const emit = defineEmits(['update:value'])
+
+const title = computed(() => props?.title || '')
+
+const selectionMode = computed(() => props?.selectionMode || 'one')
+
+const options = computed(() => props?.options || [])
+
+const value = computed({
+  get: () => props.value || [],
+  set: (value) => {
+    const newvalueArray = []
+    // 単一のvalue / selectから
+    if (value === undefined || typeof value === 'string') {
+      if (value && options.value.indexOf(value) !== -1) {
+        newvalueArray.splice(0, 0, value)
+      }
+    }
+    // 複数のvalues / checkboxから
+    if (Array.isArray(value)) {
+      // Optionsからvalueに該当するものをピックアップ > Optionsの順番を維持して保持
+      const filtedValue = options.value.filter(
+        (option) => value.indexOf(option) !== -1
+      )
+      if (filtedValue.length > 0 || selectionMode.value === 'anyornone') {
+        newvalueArray.splice(0, 0, ...filtedValue)
+      }
+    }
+
+    emit('update:value', newvalueArray)
+  }
+})
+
+/**
+ * valueの初期値設定
+ */
+const created = () => {
+  if (value.value.length === 0) {
+    const defaultValue = options.value.find(option => option.slice(-1) === '$')
+
+    if (defaultValue) {
+      nextTick(() => { value.value = [defaultValue] })
+    }
+  }
+}
+created()
+
+/**
+ * 単数選択→リスト
+ * 複数選択可能→CheckBoxでレンダリング
+ */
+const isMultipleSelection = computed(() =>
+  selectionMode.value === 'any' ||
+  selectionMode.value === 'anyornone'
+)
+
+const selectionItems = computed(() => options.value)
+
+const selectedArrayValue = computed({
+  get: () => value.value,
+  set: (newvalue) => { value.value = newvalue }
+})
+
+const selectedSingleValue = computed({
+  get: () => {
+    if (!value.value || value.value.length === 0) {
+      return undefined
+    } else {
+      return value.value[0]
+    }
+  },
+  set: (newvalue) => { value.value = newvalue }
+})
+
+/**
+ * マスタの文字列から [] で囲まれた部分を削除、非保存値を示す ～$ を削除してラベルを作成する
+ * @param {String} str
+ */
+const escapedItemCaption = (str) => str.replace(/\[.+\]/g, '').replace(/\$$/, '')
+
+</script>
+
 <template>
   <div class="flex-content">
     <div class="w30"></div>
     <div class="w20 selectionbox">
       <div>
-        <span>{{ Container.Title }}</span>
+        <span>{{ title }}</span>
       </div>
     </div>
     <div class="w40 selectionbox">
-      <template v-if="IsMultipleSelection">
-        <template v-for="item of Source">
+      <template v-if="isMultipleSelection">
+        <template v-for="item of selectionItems">
           <div :key="item">
-            <LabeledCheckbox v-model="SelectedArrayValue" :value="item" :key="item">
-              {{ ItemCaption(item) }}
+            <LabeledCheckbox :container.sync="selectedArrayValue" :value="item" :key="item">
+              {{ escapedItemCaption(item) }}
             </LabeledCheckbox>
           </div>
         </template>
       </template>
       <template v-else>
-        <select v-model="SelectedSingleValue">
-          <option v-for="item of Source" :key="item" :value="item">
-            {{ ItemCaption(item) }}
+        <select v-model="selectedSingleValue">
+          <option v-for="item of selectionItems" :key="item" :value="item">
+            {{ escapedItemCaption(item) }}
           </option>
         </select>
       </template>
@@ -27,87 +129,3 @@
     <div class="w10"></div>
   </div>
 </template>
-
-<script>
-import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
-
-export default {
-  name: 'DescriptionSection',
-  components: {
-    LabeledCheckbox
-  },
-  model: {
-    prop: 'Container',
-    event: 'update'
-  },
-  props: {
-    Container: {
-      type: Object, // .Title, .SelectionMode, .Options[], .Value[]
-      required: true
-    }
-  },
-  computed: {
-    Source () {
-      return this.Container?.Options || []
-    },
-    IsMultipleSelection () {
-      // .SelectionModeは'one'がデフォルトで設定されていないことも想定
-      return (
-        this.Container?.SelectionMode === 'any' ||
-        this.Container?.SelectionMode === 'anyornone'
-      )
-    },
-    SelectedArrayValue: {
-      get () {
-        return this.Container.Value ? this.Container.Value : []
-      },
-      set (value) {
-        this.EmitValue(value)
-      }
-    },
-    SelectedSingleValue: {
-      get () {
-        if (this.Container.Value.length === 0) {
-          return undefined
-        } else {
-          if (this.Container.Value.length > 1) {
-            this.EmitValue(this.Container.Value[0])
-          }
-          return this.Container.Value[0]
-        }
-      },
-      set (value) {
-        this.EmitValue(value)
-      }
-    }
-  },
-  methods: {
-    ItemCaption (str) {
-      return str.replace(/\[.+\]/g, '').replace(/\$$/, '')
-    },
-    EmitValue (value) {
-      const newvalue = []
-      if (value === undefined || typeof value === 'string') {
-        // SELECTから
-        if (value && this.Container.Options.indexOf(value) !== -1) {
-          newvalue.push(value)
-        }
-      }
-      if (Array.isArray(value)) {
-        // CHECKBOXから
-
-        // Optionsからvalueに該当するものをピックアップ > Optionsの順番を維持して保持
-        const filtedvalue = this.Container.Options.filter(
-          (option) => value.indexOf(option) !== -1
-        )
-        if (filtedvalue.length > 0 || newvalue.SelectionMode === 'anyornone') {
-          newvalue.push(...filtedvalue)
-        }
-      }
-
-      const newContainer = Object.assign(this.Container, { Value: newvalue })
-      this.$emit('update', newContainer)
-    }
-  }
-}
-</script>

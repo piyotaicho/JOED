@@ -1,35 +1,35 @@
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+  value: {
+    type: String,
+    required: true
+  },
+  title: {
+    type: String,
+    default: 'TEXT FIELD'
+  },
+  required: {
+    type: Boolean,
+    default: false
+  }
+})
+const emit = defineEmits(['update:value'])
+
+const inputText = computed({
+  get: () => props.value,
+  set: (newvalue) => emit('update:value', newvalue)
+})
+</script>
+
 <template>
   <div>
     <div class="label"><span>{{title}}</span></div>
     <div class="field">
       <input type="password"
-        v-model="InputText"
-        :class="[(value === '' && required) ? 'vacant' : '']"        v-bind="$attrs"/>
+        v-model="inputText"
+        :class="[(inputText === '' && props.required) ? 'vacant' : '']" v-bind="$attrs"/>
     </div>
 </div>
 </template>
-
-<script>
-export default {
-  name: 'InputTextField',
-  props: {
-    value: {
-      required: true
-    },
-    title: {
-      default: 'TEXT FIELD'
-    },
-    required: {
-      default: false
-    }
-  },
-  computed: {
-    InputText: {
-      get () { return this.value },
-      set (newvalue) {
-        this.$emit('input', newvalue)
-      }
-    }
-  }
-}
-</script>

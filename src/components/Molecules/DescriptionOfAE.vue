@@ -1,3 +1,15 @@
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+  item: {
+    type: String
+  }
+})
+
+const item = computed(() => JSON.parse(props.item || '{}'))
+</script>
+
 <template>
   <div class="AE-popper">
     <div>合併症の内容: {{ item.Category }}</div>
@@ -14,17 +26,6 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'DescriptionOfAE',
-  props: {
-    item: {
-      type: Object
-    }
-  }
-}
-</script>
-
 <style lang="sass">
 // override element's style
 .el-tooltip__popper
@@ -32,7 +33,7 @@ export default {
   line-height: 1.15rem
 
 div.AE-popper
-  max-width: 30rem
+  max-width: 40rem
   div:nth-child(2),:nth-last-child(2)
     margin-top: 0.5rem
 </style>

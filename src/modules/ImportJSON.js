@@ -71,14 +71,15 @@ export function CreateDocument (record) {
   DiagnosesAndProcedures(CaseData, record)
   AEs(CaseData, record)
 
-  if (record.Notification) {
+  // Notificationのインポートはインポート警告のあとに追加する
+  if (record?.Notification) {
     CaseData.Notification = (CaseData.Notification || '') + `${record.Notification}\n`
   }
   return CaseData
 }
 
 function DateOfProcedure (CaseData, record) {
-  if (record.DateOfProcedure) {
+  if (record?.DateOfProcedure) {
     try {
       CaseData.DateOfProcedure = '20' +
         record.DateOfProcedure
@@ -101,19 +102,19 @@ function DateOfProcedure (CaseData, record) {
 
 function BasicInformation (CaseData, record) {
   // 非必須基本情報フィールドの設定
-  for (const key of ['Name', 'Age', 'JSOGId', 'NCDId']) {
+  for (const key of ['Name', 'Age', 'JSOGId', 'NCDId', 'Denial']) {
     if (record[key] !== undefined) {
       CaseData[key] = record[key]
     }
   }
 
   // 患者IDを設定もしくは生成
-  if (record.PatientId !== undefined) {
+  if (record?.PatientId !== undefined) {
     CaseData.PatientId = record.PatientId
   } else {
     CaseData.PatientId = 'I-' + ('000000' + internalcounter.toString(10)).slice(-6)
     CaseData.Imported = true
-    CaseData.Notification = '自動生成された患者IDです重複などに注意してください.\n' +
+    CaseData.Notification = '自動生成された患者IDです、実際の重複などに注意してください.\n' +
       (CaseData.Notification || '')
 
     internalcounter++
@@ -122,7 +123,7 @@ function BasicInformation (CaseData, record) {
 
 function ProcedureTime (CaseData, record) {
   try {
-    if (record.ProcedureTime) {
+    if (record?.ProcedureTime) {
       CaseData.ProcedureTime = encodeProcedureTime(parseProcedureTime(record.ProcedureTime))
     } else {
       throw new Error()
@@ -143,7 +144,7 @@ function DiagnosesAndProcedures (CaseData, record) {
     CaseData.Procedures = []
     Object.assign(CaseData.Procedures, record.Procedures)
 
-    if (record.TypeOfProcedure) {
+    if (record?.TypeOfProcedure) {
       CaseData.TypeOfProcedure = record.TypeOfProcedure
     } else {
       CaseData.TypeOfProcedure = CaseData.Procedures[0].Chain[0]
@@ -156,7 +157,7 @@ function DiagnosesAndProcedures (CaseData, record) {
 }
 
 function AEs (CaseData, record) {
-  if (record.PresentAE !== undefined) {
+  if (record?.PresentAE !== undefined) {
     if (typeof record.PresentAE === 'boolean') {
       CaseData.PresentAE = record.PresentAE
     } else {
@@ -167,8 +168,9 @@ function AEs (CaseData, record) {
         '合併症情報について確認が必要です.\n'
     }
 
+    // 合併症ありの場合のチェック
     if (CaseData.PresentAE) {
-      if (record.AEs) {
+      if (record?.AEs) {
         CaseData.AEs = []
         Object.assign(CaseData.AEs, record.AEs)
       } else {

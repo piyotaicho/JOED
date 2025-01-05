@@ -2,90 +2,109 @@
 import { MessageBox } from 'element-ui'
 
 // messageに改行があったらelementを返す
-function messageVNode (message, caller) {
-  if (caller && message.includes('\n')) {
-    // const elem = MessageBox.$createElement
-    const lines = message.split('\n')
-    const elements = []
-    for (const line of lines) {
-      if (line === '') {
-        continue
-      }
-      elements.push(line)
-      elements.push(caller.$createElement('br', null))
+function escapeMessage (message) {
+  const matchRegexp = /['"&<> \n]/g
+  const escapePatterns = {
+    '\'': '&#39;',
+    '"': '&quot;',
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    ' ': '&nbsp;',
+    '\n': '<BR>'
+  }
+  if (matchRegexp.test(message)) {
+    return {
+      text: message.replace(matchRegexp, (matchedChar) => escapePatterns[matchedChar]),
+      dangerouslyUseHTMLString: true
     }
-    elements.pop(1)
-
-    return caller.$createElement('p', null, elements)
   } else {
-    return message
+    return {
+      text: message,
+      dangerouslyUseHTMLString: false
+    }
   }
 }
 
-export function alert (message, caller = null) {
-  return MessageBox.alert(messageVNode(message, caller), {
+export function alert (message) {
+  const { text, dangerouslyUseHTMLString } = escapeMessage(message)
+  return MessageBox.alert(text, {
     iconClass: 'el-icon-message-solid',
-    showClose: false
+    showClose: false,
+    dangerouslyUseHTMLString
   })
 }
 
-export function error (message, caller = null) {
-  return MessageBox.alert(messageVNode(message, caller), {
+export function error (message) {
+  const { text, dangerouslyUseHTMLString } = escapeMessage(message)
+  return MessageBox.alert(text, {
     iconClass: 'el-icon-error',
-    showClose: false
+    showClose: false,
+    dangerouslyUseHTMLString
   })
 }
 
-export function information (message, caller = null) {
-  return MessageBox.alert(messageVNode(message, caller), {
+export function information (message) {
+  const { text, dangerouslyUseHTMLString } = escapeMessage(message)
+  return MessageBox.alert(text, {
     title: '通知',
     iconClass: 'el-icon-info',
     closeOnClickModal: false,
-    showClose: false
+    showClose: false,
+    dangerouslyUseHTMLString
   })
 }
 
 export async function confirm (message, caller = null) {
-  return await MessageBox.confirm(messageVNode(message, caller), {
+  const { text, dangerouslyUseHTMLString } = escapeMessage(message)
+  return await MessageBox.confirm(text, {
     title: '確認',
     iconClass: 'el-icon-question',
     showClose: false,
-    closeOnPressEscape: true
+    closeOnPressEscape: true,
+    dangerouslyUseHTMLString
   }).then(_ => true, _ => false)
 }
 
 export async function confirmYesNo (message) {
-  return await MessageBox.confirm(messageVNode(message), {
+  const { text, dangerouslyUseHTMLString } = escapeMessage(message)
+  return await MessageBox.confirm(text, {
     title: '確認',
     iconClass: 'el-icon-question',
     showClose: false,
     closeOnPressEscape: false,
     cancelButtonText: 'いいえ',
-    confirmButtonText: 'はい'
+    confirmButtonText: 'はい',
+    dangerouslyUseHTMLString
   }).then(_ => true, _ => false)
 }
 
 export async function confirmAnyOk (message, anyText = 'cancel') {
-  return await MessageBox.confirm(messageVNode(message), {
+  const { text, dangerouslyUseHTMLString } = escapeMessage(message)
+  return await MessageBox.confirm(text, {
     iconClass: 'el-icon-message-solid',
     showClose: false,
     closeOnPressEscape: false,
     cancelButtonText: anyText,
-    confirmButtonText: 'OK'
+    confirmButtonText: 'OK',
+    dangerouslyUseHTMLString
   }).then(_ => true, _ => false)
 }
 
 export async function prompt (message, rule = undefined) {
+  const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   const options = {
     title: '入力',
     confirmButtonText: 'OK',
-    cancelButtonText: 'キャンセル'
+    cancelButtonText: 'キャンセル',
+    dangerouslyUseHTMLString
   }
 
   if (rule !== undefined) {
     options.inputPattern = new RegExp(rule)
     options.inputErrorMessage = '入力規則に合致しません.'
   }
-  return await MessageBox.prompt(message, options)
+
+  return await MessageBox.prompt(text, options)
     .then(value => value.value, _ => null)
 }

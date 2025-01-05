@@ -1,3 +1,20 @@
+<script setup>
+import { ref } from 'vue'
+import { useStore } from '@/store'
+import CloseButton from '@/components/Atoms/CloseButton'
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
+import TheWrapper from '@/components/Atoms/TheWrapper'
+
+const store = useStore()
+
+const isShowStartupDialog = ref(store.getters['system/Settings'].ShowStartupDialog)
+
+function closeDialog () {
+  store.dispatch('system/SetAndSaveShowStartupDialog', isShowStartupDialog.value)
+  store.commit('system/CloseStartupDialog')
+}
+</script>
+
 <template>
   <div>
     <TheWrapper alpha="60">
@@ -13,46 +30,19 @@
       </div>
 
       <div id="welcome-banner-control">
-        <LabeledCheckbox v-model="ShowWelcomeMessage">
+        <LabeledCheckbox :container.sync="isShowStartupDialog">
           次回起動時もこのメッセージを表示する
         </LabeledCheckbox>
       </div>
       <div id="welcome-banner-footer">
         日本産科婦人科内視鏡学会 調査普及委員会
       </div>
-      <CloseButton @click="Close" tabindex="0"/>
+      <CloseButton @click="closeDialog" tabindex="0"/>
     </div>
     </TheWrapper>
   </div>
 </template>
 
-<script>
-import CloseButton from '@/components/Atoms/CloseButton'
-import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
-import TheWrapper from '@/components/Atoms/TheWrapper'
-
-export default {
-  name: 'WelcomeBanner',
-  components: {
-    CloseButton, LabeledCheckbox, TheWrapper
-  },
-  computed: {
-    ShowWelcomeMessage: {
-      get () {
-        return this.$store.getters['system/Settings'].ShowStartupDialog
-      },
-      async set (newvalue) {
-        await this.$store.dispatch('system/SetAndSaveShowStartupDialog', newvalue)
-      }
-    }
-  },
-  methods: {
-    Close () {
-      this.$store.commit('system/CloseStartupDialog')
-    }
-  }
-}
-</script>
 <style lang="sass">
 #welcome-banner-dialog
   position: relative

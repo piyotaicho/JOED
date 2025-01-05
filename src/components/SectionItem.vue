@@ -1,56 +1,55 @@
+<script setup>
+import { computed } from 'vue'
+import CaseDocumentHandler from '@/modules/DbItemHandler'
+
+const props = defineProps({
+  item: {
+    type: String,
+    required: true
+  },
+  draggable: {
+    type: Boolean,
+    default: true
+  },
+  editable: {
+    type: Boolean,
+    default: false
+  }
+})
+const emit = defineEmits(['remove', 'edit'])
+
+const item = computed(() => JSON.parse(props.item || '""'))
+const title = computed(() => CaseDocumentHandler.ItemValue(item.value))
+const description = computed(() => {
+  if (item.value?.Description) {
+    return (Array.isArray(item.value.Description) && item.value.Description.length > 1)
+      ? item.value.Description.map(item => item.replace(/[[\]]/g, '')).join(', ')
+      : item.value.Description[0].replace(/[[\]]/g, '')
+  }
+  return ''
+})
+
+function removeItem () {
+  emit('remove')
+}
+
+function editItem () {
+  if (props.editable || false) {
+    emit('edit')
+  }
+}
+</script>
+
 <template>
-  <div class="section-item" tabindex="0" @keydown.delete="RemoveItem" @keydown.enter="EditItem">
-    <i class="handle el-icon-d-caret" v-if="draggable"/>
+  <div class="section-item" tabindex="0" @keydown.delete="removeItem" @keydown.enter="editItem">
+    <i class="handle el-icon-d-caret" v-if="props.draggable"/>
     <slot :item="item">
       <span>{{title}}</span>
       <span v-if="description !== ''">
         ( {{description}} )
       </span>
     </slot>
-    <i class="edit-button el-icon-edit" @click="EditItem" v-if="editable"/>
-    <i class="remove-button el-icon-delete" @click="RemoveItem"/>
+    <i class="edit-button el-icon-edit" @click="editItem" v-if="props.editable"/>
+    <i class="remove-button el-icon-delete" @click="removeItem"/>
   </div>
 </template>
-
-<script>
-import CaseDocumentHandler from '@/modules/DbItemHandler'
-
-export default {
-  name: 'SectionItem',
-  props: {
-    item: {
-      type: Object,
-      required: true
-    },
-    draggable: {
-      type: Boolean,
-      default: true
-    },
-    editable: {
-      type: Boolean,
-      default: false
-    }
-  },
-  computed: {
-    title () {
-      return CaseDocumentHandler.ItemValue(this.item)
-    },
-    description () {
-      if (this.item.Description) {
-        return (Array.isArray(this.item.Description) && this.item.Description.length > 1)
-          ? this.item.Description.map(item => item.replace(/[[\]]/g, '')).join(', ')
-          : this.item.Description[0].replace(/[[\]]/g, '')
-      }
-      return ''
-    }
-  },
-  methods: {
-    RemoveItem () {
-      this.$emit('remove')
-    },
-    EditItem () {
-      this.$emit('edit')
-    }
-  }
-}
-</script>
