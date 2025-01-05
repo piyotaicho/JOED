@@ -113,11 +113,11 @@ const focusInput = () => {
         <div v-if="Denial">
           <InputTextField title="レコード識別子" :value="hashString" readonly/>
         </div>
-        <div>
-          <InputTextField title="腫瘍登録番号" :value.sync="JSOGId" placeholder="腫瘍登録患者No." :disabled="!editJSOGId && JSOGId === ''"/>
+        <div v-if="editJSOGId || JSOGId !== ''">
+          <InputTextField title="腫瘍登録番号" :value.sync="JSOGId" placeholder="腫瘍登録患者No."/>
         </div>
-        <div>
-          <InputTextField title="NCD症例識別コード" :value.sync="NCDId" placeholder="NCD症例識別コード" :disabled="!editNCDId && NCDId === ''"/>
+        <div v-if="editNCDId || NCDId !== ''">
+          <InputTextField title="NCD症例識別コード" :value.sync="NCDId" placeholder="NCD症例識別コード"/>
         </div>
       </div>
       <!-- display button -->
