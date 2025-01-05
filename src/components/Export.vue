@@ -134,7 +134,7 @@ const CheckSystemConfiguration = async () => {
     return
   }
 
-  // 施設番号は必須
+  // 施設コードは必須
   if (!store.getters['system/InstitutionID']) {
     throw new Error('施設情報が未設定です.')
   }

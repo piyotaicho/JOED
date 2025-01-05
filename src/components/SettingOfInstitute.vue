@@ -124,7 +124,7 @@ async function commitSettings () {
         <template #title>
           施設名称
           <el-tooltip placement="bottom-start" :tabindex="-1">
-            <template #content><div>施設名称の一部や、＠に続いて都道府県名で検索してリストから選択が可能です.</div></template>
+            <template #content><div>施設名称の一部や、＠に続いて都道府県名で検索して登録施設リストから選択が可能です.</div></template>
             <i class="el-icon-question" style="padding-top: 0.36rem; margin-left: 0.6rem;"/>
           </el-tooltip>
         </template>
@@ -132,7 +132,7 @@ async function commitSettings () {
 
       <InputTextField
         :value.sync="data.InstitutionID"
-        title="施設番号"
+        title="施設コード"
         placeholder=" 未設定 "
         :required="true">
       </InputTextField>
@@ -143,7 +143,7 @@ async function commitSettings () {
           <el-button type="primary"
             @click="listInstitutes"
             :disabled="data.InstitutionName === '' || data.InstitutionID !== ''">
-            施設番号を施設名から検索
+            施設コードを施設名から検索
           </el-button>
         </div>
       </div>
@@ -166,7 +166,7 @@ async function commitSettings () {
             prop="name"
           />
           <el-table-column
-            label="施設ID"
+            label="施設コード"
             prop="ID"
             width="100"
           />
@@ -174,7 +174,7 @@ async function commitSettings () {
       </div>
     </el-collapse-transition>
 
-    <div class="utility-switches">
+    <div class="utility-switches" v-if="data.JSOGoncologyboardID !== ''">
       <InputTextField
         :value.sync="data.JSOGoncologyboardID"
         title="腫瘍登録施設番号"

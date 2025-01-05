@@ -97,7 +97,7 @@ export default {
     InstitutionName (state) {
       return state.settings.InstitutionName
     },
-    // 施設番号
+    // 施設コード
     InstitutionID (state) {
       return state.settings.InstitutionID
     },

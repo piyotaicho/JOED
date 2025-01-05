@@ -11,7 +11,7 @@ export const DateFormat = new RegExp(DateFormatPattern)
 // 手術時間の表記
 // procedureTimeFormat - ProcedureTimesからimport
 
-// 施設番号の表記
+// 施設コードの表記
 export const InstituteIDFormat = /^(0[1-9]|[1-3]\d|4[0-7])\d{3}$/
 
 // 2020年時点の日産腫瘍登録患者No.表記
