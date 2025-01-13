@@ -207,7 +207,7 @@ export async function CheckDupsInProcedures (item) {
     .map(item => [
       item.Text,
       (item.AdditionalProcedure ? item.AdditionalProcedure.Text : []),
-      (item.Ditto ? item.Ditto : [])
+      (item.Ditto ? Array.from(new Set(item.Ditto)) : [])
     ])
     .flat(2)
   if (itemTexts.length > (new Set(itemTexts)).size) {
