@@ -306,7 +306,7 @@ const UpdateList = (target, index, value) => {
 const RemoveCase = async () => {
   if (uid.value > 0 && await Popups.confirm('この症例を削除します.よろしいですか?')) {
     store.dispatch('RemoveDocument', { DocumentId: uid.value })
-      .then(_ => this.BackToList(0))
+      .then(_ => BackToList(0))
   }
 }
 
