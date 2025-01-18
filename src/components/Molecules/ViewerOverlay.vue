@@ -1,5 +1,4 @@
 <script setup>
-import { defineProps, defineEmits } from 'vue'
 import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 
 const props = defineProps({
