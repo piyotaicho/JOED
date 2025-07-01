@@ -28,15 +28,16 @@ const emit = defineEmits(['erase', 'dragged', 'dropped'])
     <div class="QueryPaneTitle"><slot name="title">{{props.title}}</slot></div>
     <div class="QueryPaneList">
       <div>
-        <list-item v-for="(item, index) in props.container"
-          :key="index"
-          :item="item"
-          :erasable="props.erasable"
-          :draggable="props.draggable"
-          @erase="emit('erase', index)"
-          @dragged="emit('dragged', index, $event)"
-          @dropped="emit('dropped', index, $event)"
-        />
+        <template v-for="(item, index) in props.container" :key="index">
+          <list-item
+            :item="item"
+            :erasable="props.erasable"
+            :draggable="props.draggable"
+            @erase="emit('erase', index)"
+            @dragged="emit('dragged', index, $event)"
+            @dropped="emit('dropped', index, $event)"
+          />
+        </template>
       </div>
     </div>
   </div>

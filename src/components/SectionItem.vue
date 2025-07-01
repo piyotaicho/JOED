@@ -52,7 +52,7 @@ function editItem () {
     </slot>
     <i class="edit-button el-icon-edit" @click="editItem" v-if="props.editable"/>
     <i class="remove-button el-icon-delete" @click="removeItem"/>
-    
+
     <!-- Vue 3: Element Plus icons (移行後)
     <el-icon class="handle" v-if="props.draggable"><DCaret /></el-icon>
     <slot :item="item">

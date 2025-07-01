@@ -9,16 +9,16 @@
         <div class="w80">
           <select v-model="Category" @change="categoryChanged()" ref="firstelement">
             <option value="" disabled style="display:none;">リストから選択</option>
-            <option v-for="item of master.Category" :key="item.Value" :value="item.Value">
-              {{item.Text}}
-            </option>
+            <template v-for="item of master.Category" :key="item.Value">
+              <option :value="item.Value"> {{item.Text}} </option>
+            </template>
           </select>
         </div>
       </div>
 
       <!-- コンポーネントの展開 -->
-      <template v-for="(component, compoIndex) of components">
-        <div class="flex-content" :key="compoIndex">
+      <template v-for="(component, compoIndex) of components" :key="compoIndex">
+        <div class="flex-content">
           <!-- Bloodcount はスペシャルコンポーネント -->
           <template v-if="component === 'Bloodcount'">
           <div class="w20 subtitle">
@@ -52,9 +52,9 @@
         <div class="w80">
           <select v-model="AE.Grade">
             <option value="" disabled style="display:none;">リストから選択</option>
-            <option v-for="grade in master.Grading" :key="grade.Grading" :value="grade.Grade">
-              {{grade.Text}}
-            </option>
+            <template v-for="grade in master.Grading" :key="grade.Grading">
+              <option :value="grade.Grade"> {{grade.Text}} </option>
+            </template>
           </select>
         </div>
       </div>
@@ -64,9 +64,9 @@
         </div>
         <div class="w80">
           <div v-show="showByGrading(0)"><i class="el-icon-more" style="transform: rotate(90deg)"></i></div>
-          <template v-for="(course, courseIndex) in master.Courses">
+          <template v-for="(course, courseIndex) in master.Courses" :key="courseIndex" >
             <!-- eslint-disable-next-line vue/no-v-for-template-key-on-child -->
-            <div :key="courseIndex" v-show="showByGrading(course.Min)">
+            <div v-show="showByGrading(course.Min)">
               <el-divider class="AEgrading-divider" content-position="left">
                 {{course.Title}}
               </el-divider>

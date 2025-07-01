@@ -67,17 +67,21 @@ const ComponentList = [
     <hr />
     <span style="font-weight: bold">アプリケーションおよび主要コンポーネントのバージョン</span>
     <ul>
-      <li v-for="(item, index) of CoreList" :key="index">
-        <ExtLink :url="item.href">{{ item.name }}</ExtLink> : {{ item.version }} - License: {{ item.license }}
-      </li>
+      <template v-for="(item, index) of CoreList" :key="index">
+        <li>
+          <ExtLink :url="item.href">{{ item.name }}</ExtLink> : {{ item.version }} - License: {{ item.license }}
+        </li>
+      </template>
     </ul>
 
     <hr />
     <span style="font-weight: bold">その他のコンポーネント</span>
     <ul>
-      <li v-for="(item, index) of ComponentList" :key="index">
-        {{ item.name }} (<ExtLink :url="item.href" />) - License : {{ item.license }}
-      </li>
+      <template v-for="(item, index) of ComponentList" :key="index">
+        <li>
+          {{ item.name }} (<ExtLink :url="item.href" />) - License : {{ item.license }}
+        </li>
+      </template>
     </ul>
   </div>
 </template>

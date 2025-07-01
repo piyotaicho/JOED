@@ -58,11 +58,9 @@ defineExpose({
       @dblclick="dblClick"
       :disabled="disabled">
       <option v-if="props.items.length===0" disabled :value="null"></option>
-      <option v-for="(item,key,index) in props.items"
-        :key="index"
-        :value="item">
-        {{item}}
-      </option>
+      <template v-for="(item,key,index) in props.items" :key="index">
+        <option :value="item"> {{item}} </option>
+      </template>
     </select>
   </div>
 </template>

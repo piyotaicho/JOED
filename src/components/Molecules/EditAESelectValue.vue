@@ -37,5 +37,5 @@ const checkboxvalue = computed({
 </script>
 
 <template>
-  <LabeledCheckbox :container.sync="checkboxvalue" :value="itemvalue">{{itemlabel}}</LabeledCheckbox>
+  <LabeledCheckbox v-model="checkboxvalue" :value="itemvalue">{{itemlabel}}</LabeledCheckbox>
 </template>

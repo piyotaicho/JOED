@@ -74,7 +74,9 @@ const changeStyle = (status) => {
     <div class="QueryPaneListItemLabel">
       <slot name="default">
         <div class="QueryPaneListItemLabelContents">
-          <div v-for="(item, index) of labels" :key="index">{{item}}</div>
+          <template v-for="(item, index) of labels" :key="index">
+            <div>{{ item }}</div>
+          </template>
         </div>
       </slot>
     </div>

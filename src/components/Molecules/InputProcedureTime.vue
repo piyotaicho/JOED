@@ -120,11 +120,9 @@ const clearTypedValue = () => {
           v-popover:popover
         >
           <option value="" disabled style="display:none;">手術所要時間</option>
-          <option v-for="item in procedureTimeSelections"
-            :key="item"
-            :value="item">
-            {{item}}
-          </option>
+          <template v-for="item in procedureTimeSelections" :key="item">
+            <option :value="item">{{ item }}</option>
+          </template>
         </select>
       </el-tooltip>
     </div>

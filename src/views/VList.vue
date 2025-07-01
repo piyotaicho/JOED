@@ -73,7 +73,9 @@ const moveFocus = (offset) => {
 
       <ListDrawer :visible="showMenuDrawer" @close="closeDrawer"/>
 
-      <CaseDocument v-for="uid in uids" :key="uid" :uid="uid"/>
+      <template v-for="uid in uids" :key="uid">
+        <CaseDocument :uid="uid"/>
+      </template>
       <InfiniteLoading @infinite="handleInfinite" :identifier="displayIdentifier" ref="infiniteloading">
         <template v-slot:no-more><span></span></template>
         <template v-slot:no-results><span></span></template>
