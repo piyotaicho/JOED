@@ -81,7 +81,9 @@
       "parser": "@babel/eslint-parser",
       "requireConfig": true
     },
-    "rules": {}
+    "rules": {
+      "eslint-plugin-vue/no-v-for-template-key": "off"
+    }
   },
   "browserslist": [
     "> 1%",

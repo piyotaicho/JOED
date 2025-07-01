@@ -337,7 +337,7 @@ const CreateHeader = async (exportItem, countOfDenial) => {
   <div class="utility">
     <div class="utility-switches">
       <InputSwitchField
-        :value.sync="exportAsBackup"
+        v-model="exportAsBackup"
         title="出力する様式"
         :options="{ 学会提出データ: false, バックアップデータ: true }"
       />
@@ -346,13 +346,13 @@ const CreateHeader = async (exportItem, countOfDenial) => {
         <div class="label">出力する年次</div>
         <SelectYear
           class="field"
-          :value.sync="setting.year"
+          v-model="setting.year"
           :selection-all="exportAsBackup"
         />
       </div>
 
       <InputSwitchField
-        :value.sync="setting.validate"
+        v-model="setting.validate"
         :disabled="!exportAsBackup"
         title="データのエラーチェック"
         :options="{ 行う: true, 行わない: false }"

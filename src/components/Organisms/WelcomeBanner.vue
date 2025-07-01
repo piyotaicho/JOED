@@ -30,7 +30,7 @@ function closeDialog () {
       </div>
 
       <div id="welcome-banner-control">
-        <LabeledCheckbox :container.sync="isShowStartupDialog">
+        <LabeledCheckbox v-model="isShowStartupDialog">
           次回起動時もこのメッセージを表示する
         </LabeledCheckbox>
       </div>

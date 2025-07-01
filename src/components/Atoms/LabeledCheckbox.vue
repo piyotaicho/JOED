@@ -16,11 +16,11 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, defineModel } from 'vue'
 
 const props = defineProps({
-  container: {},
   value: {
+    type: [Boolean, String, Number],
     default: true
   },
   disabled: {
@@ -32,13 +32,15 @@ const props = defineProps({
     default: 0
   }
 })
-const emit = defineEmits(['update:container'])
+const container = defineModel({
+  default: {}
+})
 
 const inputElement = ref()
 
 const checkboxValue = computed({
-  get: () => props.container,
-  set: (newValue) => emit('update:container', newValue)
+  get: () => container.value,
+  set: (newValue) => { container.value = newValue }
 })
 
 const changeState = () => {

@@ -174,13 +174,13 @@ const DisableSearch = async () => {
 
     <div class="subtitle">表示する内容</div>
     <div class="menu-item-content" id="display-item-selection">
-      <div><LabeledCheckbox :container.sync="isFilterItemsEmpty">全て表示する</LabeledCheckbox></div>
+      <div><LabeledCheckbox v-model="isFilterItemsEmpty">全て表示する</LabeledCheckbox></div>
 
       <div>
         <div>カテゴリ</div>
         <div>
-          <template v-for="(value, category) in data.Categories">
-            <LabeledCheckbox :container.sync="FilterItems" :value="category" :key="category"></LabeledCheckbox>
+          <template v-for="(value, category) in data.Categories" :key="category">
+            <LabeledCheckbox v-model="FilterItems" :value="category" />
           </template>
         </div>
       </div>
@@ -188,8 +188,8 @@ const DisableSearch = async () => {
       <div>
         <div>年次</div>
         <div>
-          <template v-for="(value, year) in data.Years">
-            <LabeledCheckbox :container.sync="FilterItems" :value="year" :key="year"></LabeledCheckbox>
+          <template v-for="(value, year) in data.Years" :key="year">
+            <LabeledCheckbox v-model="FilterItems" :value="year" />
           </template>
         </div>
       </div>
@@ -197,8 +197,8 @@ const DisableSearch = async () => {
       <div>
         <div>情報</div>
         <div>
-          <template v-for="(value, condition) in data.Conditions">
-            <LabeledCheckbox :container.sync="FilterItems" :value="condition" :key="condition" ></LabeledCheckbox>
+          <template v-for="(value, condition) in data.Conditions" :key="condition">
+            <LabeledCheckbox v-model="FilterItems" :value="condition" />
           </template>
         </div>
       </div>

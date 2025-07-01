@@ -110,9 +110,9 @@ const escapedItemCaption = (str) => str.replace(/\[.+\]/g, '').replace(/\$$/, ''
     </div>
     <div class="w40 selectionbox">
       <template v-if="isMultipleSelection">
-        <template v-for="item of selectionItems">
-          <div :key="item">
-            <LabeledCheckbox :container.sync="selectedArrayValue" :value="item" :key="item">
+        <template v-for="item of selectionItems" :key="item">
+          <div>
+            <LabeledCheckbox v-model="selectedArrayValue" :value="item">
               {{ escapedItemCaption(item) }}
             </LabeledCheckbox>
           </div>
@@ -120,9 +120,11 @@ const escapedItemCaption = (str) => str.replace(/\[.+\]/g, '').replace(/\$$/, ''
       </template>
       <template v-else>
         <select v-model="selectedSingleValue">
-          <option v-for="item of selectionItems" :key="item" :value="item">
-            {{ escapedItemCaption(item) }}
-          </option>
+          <template v-for="item of selectionItems" :key="item" >
+            <option :value="item">
+              {{ escapedItemCaption(item) }}
+            </option>
+          </template>
         </select>
       </template>
     </div>

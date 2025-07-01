@@ -174,7 +174,7 @@ const storeRuleset = () => {
     </div>
     <div style="padding-bottom: 1rem;" v-show="data.CsvArray.length > 0">
       <div>
-        <LabeledCheckbox :container.sync="data.CsvHeader" :value="true">CSVファイルの先頭行はフィールド名</LabeledCheckbox>
+        <LabeledCheckbox v-model="data.CsvHeader" :value="true">CSVファイルの先頭行はフィールド名</LabeledCheckbox>
       </div>
       <QueryBuilder
         :csv="csvArray"
@@ -184,7 +184,7 @@ const storeRuleset = () => {
         @set="setRuleSetProperty"
         @delete="deleteRuleSetProperty"
       />
-      <LabeledCheckbox :container.sync="data.PerformMigration" :value="false">診断名称・実施手術の入力に対して基本的な置換操作を行う</LabeledCheckbox>
+      <LabeledCheckbox v-model="data.PerformMigration" :value="false">診断名称・実施手術の入力に対して基本的な置換操作を行う</LabeledCheckbox>
       <el-tooltip placement="top-start" :tabindex="-1">
         <template #content><div>チョコレート嚢胞→子宮内膜症性嚢胞, 子宮外妊娠→異所性妊娠 など<br/>2019年以前の登録で利用されていた内容のうち表記変更のあったものを一律に置換します.</div></template>
         <i class="el-icon-question" style="padding-top: 0.36rem; margin-left: 0.6rem;"/>

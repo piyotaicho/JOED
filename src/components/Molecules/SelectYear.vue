@@ -42,10 +42,11 @@ const SelectedValue = computed({
   <div>
     <select v-model="SelectedValue">
       <option value="ALL" v-if="props.selectionAll">すべて</option>
-      <option v-for="item in selections"
-        :key="item.year" :value="item.year">
-        {{item.year}}年 ({{item.count}}件)
-      </option>
+      <template v-for="item in selections" :key="item.year">
+        <option :value="item.year">
+          {{item.year}}年 ({{item.count}}件)
+        </option>
+      </template>
     </select>
   </div>
 </template>

@@ -51,23 +51,23 @@ const removeItem = (index) => emit('removeitem', index)
     <slot name="beforeitemlist"></slot>
     <template v-if="draggable">
       <draggableContent handle=".handle" v-model="items">
-        <div class="section-item-list"
-          v-for="(item, index) in items"
-          :key="index">
-          <slot :item="item" :index="index">
-            <SectionItem :item="item" @remove="removeItem(index)" @edit="editItem(index, item)" editable/>
-          </slot>
-        </div>
+        <template v-for="(item, index) in items" :key="index">
+          <div class="section-item-list">
+            <slot :item="item" :index="index">
+              <SectionItem :item="item" @remove="removeItem(index)" @edit="editItem(index, item)" editable/>
+            </slot>
+          </div>
+        </template>
       </draggableContent>
     </template>
     <template v-else>
-      <div class="section-item-list"
-        v-for="(item, index) in items"
-        :key="index">
-        <slot :item="item" :index="index">
-          <SectionItem :item="item" @remove="removeItem(index)" @edit="editItem(index, item)"/>
-        </slot>
-      </div>
+      <template v-for="(item, index) in items" :key="index">
+        <div class="section-item-list">
+          <slot :item="item" :index="index">
+            <SectionItem :item="item" @remove="removeItem(index)" @edit="editItem(index, item)"/>
+          </slot>
+        </div>
+      </template>
     </template>
     <slot name="afteritemlist"></slot>
     <NewEntryButton @click="addNewItem()" tabindex="0" />
