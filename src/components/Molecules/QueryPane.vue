@@ -29,7 +29,7 @@ const emit = defineEmits(['erase', 'dragged', 'dropped'])
     <div class="QueryPaneList">
       <div>
         <template v-for="(item, index) in props.container" :key="index">
-          <list-item
+          <list-item 
             :item="item"
             :erasable="props.erasable"
             :draggable="props.draggable"
