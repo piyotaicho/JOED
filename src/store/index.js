@@ -1,12 +1,10 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import { createStore } from 'vuex'
 import * as NedbAccess from 'depmodules/NedbAccess'
 import system from '@/store/modules/system'
 import password from '@/store/modules/passwordauth'
 import { parseProcedureTime } from '@/modules/ProcedureTimes'
-Vue.use(Vuex)
 
-const store = new Vuex.Store({
+const store = createStore({
   modules: {
     system, password
   },
@@ -156,8 +154,8 @@ const store = new Vuex.Store({
     //
     // @param {Object} DocumentIds
     SetDocumentIds (state, payload) {
-      Vue.set(state.DocumentIds, 'List', payload.DocumentIds)
-      Vue.set(state.DocumentIds, 'Identifier', state.DocumentIds.Identifier + 1)
+      state.DocumentIds.List = payload.DocumentIds
+      state.DocumentIds.Identifier = state.DocumentIds.Identifier + 1
     },
     // DataStoreにデータベースをキャッシュする.
     //

@@ -24,7 +24,7 @@
 
 <script setup>
 import { ref, computed, nextTick, onMounted } from 'vue'
-import { useRouter } from 'vue-router/composables'
+import { useRouter } from 'vue-router'
 import Master from '@/modules/Masters/DiagnosisMaster'
 import * as Popups from '@/modules/Popups'
 import TheWrapper from '@/components/Atoms/TheWrapper'

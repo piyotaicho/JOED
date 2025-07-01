@@ -110,7 +110,7 @@
 <script setup>
 import { reactive, ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from '@/store'
-import { onBeforeRouteUpdate, useRouter } from 'vue-router/composables'
+import { onBeforeRouteUpdate, useRouter } from 'vue-router'
 import SectionPatientInfo from '../components/SectionPatientInfo.vue'
 import SectionDiagnoses from '@/components/SectionDiagnoses'
 import SectionProcedures from '@/components/SectionProcedures'

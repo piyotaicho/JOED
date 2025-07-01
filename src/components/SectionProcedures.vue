@@ -35,7 +35,7 @@ const additionalProcedure = (item) => JSON.stringify((JSON.parse(item || '')?.Ad
 
 <template>
   <SectionBlock title="実施手術"
-    :container.sync="items"
+    v-model="items"
     @addnewitem="addNewItem">
     <template #default="slotprops">
       <template v-if="hasAdditionalProcedure(slotprops.item)">
@@ -46,5 +46,5 @@ const additionalProcedure = (item) => JSON.stringify((JSON.parse(item || '')?.Ad
         <SectionItem :item="slotprops.item" @remove="removeItem(slotprops.index)" @edit="editItem(slotprops.index, slotprops.item)" editable/>
       </template>
     </template>
-  </SectionBLock>
+  </SectionBlock>
 </template>

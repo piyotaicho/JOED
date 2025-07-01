@@ -9,20 +9,30 @@ const props = defineProps({
     type: String,
     required: true
   },
-  container: {
+  // Vue 3 v-model support
+  modelValue: {
     type: Array, // String[]
     required: true
+  },
+  // Vue 2互換性のため一時的に保持
+  container: {
+    type: Array, // String[]
+    required: false
   },
   draggable: {
     type: Boolean,
     default: true
   }
 })
-const emit = defineEmits(['addnewitem', 'edititem', 'removeitem', 'update:container'])
+const emit = defineEmits(['addnewitem', 'edititem', 'removeitem', 'update:modelValue', 'update:container'])
 
 const items = computed({
-  get: () => props.container,
-  set: (value) => emit('update:container', value)
+  get: () => props.modelValue || props.container,
+  set: (value) => {
+    emit('update:modelValue', value)
+    // Vue 2互換性のため
+    emit('update:container', value)
+  }
 })
 
 const addNewItem = () => emit('addnewitem')
