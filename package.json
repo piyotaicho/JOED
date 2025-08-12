@@ -37,7 +37,6 @@
     "sass-loader": "13.3.3",
     "url-parse": "1.5.10",
     "vue": "^3.5.0",
-    "vue-infinite-loading": "^2.4.5",
     "vue-router": "^4.4.0",
     "vuedraggable": "^4.1.0",
     "vuejs-datepicker": "^1.6.2",
