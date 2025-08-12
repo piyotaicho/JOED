@@ -1,11 +1,11 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useStore } from '@/store'
-import { useRouter } from 'vue-router/composables'
+import { useRouter } from 'vue-router'
 import ListDashboard from '@/components/Molecules/Dashboard'
 import FilterAndSort from '@/components/Organisms/ListDrawerFilterAndSort'
 import ListSearch from '@/components/Organisms/ListDrawerSearch'
-import { Notification } from 'element-ui'
+import { ElNotification as Notification } from 'element-plus'
 
 const store = useStore()
 const router = useRouter()

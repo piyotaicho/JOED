@@ -1,4 +1,4 @@
-import Vue from 'vue'
+import { version as VueVersionString } from 'vue'
 import HHX from 'xxhashjs'
 import { LoadConfig, SaveConfig } from 'depmodules/config'
 
@@ -63,7 +63,7 @@ export default {
     },
     // Vueのバージョンの中継
     VueVersion () {
-      return Vue.version || 'undefined'
+      return VueVersionString || 'undefined'
     },
     // 実行プラットフォーム - 可能な限り検出する
     Platform () {
@@ -136,7 +136,7 @@ export default {
     SetPreferences (state, payload = {}) {
       for (const key in payload) {
         if (state.settings[key] !== undefined) {
-          Vue.set(state.settings, key, payload[key])
+          state.settings[key] = payload[key]
         }
       }
     },
@@ -152,7 +152,7 @@ export default {
         newView.Sort = payload.Sort
       }
 
-      Vue.set(state.settings, 'View', Object.assign(
+      state.settings.View = Object.assign(
         {
           Filters: [],
           Sort: {
@@ -161,7 +161,7 @@ export default {
         },
         // state.settings.View,
         newView
-      ))
+      )
     },
     // 起動時のメッセージダイアログ表示フラグ設定
     //

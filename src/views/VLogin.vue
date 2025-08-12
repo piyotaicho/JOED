@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, computed, ref } from 'vue'
 import { useStore } from '@/store'
-import { useRouter } from 'vue-router/composables'
+import { useRouter } from 'vue-router'
 import LargeIcon from '@/components/Atoms/LargeIcon'
 
 const store = useStore()

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useRouter, useRoute, onBeforeRouteUpdate } from 'vue-router/composables'
+import { useRouter, useRoute, onBeforeRouteUpdate } from 'vue-router'
 import { useStore } from '@/store'
 import ExportData from '@/components/Export'
 import ImportData from '@/components/Import'

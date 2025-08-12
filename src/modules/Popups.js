@@ -1,5 +1,5 @@
 // elementダイアログ
-import { MessageBox } from 'element-ui'
+import { ElMessageBox as MessageBox } from 'element-plus'
 
 // messageに改行があったらelementを返す
 function escapeMessage (message) {

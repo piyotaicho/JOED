@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue'
 import { useStore } from '@/store'
-import { useRouter } from 'vue-router/composables'
+import { useRouter } from 'vue-router'
 import CategoryIdentifier from '@/components/Atoms/CaseCategoryIdentifier'
 import * as Popups from '@/modules/Popups'
 import CaseDocumentHandler from '@/modules/DbItemHandler'

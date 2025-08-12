@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router/composables'
+import { useRoute, useRouter } from 'vue-router'
 import { useStore } from '@/store'
 import DrawerButton from '@/components/Atoms/DrawerButton.vue'
 import NewEntryButton from '@/components/Atoms/NewEntryButton'
