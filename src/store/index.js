@@ -163,9 +163,9 @@ const store = createStore({
     SetDatastore (state, payload) {
       const foundIndex = state.DataStore.findIndex(item => item.DocumentId === payload.DocumentId)
       if (foundIndex === -1) {
-        Vue.set(state.DataStore, state.DataStore.length, payload)
+        state.DataStore.push(payload)
       } else {
-        Vue.set(state.DataStore, foundIndex, payload)
+        state.DataStore.splice(foundIndex, 1, payload)
       }
     },
     // キャッシュDataStoreから指定のドキュメントを破棄.
@@ -174,24 +174,24 @@ const store = createStore({
     RemoveDatastore (state, payload) {
       const foundIndex = state.DataStore.findIndex(item => item.DocumentId === payload.DocumentId)
       if (foundIndex !== -1) {
-        Vue.delete(state.DataStore, foundIndex)
+        state.DataStore.splice(foundIndex, 1)
       }
     },
     // 総症例数
     //
     // @Param {Number}
     SetTotalDocumentCount (state, payload) {
-      Vue.set(state.DocumentIds, 'TotalCount', payload)
+      state.DocumentIds.TotalCount = payload
     },
     // 表示対象数をクリア
     //
     ClearDocumentListRange (state) {
-      Vue.set(state.DocumentIds, 'Range', Math.min(state.LoadAtOnce, state.DocumentIds.List.length))
+      state.DocumentIds.Range = Math.min(state.LoadAtOnce, state.DocumentIds.List.length)
     },
     // 表示対象数を増やす
     //
     IncrementDocumentListRange (state) {
-      Vue.set(state.DocumentIds, 'Range', Math.min(state.DocumentIds.Range + state.LoadAtOnce, state.DocumentIds.List.length))
+      state.DocumentIds.Range = Math.min(state.DocumentIds.Range + state.LoadAtOnce, state.DocumentIds.List.length)
     },
 
     // Filtersを設定
@@ -199,7 +199,7 @@ const store = createStore({
     // @param {Object}
     SetFilters (state, payload) {
       const newFilters = Array.isArray(payload) ? payload : state.system.settings.View.Filters
-      Vue.set(state, 'Filters', newFilters)
+      state.Filters = newFilters
     },
 
     // Searchを設定
@@ -207,13 +207,13 @@ const store = createStore({
     // @param {Object}
     SetSearch (state, payload = {}) {
       if (payload.Filter !== undefined) {
-        Vue.set(state.Search, 'Filter', payload.Filter)
+        state.Search.Filter = payload.Filter
       }
       if (payload.IgnoreQuery !== undefined) {
-        Vue.set(state.Search, 'IgnoreQuery', !!payload.IgnoreQuery)
+        state.Search.IgnoreQuery = !!payload.IgnoreQuery
       }
       if (payload.Preserve !== undefined) {
-        Vue.set(state.Search, 'Preserve', payload.Preserve)
+        state.Search.Preserve = payload.Preserve
       }
     },
 
@@ -222,13 +222,12 @@ const store = createStore({
     // @param {Object}
     SetSort (state, payload = {}) {
       const keyvalue = Object.entries(payload)[0]
-      Vue.set(state, 'Sort',
+      state.Sort =
         (keyvalue && keyvalue.length === 2)
           ? {
               [keyvalue[0]]: keyvalue[1]
             }
           : state.system.settings.View.Sort
-      )
     }
   },
 
