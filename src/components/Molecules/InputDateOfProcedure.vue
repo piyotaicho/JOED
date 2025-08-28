@@ -1,7 +1,6 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-import Datepicker from 'vuejs-datepicker'
-import { ja } from 'vuejs-datepicker/dist/locale'
+import VueDatePicker from '@vuepic/vue-datepicker';
 
 const props = defineProps({
   value: {
@@ -56,14 +55,12 @@ const requiredClass = computed(() => (props.required === true && props.value ===
     <template>
       <Datepicker
         v-model="dateOfProcedure"
-        wrapper-class="field"
-        placeholder="クリックでカレンダー"
-        :typeable="true"
+        text-input
+        :enable-time-picker="false"
         format="yyyy-MM-dd"
-        :input-class="requiredClass"
-        :language="ja"
-        :disabled="disabled"
-        ref="datepicker"
+        :format-locale="ja"
+        auto-apply
+        placeholder="クリックでカレンダー"
         />
     </template>
   </div>

@@ -6,6 +6,7 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import './cross-plathome-yu-gothic.css'
 import './app-global.sass'
+import '@vuepic/vue-datepicker/dist/main.css'
 
 const app = createApp(App)
 app.use(router)
