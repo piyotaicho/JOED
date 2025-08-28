@@ -25,6 +25,7 @@
   "main": "background.js",
   "dependencies": {
     "@seald-io/nedb": "4.0.4",
+    "@vuepic/vue-datepicker": "^11.0.2",
     "caniuse-lite": "^1.0.30001636",
     "core-js": "3.39.0",
     "difflib": "^0.2.4",

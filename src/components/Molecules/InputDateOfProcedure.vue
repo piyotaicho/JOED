@@ -1,6 +1,6 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
-import VueDatePicker from '@vuepic/vue-datepicker';
+import { onMounted, ref, computed, watchEffect } from 'vue'
+import VueDatePicker from '@vuepic/vue-datepicker'
 
 const props = defineProps({
   value: {
@@ -22,46 +22,61 @@ const emit = defineEmits(['update:value'])
 
 // Set tabindex
 const datepicker = ref()
+let inputelement
 onMounted(() => {
-  if (props.tabindex !== undefined) {
-    let inputelement
-    try {
-      inputelement = datepicker.value.getElementsByTagName('input')[0]
-      inputelement.tabIndex = props.tabindex
-    } catch {}
+  try {
+    inputelement = datepicker.value.getElementsByTagName('input')[0]
+  } catch {
+    inputelement = undefined
+  }
+  if (props.tabindex !== undefined && inputelement !== undefined) {
+    inputelement.tabIndex = props.tabindex
   }
 })
 
 const dateOfProcedure = computed({
   get: () => props.value,
-  set (newvalue) {
-    if (newvalue) {
-      // Datepickerから渡されるnewvalueはISO datestrなので整形が必要
-      const dateobj = new Date(newvalue)
-      const datestr = dateobj.getFullYear() + '-' +
-        ('0' + (dateobj.getMonth() + 1)).slice(-2) + '-' +
-        ('0' + dateobj.getDate()).slice(-2)
-      emit('update:value', datestr)
+  set: (newvalue) => emit('update:value', newvalue)
+})
+
+watchEffect(() => {
+  if (props.required && inputelement !== undefined) {
+    if (dateOfProcedure.value === '') {
+      inputelement.classList.add('vacant')
+    } else {
+      inputelement.classList.remove('vacant')
     }
   }
 })
-
-const requiredClass = computed(() => (props.required === true && props.value === '') ? 'vacant' : '')
 </script>
 
 <template>
-  <div ref="datepicker" style="display: flex; flex-direction: row; height: 2.4rem;">
+  <div style="display: flex; flex-direction: row; height: 2.4rem;">
     <div class="label"><span>手術日</span></div>
     <template>
-      <Datepicker
+      <VueDatePicker
+        ref="datepicker"
         v-model="dateOfProcedure"
         text-input
         :enable-time-picker="false"
         format="yyyy-MM-dd"
         :format-locale="ja"
+        week-start="0"
         auto-apply
         placeholder="クリックでカレンダー"
-        />
+      >
+        <template #calendar-header="{ index, day }">
+          <div
+            :style="
+              index === 0
+                ? 'font-weight: normal; font-size: 0.8rem; color: red;'
+                : 'font-weight: normal; font-size: 0.8rem;'
+            "
+          >
+            {{ day }}
+          </div>
+        </template>
+      </VueDatePicker>
     </template>
   </div>
 </template>
