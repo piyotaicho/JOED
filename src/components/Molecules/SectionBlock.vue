@@ -26,6 +26,10 @@ const props = defineProps({
 })
 const emit = defineEmits(['addnewitem', 'edititem', 'removeitem', 'update:modelValue', 'update:container'])
 
+// Update = undefinedのエラーを回避
+draggableContent.compatConfig = {
+  MODE: 3
+}
 const items = computed({
   get: () => props.modelValue || props.container,
   set: (value) => {
@@ -51,20 +55,20 @@ const removeItem = (index) => emit('removeitem', index)
     <slot name="beforeitemlist"></slot>
     <template v-if="draggable">
       <draggableContent handle=".handle" v-model="items">
-        <template v-for="(item, index) in items" :key="index">
+        <template #item="{element, index}">
           <div class="section-item-list">
-            <slot :item="item" :index="index">
-              <SectionItem :item="item" @remove="removeItem(index)" @edit="editItem(index, item)" editable/>
+            <slot :item="element" :index="index">
+              <SectionItem :item="element" @remove="removeItem(index)" @edit="editItem(index, element)" editable/>
             </slot>
           </div>
         </template>
       </draggableContent>
     </template>
     <template v-else>
-      <template v-for="(item, index) in items" :key="index">
+      <template v-for="(element, index) in items" :key="index">
         <div class="section-item-list">
-          <slot :item="item" :index="index">
-            <SectionItem :item="item" @remove="removeItem(index)" @edit="editItem(index, item)"/>
+          <slot :item="element" :index="index">
+            <SectionItem :item="element" @remove="removeItem(index)" @edit="editItem(index, element)"/>
           </slot>
         </div>
       </template>
