@@ -102,6 +102,19 @@ const focusInput = () => {
 <template>
   <div>
     <el-popover placement="bottom" width="400" trigger="click" @after-enter="focusInput" :tabindex="-1">
+      <!-- display button -->
+      <template #reference>
+        <div class="additonal-patient-info-button">
+          <template v-if="tooltip === ''">
+            <el-icon :style="iconColor"><InfoFilled /></el-icon>
+          </template>
+          <template v-else>
+            <el-tooltip class="item" effect="dark" placement="right" :content="tooltip">
+              <el-icon :style="iconColor"><InfoFilled /></el-icon>
+            </el-tooltip>
+          </template>
+        </div>
+      </template>
       <!-- popover content-->
       <div class="additional-patient-info-panel">
           <InputSwitchField
@@ -121,28 +134,16 @@ const focusInput = () => {
           <InputTextField title="NCD症例識別コード" :value.sync="NCDId" placeholder="NCD症例識別コード"/>
         </div>
       </div>
-      <!-- display button -->
-      <div slot="reference" class="additonal-patient-info-button">
-        <div v-if="tooltip === ''">
-          <InfoFilled :style="iconColor" />
-        </div>
-        <div v-else>
-          <el-tooltip class="item" effect="dark" placement="right" :content="tooltip">
-            <InfoFilled :style="iconColor" />
-          </el-tooltip>
-        </div>
-      </div>
     </el-popover>
   </div>
 </template>
 
 <style lang="sass">
 div.additonal-patient-info-button
-  display: flex
+  display: block
   justify-content: center
   align-content: center
-  font-size: 1.3rem
-
+  font-size: 1.2rem
 div.additional-patient-info-panel
   display: flex
   flex-direction: column
