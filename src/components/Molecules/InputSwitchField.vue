@@ -61,7 +61,7 @@ const selectedValue = computed({
 <template>
   <div>
     <div class="label"><span>{{title}}</span></div>
-    <div class="field">
+    <div class="field" style="padding-top: 0;">
       <el-switch
         v-model="selectedValue"
         :inactive-text="texts[0]"
