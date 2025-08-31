@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useStore } from '@/store'
+import { Plus, Menu } from '@element-plus/icons-vue'
 import CloseButton from '@/components/Atoms/CloseButton'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import TheWrapper from '@/components/Atoms/TheWrapper'
@@ -22,8 +23,8 @@ function closeDialog () {
       <div id="welcome-banner-title">JOED5へようこそ</div>
       <div id="welcome-banner-text">
         症例・合併症登録にご協力頂きありがとうございます.<br/>
-        症例登録は、右上の<span class="welcome-banner-elementIcon">&#xe6d9;</span>ボタンを押して開始して下さい.<br/>
-        リストのソートなど各種機能は左上の<span class="welcome-banner-elementIcon">&#xe798;</span>ボタンからご利用いただけます.<br/>
+        症例登録は、右上の <el-icon><Plus /></el-icon> ボタンを押して開始して下さい.<br/>
+        リストのソートなど各種機能は左上の <el-icon><Menu /></el-icon> ボタンからご利用いただけます.<br/>
         初期設定やファイルの入出力はメニューから利用して下さい.<br/>
         <br />
         お問い合わせは学会の症例登録ページからおねがいいたします.<br />
@@ -84,8 +85,4 @@ function closeDialog () {
   padding-right: 1.2rem
   color: #252525 // $--color-text-regular
 
-.welcome-banner-elementIcon
-  font-family: 'element-icons'
-  padding-left: 0.12rem
-  padding-right: 0.12rem
 </style>
