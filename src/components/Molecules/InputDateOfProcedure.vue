@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref, computed, watchEffect } from 'vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
+import { ja } from 'date-fns/locale'
 
 const props = defineProps({
   value: {
@@ -53,17 +54,17 @@ watchEffect(() => {
 <template>
   <div style="display: flex; flex-direction: row; height: 2.4rem;">
     <div class="label"><span>手術日</span></div>
-    <template>
+    <div class="field">
       <VueDatePicker
         ref="datepicker"
-        v-model="dateOfProcedure"
+        :model-value="dateOfProcedure"
+        @update:modelValue="val => dateOfProcedure.value = val"
         text-input
         :enable-time-picker="false"
         format="yyyy-MM-dd"
         :format-locale="ja"
         week-start="0"
         auto-apply
-        placeholder="クリックでカレンダー"
       >
         <template #calendar-header="{ index, day }">
           <div
@@ -76,8 +77,15 @@ watchEffect(() => {
             {{ day }}
           </div>
         </template>
+        <template #dp-input="{ value }">
+          <input type="text"
+            :value="value"
+            placeholder="クリックでカレンダー"
+            :class="[(!value && props.required) ? 'vacant' : '']"
+          />
+        </template>
       </VueDatePicker>
-    </template>
+    </div>
   </div>
 </template>
 
