@@ -20,7 +20,7 @@ const click = (event) => emit('click', event)
     @click="click"
     @keydown.enter="click"
     :accesskey="props.accesskey">
-    <Menu />
+    <el-icon><Menu /></el-icon>
   </div>
 </template>
 
@@ -32,9 +32,14 @@ div.open-drawer-button
   width: 30px
   height: 30px
   &:hover
-    &::after
-      color: var(--color-text-regular)
-  &::focus
-    &::after
-      color: var(--color-text-regular)
+    color: var(--color-text-regular)
+  &:focus
+    color: var(--color-text-regular)
+  & > i
+    width: 100%
+    height: 100%
+    diaplay: block
+    & svg
+      width: 100%
+      height: 100%
 </style>
