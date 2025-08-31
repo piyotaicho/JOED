@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue'
+import { DArrowLeft, DArrowRight } from '@element-plus/icons-vue'
 
 const props = defineProps({
   value: {
@@ -50,7 +51,7 @@ defineExpose({ open })
       <div class="invisible-button" @click="toggle">
         <span>自由入力</span>
         <span style="padding-left: 1rem;">
-          <i :class="[expandInput ? 'el-icon-d-arrow-left' : 'el-icon-d-arrow-right']"/>
+          <el-icon><component :is="expandInput ? DArrowLeft : DArrowRight" /></el-icon>
         </span>
       </div>
     </div>

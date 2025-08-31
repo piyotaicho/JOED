@@ -10,8 +10,8 @@
         {{ label }}
       </span>
       <span class="w20">( Grade : {{item.Grade}} )</span>
-      <i class="edit-button el-icon-edit" @click="editItem" />
-      <i class="remove-button el-icon-delete" @click="removeItem" />
+      <el-icon class="edit-button" @click="editItem" v-if="props.editable"><Edit /></el-icon>
+      <el-icon class="remove-button" @click="removeItem"><Delete /></el-icon>
     </div>
   </el-tooltip>
 </template>
@@ -19,6 +19,7 @@
 <script setup>
 import { computed } from 'vue'
 import DescriptionOfAE from '@/components/Molecules/DescriptionOfAE'
+import { Edit, Delete } from '@element-plus/icons-vue'
 
 const props = defineProps({
   item: {

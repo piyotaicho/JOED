@@ -20,7 +20,7 @@ const onButtonClick = () => emit('buttonClick')
       <div>
         <div id="preview">
           <div>
-            画面のクリックで表示を終了します. <el-button v-if="props.buttonLabel !== ''" type="primary" size="medium" @click.stop="onButtonClick()">{{props.buttonLabel}}</el-button>
+            画面のクリックで表示を終了します. <el-button v-if="props.buttonLabel !== ''" type="primary" @click.stop="onButtonClick()">{{props.buttonLabel}}</el-button>
           </div>
           <pre><slot></slot></pre>
         </div>

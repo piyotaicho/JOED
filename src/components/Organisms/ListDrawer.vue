@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useStore } from '@/store'
 import { useRouter } from 'vue-router'
+import { CircleCheckFilled } from '@element-plus/icons-vue'
 import ListDashboard from '@/components/Molecules/Dashboard'
 import FilterAndSort from '@/components/Organisms/ListDrawerFilterAndSort'
 import ListSearch from '@/components/Organisms/ListDrawerSearch'
@@ -79,7 +80,7 @@ const UpdateView = () => {
 
         <el-collapse-item name="search">
           <template #title>
-            検索 <i class="el-icon-success" style="color: var(--color-success); margin-left: 1rem;" v-if="searchActivated"/>
+            検索 <CircleCheckFilled style="color: var(--color-success); margin-left: 1rem;" v-if="searchActivated"/>
           </template>
           <ListSearch @changed="UpdateView"/>
         </el-collapse-item>

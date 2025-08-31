@@ -63,7 +63,7 @@
           <span>転帰</span>
         </div>
         <div class="w80">
-          <div v-show="showByGrading(0)"><i class="el-icon-more" style="transform: rotate(90deg)"></i></div>
+          <div v-show="showByGrading(0)"><MoreFilled style="transform: rotate(90deg)"/></div>
           <template v-for="(course, courseIndex) in master.Courses" :key="courseIndex" >
             <!-- eslint-disable-next-line vue/no-v-for-template-key-on-child -->
             <div v-show="showByGrading(course.Min)">
@@ -88,6 +88,7 @@ import EditSection from '@/components/Molecules/EditSection'
 import EditAESelect from '@/components/Molecules/EditAESelect'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
 import { ElNotification as Notification } from 'element-plus'
+import { MoreFilled } from '@element-plus/icons-vue'
 import AEmaster from '@/modules/Masters/AE'
 import { ZenToHanNumbers } from '@/modules/ZenHanChars'
 import { alert } from '@/modules/Popups'

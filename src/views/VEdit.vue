@@ -38,13 +38,13 @@
       />
 
       <!-- Navigations -->
-      <el-button icon="el-icon-caret-left" size="medium" circle id="MovePrev"
+  <el-button :icon="CaretLeft" circle id="MovePrev"
         tabindex="-1"
         v-if="isEditingExistingItem"
         :disabled="!prevUid"
         @click.exact="CancelEditing('prev')"
         @click.shift="CommitCase('prev')" />
-      <el-button icon="el-icon-caret-right" size="medium" circle id="MoveNext"
+  <el-button :icon="CaretRight" circle id="MoveNext"
         tabindex="-1"
         v-if="isEditingExistingItem"
         :disabled="!nextUid"
@@ -54,7 +54,7 @@
       <!--Controls -->
       <div class="edit-controls">
         <div class="edit-controls-left">
-          <el-button type="warning" icon="el-icon-warning"
+          <el-button type="warning" :icon="WarningFilled"
 
             @click="ShowNotification"
             v-if="CaseData.Notification">
@@ -63,7 +63,7 @@
         </div>
         <div class="edit-controls-right">
           <div>
-            <el-button type="primary" icon="el-icon-arrow-left"
+            <el-button type="primary" :icon="ArrowLeft"
 
               @click="CancelEditing()">
               戻る
@@ -73,7 +73,7 @@
             <el-dropdown split-button type="primary"
               @click.exact="CommitCase()" @click.shift="CommitCase('temporary')"
               @command="CommitCase">
-              編集内容を保存 <i class="el-icon-loading" v-show="processing"/>
+              編集内容を保存 <Loading v-show="processing"/>
 
               <template v-slot:dropdown>
                 <el-dropdown-menu>
@@ -89,7 +89,7 @@
             </el-dropdown>
           </div>
           <div v-if="isEditingExistingItem">
-            <el-button type="danger" icon="el-icon-delete" ref="RemoveButton"
+            <el-button type="danger" :icon="Delete" ref="RemoveButton"
               @click="RemoveCase()">
               削除
             </el-button>
@@ -108,6 +108,7 @@
 </template>
 
 <script setup>
+import { CaretLeft, CaretRight, WarningFilled, ArrowLeft, Delete, Loading } from '@element-plus/icons-vue'
 import { reactive, ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from '@/store'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'

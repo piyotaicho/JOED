@@ -1,4 +1,5 @@
 <script setup>
+import { Menu } from '@element-plus/icons-vue'
 const props = defineProps({
   tabindex: {
     type: String, Number
@@ -19,6 +20,7 @@ const click = (event) => emit('click', event)
     @click="click"
     @keydown.enter="click"
     :accesskey="props.accesskey">
+    <Menu />
   </div>
 </template>
 
@@ -29,13 +31,6 @@ div.open-drawer-button
   bottom: 5px
   width: 30px
   height: 30px
-  &::after
-    content: '\e798'
-    color: var(--color-primary)
-    font-family: 'element-icons'
-    font-size: 25px
-    padding-top: 6px
-    padding-left: 3px
   &:hover
     &::after
       color: var(--color-text-regular)

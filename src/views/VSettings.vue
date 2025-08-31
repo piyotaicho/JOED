@@ -2,6 +2,7 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useStore } from '@/store'
 import { useRouter } from 'vue-router'
+import { DArrowLeft } from '@element-plus/icons-vue'
 import SettingOfInstutute from '@/components/SettingOfInstitute'
 import SettingOfAuthentication from '@/components/SettingOfAuthentication'
 import SettingOfView from '@/components/SettingOfView'
@@ -38,7 +39,7 @@ const TabClick = (tab) => {
     <el-tabs v-model="selectedTab" tab-position="left" @tab-click="TabClick">
       <el-tab-pane name="list">
         <template v-slot:label>
-          <span><i class="el-icon-d-arrow-left" /> 戻る</span>
+          <span><DArrowLeft /> 戻る</span>
         </template>
       </el-tab-pane>
       <el-tab-pane label="施設情報の設定" name="institute">

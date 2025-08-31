@@ -1,4 +1,5 @@
 <script setup>
+import { Loading as LoadingIcon, Edit } from '@element-plus/icons-vue'
 import { onMounted, ref, computed } from 'vue'
 import { useStore } from '@/store'
 import { useRouter } from 'vue-router'
@@ -32,7 +33,7 @@ onMounted(() => {
 
 const ItemDocument = computed(() => Loading.value ? {} : store.getters.CaseDocument(uid.value))
 
-const Category = computed(() => Loading.value ? '' : ItemDocument.value.TypeOfProcedure)
+const Category = computed(() => Loading.value ? '' : (ItemDocument.value.TypeOfProcedure || undefined))
 
 const DateOfProcedure = computed(() => Loading.value ? '' : ItemDocument.value.DateOfProcedure)
 
@@ -116,10 +117,16 @@ const RemoveDocument = async () => {
       </div>
     </div>
     <div class="caseitem-controller">
-        <i class="el-icon-loading button-font" v-if="Loading"/>
-        <i class="el-icon-edit button-font"
-         v-if="!Loading"
-        @click="MoveToEditView()"/>
+      <template v-if="Loading">
+        <el-icon>
+          <LoadingIcon class="button-font" />
+        </el-icon>
+      </template>
+      <template v-else>
+        <el-icon class="button-font" v-if="!Loading" @click="MoveToEditView()">
+          <Edit />
+        </el-icon>
+      </template>
     </div>
   </div>
 </template>
@@ -156,7 +163,6 @@ div.caseitem-controller
   display: flex
   flex-direction: column
   justify-content: space-around
-  text-align: center
 .caution-badge
   border-radius: 1rem
   margin: 0.07rem

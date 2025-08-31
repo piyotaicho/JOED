@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import CaseDocumentHandler from '@/modules/DbItemHandler'
+import { Edit, Delete, DCaret } from '@element-plus/icons-vue'
 
 const props = defineProps({
   item: {
@@ -42,18 +43,6 @@ function editItem () {
 
 <template>
   <div class="section-item" tabindex="0" @keydown.delete="removeItem" @keydown.enter="editItem">
-    <!-- Vue 2: Element UI icons -->
-    <i class="handle el-icon-d-caret" v-if="props.draggable"/>
-    <slot :item="item">
-      <span>{{title}}</span>
-      <span v-if="description !== ''">
-        ( {{description}} )
-      </span>
-    </slot>
-    <i class="edit-button el-icon-edit" @click="editItem" v-if="props.editable"/>
-    <i class="remove-button el-icon-delete" @click="removeItem"/>
-
-    <!-- Vue 3: Element Plus icons (移行後)
     <el-icon class="handle" v-if="props.draggable"><DCaret /></el-icon>
     <slot :item="item">
       <span>{{title}}</span>
@@ -63,6 +52,5 @@ function editItem () {
     </slot>
     <el-icon class="edit-button" @click="editItem" v-if="props.editable"><Edit /></el-icon>
     <el-icon class="remove-button" @click="removeItem"><Delete /></el-icon>
-    -->
   </div>
 </template>

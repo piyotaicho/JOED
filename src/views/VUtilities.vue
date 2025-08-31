@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute, onBeforeRouteUpdate } from 'vue-router'
 import { useStore } from '@/store'
+import { DArrowLeft } from '@element-plus/icons-vue'
 import ExportData from '@/components/Export'
 import ImportData from '@/components/Import'
 
@@ -50,7 +51,7 @@ function goBack () {
     <el-tabs v-model="selectedTab" tab-position="left">
       <el-tab-pane name="list">
         <template v-slot:label>
-          <span><i class="el-icon-d-arrow-left" /> 戻る</span>
+          <span><DArrowLeft /> 戻る</span>
         </template>
       </el-tab-pane>
       <el-tab-pane label="データ出力" name="export">

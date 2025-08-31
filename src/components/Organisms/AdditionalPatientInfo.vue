@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 // vue2.7 + compositionAPI store hack
 import { useStore } from '@/store'
+import { InfoFilled } from '@element-plus/icons-vue'
 import InputSwitchField from '../Molecules/InputSwitchField.vue'
 import InputTextField from '@/components/Molecules/InputTextField'
 
@@ -123,11 +124,11 @@ const focusInput = () => {
       <!-- display button -->
       <div slot="reference" class="additonal-patient-info-button">
         <div v-if="tooltip === ''">
-          <i class="el-icon-info" :style="iconColor"></i>
+          <InfoFilled :style="iconColor" />
         </div>
         <div v-else>
           <el-tooltip class="item" effect="dark" placement="right" :content="tooltip">
-            <i class="el-icon-info" :style="iconColor"></i>
+            <InfoFilled :style="iconColor" />
           </el-tooltip>
         </div>
       </div>
