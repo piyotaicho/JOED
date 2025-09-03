@@ -3,14 +3,14 @@
     <div class="edit-dialog" ref="editDialog">
       <div class="edit-top">
         <SectionPatientInfo
-          :DateOfProcedure.sync="CaseData.DateOfProcedure"
-          :PatientId.sync="CaseData.PatientId"
-          :Name.sync="CaseData.Name"
-          :Age.sync="CaseData.Age"
-          :Denial.sync="CaseData.Denial"
-          :ProcedureTime.sync="CaseData.ProcedureTime"
-          :JSOGId.sync="CaseData.JSOGId"
-          :NCDId.sync="CaseData.NCDId"
+          v-model:DateOfProcedure="CaseData.DateOfProcedure"
+          v-model:PatientId="CaseData.PatientId"
+          v-model:Name="CaseData.Name"
+          v-model:Age="CaseData.Age"
+          v-model:Denial="CaseData.Denial"
+          v-model:ProcedureTime="CaseData.ProcedureTime"
+          v-model:JSOGId.sync="CaseData.JSOGId"
+          v-model:NCDId.sync="CaseData.NCDId"
         />
       </div>
 

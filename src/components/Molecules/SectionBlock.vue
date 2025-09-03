@@ -1,43 +1,31 @@
 <script setup>
-import { computed } from 'vue'
+// import { defineModel } from 'vue'
 import NewEntryButton from '@/components/Atoms/NewEntryButton'
 import SectionItem from '@/components/SectionItem'
 import draggableContent from 'vuedraggable'
+
+// vuegraggableのUpdate = undefinedのエラーを回避
+draggableContent.compatConfig = {
+  MODE: 3
+}
 
 const props = defineProps({
   title: {
     type: String,
     required: true
   },
-  // Vue 3 v-model support
   modelValue: {
     type: Array, // String[]
     required: true
-  },
-  // Vue 2互換性のため一時的に保持
-  container: {
-    type: Array, // String[]
-    required: false
   },
   draggable: {
     type: Boolean,
     default: true
   }
 })
-const emit = defineEmits(['addnewitem', 'edititem', 'removeitem', 'update:modelValue', 'update:container'])
+const emit = defineEmits(['addnewitem', 'edititem', 'removeitem'])
 
-// Update = undefinedのエラーを回避
-draggableContent.compatConfig = {
-  MODE: 3
-}
-const items = computed({
-  get: () => props.modelValue || props.container,
-  set: (value) => {
-    emit('update:modelValue', value)
-    // Vue 2互換性のため
-    emit('update:container', value)
-  }
-})
+const items = defineModel()
 
 const addNewItem = () => emit('addnewitem')
 
@@ -54,7 +42,7 @@ const removeItem = (index) => emit('removeitem', index)
     <span class="section-title">{{props.title}} ： </span>
     <slot name="beforeitemlist"></slot>
     <template v-if="draggable">
-      <draggableContent handle=".handle" v-model="items">
+      <draggableContent handle=".handle" v-model="items" item-key="index">
         <template #item="{element, index}">
           <div class="section-item-list">
             <slot :item="element" :index="index">

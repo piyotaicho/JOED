@@ -24,7 +24,7 @@ const RemoveItem = (index) => emit('removeitem', index)
 
 <template>
   <SectionBlock title="手術診断"
-    :container.sync="items"
+    v-model="items"
     @addnewitem="AddNewItem"
     @edititem="EditItem"
     @removeitem="RemoveItem">

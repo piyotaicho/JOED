@@ -7,121 +7,126 @@ import InputProcedureTime from '@/components/Molecules/InputProcedureTime'
 import AdditionalPatientInfo from './Organisms/AdditionalPatientInfo'
 
 // プロパティ
-const props = defineProps({
-  DateOfProcedure: {
-    type: String,
-    default: ''
-  },
-  PatientId: {
-    type: String,
-    default: ''
-  },
-  Name: {
-    type: String,
-    default: ''
-  },
-  Age: {
-    type: [Number, String]
-  },
-  ProcedureTime: {
-    type: String,
-    default: ''
-  },
-  Denial: {
-    type: Boolean,
-    default: false
-  },
-  JSOGId: {
-    type: String,
-    default: ''
-  },
-  NCDId: {
-    type: String,
-    default: ''
-  }
+// const props = defineProps({
+//   DateOfProcedure: {
+//     type: String,
+//     default: ''
+//   },
+//   PatientId: {
+//     type: String,
+//     default: ''
+//   },
+//   Name: {
+//     type: String,
+//     default: ''
+//   },
+//   Age: {
+//     type: [Number, String]
+//   },
+//   ProcedureTime: {
+//     type: String,
+//     default: ''
+//   },
+//   Denial: {
+//     type: Boolean,
+//     default: false
+//   },
+//   JSOGId: {
+//     type: String,
+//     default: ''
+//   },
+//   NCDId: {
+//     type: String,
+//     default: ''
+//   }
+// })
+
+const DateOfProcedure = defineModel('DateOfProcedure', {
+  required: true,
+  default: ''
 })
 
-const emit = defineEmits([
-  'update:DateOfProcedure',
-  'update:PatientId',
-  'update:name',
-  'update:age',
-  'update:ProcedureTime',
-  'update:denial',
-  'update:JSOGId',
-  'update:NCDId'
-])
+const PatientId = defineModel('PatientId', {
+  required: true,
+  default: ''
+})
+
+const Name = defineModel('Name', {
+  default: ''
+})
+
+const Age = defineModel('Age')
+
+const ProcedureTime = defineModel('ProcedureTime', {
+  default: ''
+})
+
+const Denial = defineModel('Denial', {
+  default: false
+})
+
+const JSOGId = defineModel('JSOGId', {
+  default: ''
+})
+
+const NCDId = defineModel('NCDId', {
+  default: ''
+})
 
 // computed as v handler
 const valueDateOfProcedure = computed({
-  get () {
-    return props.DateOfProcedure || ''
-  },
-  set (newValue) {
-    emit('update:DateOfProcedure', newValue)
+  get: () => DateOfProcedure || '',
+  set: (newValue) => {
+    DateOfProcedure.value = newValue
   }
 })
 
 const valuePatientId = computed({
-  get () {
-    return props.PatientId || ''
-  },
-  set (newValue) {
-    emit('update:PatientId', newValue)
+  get: () => PatientId.value || '',
+  set: (newValue) => {
+    PatientId.value = newValue
   }
 })
 
 const valueName = computed({
-  get () {
-    return props.Name || ''
-  },
-  set (newValue) {
-    emit('update:name', newValue)
+  get: () => Name.value || '',
+  set: (newValue) => {
+    Name.value = newValue
   }
 })
 
 const valueAge = computed({
-  get () {
-    return props.Age || undefined
-  },
-  set (newValue) {
-    emit('update:age', newValue)
+  get: () => Age.value.toString() || undefined,
+  set: (newValue) => {
+    Age.value = newValue
   }
 })
 
 const valueProcedureTime = computed({
-  get () {
-    return props.ProcedureTime || ''
-  },
-  set (newValue) {
-    emit('update:ProcedureTime', newValue)
+  get: () => ProcedureTime.value || '',
+  set: (newValue) => {
+    ProcedureTime.value = newValue
   }
 })
 
 const valueDenial = computed({
-  get () {
-    return props.Denial || false
-  },
-  set (newValue) {
-    emit('update:denial', newValue)
+  get: () => Denial.value || false,
+  set: (newValue) => {
+    Denial.value = newValue
   }
 })
 
 const valueJSOGId = computed({
-  get () {
-    return props.JSOGId
-  },
-  set (newValue) {
-    emit('update:JSOGId', newValue)
+  get: () => JSOGId.value || '',
+  set: (newValue) => {
+    JSOGId.value = newValue
   }
 })
 
 const valueNCDId = computed({
-  get () {
-    return props.NCDId
-  },
-  set (newValue) {
-    emit('update:NCDId', newValue)
+  get: () => NCDId.value || '',
+  set: (newValue) => {
+    NCDId.value = newValue
   }
 })
 </script>
@@ -129,7 +134,7 @@ const valueNCDId = computed({
 <template>
   <div class="patient-info-section">
     <div class="patient-info-section-left">
-      <InputDateOfProcedure :value.sync="valueDateOfProcedure" :required="true"/>
+      <InputDateOfProcedure v-model="valueDateOfProcedure" :required="true"/>
       <div style="display: flex; flex-direction: row;">
         <div style="flex-grow: 2;">
           <InputTextField title="患者ID" :required="true" :value.sync="valuePatientId" placeholder="患者の認識子"/>

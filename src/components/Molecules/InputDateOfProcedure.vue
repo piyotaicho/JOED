@@ -1,13 +1,9 @@
 <script setup>
-import { onMounted, ref, computed, watchEffect } from 'vue'
+import { onMounted, ref, watchEffect } from 'vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import { ja } from 'date-fns/locale'
 
 const props = defineProps({
-  value: {
-    type: String,
-    default: ''
-  },
   required: {
     default: false
   },
@@ -19,7 +15,7 @@ const props = defineProps({
     type: [Number, String]
   }
 })
-const emit = defineEmits(['update:value'])
+const dateOfProcedure = defineModel()
 
 // Set tabindex
 const datepicker = ref()
@@ -35,10 +31,10 @@ onMounted(() => {
   }
 })
 
-const dateOfProcedure = computed({
-  get: () => props.value,
-  set: (newvalue) => emit('update:value', newvalue)
-})
+// const dateOfProcedure = computed({
+//   get: () => props.value,
+//   set: (newvalue) => emit('update:value', newvalue)
+// })
 
 watchEffect(() => {
   if (props.required && inputelement !== undefined) {
@@ -57,8 +53,7 @@ watchEffect(() => {
     <div class="field">
       <VueDatePicker
         ref="datepicker"
-        :model-value="dateOfProcedure"
-        @update:modelValue="val => dateOfProcedure.value = val"
+        v-model="dateOfProcedure"
         text-input
         :enable-time-picker="false"
         format="yyyy-MM-dd"

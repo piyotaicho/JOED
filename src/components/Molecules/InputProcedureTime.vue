@@ -25,7 +25,7 @@ const procedureTime = computed({
 })
 
 // ツールチップの文字列
-const popoverContent = computed(() => typedString.value === '' ? '' : `直接入力中: ${typedString.value}`)
+// const popoverContent = computed(() => typedString.value === '' ? '' : `直接入力中: ${typedString.value}`)
 
 /**
  * キーボードイベントを処理して入力文字列処理へ渡す
@@ -108,7 +108,7 @@ const clearTypedValue = () => {
   <div style="display: flex; flex-direction: row; height: 2.4rem;">
     <div class="label"><span class="required">手術時間</span></div>
     <div class="field">
-      <el-tooltip ref="popover" placement="top" offset="2" :manual="true" transition="none" :value="typedString !== ''" :content="popoverContent">
+      <el-tooltip ref="popover" placement="top" :offset="2" :manual="true" transition="none" :visible="typedString !== ''" :content="'直接入力中: ' + typedString">
         <select v-model="procedureTime"
           :class="[!procedureTime ? 'vacant' : '']"
           v-bind="$attrs"

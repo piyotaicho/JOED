@@ -16,9 +16,10 @@
 </template>
 
 <script setup>
-import { computed, ref, defineModel } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
+  // チェックボックスで設定される値
   value: {
     type: [Boolean, String, Number],
     default: true
@@ -32,9 +33,9 @@ const props = defineProps({
     default: 0
   }
 })
-const container = defineModel({
-  default: {}
-})
+
+// 設定値を双方向バインドするためのコンテナ
+const container = defineModel()
 
 const inputElement = ref()
 
