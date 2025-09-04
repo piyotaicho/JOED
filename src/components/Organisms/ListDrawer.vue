@@ -3,9 +3,9 @@ import { ref, computed } from 'vue'
 import { useStore } from '@/store'
 import { useRouter } from 'vue-router'
 import { CircleCheckFilled } from '@element-plus/icons-vue'
-import ListDashboard from '@/components/Molecules/Dashboard'
-import FilterAndSort from '@/components/Organisms/ListDrawerFilterAndSort'
-import ListSearch from '@/components/Organisms/ListDrawerSearch'
+import ListDashboard from '@/components/Molecules/Dashboard.vue'
+import FilterAndSort from '@/components/Organisms/ListDrawerFilterAndSort.vue'
+import ListSearch from '@/components/Organisms/ListDrawerSearch.vue'
 import { ElNotification as Notification } from 'element-plus'
 
 const store = useStore()

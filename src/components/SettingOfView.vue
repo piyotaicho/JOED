@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, computed } from 'vue'
 import { useStore } from '@/store'
-import InputSwitchField from '@/components/Molecules/InputSwitchField'
+import InputSwitchField from '@/components/Molecules/InputSwitchField.vue'
 import * as Popups from '@/modules/Popups'
 
 const store = useStore()
@@ -47,11 +47,11 @@ async function commitSettings () {
         症例表示画面の設定
       </div></div>
       <InputSwitchField
-        :value.sync="data.showStartupDialog"
+        v-model:value="data.showStartupDialog"
         title="リスト表示の起動時メッセージの表示"
         :options="{'しない': false, 'する': true}" />
       <InputSwitchField
-        :value.sync="data.revertView"
+        v-model:value="data.revertView"
         title="リスト表示内容の規定値を初期設定に戻す"
         :options="{'しない': false, 'する': true}" />
 
@@ -59,11 +59,11 @@ async function commitSettings () {
         症例編集画面の設定
       </div></div>
       <InputSwitchField
-        :value.sync="data.editJSOGId"
+        v-model:value="data.editJSOGId"
         title="日産婦腫瘍登録 症例番号の入力"
         :options="{'しない': false, 'する': true}" />
       <InputSwitchField
-        :value.sync="data.editNCDId"
+        v-model:value="data.editNCDId"
         title="ロボット支援下手術 NCD症例識別コードの入力"
         :options="{'しない': false, 'する': true}" />
     </div>

@@ -1,7 +1,7 @@
 <script setup>
 // import { defineModel } from 'vue'
-import NewEntryButton from '@/components/Atoms/NewEntryButton'
-import SectionItem from '@/components/SectionItem'
+import NewEntryButton from '@/components/Atoms/NewEntryButton.vue'
+import SectionItem from '@/components/SectionItem.vue'
 import draggableContent from 'vuedraggable'
 
 // vuegraggableのUpdate = undefinedのエラーを回避

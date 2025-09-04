@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, nextTick, onMounted } from 'vue'
-import SelectPane from '@/components/Molecules/SelectPane'
+import SelectPane from '@/components/Molecules/SelectPane.vue'
 
 const props = defineProps({
   Lines: {
@@ -113,7 +113,7 @@ const clearPane3 = () => pane3.value.clearSelection()
         ref="pane1"
         :size="props.Lines"
         :title="props.Pane1Title"
-        :value.sync="pane1Selection"
+        v-model:value="pane1Selection"
         :items="props.Pane1Items"
         @change="pane1Changed"
         :disabled="props.disabled"
@@ -125,7 +125,7 @@ const clearPane3 = () => pane3.value.clearSelection()
         ref="pane2"
         :size="props.Lines"
         :title="props.Pane2Title"
-        :value.sync="pane2Selection"
+        v-model:value="pane2Selection"
         :items="props.Pane2Items"
         @change="pane2Changed"
         :disabled="disabled"
@@ -137,7 +137,7 @@ const clearPane3 = () => pane3.value.clearSelection()
         ref="pane3"
         :size="props.Lines"
         :title="props.Pane3Title"
-        :value.sync="pane3Selection"
+        v-model:value="pane3Selection"
         :items="props.Pane3Items"
         @change="pane3Changed"
         @keypress-enter="pane3DblClick"

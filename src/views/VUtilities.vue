@@ -3,8 +3,8 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute, onBeforeRouteUpdate } from 'vue-router'
 import { useStore } from '@/store'
 import { DArrowLeft } from '@element-plus/icons-vue'
-import ExportData from '@/components/Export'
-import ImportData from '@/components/Import'
+import ExportData from '@/components/Export.vue'
+import ImportData from '@/components/Import.vue'
 
 const store = useStore()
 const router = useRouter()

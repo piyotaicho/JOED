@@ -39,7 +39,7 @@
               <span>{{master.Components[component].Title}}</span>
             </div>
             <div class="w80 AEcheckboxes">
-              <EditAESelect :value.sync="AE[master.Components[component].Element]" :items="master.Components[component].Items" />
+              <EditAESelect v-model:value="AE[master.Components[component].Element]" :items="master.Components[component].Items" />
             </div>
           </template>
         </div>
@@ -70,7 +70,7 @@
               <el-divider class="AEgrading-divider" content-position="left">
                 {{course.Title}}
               </el-divider>
-              <EditAESelect :value.sync="AE.Course" :items="course.Items" />
+              <EditAESelect v-model:value="AE.Course" :items="course.Items" />
            </div>
           </template>
 
@@ -83,10 +83,10 @@
 <script setup>
 import { reactive, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import TheWrapper from '@/components/Atoms/TheWrapper'
-import EditSection from '@/components/Molecules/EditSection'
-import EditAESelect from '@/components/Molecules/EditAESelect'
-import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
+import TheWrapper from '@/components/Atoms/TheWrapper.vue'
+import EditSection from '@/components/Molecules/EditSection.vue'
+import EditAESelect from '@/components/Molecules/EditAESelect.vue'
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
 import { ElNotification as Notification } from 'element-plus'
 import { MoreFilled } from '@element-plus/icons-vue'
 import AEmaster from '@/modules/Masters/AE'

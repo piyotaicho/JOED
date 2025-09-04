@@ -1,7 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import Store from '@/store/index'
 
-import ViewLogin from '@/views/VLogin'
+import ViewLogin from '@/views/VLogin.vue'
 
 const routes = [
   {
@@ -12,32 +12,32 @@ const routes = [
   {
     name: 'list',
     path: '/list',
-    component: () => import('@/views/VList'),
+    component: () => import('@/views/VList.vue'), // VList,
     meta: { requireLogin: true }
   },
   {
     name: 'edit',
     path: '/edit/:uid',
-    component: () => import('@/views/VEdit'),
+    component: () => import('@/views/VEdit.vue'), // VEdit,
     props: true,
     meta: { requireLogin: true },
     children: [
       {
         name: 'diagnosis',
         path: 'diagnosis',
-        component: () => import('@/views/VEditDiagnosis'),
+        component: () => import('@/views/VEditDiagnosis.vue'),
         props: true
       },
       {
         name: 'procedure',
         path: 'procedure',
-        component: () => import('@/views/VEditProcedure'),
+        component: () => import('@/views/VEditProcedure.vue'),
         props: true
       },
       {
         name: 'AE',
         path: 'AE',
-        component: () => import('@/views/VEditAE'),
+        component: () => import('@/views/VEditAE.vue'),
         props: true
       }
     ]
@@ -45,7 +45,7 @@ const routes = [
   {
     name: 'utilities',
     path: '/utilities',
-    component: () => import('@/views/VUtilities'), // ViewUtilites,
+    component: () => import('@/views/VUtilities.vue'), // ViewUtilites,
     meta: { requireLogin: true },
     children: [
       {
@@ -61,7 +61,7 @@ const routes = [
   {
     name: 'settings',
     path: '/settings',
-    component: () => import('@/views/VSettings'), // VSettings,
+    component: () => import('@/views/VSettings.vue'), // VSettings,
     meta: { requireLogin: true }
   }
 ]

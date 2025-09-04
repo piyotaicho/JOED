@@ -1,12 +1,12 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
 import * as Popups from '@/modules/Popups'
-import InputFile from '@/components/Molecules/InputFile'
-import ImportJSON from '@/components/Molecules/ImportJSON'
-import ImportCSV from '@/components/Molecules/ImportCSV'
-import ImportMergeV4 from '@/components/Molecules/ImportMergeV4'
+import InputFile from '@/components/Molecules/InputFile.vue'
+import ImportJSON from '@/components/Molecules/ImportJSON.vue'
+import ImportCSV from '@/components/Molecules/ImportCSV.vue'
+import ImportMergeV4 from '@/components/Molecules/ImportMergeV4.vue'
 import ViewerOverlay from '@/components/Molecules/ViewerOverlay.vue'
-import TheWrapper from '@/components/Atoms/TheWrapper'
+import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 import { nextTick, ref, reactive, watch } from 'vue'
 import { useStore } from '@/store'
 

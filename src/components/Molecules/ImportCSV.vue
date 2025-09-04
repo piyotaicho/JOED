@@ -1,9 +1,9 @@
 <script setup>
 import { shallowRef, reactive, computed, watch, nextTick, triggerRef } from 'vue'
 import { useStore } from '@/store'
-import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
-import QueryBuilder from '@/components/Organisms/QueryBuilder'
-import ReportViewer from '@/components/Atoms/Reports'
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
+import QueryBuilder from '@/components/Organisms/QueryBuilder.vue'
+import ReportViewer from '@/components/Atoms/Reports.vue'
 import { parseCSV } from '@/modules/CSV'
 import { CreateDocument, Migrate } from '@/modules/ImportCSV.js'
 import * as Popups from '@/modules/Popups'

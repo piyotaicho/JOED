@@ -1,10 +1,10 @@
 <script setup>
 import { computed } from 'vue'
-import InputDateOfProcedure from '@/components/Molecules/InputDateOfProcedure'
-import InputTextField from '@/components/Molecules/InputTextField'
-import InputNumberField from '@/components/Molecules/InputNumberField'
-import InputProcedureTime from '@/components/Molecules/InputProcedureTime'
-import AdditionalPatientInfo from './Organisms/AdditionalPatientInfo'
+import InputDateOfProcedure from '@/components/Molecules/InputDateOfProcedure.vue'
+import InputTextField from '@/components/Molecules/InputTextField.vue'
+import InputNumberField from '@/components/Molecules/InputNumberField.vue'
+import InputProcedureTime from '@/components/Molecules/InputProcedureTime.vue'
+import AdditionalPatientInfo from './Organisms/AdditionalPatientInfo.vue'
 
 // プロパティ
 // const props = defineProps({
@@ -75,7 +75,7 @@ const NCDId = defineModel('NCDId', {
 
 // computed as v handler
 const valueDateOfProcedure = computed({
-  get: () => DateOfProcedure || '',
+  get: () => DateOfProcedure.value || '',
   set: (newValue) => {
     DateOfProcedure.value = newValue
   }
@@ -137,20 +137,20 @@ const valueNCDId = computed({
       <InputDateOfProcedure v-model="valueDateOfProcedure" :required="true"/>
       <div style="display: flex; flex-direction: row;">
         <div style="flex-grow: 2;">
-          <InputTextField title="患者ID" :required="true" :value.sync="valuePatientId" placeholder="患者の認識子"/>
+          <InputTextField title="患者ID" :required="true" v-model:value="valuePatientId" placeholder="患者の認識子"/>
         </div>
         <div style="width: 2rem;">
-          <AdditionalPatientInfo :Denial.sync="valueDenial" :JSOGId.sync="valueJSOGId" :NCDId.sync="valueNCDId" :DateOfProcedure="valueDateOfProcedure" :PatientId="valuePatientId"/>
+          <AdditionalPatientInfo v-model:Denial="valueDenial" v-model:JSOGId="valueJSOGId" v-model:NCDId="valueNCDId" :DateOfProcedure="valueDateOfProcedure" :PatientId="valuePatientId"/>
         </div>
       </div>
-      <InputTextField title="患者名" :value.sync="valueName"/>
-      <InputNumberField title="年齢" :value.sync="valueAge" :min="1" :max="120"/>
+      <InputTextField title="患者名" v-model:value="valueName"/>
+      <InputNumberField title="年齢" v-model:value="valueAge" :min="1" :max="120"/>
     </div>
     <div class="patient-info-section-right">
       <div style="position: relative; height: 2.4rem;"><!-- space --></div>
       <div style="position: relative; height: 2.4rem;"><!-- space --></div>
       <div style="position: relative; height: 2.4rem;"><!-- space --></div>
-      <InputProcedureTime :value.sync="valueProcedureTime"/>
+      <InputProcedureTime v-model:value="valueProcedureTime"/>
     </div>
   </div>
 </template>

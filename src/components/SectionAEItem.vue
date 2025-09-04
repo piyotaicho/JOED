@@ -18,7 +18,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import DescriptionOfAE from '@/components/Molecules/DescriptionOfAE'
+import DescriptionOfAE from '@/components/Molecules/DescriptionOfAE.vue'
 import { Edit, Delete } from '@element-plus/icons-vue'
 
 const props = defineProps({

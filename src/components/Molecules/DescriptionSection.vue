@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick } from 'vue'
-import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
 
 const props = defineProps({
   title: {

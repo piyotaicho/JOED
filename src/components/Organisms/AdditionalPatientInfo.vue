@@ -4,7 +4,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useStore } from '@/store'
 import { InfoFilled } from '@element-plus/icons-vue'
 import InputSwitchField from '../Molecules/InputSwitchField.vue'
-import InputTextField from '@/components/Molecules/InputTextField'
+import InputTextField from '@/components/Molecules/InputTextField.vue'
 
 // vue2.7 + compositionAPI store hack
 const store = useStore()
@@ -118,7 +118,7 @@ const focusInput = () => {
       <!-- popover content-->
       <div class="additional-patient-info-panel">
           <InputSwitchField
-            :value.sync="Denial"
+            v-model:value="Denial"
             title="登録拒否"
             :options="['なし', 'あり', false, true, 'var(--color-primary)', 'var(--color-danger)']"
             style="display: flex; flex-direction: row; height: 2.4rem; div.field { border: 1px solid red; };"
@@ -128,10 +128,10 @@ const focusInput = () => {
           <InputTextField title="レコード識別子" :value="hashString" readonly/>
         </div>
         <div v-if="editJSOGId || JSOGId !== ''">
-          <InputTextField title="腫瘍登録番号" :value.sync="JSOGId" placeholder="腫瘍登録患者No."/>
+          <InputTextField title="腫瘍登録番号" v-model:value="JSOGId" placeholder="腫瘍登録患者No."/>
         </div>
         <div v-if="editNCDId || NCDId !== ''">
-          <InputTextField title="NCD症例識別コード" :value.sync="NCDId" placeholder="NCD症例識別コード"/>
+          <InputTextField title="NCD症例識別コード" v-model:value="NCDId" placeholder="NCD症例識別コード"/>
         </div>
       </div>
     </el-popover>

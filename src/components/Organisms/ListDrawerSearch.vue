@@ -1,7 +1,7 @@
 <script>
 import { computed, reactive } from 'vue'
 import { useStore } from '@/store'
-import InputSwitchField from '@/components/Molecules/InputSwitchField'
+import InputSwitchField from '@/components/Molecules/InputSwitchField.vue'
 
 // private 定数 関数
 const makeRegex = (str = '', regex = false) => {
@@ -205,7 +205,7 @@ export default {
     <div class="subtilte-section">検索対象</div>
     <div>
       <InputSwitchField
-        :value.sync="setting.IgnoreQuery"
+        v-model:value="setting.IgnoreQuery"
         title=""
         :options="{ 全データ: true, 現在の表示設定: false }"
       />
@@ -238,7 +238,7 @@ export default {
     </div>
     <div>
       <InputSwitchField
-        :value.sync="setting.UseRegexp"
+        v-model:value="setting.UseRegexp"
         title=""
         :options="{ 部分一致: false, 正規表現: true }"
         :disabled="RegexpDisabled"

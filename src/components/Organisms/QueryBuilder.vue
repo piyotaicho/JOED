@@ -33,7 +33,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import QueryPane from '@/components/Molecules/QueryPane'
+import QueryPane from '@/components/Molecules/QueryPane.vue'
 import { prompt } from '@/modules/Popups'
 import { fieldNames, generatorFunctions } from '@/modules/ImportCSV.js'
 

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import CloseButton from '@/components/Atoms/CloseButton'
+import CloseButton from '@/components/Atoms/CloseButton.vue'
 
 // props are NON-reactive
 const props = defineProps({

@@ -3,17 +3,17 @@
     <EditSection @commit="CommitChanges" @discard="GoBack">
       <ThreePaneSelections
         Pane3Title="手術診断の候補"
-        :Pane1.sync="category" :Pane1Items="Categories"
+        v-model:Pane1="category" :Pane1Items="Categories"
         @pane1change="CategoryIsChanged()"
-        :Pane2.sync="target" :Pane2Items="TargetOrgans"
+        v-model:Pane2="target" :Pane2Items="TargetOrgans"
         @pane2change="SetCandidateItemsBySelection()"
-        :Pane3.sync="selectedItem" :Pane3Items="candidates"
+        v-model:Pane3="selectedItem" :Pane3Items="candidates"
         @pane3dblclick="CommitChanges()"
         ref="paneSection"
       />
 
       <FreewordSection
-        :value.sync="freewordText"
+        v-model:value="freewordText"
         :disabled="!UserEditingAllowed"
         @click-search="SetCandidateItemsByFreeword"
         ref="freewordSection"
@@ -27,10 +27,10 @@ import { ref, computed, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Master from '@/modules/Masters/DiagnosisMaster'
 import * as Popups from '@/modules/Popups'
-import TheWrapper from '@/components/Atoms/TheWrapper'
-import EditSection from '@/components/Molecules/EditSection'
-import ThreePaneSelections from '@/components/Molecules/ThreePaneSelections'
-import FreewordSection from '@/components/Molecules/EditSectionFreeword'
+import TheWrapper from '@/components/Atoms/TheWrapper.vue'
+import EditSection from '@/components/Molecules/EditSection.vue'
+import ThreePaneSelections from '@/components/Molecules/ThreePaneSelections.vue'
+import FreewordSection from '@/components/Molecules/EditSectionFreeword.vue'
 
 const DiagnosesMaster = new Master()
 

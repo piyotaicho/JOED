@@ -1,5 +1,5 @@
 <script setup>
-import ListItem from '@/components/Molecules/QueryPaneListItem'
+import ListItem from '@/components/Molecules/QueryPaneListItem.vue'
 
 const props = defineProps({
   title: {

@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
 
-import CloseButton from '@/components/Atoms/CloseButton'
+import CloseButton from '@/components/Atoms/CloseButton.vue'
 import DiagnosisMaster from '@/modules/Masters/DiagnosisMaster'
 import ProcedureMaster from '@/modules/Masters/ProcedureMaster'
 import AEMaster from '@/modules/Masters/AE'

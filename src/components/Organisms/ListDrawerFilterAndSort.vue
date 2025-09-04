@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref, computed, nextTick } from 'vue'
 import { useStore } from '@/store'
-import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
 import { CategoriesOfProcedure } from '@/modules/CaseValidater'
 import * as Popups from '@/modules/Popups'
 

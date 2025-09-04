@@ -2,9 +2,9 @@
 <script setup>
 import { reactive, ref, watch, computed, nextTick } from 'vue'
 import { useStore } from '@/store'
-import InputSwitchField from '@/components/Molecules/InputSwitchField'
-import SelectYear from '@/components/Molecules/SelectYear'
-import TheWrapper from '@/components/Atoms/TheWrapper'
+import InputSwitchField from '@/components/Molecules/InputSwitchField.vue'
+import SelectYear from '@/components/Molecules/SelectYear.vue'
+import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 import ViewerOverlay from '@/components/Molecules/ViewerOverlay.vue'
 import CaseDocumentHandler from '@/modules/DbItemHandler'
 import * as Popups from '@/modules/Popups'

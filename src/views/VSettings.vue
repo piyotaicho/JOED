@@ -3,10 +3,10 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useStore } from '@/store'
 import { useRouter } from 'vue-router'
 import { DArrowLeft } from '@element-plus/icons-vue'
-import SettingOfInstutute from '@/components/SettingOfInstitute'
-import SettingOfAuthentication from '@/components/SettingOfAuthentication'
-import SettingOfView from '@/components/SettingOfView'
-import ShowAbout from '@/components/About'
+import SettingOfInstutute from '@/components/SettingOfInstitute.vue'
+import SettingOfAuthentication from '@/components/SettingOfAuthentication.vue'
+import SettingOfView from '@/components/SettingOfView.vue'
+import ShowAbout from '@/components/About.vue'
 
 const store = useStore()
 const router = useRouter()

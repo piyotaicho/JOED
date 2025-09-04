@@ -3,13 +3,13 @@
     <EditSection @commit="CommitChanges" @discard="GoBack">
       <ThreePaneSelections
         Pane3Title="実施手術の候補"
-        :Pane1.sync="category"
+        v-model:Pane1="category"
         :Pane1Items="Categories"
         @pane1change="CategoryIsChanged()"
-        :Pane2.sync="target"
+        v-model:Pane2="target"
         :Pane2Items="TargetOrgans"
         @pane2change="SetCandidateItemsBySelection()"
-        :Pane3.sync="selectedItemText"
+        v-model:Pane3="selectedItemText"
         :Pane3Items="candidates"
         @pane3change="OnCandidateSelected()"
         @pane3dblclick="CommitChanges()"
@@ -21,7 +21,7 @@
         :title="description.Title"
         :selectionMode="description.SelectionMode"
         :options="description.Options"
-        :value.sync="description.Value"
+        v-model:value="description.Value"
         v-if="description.Title !== ''"
       />
 
@@ -45,12 +45,12 @@
           :title="additionalProcedure.Title"
           :selectionMode="additionalProcedure.SelectionMode"
           :options="additionalProcedure.Options"
-          :value.sync="additionalProcedure.Value"
+          v-model:value="additionalProcedure.Value"
          />
       </template>
 
       <FreewordSection
-        :value.sync="freewordText"
+        v-model:value="freewordText"
         :disabled="!UserEditingAllowed"
         @click-search="SetCandidateItemsByFreeword"
         ref="freewordSection"
@@ -65,11 +65,11 @@ import { useRouter } from 'vue-router'
 import Master from '@/modules/Masters/ProcedureMaster'
 import * as Popups from '@/modules/Popups'
 
-import TheWrapper from '@/components/Atoms/TheWrapper'
-import EditSection from '@/components/Molecules/EditSection'
-import ThreePaneSelections from '@/components/Molecules/ThreePaneSelections'
-import DescriptionSection from '@/components/Molecules/DescriptionSection'
-import FreewordSection from '@/components/Molecules/EditSectionFreeword'
+import TheWrapper from '@/components/Atoms/TheWrapper.vue'
+import EditSection from '@/components/Molecules/EditSection.vue'
+import ThreePaneSelections from '@/components/Molecules/ThreePaneSelections.vue'
+import DescriptionSection from '@/components/Molecules/DescriptionSection.vue'
+import FreewordSection from '@/components/Molecules/EditSectionFreeword.vue'
 
 const ProceduresMaster = new Master()
 

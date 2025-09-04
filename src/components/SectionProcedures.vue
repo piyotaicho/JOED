@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
-import SectionBlock from '@/components/Molecules/SectionBlock'
-import SectionItem from '@/components/SectionItem'
+import SectionBlock from '@/components/Molecules/SectionBlock.vue'
+import SectionItem from '@/components/SectionItem.vue'
 import { confirmYesNo } from '@/modules/Popups'
 
 const props = defineProps({

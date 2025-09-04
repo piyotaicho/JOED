@@ -15,14 +15,14 @@
       </div>
 
       <SectionDiagnoses
-        :container.sync="CaseData.Diagnoses"
+        v-model:container="CaseData.Diagnoses"
         @addnewitem="EditSection('diagnosis')"
         @edititem="EditSection('diagnosis', $event)"
         @removeitem="RemoveListItem('Diagnoses', $event)"
       />
 
       <SectionProcedures
-        :container.sync="CaseData.Procedures"
+        v-model:container="CaseData.Procedures"
         @addnewitem="EditSection('procedure')"
         @edititem="EditSection('procedure', $event)"
         @removeitem="RemoveListItem('Procedures', $event)"
@@ -31,7 +31,7 @@
       <SectionAEs
         ref="sectionAEs"
         :container="CaseData.AEs"
-        :optionValue.sync="isNoAEs"
+        v-model:optionValue="isNoAEs"
         @addnewitem="EditSection('AE')"
         @edititem="EditSection('AE', $event)"
         @removeitem="RemoveListItem('AEs', $event)"
@@ -112,11 +112,11 @@ import { CaretLeft, CaretRight, WarningFilled, ArrowLeft, Delete, Loading } from
 import { reactive, ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from '@/store'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
-import SectionPatientInfo from '../components/SectionPatientInfo.vue'
-import SectionDiagnoses from '@/components/SectionDiagnoses'
-import SectionProcedures from '@/components/SectionProcedures'
-import SectionAEs from '@/components/SectionAEs'
-import TheWrapper from '@/components/Atoms/TheWrapper'
+import SectionPatientInfo from '@/components/SectionPatientInfo.vue'
+import SectionDiagnoses from '@/components/SectionDiagnoses.vue'
+import SectionProcedures from '@/components/SectionProcedures.vue'
+import SectionAEs from '@/components/SectionAEs.vue'
+import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 
 import { ZenToHan } from '@/modules/ZenHanChars'
 import * as Popups from '@/modules/Popups'

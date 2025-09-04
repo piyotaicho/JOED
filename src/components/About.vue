@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
 import { useStore } from '@/store'
-import ExtLink from '@/components/Atoms/ExtLink'
+import ExtLink from '@/components/Atoms/ExtLink.vue'
 
 const store = useStore()
 

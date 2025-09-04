@@ -1,6 +1,6 @@
 <script setup>
 import { watch, ref, toRef } from 'vue'
-import ReportViewer from '@/components/Atoms/Reports'
+import ReportViewer from '@/components/Atoms/Reports.vue'
 import { phraseTitledCSV } from '@/modules/CSV'
 import { ValidateRecords, CreateDocument } from '@/modules/ImportMergeV4.js'
 import * as Popups from '@/modules/Popups'

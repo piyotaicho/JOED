@@ -4,10 +4,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { useStore } from '@/store'
 import { Loading } from '@element-plus/icons-vue'
 import DrawerButton from '@/components/Atoms/DrawerButton.vue'
-import NewEntryButton from '@/components/Atoms/NewEntryButton'
-import CaseDocument from '@/components/Organisms/CaseDocument'
-import ListDrawer from '@/components/Organisms/ListDrawer'
-import WelcomeBanner from '@/components/Organisms/WelcomeBanner'
+import NewEntryButton from '@/components/Atoms/NewEntryButton.vue'
+import CaseDocument from '@/components/Organisms/CaseDocument.vue'
+import ListDrawer from '@/components/Organisms/ListDrawer.vue'
+import WelcomeBanner from '@/components/Organisms/WelcomeBanner.vue'
 // import InfiniteLoading from 'vue-infinite-loading' // Vue 3非対応のため削除
 
 const store = useStore()

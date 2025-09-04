@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import SectionBlock from '@/components/Molecules/SectionBlock'
+import SectionBlock from '@/components/Molecules/SectionBlock.vue'
 
 const props = defineProps({
   container: {

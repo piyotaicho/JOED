@@ -1,8 +1,8 @@
 <script setup>
 import { reactive, computed } from 'vue'
 import { useStore } from '@/store'
-import InputPasswordField from '@/components/Molecules/InputPasswordField'
-import InputSwitchField from '@/components/Molecules/InputSwitchField'
+import InputPasswordField from '@/components/Molecules/InputPasswordField.vue'
+import InputSwitchField from '@/components/Molecules/InputSwitchField.vue'
 import * as Popups from '@/modules/Popups'
 
 const store = useStore()
@@ -59,25 +59,25 @@ async function commit () {
   <div class="utility">
     <div class="utility-switches">
       <InputSwitchField
-        :value.sync="data.UseAuthentication"
+        v-model:value="data.UseAuthentication"
         title="起動時のパスワード確認"
         :options="{'しない': false, 'する': true}" />
 
       <InputPasswordField
-        :value.sync="data.PasswordString"
+        v-model:value="data.PasswordString"
         title="現在のパスワード"
         placeholder="********"
         :required="true"
         v-if="passwordRequired" />
 
       <InputPasswordField
-        :value.sync="data.NewPasswordString"
+        v-model:value="data.NewPasswordString"
         title="新しいパスワード"
         placeholder="********"
         :required="true"
         v-if="data.UseAuthentication" />
       <InputPasswordField
-        :value.sync="data.NewPasswordStringVerify"
+        v-model:value="data.NewPasswordStringVerify"
         title="新しいパスワード(確認)"
         placeholder="********"
         :required="true"

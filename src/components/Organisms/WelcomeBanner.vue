@@ -2,9 +2,9 @@
 import { ref } from 'vue'
 import { useStore } from '@/store'
 import { Plus, Menu } from '@element-plus/icons-vue'
-import CloseButton from '@/components/Atoms/CloseButton'
-import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
-import TheWrapper from '@/components/Atoms/TheWrapper'
+import CloseButton from '@/components/Atoms/CloseButton.vue'
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
+import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 
 const store = useStore()
 
