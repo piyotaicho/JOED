@@ -6,13 +6,13 @@ import ExtLink from '@/components/Atoms/ExtLink'
 const store = useStore()
 
 // Copyright - トランスパイル時に置換される
-const CopyrightString = process.env.VUE_APP_COPYRIGHT
+const CopyrightString = process.env.VITE_APP_COPYRIGHT
 
 const CoreList = [
   // { name: '', href: '', version: '', license: ''}
   { name: 'JOED5', href: 'https://github.com/piyotaicho/JOED', version: store.getters['system/ApplicationVersion'], license: 'MIT' },
   { name: 'Vue.js', href: 'https://vuejs.org/', version: store.getters['system/VueVersion'], license: 'MIT' },
-  ...process.env.VUE_APP_ELECTRON
+  ...process.env.VITE_APP_ELECTRON
     ? [
         { name: 'Electron', href: 'https://www.electronjs.org/', version: window?.Versions.Electron(), license: 'MIT' },
         { name: 'Chromium', href: 'https://www.chromium.org/Home/', version: window?.Versions.Chrome(), license: 'MIT' },
@@ -34,7 +34,7 @@ const ComponentList = [
   { name: 'xxhashjs', href: 'https://github.com/pierrec/js-xxhash', license: 'MIT' },
   { name: 'Difflib.js', href: 'https://github.com/qiao/difflib.js', license: 'PSF' },
   { name: 'encoding.js', href: 'https://github.com/polygonplanet/encoding.js', license: 'MIT' },
-  ...process.env.VUE_APP_ELECTRON
+  ...process.env.VITE_APP_ELECTRON
     ? [
         { name: 'electron store', href: 'https://github.com/sindresorhus/electron-store', license: 'MIT' }
       ]
