@@ -38,7 +38,7 @@ div.open-drawer-button
   & > i
     width: 100%
     height: 100%
-    diaplay: block
+    display: block
     & svg
       width: 100%
       height: 100%
