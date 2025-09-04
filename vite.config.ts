@@ -20,4 +20,13 @@ export default defineConfig({
         import.meta.url)),
     },
   },
+  build: {
+    rollupOptions: {
+      input: '/src/main.js'
+    }
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom'
+  }
 })
