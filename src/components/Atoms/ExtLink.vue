@@ -8,7 +8,7 @@ const props = defineProps({
 
 const followUrl = () => {
   // webpackのコンパイルで条件分岐
-  if (process.env.VUE_APP_ELECTRON) {
+  if (process.env.VITE_APP_ELECTRON) {
     window.API.OpenURL(this.url)
   } else {
     window.open(this.url, '_blank')

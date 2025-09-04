@@ -2,18 +2,18 @@
 // seald/nedbになって*AsyncができたのでPromise+callbackから移行
 // データベースインスタンスは公開不要なのでインターフェースを簡素化した
 import HHX from 'xxhashjs'
+import NeDB from '@seald-io/nedb'
 
-const NeDB = require('@seald-io/nedb')
 const DatabaseInstance = new NeDB({
   filename: 'joed.nedb',
   autoload: true
 })
 
-export async function Insert (payload) {
+export async function Insert(payload) {
   return DatabaseInstance.insertAsync(payload.Document)
 }
 
-export async function Find (payload) {
+export async function Find(payload) {
   return DatabaseInstance.findAsync(payload?.Query ? payload.Query : {})
     .projection(payload?.Projection ? payload.Projection : {})
     .sort(payload?.Sort ? payload.Sort : {})
@@ -21,7 +21,7 @@ export async function Find (payload) {
     .limit(payload?.Limit ? Number.parseInt(payload.Limit) : 0)
 }
 
-export async function FindOne (payload) {
+export async function FindOne(payload) {
   return DatabaseInstance.findOneAsync(payload?.Query ? payload.Query : {})
     .projection(payload?.Projection ? payload.Projection : {})
     .sort(payload?.Sort ? payload.Sort : {})
@@ -34,7 +34,7 @@ export async function FindOne (payload) {
 // @param{object}
 //   .Hash - ドキュメントハッシュ文字列
 //   .SALT - ハッシュキー(Number)
-export async function FindOneByHash (payload) {
+export async function FindOneByHash(payload) {
   const Encoder = new TextEncoder()
   const founddocument = await DatabaseInstance.findOneAsync(
     // query
@@ -68,13 +68,13 @@ export async function FindOneByHash (payload) {
   return founddocument !== null ? founddocument?.DocumentId : undefined
 }
 
-export async function Count (payload) {
+export async function Count(payload) {
   return await DatabaseInstance.countAsync(
     payload?.Query ? payload.Query : {}
   )
 }
 
-export async function Update (payload) {
+export async function Update(payload) {
   return await DatabaseInstance.updateAsync(
     payload?.Query ? payload.Query : {},
     payload?.Update ? payload.Update : {},
@@ -82,7 +82,7 @@ export async function Update (payload) {
   )
 }
 
-export async function Remove (payload) {
+export async function Remove(payload) {
   return await DatabaseInstance.removeAsync(
     payload?.Query ? payload.Query : {},
     payload?.Options ? payload.Options : {}

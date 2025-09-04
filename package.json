@@ -1,6 +1,6 @@
 {
   "name": "joed5",
-  "version": "1.5.1845",
+  "version": "2.0.9999",
   "description": "The procedures and adverse events regstration system provided by JSGOE (C) 2020-2025 P4mohnet and 日本産科婦人科内視鏡学会",
   "author": {
     "name": "Yasuhiro Yamamoto",
@@ -11,83 +11,63 @@
       "license": "MIT"
     }
   ],
-  "scripts": {
-    "serve": "vue-cli-service serve --modern",
-    "build": "vue-cli-service build --modern",
-    "lint": "vue-cli-service lint",
-    "electron:build": "vue-cli-service electron:build --mode electron",
-    "electron:build.production": "vue-cli-service electron:build --mode electron.production",
-    "electron:serve": "vue-cli-service electron:serve --mode electron",
-    "electron:serve.production": "vue-cli-service electron:serve --mode electron.production",
-    "postinstall": "electron-builder install-app-deps",
-    "postuninstall": "electron-builder install-app-deps"
+  "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },  "scripts": {
+    "serve": "vite",
+    "build": "run-p type-check \"build-only {@}\" --",
+    "lint": "eslint . --fix",
+    "electron:serve": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "vite build --mode electron && electron-builder",
+    "electron:build.production": "cross-env NODE_ENV=production vite build --mode electron && electron-builder",
+    "preview": "vite preview",
+    "build-only": "vite build",
+    "test:unit": "vitest",
+    "type-check": "vue-tsc --build",
+    "format": "prettier --write src/"
   },
-  "main": "background.js",
   "dependencies": {
     "@seald-io/nedb": "4.0.4",
     "@vuepic/vue-datepicker": "^11.0.2",
-    "caniuse-lite": "^1.0.30001636",
-    "core-js": "3.39.0",
     "difflib": "^0.2.4",
-    "electron-builder": "26.0.12",
-    "element-plus": "^2.8.4",
-    "encoding-japanese": "^2.0.0",
-    "glob-parent": "^6.0.2",
-    "is-svg": "5.0.1",
-    "path-browserify": "^1.0.1",
-    "sass-loader": "13.3.3",
-    "url-parse": "1.5.10",
-    "vue": "^3.5.0",
-    "vue-router": "^4.4.0",
-    "vuedraggable": "^4.1.0",
-    "vuex": "^4.1.0",
+    "element-plus": "^2.11.1",
+    "encoding-japanese": "^2.2.0",
+    "pinia": "^3.0.3",
+    "vue": "^3.5.18",
+    "vue-router": "^4.5.1",
+    "vuedraggable": "^2.24.3",
+    "vuex": "4",
     "xxhashjs": "^0.2.2"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.23.3",
-    "@vue/cli-plugin-babel": "~5.0.8",
-    "@vue/cli-plugin-eslint": "~5.0.8",
-    "@vue/cli-plugin-router": "~5.0.8",
-    "@vue/cli-plugin-vuex": "~5.0.8",
-    "@vue/cli-service": "^5.0.8",
-    "@vue/eslint-config-standard": "^8.0.1",
-    "babel-eslint": "^10.1.0",
-    "electron": "32.2.7",
-    "electron-devtools-installer": "4.0.0",
-    "electron-store": "8.1.0",
-    "eslint": "8.53.0",
-    "eslint-plugin-import": "2.29.1",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "eslint-plugin-standard": "^5.0.0",
-    "eslint-plugin-vue": "^9.18.1",
-    "sass": "1.69.7",
-    "terser-webpack-plugin": "^5.3.6",
-    "vue-cli-plugin-electron-builder": "^2.1.1",
-    "vue-cli-plugin-element": "^1.0.1",
-    "vue-template-compiler": "2.7.16"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/essential",
-      "@vue/eslint-config-standard"
-    ],
-    "parserOptions": {
-      "parser": "@babel/eslint-parser",
-      "requireConfig": true
-    },
-    "rules": {
-      "vue/no-v-for-template-key": "off"
-    }
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions"
-  ],
-  "license": "MIT",
-  "productName": "JOED5"
+    "@tsconfig/node22": "^22.0.2",
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^22.16.5",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vitest/eslint-plugin": "^1.3.4",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "@vue/eslint-config-typescript": "^14.6.0",
+    "@vue/test-utils": "^2.4.6",
+    "@vue/tsconfig": "^0.7.0",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.0.0",
+    "electron": "^38.0.0",
+    "electron-builder": "^26.0.12",
+    "electron-devtools-installer": "^4.0.0",
+    "electron-store": "^10.1.0",
+    "eslint": "^9.31.0",
+    "eslint-plugin-vue": "~10.3.0",
+    "jiti": "^2.4.2",
+    "jsdom": "^26.1.0",
+    "npm-run-all2": "^8.0.4",
+    "prettier": "3.6.2",
+    "sass": "^1.92.0",
+    "typescript": "~5.8.0",
+    "vite": "^7.0.6",
+    "vite-plugin-vue-devtools": "^8.0.0",
+    "vitest": "^3.2.4",
+    "vue-tsc": "^3.0.4",
+    "wait-on": "^8.0.4"
+  }
 }
