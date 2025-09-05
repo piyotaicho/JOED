@@ -1,6 +1,6 @@
 import Master from '@/modules/Masters/Master'
 import { ZenToHan } from '@/modules/ZenHanChars'
-import * as difflib from 'difflib'
+// import { getCloseMatches } from 'difflib'
 
 export const LastUpdate = '2024-12-01'
 const defaultReference = '2024'
@@ -11,7 +11,7 @@ const defaultReference = '2024'
 // [] で囲まれた文字列は選択肢には表示されず、データの可読性を目的に保持される
 
 export default class ProcedureMaster extends Master {
-  constructor () {
+  constructor() {
     super({
       腹腔鏡: {
         子宮: [
@@ -839,8 +839,8 @@ export default class ProcedureMaster extends Master {
         ]
       }
     },
-    // デフォルト参照されるマスター年次設定
-    defaultReference)
+      // デフォルト参照されるマスター年次設定
+      defaultReference)
   }
 
   // ProcedureMasterのstaticメソッド
@@ -848,36 +848,36 @@ export default class ProcedureMaster extends Master {
   // - parseItemはMasterからの継承
   // - 該当項目がなければ undefined を返す
   // @param {object/string} 第三層の項目
-  static getAdditioninalProcedure (item) {
+  static getAdditioninalProcedure(item) {
     return this.parseItem(item, 'AdditionalProcedure')
   }
 
-  static getDittos (item) {
+  static getDittos(item) {
     return this.parseItem(item, 'Ditto')
   }
 
-  static getDescriptionObject (item) {
+  static getDescriptionObject(item) {
     return this.parseItem(item, 'Description')
   }
 
-  static getCodes (item) {
+  static getCodes(item) {
     return this.parseItem(item, 'Kcode')
   }
 
-  static getDescriptionTitle (item) {
+  static getDescriptionTitle(item) {
     return this.getDescriptionObject(item)?.Text
   }
 
-  static getDescriptionOptions (item) {
+  static getDescriptionOptions(item) {
     return (this.getDescriptionObject(item)?.Values || [])
   }
 
-  static getDescriptionSelectionMode (item) {
+  static getDescriptionSelectionMode(item) {
     return (this.getDescriptionObject(item)?.Selection || 'one')
   }
 
   // CloseMatch
-  Matches (text, category = '', target = '', year = this.YearofMaster) {
+  Matches(text, category = '', target = '', year = this.YearofMaster) {
     const source = translation(text)
     if (source === '') {
       return []
@@ -899,15 +899,15 @@ export default class ProcedureMaster extends Master {
     }
 
     // ステップ2 ～closematch
-    return Array.from(new Set(difflib.getCloseMatches(
-      source,
-      flattenitems.map(item => this.getText(item)),
-      12, 0.34 // cut and tryでの類似度がこれ
-    )))
+    return [] //Array.from(new Set(getCloseMatches(
+    //   source,
+    //   flattenitems.map(item => this.getText(item)),
+    //   12, 0.34 // cut and tryでの類似度がこれ
+    // )))
   }
 } // class ProcedureMaster おわり
 
-function matchCode (codes, value) {
+function matchCode(codes, value) {
   if (codes === undefined || Array.isArray(codes) === false) {
     return false
   }
@@ -972,7 +972,7 @@ const ruleset2 = {
   'TCRis-?M': 'K873-00-01'
 }
 
-function translation (str = '') {
+function translation(str = '') {
   // 型変換と前後の余白の削除
   let searchstring = str.toString().trim()
   if (searchstring === '') {

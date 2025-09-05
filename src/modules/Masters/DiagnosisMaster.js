@@ -1,12 +1,12 @@
 import Master from '@/modules/Masters/Master'
 import { ZenToHan } from '@/modules/ZenHanChars'
-import { getCloseMatches } from 'difflib'
+// import { getCloseMatches } from 'difflib'
 
 export const LastUpdate = '2022-05-05'
 const defaultReference = '2022'
 
 export default class DiagnosisMaster extends Master {
-  constructor () {
+  constructor() {
     super({
       腹腔鏡: {
         子宮: [
@@ -538,11 +538,11 @@ export default class DiagnosisMaster extends Master {
         ]
       }
     },
-    // マスターのシリアル
-    defaultReference)
+      // マスターのシリアル
+      defaultReference)
   }
 
-  static getCodes (item) {
+  static getCodes(item) {
     return this.parseItem(item, 'ICD10')
   }
 
@@ -554,7 +554,7 @@ export default class DiagnosisMaster extends Master {
   // @param{String|Number}
   //
   // return Array
-  Matches (text, category = '', target = '', year = this.YearofMaster) {
+  Matches(text, category = '', target = '', year = this.YearofMaster) {
     const source = translation(text)
     if (source === '') {
       return []
@@ -575,15 +575,15 @@ export default class DiagnosisMaster extends Master {
       return Array.from(new Set(matcheditemtitles))
     }
     // ステップ2 ～closematch
-    return Array.from(new Set(getCloseMatches(
-      source,
-      flattenitems.map(item => this.getText(item)),
-      12, 0.34 // cut and tryでの類似度がこれ
-    )))
+    return [] // Array.from(new Set(getCloseMatches(
+    //   source,
+    //   flattenitems.map(item => this.getText(item)),
+    //   12, 0.34 // cut and tryでの類似度がこれ
+    // )))
   }
 } // class DiagnosisMaster おわり
 
-function matchCode (codes, value) {
+function matchCode(codes, value) {
   if (codes === undefined || Array.isArray(codes) === false) {
     return false
   }
@@ -599,7 +599,7 @@ function matchCode (codes, value) {
   return false
 }
 
-function compareCode (str1 = 'A', str2 = 'B') {
+function compareCode(str1 = 'A', str2 = 'B') {
   const wildcard1 = str1.indexOf('*')
   const wildcard2 = str2.indexOf('*')
   const comparelength = wildcard1 === -1
@@ -618,7 +618,7 @@ function compareCode (str1 = 'A', str2 = 'B') {
 // @param{String}
 //
 // return String
-function translation (str = '') {
+function translation(str = '') {
   // 型変換と余白の削除
   let searchstring = str.toString().trim()
   if (searchstring === '') {
