@@ -12,6 +12,8 @@ import { fs } from 'fs'
 import { ElectronStore } from 'electron-store'
 import DB from '@seald-io/nedb'
 
+import { version, description } from '../package.json'
+
 // 重複起動の抑制
 const instanceLock = app.requestSingleInstanceLock()
 if (!instanceLock) {
@@ -398,8 +400,10 @@ function registerMenu() {
 
   app.setAboutPanelOptions({
     applicationName: app.getName(),
-    applicationVersion: process.env.VITE_APP_VERSION,
-    copyright: ['Copyright', process.env.VITE_APP_COPYRIGHT].join(' '),
+    applicationVersion: version,
+    copyright: description.indexOf('(C)') !== -1
+      ? description.substring(description.indexOf('(C)') + 3).trim()
+      : '2020- P4mohnet and JSGOE',
     credits: '@piyotaicho https://github.com/piyotaicho/JOED/',
     iconPath: '../public/icon.png'
   })

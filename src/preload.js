@@ -5,8 +5,9 @@ import { contextBridge, ipcRenderer } from 'electron'
 // Aboutで使用するバージョン文字列、Electron環境の確認にも用いる
 contextBridge.exposeInMainWorld('Versions',
   {
-    ApplicationName: () => process.env.VITE_APP_NAME,
-    ApplicationVersion: () => process.env.VITE_APP_VERSION,
+    ApplicationName: () => import.meta.env.VITE_APP_NAME,
+    ApplicationVersion: () => import.meta.env.VITE_APP_VERSION,
+    // 以下はElectron環境でのみ有効
     Platform: () => process.platform,
     Electron: () => process.versions.electron,
     Node: () => process.versions.node,
