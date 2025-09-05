@@ -31,7 +31,6 @@
   "dependencies": {
     "@seald-io/nedb": "4.0.4",
     "@vuepic/vue-datepicker": "^11.0.2",
-    "difflib": "^0.2.4",
     "element-plus": "^2.11.1",
     "encoding-japanese": "^2.2.0",
     "events": "^3.3.0",
