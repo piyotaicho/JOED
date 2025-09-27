@@ -39,7 +39,7 @@
     "util": "^0.12.5",
     "vue": "^3.5.18",
     "vue-router": "^4.5.1",
-    "vuedraggable": "^2.24.3",
+    "vuedraggable": "^4.1.0",
     "vuex": "4",
     "xxhashjs": "^0.2.2"
   },
