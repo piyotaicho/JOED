@@ -1,5 +1,6 @@
-/* eslint-disable no-template-curly-in-string */
-/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-require-imports */
+
+
 
 // node18 workaroung taken from https://github.com/nklayman/vue-cli-plugin-electron-builder/issues/1885#issuecomment-1316735840
 const crypto = require('crypto')

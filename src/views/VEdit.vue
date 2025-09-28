@@ -38,59 +38,71 @@
       />
 
       <!-- Navigations -->
-  <el-button :icon="CaretLeft" circle id="MovePrev"
+      <el-button
+        :icon="CaretLeft"
+        circle
+        id="MovePrev"
         tabindex="-1"
         v-if="isEditingExistingItem"
         :disabled="!prevUid"
         @click.exact="CancelEditing('prev')"
-        @click.shift="CommitCase('prev')" />
-  <el-button :icon="CaretRight" circle id="MoveNext"
+        @click.shift="CommitCase('prev')"
+      />
+      <el-button
+        :icon="CaretRight"
+        circle
+        id="MoveNext"
         tabindex="-1"
         v-if="isEditingExistingItem"
         :disabled="!nextUid"
         @click.exact="CancelEditing('next')"
-        @click.shift="CommitCase('next')" />
+        @click.shift="CommitCase('next')"
+      />
 
       <!--Controls -->
       <div class="edit-controls">
         <div class="edit-controls-left">
-          <el-button type="warning" :icon="WarningFilled"
-
+          <el-button
+            type="warning"
+            :icon="WarningFilled"
             @click="ShowNotification"
-            v-if="CaseData.Notification">
+            v-if="CaseData.Notification"
+          >
             入力内容の確認が必要です.
           </el-button>
         </div>
         <div class="edit-controls-right">
           <div>
-            <el-button type="primary" :icon="ArrowLeft"
-
-              @click="CancelEditing()">
-              戻る
-            </el-button>
+            <el-button type="primary" :icon="ArrowLeft" @click="CancelEditing()"> 戻る </el-button>
           </div>
           <div>
-            <el-dropdown split-button type="primary"
-              @click.exact="CommitCase()" @click.shift="CommitCase('temporary')"
-              @command="CommitCase">
-              編集内容を保存 <Loading v-show="processing"/>
+            <el-dropdown
+              split-button
+              type="primary"
+              @click.exact="CommitCase()"
+              @click.shift="CommitCase('temporary')"
+              @command="CommitCase"
+            >
+              編集内容を保存 <Loading v-show="processing" />
 
               <template v-slot:dropdown>
                 <el-dropdown-menu>
                   <template v-if="isEditingExistingItem">
-                    <el-dropdown-item command="next" :disabled="!nextUid">保存して次へ</el-dropdown-item>
-                    <el-dropdown-item command="prev" :disabled="!prevUid">保存して前へ</el-dropdown-item>
+                    <el-dropdown-item command="next" :disabled="!nextUid"
+                      >保存して次へ</el-dropdown-item
+                    >
+                    <el-dropdown-item command="prev" :disabled="!prevUid"
+                      >保存して前へ</el-dropdown-item
+                    >
                   </template>
                   <el-dropdown-item command="new">保存して新規作成</el-dropdown-item>
                   <el-dropdown-item command="temporarynew">一時保存して新規作成</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
-
             </el-dropdown>
           </div>
           <div v-if="isEditingExistingItem">
-            <el-button type="danger" :icon="Delete" ref="RemoveButton"
-              @click="RemoveCase()">
+            <el-button type="danger" :icon="Delete" ref="RemoveButton" @click="RemoveCase()">
               削除
             </el-button>
           </div>
@@ -103,12 +115,19 @@
       <router-view @data-upsert="EditListItem"></router-view>
     </div>
 
-    <TheWrapper v-if="processing"/>
+    <TheWrapper v-if="processing" />
   </div>
 </template>
 
 <script setup>
-import { CaretLeft, CaretRight, WarningFilled, ArrowLeft, Delete, Loading } from '@element-plus/icons-vue'
+import {
+  CaretLeft,
+  CaretRight,
+  WarningFilled,
+  ArrowLeft,
+  Delete,
+  Loading,
+} from '@element-plus/icons-vue'
 import { reactive, ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from '@/store'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
@@ -129,8 +148,8 @@ const props = defineProps({
   uid: {
     type: [Number, String],
     required: true,
-    default: 0
-  }
+    default: 0,
+  },
 })
 
 const CaseData = reactive({
@@ -147,7 +166,7 @@ const CaseData = reactive({
   Procedures: [],
   AEs: [],
   Notification: '',
-  Denial: false
+  Denial: false,
 })
 
 const prevUid = ref(0)
@@ -164,29 +183,28 @@ let preservedElement
 // Reactiveでない状態(created)で既存データの読み込みをする.
 //
 // @prop {uid} DocumentId
-function created () {
+function created() {
   const uid = Number(props.uid)
   if (uid > 0) {
-    store.dispatch('FetchDocument', { DocumentId: uid })
-      .then(_ => {
-        const storedDocument = store.getters.CaseDocument(uid)
-        if (storedDocument !== undefined) {
-          for (const key in CaseData) {
-            if (storedDocument[key] !== undefined) {
-              if (Array.isArray(storedDocument[key])) {
-                CaseData[key] = storedDocument[key].map(item => JSON.stringify(item))
-              } else {
-                CaseData[key] = storedDocument[key]
-              }
+    store.dispatch('FetchDocument', { DocumentId: uid }).then((_) => {
+      const storedDocument = store.getters.CaseDocument(uid)
+      if (storedDocument !== undefined) {
+        for (const key in CaseData) {
+          if (storedDocument[key] !== undefined) {
+            if (Array.isArray(storedDocument[key])) {
+              CaseData[key] = storedDocument[key].map((item) => JSON.stringify(item))
+            } else {
+              CaseData[key] = storedDocument[key]
             }
           }
         }
-        preserve = JSON.stringify(CaseData)
+      }
+      preserve = JSON.stringify(CaseData)
 
-        processing.value = false
-        prevUid.value = store.getters.NextUids(uid).Prev
-        nextUid.value = store.getters.NextUids(uid).Next
-      })
+      processing.value = false
+      prevUid.value = store.getters.NextUids(uid).Prev
+      nextUid.value = store.getters.NextUids(uid).Next
+    })
   } else {
     processing.value = false
     preserve = JSON.stringify(CaseData)
@@ -223,7 +241,7 @@ const isNoAEs = computed({
   get: () => !CaseData.PresentAE,
   set: (newvalue) => {
     CaseData.PresentAE = !newvalue
-  }
+  },
 })
 
 const isEditingExistingItem = computed(() => uid.value > 0)
@@ -232,7 +250,7 @@ const BackToList = (currentUid) => {
   if (currentUid === 0) {
     router.push({ name: 'list' })
   } else {
-    router.push({ name: 'list', hash: (`#doc${currentUid}`) })
+    router.push({ name: 'list', hash: `#doc${currentUid}` })
   }
 }
 
@@ -244,7 +262,7 @@ const editAnother = (targetUid) => {
   // 新規(uid = '0')→新規(uid = '0')ではApp.vueで定義したRouterKeyが重複するための quick hack.
   // uid = '00' も uid > 0 がjavascriptの型変換ではfalseで新規扱いになるのでそれを利用する.
   if (targetUid === 0) {
-    router.push({ name: 'edit', params: { uid: (props.uid.toString() === '00') ? '0' : '00' } })
+    router.push({ name: 'edit', params: { uid: props.uid.toString() === '00' ? '0' : '00' } })
   }
 }
 
@@ -257,11 +275,11 @@ const EditSection = (target, params = {}) => {
 
   router.push({
     name: target,
-    params: {
+    query: {
       ItemIndex: index,
       ItemValue: jsonValue,
-      year: editingYear
-    }
+      year: editingYear,
+    },
   })
 }
 
@@ -305,9 +323,8 @@ const UpdateList = (target, index, value) => {
 }
 
 const RemoveCase = async () => {
-  if (uid.value > 0 && await Popups.confirm('この症例を削除します.よろしいですか?')) {
-    store.dispatch('RemoveDocument', { DocumentId: uid.value })
-      .then(_ => BackToList(0))
+  if (uid.value > 0 && (await Popups.confirm('この症例を削除します.よろしいですか?'))) {
+    store.dispatch('RemoveDocument', { DocumentId: uid.value }).then((_) => BackToList(0))
   }
 }
 
@@ -333,7 +350,7 @@ const CommitCase = async (to = '') => {
           BackToList(uid.value)
       }
     })
-    .catch(e => {
+    .catch((e) => {
       Popups.alert(e.message)
     })
 }
@@ -343,7 +360,10 @@ const CancelEditing = async (to = '') => {
     return
   }
 
-  if (preserve === JSON.stringify(CaseData) || await Popups.confirm('項目が編集中です.移動しますか?')) {
+  if (
+    preserve === JSON.stringify(CaseData) ||
+    (await Popups.confirm('項目が編集中です.移動しますか?'))
+  ) {
     switch (to) {
       case 'prev':
         if (prevUid.value !== 0) editAnother(prevUid.value)
@@ -366,7 +386,7 @@ const StoreCase = async (temporary = false) => {
     for (const key in CaseData) {
       // ArrayはObject[]なのでJSON文字列化する
       if (Array.isArray(CaseData[key])) {
-        newDocument[key] = CaseData[key].map(item => JSON.parse(item))
+        newDocument[key] = CaseData[key].map((item) => JSON.parse(item))
       } else {
         newDocument[key] = CaseData[key]
       }
@@ -387,16 +407,13 @@ const StoreCase = async (temporary = false) => {
     // 患者名 : 前後トリムのみ
     newDocument.Name = newDocument.Name.trim()
     // 患者ID : 半角文字に置換・空白文字を除去
-    newDocument.PatientId = ZenToHan(newDocument.PatientId.trim())
-      .replace(/\s/g, '')
+    newDocument.PatientId = ZenToHan(newDocument.PatientId.trim()).replace(/\s/g, '')
 
     // 腫瘍登録番号 : 半角文字に置換・大文字変換・空白文字の除去
     if (newDocument.JSOGId.trim() === '') {
       delete newDocument.JSOGId
     } else {
-      newDocument.JSOGId = ZenToHan(newDocument.JSOGId)
-        .toUpperCase()
-        .replace(/\s/g, '')
+      newDocument.JSOGId = ZenToHan(newDocument.JSOGId).toUpperCase().replace(/\s/g, '')
     }
 
     // NCD登録番号 : 半角文字に置換・数値とハイフン以外を除去
@@ -434,9 +451,10 @@ const keyboardEventListener = async (event) => {
     return
   }
 
-  if (store.getters['system/Platform'] === 'darwin'
-    ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) // macOS - command
-    : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) // Windows - Ctrl
+  if (
+    store.getters['system/Platform'] === 'darwin'
+      ? event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey // macOS - command
+      : event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey // Windows - Ctrl
   ) {
     switch (event.code) {
       case 'Digit0':
@@ -472,9 +490,10 @@ const keyboardEventListener = async (event) => {
         await RemoveCase()
         break
     }
-  } else if (store.getters['system/Platform'] === 'darwin'
-    ? (event.metaKey && event.shiftKey && !event.ctrlKey && !event.altKey) // macOS - command + shift
-    : (event.ctrlKey && event.shiftKey && !event.metaKey && !event.altKey) // Windows - Ctrl + Shift
+  } else if (
+    store.getters['system/Platform'] === 'darwin'
+      ? event.metaKey && event.shiftKey && !event.ctrlKey && !event.altKey // macOS - command + shift
+      : event.ctrlKey && event.shiftKey && !event.metaKey && !event.altKey // Windows - Ctrl + Shift
   ) {
     switch (event.code) {
       case 'Digit3':
@@ -502,13 +521,12 @@ const BeforeUnloadLister = (event) => {
   if (preserve !== JSON.stringify(this.CaseData)) {
     event.preventDefault()
     event.returnValue = ''
-    Popups.confirmYesNo('項目が編集中ですが閉じますか?')
-      .then(result => {
-        if (result) {
-          window.removeEventListener('beforeunload', this.BeforeUnloadLister)
-          window.close()
-        }
-      })
+    Popups.confirmYesNo('項目が編集中ですが閉じますか?').then((result) => {
+      if (result) {
+        window.removeEventListener('beforeunload', this.BeforeUnloadLister)
+        window.close()
+      }
+    })
     return false
   }
 }

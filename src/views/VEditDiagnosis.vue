@@ -1,7 +1,7 @@
 <template>
   <TheWrapper alpha="10">
     <EditSection @commit="CommitChanges" @discard="GoBack">
-      <ThreePaneSelections
+      <!-- <ThreePaneSelections
         Pane3Title="手術診断の候補"
         v-model:Pane1="category" :Pane1Items="Categories"
         @pane1change="CategoryIsChanged()"
@@ -10,7 +10,19 @@
         v-model:Pane3="selectedItem" :Pane3Items="candidates"
         @pane3dblclick="CommitChanges()"
         ref="paneSection"
-      />
+      /> -->
+
+      <div class="flex-content" ref="paneSection">
+        <div class="w20 selectionbox">
+          <SelectPane :title="カテゴリ" v-model="category" :items="categorySelections" />
+        </div>
+        <div class="w20 selectionbox">
+          <SelectPane :title="対象臓器" v-model="target" :items="targetSelections" />
+        </div>
+        <div class="w60 selectionbox">
+          <SelectPane :title="手術診断の候補" v-model="selectedItem" :items="candidates" />
+        </div>
+      </div>
 
       <FreewordSection
         v-model:value="freewordText"
@@ -23,13 +35,14 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, onMounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Master from '@/modules/Masters/DiagnosisMaster'
 import * as Popups from '@/modules/Popups'
 import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 import EditSection from '@/components/Molecules/EditSection.vue'
-import ThreePaneSelections from '@/components/Molecules/ThreePaneSelections.vue'
+// import ThreePaneSelections from '@/components/Molecules/ThreePaneSelections.vue'
+import SelectPane from '@/components/Molecules/SelectPane.vue'
 import FreewordSection from '@/components/Molecules/EditSectionFreeword.vue'
 
 const DiagnosesMaster = new Master()
@@ -39,15 +52,15 @@ const router = useRouter()
 const props = defineProps({
   ItemIndex: {
     type: Number,
-    default: -1
+    default: -1,
   },
   ItemValue: {
-    type: String
+    type: String,
   },
   year: {
     type: String,
-    default: ''
-  }
+    default: '',
+  },
 })
 const emit = defineEmits(['data-upsert'])
 const paneSection = ref()
@@ -59,47 +72,62 @@ const candidates = ref([])
 const selectedItem = ref('')
 const freewordText = ref('')
 
-const Categories = computed(() => DiagnosesMaster.Categories())
-const TargetOrgans = computed(() => DiagnosesMaster.Targets(category.value))
+const categorySelections = computed(() => DiagnosesMaster.Categories())
+const targetSelections = computed(() => DiagnosesMaster.Targets(category.value))
 
 const UserEditingAllowed = computed(() => !!category.value && !selectedItem.value)
 
-const CategoryIsChanged = async () => {
+watch(category, async () => {
+  // カテゴリが変更されたら全部クリア
   target.value = ''
-  if (selectedItem.value !== '') {
-    freewordText.value = ''
-  }
-
+  freewordText.value = ''
   selectedItem.value = ''
+
   if (candidates.value.length > 0) {
     candidates.value.splice(0)
   }
 
+  // computedをまつ
   await nextTick()
 
-  // 対象臓器が1つだけのときはそれを選択する
-  if (TargetOrgans.value.length === 1) {
-    target.value = TargetOrgans.value[0]
-    await nextTick()
-
-    // 選択に応じた選択肢を展開
-    SetCandidateItemsBySelection()
-    await nextTick()
+  // targetSelectionが一つだけの時はソレを選択
+  if (targetSelections.value.length === 1) {
+    target.value = targetSelections.value[0]
   }
-}
+})
+
+watch(target, () => {
+  if (target.value !== '') {
+    SetCandidateItemsBySelection()
+  }
+})
+
+watch(selectedItem, () => {
+  if (selectedItem.value !== '') {
+    CommitChanges()
+  }
+})
 
 const SetCandidateItemsBySelection = async () => {
-  candidates.value = DiagnosesMaster.Items(
-    category.value, target.value, props.year
-  ).map(item => item.Text)
+  candidates.value = DiagnosesMaster.Items(category.value, target.value, props.year).map(
+    (item) => item.Text,
+  )
   selectedItem.value = ''
   await nextTick()
 }
 
 const SetCandidateItemsByFreeword = async () => {
   if (freewordText.value && UserEditingAllowed.value) {
-    candidates.value.splice(0, candidates.value.length,
-      ...DiagnosesMaster.Matches(freewordText.value, category.value, target.value || '', props.year))
+    candidates.value.splice(
+      0,
+      candidates.value.length,
+      ...DiagnosesMaster.Matches(
+        freewordText.value,
+        category.value,
+        target.value || '',
+        props.year,
+      ),
+    )
     await nextTick()
   }
 }
@@ -117,7 +145,7 @@ const CommitChanges = async () => {
       SetCandidateItemsByFreeword()
       if (
         candidates.value.length !== 0 &&
-        await Popups.confirm('手術診断の候補があります,選択を優先してください.') === false
+        (await Popups.confirm('手術診断の候補があります,選択を優先してください.')) === false
       ) {
         return
       }
@@ -127,7 +155,9 @@ const CommitChanges = async () => {
         return
       }
       // 最終確認
-      if (await Popups.confirm('直接入力した手術診断の登録は可能な限り控えてください.') === false) {
+      if (
+        (await Popups.confirm('直接入力した手術診断の登録は可能な限り控えてください.')) === false
+      ) {
         return
       }
 
@@ -173,6 +203,9 @@ onMounted(async () => {
       await nextTick()
       freewordSection.value.open()
     }
+  } else {
+    // 新規編集の場合はカテゴリにフォーカスする
+    paneSection.value.$el.getElementsByTagName('SELECT')[0].focus()
   }
 })
 </script>
