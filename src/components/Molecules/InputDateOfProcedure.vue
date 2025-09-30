@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed, watch } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import { ja } from 'date-fns/locale'
 
@@ -59,23 +59,6 @@ const datepickerValue = computed({
     }
   },
 })
-
-const datepickerValueManualChange = (value) => {
-  console.log(`Manual change ${value}`)
-  if (typeof value === 'string') {
-    dateOfProcedure.value = value
-  }
-}
-
-watch(dateOfProcedure, () => {
-  if (props.required && inputelement !== undefined) {
-    if (dateOfProcedure.value === '') {
-      inputelement.classList.add('vacant')
-    } else {
-      inputelement.classList.remove('vacant')
-    }
-  }
-})
 </script>
 
 <template>
@@ -85,13 +68,21 @@ watch(dateOfProcedure, () => {
       <VueDatePicker
         ref="datepicker"
         v-model="datepickerValue"
-        text-input
-        model-type="yyyy-MM-dd"
         :enable-time-picker="false"
+        model-type="yyyy-MM-dd"
         format="yyyy-MM-dd"
+        :clearable="false"
         :format-locale="ja"
         week-start="0"
-        auto-apply
+        :auto-apply="true"
+        :text-input="{
+          enterSubmit: true,
+          tabSubmit: true,
+          openMenu: 'toggle',
+          escClose: true,
+        }"
+        select-text="選択"
+        cancel-text="閉じる"
       >
         <template #calendar-header="{ index, day }">
           <div
@@ -104,14 +95,18 @@ watch(dateOfProcedure, () => {
             {{ day }}
           </div>
         </template>
-        <template #dp-input="{ value, onBlur, onEnter }">
+        <template #dp-input="{ value, onInput, onBlur, onFocus, onKeypress, handlePaste }">
           <input
             type="text"
             :value="value"
             placeholder="クリックでカレンダー"
             :class="[!value && props.required ? 'vacant' : '']"
-            :onBlur="datepickerValueManualChange(value)"
-            @onEnter="datepickerValueManualChange(value)"
+            @input="onInput"
+            @blue="onBlur"
+            @focus="onFocus"
+            @keypress="onKeypress"
+            @keydown="onKeypress($event)"
+            @paste="handlePaste"
           />
         </template>
       </VueDatePicker>
