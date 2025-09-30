@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import InputDateOfProcedure from '@/components/Molecules/InputDateOfProcedure.vue'
+import InputDate from '@/components/Molecules/InputDate.vue'
 import InputTextField from '@/components/Molecules/InputTextField.vue'
 import InputNumberField from '@/components/Molecules/InputNumberField.vue'
 import InputProcedureTime from '@/components/Molecules/InputProcedureTime.vue'
@@ -134,7 +134,7 @@ const valueNCDId = computed({
 <template>
   <div class="patient-info-section">
     <div class="patient-info-section-left">
-      <InputDateOfProcedure v-model="valueDateOfProcedure" :required="true" />
+      <InputDate v-model="valueDateOfProcedure" :required="true" />
       <div style="display: flex; flex-direction: row">
         <div style="flex-grow: 2">
           <InputTextField
