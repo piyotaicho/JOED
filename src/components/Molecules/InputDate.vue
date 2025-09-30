@@ -33,29 +33,16 @@ onMounted(() => {
 
 const datepickerValue = computed({
   get: () => {
-    console.log(`Getter ${dateOfProcedure.value}`)
     if (!dateOfProcedure.value) return null
-    // ISO日付型文字列 (yyyy-MM-dd) を Date 型に変換
-    // const [yyyy, mm, dd] = dateOfProcedure.value.split('-')
-    // if (!yyyy || !mm || !dd) return null
-    // return new Date(Number(yyyy), Number(mm) - 1, Number(dd))
     return dateOfProcedure.value
   },
   set: (value) => {
-    console.log(`Got ${value} type ${typeof value}`)
-    if (value instanceof Date && !isNaN(value)) {
-      // yyyy-MM-dd 形式でISO文字列に変換
-      const yyyy = value.getFullYear()
-      const mm = String(value.getMonth() + 1).padStart(2, '0')
-      const dd = String(value.getDate()).padStart(2, '0')
-      dateOfProcedure.value = `${yyyy}-${dd}-${mm}`
+    if (typeof value === 'string') {
+      // 空文字列は許容
+      dateOfProcedure.value = value
     } else {
-      if (typeof value === 'string') {
-        // 空文字列は許容
-        dateOfProcedure.value = value
-      } else {
-        dateOfProcedure.value = ''
-      }
+      // nullは空文字列に変換
+      dateOfProcedure.value = ''
     }
   },
 })
