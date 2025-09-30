@@ -12,8 +12,8 @@ const router = useRouter()
 
 const props = defineProps({
   uid: {
-    required: true
-  }
+    required: true,
+  },
 })
 
 const Loading = ref(true)
@@ -24,18 +24,18 @@ onMounted(() => {
   if (uid.value > 0) {
     store
       .dispatch('FetchDocument', { DocumentId: Number(uid.value) })
-      .then(_ => {
+      .then((_) => {
         Loading.value = false
       })
-      .catch(e => e)
+      .catch((e) => e)
   }
 })
 
-const ItemDocument = computed(() => Loading.value ? {} : store.getters.CaseDocument(uid.value))
+const ItemDocument = computed(() => (Loading.value ? {} : store.getters.CaseDocument(uid.value)))
 
-const Category = computed(() => Loading.value ? '' : (ItemDocument.value.TypeOfProcedure || undefined))
+const Category = computed(() => (Loading.value ? '' : ItemDocument.value.TypeOfProcedure || ''))
 
-const DateOfProcedure = computed(() => Loading.value ? '' : ItemDocument.value.DateOfProcedure)
+const DateOfProcedure = computed(() => (Loading.value ? '' : ItemDocument.value.DateOfProcedure))
 
 const PersonalInformation = computed(() => {
   return Loading.value
@@ -43,23 +43,27 @@ const PersonalInformation = computed(() => {
         Id: '',
         Name: 'データを取得中',
         Age: '',
-        Denial: undefined
+        Denial: undefined,
       }
     : {
         Id: ItemDocument.value.PatientId,
         Name: ItemDocument.value.Name || '',
         Age: ItemDocument.value.Age ? '( ' + Number(ItemDocument.value.Age) + '歳 )' : '',
-        Denial: ItemDocument.value.Denial
+        Denial: ItemDocument.value.Denial,
       }
 })
 
-const Diagnosis = computed(() => Loading.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value.Diagnoses[0]))
+const Diagnosis = computed(() =>
+  Loading.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value.Diagnoses[0]),
+)
 
-const Procedure = computed(() => Loading.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value.Procedures[0]))
+const Procedure = computed(() =>
+  Loading.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value.Procedures[0]),
+)
 
 const PresentAE = computed(() => !Loading.value && ItemDocument.value.PresentAE)
 
-const Notification = computed(() => Loading.value ? '' : (ItemDocument.value?.Notification || ''))
+const Notification = computed(() => (Loading.value ? '' : ItemDocument.value?.Notification || ''))
 
 const MoveToEditView = () => {
   if (!Loading.value) {
@@ -69,9 +73,10 @@ const MoveToEditView = () => {
 
 const RemoveDocumentKeypress = (event) => {
   if (!event.repeat) {
-    if (store.getters['system/Platform'] === 'darwin'
-      ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) // macOS - command
-      : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) // Windows - Ctrl
+    if (
+      store.getters['system/Platform'] === 'darwin'
+        ? event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey // macOS - command
+        : event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey // Windows - Ctrl
     ) {
       RemoveDocument()
     }
@@ -87,32 +92,40 @@ const RemoveDocument = async () => {
 </script>
 
 <template>
-  <div class="caseitem" :id="'doc' + uid.toString(10)" tabindex="0"
-  @keypress.enter="MoveToEditView()"
-  @keydown.o="MoveToEditView()"
-  @dblclick="MoveToEditView()"
-  @keydown.x="RemoveDocumentKeypress($event)">
+  <div
+    class="caseitem"
+    :id="'doc' + uid.toString(10)"
+    tabindex="0"
+    @keypress.enter="MoveToEditView()"
+    @keydown.o="MoveToEditView()"
+    @dblclick="MoveToEditView()"
+    @keydown.x="RemoveDocumentKeypress($event)"
+  >
     <div class="caseitem-icon">
-      <CategoryIdentifier :category="Category" :notification="Notification"/>
+      <CategoryIdentifier :category="Category" :notification="Notification" />
     </div>
     <div class="caseitem-description">
       <div class="caseitem-row">
-        <span class="w20"> {{DateOfProcedure}} </span>
+        <span class="w20"> {{ DateOfProcedure }} </span>
         <template v-if="PersonalInformation.Denial === true">
-          <el-tooltip placement="top-start" :open-delay="700" content="この症例には登録拒否が設定されています">
-            <span class="w20 caution-font"> {{PersonalInformation.Id}} </span>
+          <el-tooltip
+            placement="top-start"
+            :open-delay="700"
+            content="この症例には登録拒否が設定されています"
+          >
+            <span class="w20 caution-font"> {{ PersonalInformation.Id }} </span>
           </el-tooltip>
         </template>
         <template v-else>
-          <span class="w20"> {{PersonalInformation.Id}} </span>
+          <span class="w20"> {{ PersonalInformation.Id }} </span>
         </template>
-        <span class="w30 truncatable"> {{PersonalInformation.Name}} </span>
-        <span class="w10"> {{PersonalInformation.Age}} </span>
+        <span class="w30 truncatable"> {{ PersonalInformation.Name }} </span>
+        <span class="w10"> {{ PersonalInformation.Age }} </span>
         <span class="w20"></span>
       </div>
       <div class="caseitem-row">
-        <span class="w40 truncatable"> {{Diagnosis}} </span>
-        <span class="w40 truncatable"> {{Procedure}} </span>
+        <span class="w40 truncatable"> {{ Diagnosis }} </span>
+        <span class="w40 truncatable"> {{ Procedure }} </span>
         <span class="w20 caution-badge" v-show="PresentAE"> 合併症あり </span>
       </div>
     </div>

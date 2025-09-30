@@ -4,11 +4,11 @@ import { computed } from 'vue'
 const props = defineProps({
   category: {
     type: String,
-    required: true
+    required: true,
   },
   notification: {
-    type: String
-  }
+    type: String,
+  },
 })
 
 const boxColorStyle = computed(() => {
@@ -18,12 +18,14 @@ const boxColorStyle = computed(() => {
     ロボット: '#00F063',
     ロボット悪性: '#00F063',
     子宮鏡: '#00BBFF',
-    卵管鏡: '#FFD000'
+    卵管鏡: '#FFD000',
   }
   return { backgroundColor: colorTable[props.category] || '#DDDDDD' }
 })
 
-const notificationClass = computed(() => (props?.notification || props.notification !== '') ? ['has-notification'] : [''])
+const notificationClass = computed(() =>
+  props?.notification || props.notification !== '' ? ['has-notification'] : [''],
+)
 
 const malignancyClass = computed(() => {
   switch (props.category) {
@@ -42,7 +44,7 @@ const malignancyClass = computed(() => {
   </div>
 </template>
 
-<style lang='sass'>
+<style lang="sass">
 div.casecategory
   position: relative
   border: var(--color-primary) 2px solid
