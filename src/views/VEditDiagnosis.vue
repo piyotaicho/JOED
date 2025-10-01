@@ -14,13 +14,13 @@
 
       <div class="flex-content" ref="paneSection">
         <div class="w20 selectionbox">
-          <SelectPane :title="カテゴリ" v-model="category" :items="categorySelections" />
+          <SelectPane title="カテゴリ" v-model:value="category" :items="categorySelections" />
         </div>
         <div class="w20 selectionbox">
-          <SelectPane :title="対象臓器" v-model="target" :items="targetSelections" />
+          <SelectPane title="対象臓器" v-model:value="target" :items="targetSelections" />
         </div>
         <div class="w60 selectionbox">
-          <SelectPane :title="手術診断の候補" v-model="selectedItem" :items="candidates" />
+          <SelectPane title="手術診断の候補" v-model:value="selectedItem" :items="candidates" />
         </div>
       </div>
 
@@ -66,22 +66,23 @@ const emit = defineEmits(['data-upsert'])
 const paneSection = ref()
 const freewordSection = ref()
 
+// 選択肢の設定
 const category = ref('')
-const target = ref('')
-const candidates = ref([])
-const selectedItem = ref('')
-const freewordText = ref('')
-
 const categorySelections = computed(() => DiagnosesMaster.Categories())
+
+const target = ref('')
 const targetSelections = computed(() => DiagnosesMaster.Targets(category.value))
 
+const selectedItem = ref('')
+const candidates = ref([])
 const UserEditingAllowed = computed(() => !!category.value && !selectedItem.value)
+const freewordText = ref('')
 
 watch(category, async () => {
-  // カテゴリが変更されたら全部クリア
+  // カテゴリが変更されたら現在の入力は全部クリア
   target.value = ''
-  freewordText.value = ''
   selectedItem.value = ''
+  freewordText.value = ''
 
   if (candidates.value.length > 0) {
     candidates.value.splice(0)
@@ -102,11 +103,11 @@ watch(target, () => {
   }
 })
 
-watch(selectedItem, () => {
-  if (selectedItem.value !== '') {
-    CommitChanges()
-  }
-})
+// watch(selectedItem, () => {
+//   if (selectedItem.value !== '') {
+//     CommitChanges()
+//   }
+// })
 
 const SetCandidateItemsBySelection = async () => {
   candidates.value = DiagnosesMaster.Items(category.value, target.value, props.year).map(
@@ -178,6 +179,8 @@ const GoBack = () => router.replace('./')
 
 onMounted(async () => {
   const item = JSON.parse(props.ItemValue || '{}')
+  const selectElements = paneSection.value.getElementsByTagName('SELECT')
+
   if (props.ItemIndex > -1) {
     // ItemIndex != -1 の場合は新規ではなく再編集
 
@@ -195,7 +198,9 @@ onMounted(async () => {
       selectedItem.value = item.Text
       freewordText.value = ''
       await nextTick()
-      paneSection.value.$el.getElementsByTagName('select')[2].focus()
+      if (selectElements && selectElements.length >= 3) {
+        selectElements[2].focus()
+      }
     } else {
       // 選択肢に入力されている項目がなければ自由入力に展開する
       selectedItem.value = ''
@@ -205,7 +210,9 @@ onMounted(async () => {
     }
   } else {
     // 新規編集の場合はカテゴリにフォーカスする
-    paneSection.value.$el.getElementsByTagName('SELECT')[0].focus()
+    if (selectElements && selectElements.length >= 1) {
+      selectElements[0].focus()
+    }
   }
 })
 </script>

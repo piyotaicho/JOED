@@ -222,7 +222,7 @@ onBeforeUnmount(() => {
   document.removeEventListener('keydown', keyboardEventListener, true)
 })
 
-onBeforeRouteUpdate((to, _from, next) => {
+onBeforeRouteUpdate((to, _from) => {
   const goSection = to.name !== 'edit'
   editingSection.value = goSection
   if (goSection) {
@@ -232,7 +232,6 @@ onBeforeRouteUpdate((to, _from, next) => {
       preservedElement.focus()
     } catch {}
   }
-  next()
 })
 
 const uid = computed(() => Number(props.uid))

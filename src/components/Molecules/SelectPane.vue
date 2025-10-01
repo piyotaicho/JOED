@@ -32,7 +32,6 @@ const selectElement = ref()
 const paneValue = computed({
   get: () => props.value,
   set: (value) => {
-    console.log(`New value ${value}`)
     emit('change', value)
     emit('update:value', value)
   },
