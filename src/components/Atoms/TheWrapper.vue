@@ -1,52 +1,36 @@
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
+import { onMounted, onBeforeUnmount, ref } from 'vue'
 
 document.getElementsByTagName('html')[0].style.overflowY = 'hidden'
 
 const props = defineProps({
   alpha: {
     type: [String, Number],
-    validator (val) {
-      return val >= 0 && val <= 100
+    validator(val) {
+      const num = Number(val)
+      if (isNaN(num)) return false
+      return num >= 0 && num <= 100
     },
-    default: 0
+    default: 0,
   },
   preventClose: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 const emit = defineEmits(['click'])
 
 const wrapper = ref()
 
 onMounted(() => {
-  // TheWrapper コンポーネントの内部以外のコントロールへの tabIndex を抑止する.
-  const myelements = Array.prototype.filter.call(
-    wrapper.value.getElementsByTagName('*'),
-    element => element.tabIndex === 0
-  )
-  // アプリケーションがdiv#appにマウントされていることが必須
-  const rootElement = document.getElementById('app')
-
-  if (myelements.length > 0) {
-    const documentelements = Array.prototype.filter.call(
-      rootElement.getElementsByTagName('*'),
-      element => element.tabIndex === 0
-    )
-    documentelements.forEach(element => {
-      if (Array.prototype.indexOf.call(myelements, element) === -1) {
-        element.tabIndex = -2
-      }
-    })
+  // Alphaの設定
+  if (props.alpha >= 0) {
+    wrapper.value.style.background = 'rgb(0 0 0 /' + String(Number(props.alpha) / 100) + ')'
   } else {
-    // TheWrapper コンポーネントが空っぽの場合はドキュメントの tabIndex を全部抑止
-    Array.prototype.filter.call(
-      rootElement.getElementsByTagName('*'),
-      element => element.tabIndex === 0
-    )
-      .forEach(element => { element.tabIndex = -2 })
+    wrapper.value.style.background = 'transparent'
   }
+
+  wrapper.value.showModal()
 
   // beforeUnloadの抑止をつける
   if (props.preventClose) {
@@ -55,45 +39,44 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  document.getElementsByTagName('html')[0].style.overflowY = 'auto'
-
   // beforeUnloadの抑止を終了
   if (props.preventClose) {
     window.removeEventListener('beforeunload', beforUnloadListener)
   }
-  // tabIndex の復帰
-  Array.prototype.filter.call(
-    document.getElementsByTagName('*'),
-    element => element.tabIndex === -2
-  )
-    .forEach(element => { element.tabIndex = 0 })
+
+  wrapper.value.close()
 })
 
-const wrapperStyle = computed(() => { return { 'background-color': 'rgba(0,0,0,' + props.alpha / 100 + ')' } })
-
+// beforeUnloadの抑止用イベントリスナー
 const beforUnloadListener = (event) => {
   event.preventDefault()
   event.returnValue = ''
   return false
 }
-function click () {
+
+// コンテンツ外のクリックイベント
+function click() {
   emit('click')
 }
 </script>
 
 <template>
-  <div class="thewrapper" :style="wrapperStyle" @click="click" ref="wrapper">
-  <slot></slot>
-  </div>
+  <dialog class="modalwrapper" @click="click" ref="wrapper">
+    <slot></slot>
+  </dialog>
 </template>
 
 <style lang="sass">
-div.thewrapper
+dialog.modalwrapper
+  border: none
+  padding: 0
+  margin: 0
   position: fixed
-  z-index: +10
   left: 0
   top: 0
   width: 100%
   height: 100%
-  overflow: auto
+
+dialog.modalwrapper::backdrop
+  background: transparent
 </style>
