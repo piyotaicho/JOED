@@ -1,20 +1,17 @@
 <template>
   <TheWrapper alpha="10">
     <EditSection @commit="CommitChanges" @discard="GoBack">
-      <ThreePaneSelections
-        Pane3Title="実施手術の候補"
-        v-model:Pane1="category"
-        :Pane1Items="Categories"
-        @pane1change="CategoryIsChanged()"
-        v-model:Pane2="target"
-        :Pane2Items="TargetOrgans"
-        @pane2change="SetCandidateItemsBySelection()"
-        v-model:Pane3="selectedItemText"
-        :Pane3Items="candidates"
-        @pane3change="OnCandidateSelected()"
-        @pane3dblclick="CommitChanges()"
-        ref="paneSection"
-      />
+      <div class="flex-content" ref="paneSection">
+        <div class="w20 selectionbox">
+          <SelectPane title="カテゴリ" v-model:value="category" :items="categorySelections" />
+        </div>
+        <div class="w20 selectionbox">
+          <SelectPane title="対象臓器" v-model:value="target" :items="targetSelections" />
+        </div>
+        <div class="w60 selectionbox">
+          <SelectPane title="実施手術の候補" v-model:value="selectedItem" :items="candidates" @dblclick="CommitChanges()" />
+        </div>
+      </div>
 
       <!-- 追加情報セクション -->
       <DescriptionSection
@@ -60,14 +57,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, nextTick, onMounted } from 'vue'
+import { ref, reactive, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Master from '@/modules/Masters/ProcedureMaster'
 import * as Popups from '@/modules/Popups'
 
 import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 import EditSection from '@/components/Molecules/EditSection.vue'
-import ThreePaneSelections from '@/components/Molecules/ThreePaneSelections.vue'
+import SelectPane from '@/components/Molecules/SelectPane.vue'
 import DescriptionSection from '@/components/Molecules/DescriptionSection.vue'
 import FreewordSection from '@/components/Molecules/EditSectionFreeword.vue'
 
@@ -93,10 +90,16 @@ const paneSection = ref()
 const freewordSection = ref()
 
 const category = ref('')
+const categorySelections = computed(() => ProceduresMaster.Categories())
+
 const target = ref('')
+const targetSelections = computed(() => ProceduresMaster.Targets(category.value))
+
 const candidates = ref([])
-const selectedItemText = ref('')
+const selectedItem = ref('')
 const freewordText = ref('')
+
+const UserEditingAllowed = computed(() => !!category.value && !selectedItem.value)
 
 const description = reactive({
   Title: '',
@@ -113,14 +116,8 @@ const additionalProcedure = reactive({
   Value: []
 })
 
-const Categories = computed(() => ProceduresMaster.Categories())
-
-const TargetOrgans = computed(() => ProceduresMaster.Targets(category.value))
-
-const UserEditingAllowed = computed(() => !!category.value && !selectedItemText.value)
-
 const ClearSelectedEntry = async () => {
-  selectedItemText.value = ''
+  selectedItem.value = ''
   setDescription(undefined)
   additionalProcedure.Title = ''
   setDescription(
@@ -129,22 +126,37 @@ const ClearSelectedEntry = async () => {
   )
 }
 
-const CategoryIsChanged = async () => {
+watch(category, async () => {
+  // カテゴリが変更されたら現在の入力は全部クリア
+  target.value = ''
+  selectedItem.value = ''
   freewordText.value = ''
-  candidates.value.splice(0)
-  await ClearSelectedEntry()
+  setDescription(undefined)
+  additionalProcedure.Title = ''
+  setDescription(
+    undefined,
+    additionalProcedure
+  )
 
-  // 対象臓器が1つだけのときはそれを選択する
-  if (TargetOrgans.value.length === 1) {
-    target.value = TargetOrgans.value[0]
-    await nextTick()
+  if (candidates.value.length > 0) {
+    candidates.value.splice(0)
+  }
 
-    SetCandidateItemsBySelection()
-  } else {
-    target.value = ''
+  // computedをまつ
+  await nextTick()
+
+  // targetSelectionが一つだけの時はそれを選択
+  if (targetSelections.value.length === 1) {
+    target.value = targetSelections.value[0]
     await nextTick()
   }
-}
+})
+
+watch(target, () => {
+  if (target.value !== '') {
+    SetCandidateItemsBySelection()
+  }
+})
 
 const SetCandidateItemsBySelection = async () => {
   candidates.value = ProceduresMaster.Items(
@@ -169,9 +181,9 @@ const SetCandidateItemsByFreeword = async () => {
 }
 
 const OnCandidateSelected = async () => {
-  if (selectedItemText.value) {
+  if (selectedItem.value) {
     const masterItem = ProceduresMaster.getItem(
-      selectedItemText.value,
+      selectedItem.value,
       category.value,
       target.value,
       props.year
@@ -186,24 +198,25 @@ const setDescription = async (item, descriptionObj = description, splicedefault 
   descriptionObj.Value.splice(0)
   descriptionObj.Options.splice(0)
 
-  if (Master.getDescriptionObject(item) === undefined) {
-    // descriptionの設定を初期化
+  const masterItem = Master.getDescriptionObject(item)
+  if (item === undefined || masterItem === undefined) {
+    // descriptionObjectの設定を初期化
     descriptionObj.Title = ''
     descriptionObj.SelectionMode = 'one'
-
-    await nextTick()
     return
   }
 
   // descriptionの設定をマスタからコピー
-  descriptionObj.Title = Master.getDescriptionTitle(item)
-  descriptionObj.SelectionMode = Master.getDescriptionSelectionMode(item)
+  descriptionObj.Title = masterItem?.Text || ''
+  descriptionObj.SelectionMode = masterItem?.Selection || 'one'
+  descriptionObj.Options.splice(0, 0, ...(masterItem?.Values || []))
 
-  // 単独入力不可項目の対応
+  // 単独入力不可項目の対応 - デフォルト項目は除外する
   if (splicedefault) {
-    descriptionObj.Options.splice(0, 0, ...Master.getDescriptionOptions(item).filter(option => option.slice(-1) !== '$'))
-  } else {
-    descriptionObj.Options.splice(0, 0, ...Master.getDescriptionOptions(item))
+    const spliceIndex = descriptionObj.Options.findIndex(option => option.slice(-1) === '$')
+    if (spliceIndex !== -1) {
+      descriptionObj.Options.splice(spliceIndex, 1)
+    }
   }
   await nextTick()
 }
@@ -238,11 +251,11 @@ const setAdditionalProcedure = async (item) => {
 const CommitChanges = async () => {
   const temporaryItem = {}
 
-  if (selectedItemText.value !== '') {
+  if (selectedItem.value !== '') {
     // 選択された内容が最優先
 
     // 選択内容を保存
-    temporaryItem.Text = selectedItemText.value
+    temporaryItem.Text = selectedItem.value
     temporaryItem.Chain = [
       category.value,
       ...(target.value !== '' ? [target.value] : [])
@@ -372,11 +385,11 @@ onMounted(async () => {
     if (text !== '') {
       if (candidates.value.includes(text)) {
       // 選択肢に該当項目がある場合選択する
-        selectedItemText.value = text
+        selectedItem.value = text
         freewordText.value = ''
       } else {
         // 選択肢に入力されている項目がなければ自由入力に展開する
-        selectedItemText.value = ''
+        selectedItem.value = ''
         freewordText.value = text
       }
       nextTick()
@@ -384,7 +397,7 @@ onMounted(async () => {
   }
 
   // 再編集で術式の選択がある場合DOMの初期化が必要
-  if (selectedItemText.value !== '') {
+  if (selectedItem.value !== '') {
     // 選択肢に応じたDOM構成を展開
     await OnCandidateSelected()
 
