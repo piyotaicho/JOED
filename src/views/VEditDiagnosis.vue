@@ -9,7 +9,7 @@
           <SelectPane title="対象臓器" v-model:value="target" :items="targetSelections" />
         </div>
         <div class="w60 selectionbox">
-          <SelectPane title="手術診断の候補" v-model:value="selectedItem" :items="candidates" />
+          <SelectPane title="手術診断の候補" v-model:value="selectedItem" :items="candidates" @dblclick="CommitChanges()" />
         </div>
       </div>
 
@@ -80,9 +80,10 @@ watch(category, async () => {
   // computedをまつ
   await nextTick()
 
-  // targetSelectionが一つだけの時はソレを選択
+  // targetSelectionが一つだけの時はそれを選択
   if (targetSelections.value.length === 1) {
     target.value = targetSelections.value[0]
+    await nextTick()
   }
 })
 
@@ -91,12 +92,6 @@ watch(target, () => {
     SetCandidateItemsBySelection()
   }
 })
-
-// watch(selectedItem, () => {
-//   if (selectedItem.value !== '') {
-//     CommitChanges()
-//   }
-// })
 
 const SetCandidateItemsBySelection = async () => {
   candidates.value = DiagnosesMaster.Items(category.value, target.value, props.year).map(
