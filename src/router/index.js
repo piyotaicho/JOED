@@ -27,7 +27,7 @@ const routes = [
         path: 'diagnosis',
         component: () => import('@/views/VEditDiagnosis.vue'),
         props: route => ({
-          ItemIndex: route.query.ItemIndex,
+          ItemIndex: parseInt(route.query.ItemIndex),
           ItemValue: route.query.ItemValue,
           year: route.query.year
         })
@@ -37,7 +37,7 @@ const routes = [
         path: 'procedure',
         component: () => import('@/views/VEditProcedure.vue'),
         props: route => ({
-          ItemIndex: route.query.ItemIndex,
+          ItemIndex: parseInt(route.query.ItemIndex),
           ItemValue: route.query.ItemValue,
           year: route.query.year
         })
@@ -47,7 +47,7 @@ const routes = [
         path: 'AE',
         component: () => import('@/views/VEditAE.vue'),
         props: route => ({
-          ItemIndex: route.query.ItemIndex,
+          ItemIndex: parseInt(route.query.ItemIndex),
           ItemValue: route.query.ItemValue,
           year: route.query.year
         })
