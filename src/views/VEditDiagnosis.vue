@@ -1,17 +1,6 @@
 <template>
   <TheWrapper alpha="10">
     <EditSection @commit="CommitChanges" @discard="GoBack">
-      <!-- <ThreePaneSelections
-        Pane3Title="手術診断の候補"
-        v-model:Pane1="category" :Pane1Items="Categories"
-        @pane1change="CategoryIsChanged()"
-        v-model:Pane2="target" :Pane2Items="TargetOrgans"
-        @pane2change="SetCandidateItemsBySelection()"
-        v-model:Pane3="selectedItem" :Pane3Items="candidates"
-        @pane3dblclick="CommitChanges()"
-        ref="paneSection"
-      /> -->
-
       <div class="flex-content" ref="paneSection">
         <div class="w20 selectionbox">
           <SelectPane title="カテゴリ" v-model:value="category" :items="categorySelections" />
@@ -187,6 +176,7 @@ onMounted(async () => {
     // カテゴリ・対象の解釈
     const dummyChain = [...(item?.Chain || []), ' ', ' ']
     category.value = dummyChain[0]
+    await nextTick()
     target.value = dummyChain[1]
     await nextTick()
 

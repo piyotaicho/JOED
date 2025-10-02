@@ -26,19 +26,31 @@ const routes = [
         name: 'diagnosis',
         path: 'diagnosis',
         component: () => import('@/views/VEditDiagnosis.vue'),
-        props: true
+        props: route => ({
+          ItemIndex: route.query.ItemIndex,
+          ItemValue: route.query.ItemValue,
+          year: route.query.year
+        })
       },
       {
         name: 'procedure',
         path: 'procedure',
         component: () => import('@/views/VEditProcedure.vue'),
-        props: true
+        props: route => ({
+          ItemIndex: route.query.ItemIndex,
+          ItemValue: route.query.ItemValue,
+          year: route.query.year
+        })
       },
       {
         name: 'AE',
         path: 'AE',
         component: () => import('@/views/VEditAE.vue'),
-        props: true
+        props: route => ({
+          ItemIndex: route.query.ItemIndex,
+          ItemValue: route.query.ItemValue,
+          year: route.query.year
+        })
       }
     ]
   },
