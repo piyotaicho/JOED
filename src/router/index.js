@@ -57,23 +57,25 @@ const routes = [
   {
     name: 'utilities',
     path: '/utilities',
-    component: () => import('@/views/VUtilities.vue'), // ViewUtilites,
+    component: () => import('@/views/VUtilities.vue'),
     meta: { requireLogin: true },
     children: [
       {
         name: 'export',
-        path: 'export'
+        path: 'export',
+        component: () => import('@/views/VUtilities.vue'),
       },
       {
         name: 'import',
-        path: 'import'
+        path: 'import',
+        component: () => import('@/views/VUtilities.vue'),
       }
     ]
   },
   {
     name: 'settings',
     path: '/settings',
-    component: () => import('@/views/VSettings.vue'), // VSettings,
+    component: () => import('@/views/VSettings.vue'),
     meta: { requireLogin: true }
   }
 ]
