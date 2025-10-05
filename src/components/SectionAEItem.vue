@@ -10,7 +10,7 @@
         {{ label }}
       </span>
       <span class="w20">( Grade : {{item.Grade}} )</span>
-      <el-icon class="edit-button" @click="editItem" v-if="props.editable"><Edit /></el-icon>
+      <el-icon class="edit-button" @click="editItem"><Edit /></el-icon>
       <el-icon class="remove-button" @click="removeItem"><Delete /></el-icon>
     </div>
   </el-tooltip>

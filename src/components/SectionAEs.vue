@@ -5,7 +5,7 @@ import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
 import SectionAEItem from '@/components/SectionAEItem.vue'
 
 const props = defineProps({
-  container: {
+  modelValue: {
     type: Array,
     required: true
   },
@@ -18,7 +18,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:optionValue', 'addnewitem', 'edititem', 'removeitem'])
 
-const items = computed(() => props.container)
+const items = computed(() => props.modelValue)
 
 const option = computed({
   get: () => props.optionValue,
@@ -35,8 +35,8 @@ const removeItem = (index) => emit('removeitem', index)
 
 <template>
   <SectionBlock title="合併症"
+    v-model="items"
     :draggable="false"
-    :container="items"
     @addnewitem='addNewItem()'>
     <template #beforeitemlist>
       <LabeledCheckbox v-model="option" id="noAEcheckbox">合併症なし</LabeledCheckbox>

@@ -30,7 +30,7 @@
 
       <SectionAEs
         ref="sectionAEs"
-        :container="CaseData.AEs"
+        v-model="CaseData.AEs"
         v-model:optionValue="isNoAEs"
         @addnewitem="EditSection('AE')"
         @edititem="EditSection('AE', $event)"
