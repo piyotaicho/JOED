@@ -7,7 +7,7 @@
           <span>合併症の分類</span>
         </div>
         <div class="w80">
-          <select v-model="Category" @change="categoryChanged()" ref="firstelement">
+          <select ref="firstelement" v-model="Category" @change="categoryChanged()">
             <option value="" disabled style="display:none;">リストから選択</option>
             <template v-for="item of master.Category" :key="item.Value">
               <option :value="item.Value"> {{item.Text}} </option>
@@ -63,7 +63,7 @@
           <span>転帰</span>
         </div>
         <div class="w80">
-          <div v-show="showByGrading(0)"><MoreFilled style="transform: rotate(90deg)"/></div>
+          <div v-show="showByGrading(0)"><el-icon style="transform: rotate(90deg)"><MoreFilled/></el-icon></div>
           <template v-for="(course, courseIndex) in master.Courses" :key="courseIndex" >
             <!-- eslint-disable-next-line vue/no-v-for-template-key-on-child -->
             <div v-show="showByGrading(course.Min)">
@@ -109,6 +109,10 @@ const props = defineProps({
 })
 const emit = defineEmits(['data-upsert'])
 
+// マスタは non-reactive (props.yearがこのコンポーネント実行中に変わることはない)
+const master = new AEmaster(props.year)
+
+// フォーム入力項目
 const Category = ref('')
 const AE = reactive({
   Title: [],
@@ -118,79 +122,80 @@ const AE = reactive({
   Grade: '',
   Course: []
 })
+// 出血量不明フラグ
 const inaccurateBloodCount = ref(false)
 
 const firstelement = ref()
 
-// マスタは non-reactive (props.yearがこのコンポーネント実行中に変わることはない)
-const master = new AEmaster(props.year)
-
 // 規定値から省かれた値があるときに通知する為のフラグ
 let irregularItemValue = false
 
-// 規定値が与えられた場合の初期値の展開
+// 規定値が与えられた場合mount前に値を展開する
 if (props.ItemValue) {
   try {
-    const item = JSON.parse(props.ItemValue)
-    Category.value = item.Category
-    if (Category.value === '') {
+    const payload = JSON.parse(props.ItemValue)
+    // カテゴリ
+    if (master.Category.map(element => element.Value).indexOf(payload.Category) === -1) {
       throw new Error()
     }
+    Category.value = payload.Category
 
+    // コンポーネント設定の取得
     const components = master.Category.find(element => element.Value === Category.value)?.Components || []
     if (components.length === 0) {
       throw new TypeError()
     }
 
-    for (const key in AE) {
-      if (item[key] !== undefined) {
-        // Course はGradeにあわせて変化するのであとで別に処理する
-        if (key === 'Course') {
-          continue
-        }
+    // コンポーネントの値の展開
+    for (const key in ['Title', 'Cause', 'Location']) {
+      if (payload[key] === undefined) {
+        continue
+      }
 
-        // Grade は値に問題が無ければそのままコピー
-        if (key === 'Grade') {
-          if (/([1245]|3[ab])/.test(item.Grade)) {
-            AE.Grade = item.Grade
-          } else {
-            irregularItemValue = true
-          }
-          continue
-        }
+      const masteritems = components
+        .map(component => master.Components[component])
+        .filter(component => component.Element === key)
+        .map(component => component.Items)
+        .flat(3)
+        .map(item => typeof item === 'string' ? item : item.Value)
 
-        // BloodCount は不明を解釈してコピー
-        if (key === 'BloodCount') {
-          if (item.BloodCount === '不明') {
-            inaccurateBloodCount.value = true
-          } else {
-            inaccurateBloodCount.value = false
-          }
-          AE.BloodCount = item.BloodCount
-          continue
-        }
-
-        // そのほかコンポーネントのマスタ選択肢を展開
-        const masteritems = components
-          .map(component => master.Components[component])
-          .filter(component => component.Element === key)
-          .map(component => component.Items)
-          .flat(3)
-          .map(item => typeof item === 'string' ? item : item.Value)
-
-        // マスタの選択肢に含まれるものだけを値として採用
-        for (const value of item[key]) {
-          if (masteritems.includes(value)) {
-            AE[key].push(value)
-          } else {
-            irregularItemValue = true
-          }
+      // マスタの選択肢に含まれるものだけを値として採用
+      for (const value of item[key]) {
+        if (masteritems.includes(value)) {
+          AE[key].push(value)
+        } else {
+          irregularItemValue = true
         }
       }
     }
 
+    // 出血は不明を解釈してコピー
+    if (payload?.BloodCount) {
+      if (Category.value !== '出血') {
+        // 出血以外のカテゴリで出血量が指定されていたら不正入力値として扱う
+        irregularItemValue = true
+        AE.BloodCount = ''
+      } else {
+        if (payload.BloodCount === '不明') {
+          inaccurateBloodCount.value = true
+          AE.BloodCount = ''
+        } else {
+          inaccurateBloodCount.value = false
+          AE.BloodCount = payload.BloodCount
+        }
+      }
+    }
+
+    // Gradeのコピー
+    if (payload?.Grade && /([1245]|3[ab])/.test(payload.Grade)) {
+      AE.Grade = payload.Grade
+    } else {
+      irregularItemValue = true
+      AE.Grade = ''
+    }
+
     // Courseを処理(Gradeの入力がなければ展開しない)
-    if (item?.Course !== undefined && AE.Grade !== '') {
+    if (payload?.Course !== undefined && AE.Grade !== '') {
       // マスタの転帰選択肢を展開
       const courseitems = master.Courses
         .filter(element => element.Max <= Number(AE.Grade[0]) || element.Min <= Number(AE.Grade[0]))
@@ -198,7 +203,7 @@ if (props.ItemValue) {
         .flat(2)
         .map(item => typeof item === 'object' ? item.Value : item)
       // マスタの転帰選択肢に含まれるものだけを値として採用
-      for (const value of item.Course) {
+      for (const value of payload.Course) {
         if (courseitems.includes(value)) {
           AE.Course.push(value)
         } else {
