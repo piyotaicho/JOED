@@ -39,7 +39,7 @@ const TabClick = (tab) => {
     <el-tabs v-model="selectedTab" tab-position="left" @tab-click="TabClick">
       <el-tab-pane name="list">
         <template v-slot:label>
-          <span><DArrowLeft /> 戻る</span>
+          <DArrowLeft style="height: 1.4rem; padding-right: 0.6rem;"/> <span>戻る</span>
         </template>
       </el-tab-pane>
       <el-tab-pane label="施設情報の設定" name="institute">
