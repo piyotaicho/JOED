@@ -18,6 +18,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'changed'])
+
 // non-reactive value
 const webApp = !process.env.VITE_APP_ELECTRON
 const collapseNames = ['view', 'search',
@@ -66,14 +67,15 @@ const UpdateView = () => {
     size="26rem"
     direction="ltr"
     :with-header="false"
-    :visible="props.visible"
+    :model-value="props.visible"
     :destroy-on-close="true"
     @open="DrawerOpened"
-    @close="CloseDrawer">
+    @close="CloseDrawer"
+    >
     <div class="drawer-content" @keydown.ctrl.w.capture="CloseDrawer()">
       <ListDashboard @close="CloseDrawer"/>
 
-      <el-collapse accordion @change="CollapseChanged" :value="view">
+      <el-collapse accordion @change="CollapseChanged" :model-value="view">
         <el-collapse-item title="表示の設定" name="view">
           <FilterAndSort @changed="UpdateView"/>
         </el-collapse-item>
@@ -85,8 +87,10 @@ const UpdateView = () => {
           <ListSearch @changed="UpdateView"/>
         </el-collapse-item>
 
-        <el-collapse-item title="データの処理" name="management" v-if="webApp"/>
-        <el-collapse-item title="環境設定" name="settings" v-if="webApp"/>
+        <template v-if="webApp">
+          <el-collapse-item title="データの処理" name="management"/>
+          <el-collapse-item title="環境設定" name="settings"/>
+        </template>
       </el-collapse>
     </div>
   </el-drawer>
@@ -95,8 +99,9 @@ const UpdateView = () => {
 <style lang="sass">
 // override element's styles
 .el-collapse-item__header
-  padding: 0 0 0 2rem
   font-size: 1.15rem !important
+  span
+    padding: 0 0 0 1.5rem
 .el-collapse-item__content
   padding: 0 2rem
   font-size: 1rem !important
@@ -132,4 +137,7 @@ div.menu-item-bottom
   height: 11rem
   overflow-y: scroll
   border: 2px solid var(--border-color-base)
+
+div:has(.drawer-content)
+  padding: 0
 </style>

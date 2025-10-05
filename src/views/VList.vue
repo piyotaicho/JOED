@@ -25,21 +25,36 @@ onMounted(() => {
   }
 })
 
-const showMenuDrawer = ref(false)
-
-const uids = computed(() => store.getters.PagedUids)
-
-const isShowStartupDialog = computed(() => store.getters['system/ShowStartupDialog'])
+const showStartupDialog = computed(() => store.getters['system/ShowStartupDialog'])
+const showDrawer = ref(false)
 
 // Element Plus infinite scroll用の状態管理
 const loading = ref(false)
 const noMore = computed(() => store.getters.PagedUidsRange >= store.getters.NumberOfCases)
 
+// リスト項目一覧
+const uids = computed(() => store.getters.PagedUids)
+
+// ハンドラー
+// ドロワーの開閉
+const openDrawer = () => { showDrawer.value = true }
+const closeDrawer = () => { showDrawer.value = false }
+
+// 新規症例の作成
 const createNewEntry = () => router.push({ name: 'edit', params: { uid: 0 } })
 
-const openDrawer = () => { showMenuDrawer.value = true }
-
-const closeDrawer = () => { showMenuDrawer.value = false }
+// リスト項目へのフォーカス移動
+const moveFocus = (offset) => {
+  const currentid = document.activeElement.id
+  if (!showDrawer.value && !showStartupDialog.value && currentid !== '') {
+    const moveto = uids.value[
+      uids.value.indexOf(Number(currentid.substring(3))) + offset
+    ]
+    if (moveto) {
+      document.getElementById('doc' + moveto).focus()
+    }
+  }
+}
 
 // Element Plus infinite scroll のハンドラー
 const loadMore = () => {
@@ -51,18 +66,6 @@ const loadMore = () => {
     store.commit('IncrementDocumentListRange')
     loading.value = false
   }, 100)
-}
-
-const moveFocus = (offset) => {
-  const currentid = document.activeElement.id
-  if (!showMenuDrawer.value && isShowStartupDialog.value && currentid !== '') {
-    const moveto = uids[
-      uids.value.indexOf(Number(currentid.substring(3))) + offset
-    ]
-    if (moveto) {
-      document.getElementById('doc' + moveto).focus()
-    }
-  }
 }
 </script>
 
@@ -80,27 +83,21 @@ const moveFocus = (offset) => {
       <DrawerButton class="open-drawer" tab-index="0" @click="openDrawer"/>
       <NewEntryButton class="list-new-entry" tab-index="0" @click="createNewEntry"/>
 
-      <ListDrawer :visible="showMenuDrawer" @close="closeDrawer"/>
+      <ListDrawer :visible="showDrawer" @close="closeDrawer"/>
 
       <template v-for="uid in uids" :key="uid">
         <CaseDocument :uid="uid"/>
       </template>
 
-      <!-- Element Plus Infinite Scroll用のローディング表示 -->
       <div v-if="loading" class="loading-container">
         <el-icon class="is-loading">
           <Loading />
         </el-icon>
         <span>読み込み中...</span>
       </div>
-
-      <!-- 全データロード完了表示（オプション） -->
-      <!-- <div v-if="noMore && uids.length > 0" class="no-more-container">
-        <span>すべてのデータを読み込みました</span>
-      </div> -->
     </div>
 
-    <WelcomeBanner v-if="isShowStartupDialog"/>
+    <WelcomeBanner v-if="showStartupDialog"/>
     <router-view></router-view>
   </div>
 </template>
