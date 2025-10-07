@@ -29,7 +29,7 @@
               <input type="text" v-model="AE.BloodCount" :disabled="inaccurateBloodCount" placeholder="出血量を入力してください"/> ml
             </div>
             <div>
-              <LabeledCheckbox :container="inaccurateBloodCount" @update:container="unknownBleedCountsChanged">出血量不明</LabeledCheckbox>
+              <LabeledCheckbox v-model="inaccurateBloodCount" @update:container="unknownBleedCountsChanged">出血量不明</LabeledCheckbox>
             </div>
           </div>
           </template>
@@ -70,7 +70,7 @@
               <el-divider class="AEgrading-divider" content-position="left">
                 {{course.Title}}
               </el-divider>
-              <EditAESelect v-model:value="AE.Course" :items="course.Items" />
+              <EditAESelect v-model="AE.Course" :items="course.Items" />
            </div>
           </template>
 
@@ -176,13 +176,8 @@ if (props.ItemValue) {
         irregularItemValue = true
         AE.BloodCount = ''
       } else {
-        if (payload.BloodCount === '不明') {
-          inaccurateBloodCount.value = true
-          AE.BloodCount = ''
-        } else {
-          inaccurateBloodCount.value = false
-          AE.BloodCount = payload.BloodCount
-        }
+        AE.BloodCount = payload.BloodCount
+        inaccurateBloodCount.value = payload.BloodCount === '不明'
       }
     }
 
@@ -263,7 +258,7 @@ const GoBack = () => {
 }
 
 const CommitChanges = async () => {
-  // 出血量を念のため半角数字にトリム
+  // 出血量を念のため半角数字にしてトリム
   if (AE.BloodCount !== '不明' && AE.BloodCount !== '') {
     AE.BloodCount = ZenToHanNumbers(AE.BloodCount.trim())
   }
