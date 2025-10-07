@@ -3,13 +3,13 @@
     <EditSection @commit="CommitChanges" @discard="GoBack">
       <div class="flex-content" ref="paneSection">
         <div class="w20 selectionbox">
-          <SelectPane title="カテゴリ" v-model:value="category" :items="categorySelections" />
+          <SelectPane title="カテゴリ" v-model="category" :items="categorySelections" />
         </div>
         <div class="w20 selectionbox">
-          <SelectPane title="対象臓器" v-model:value="target" :items="targetSelections" />
+          <SelectPane title="対象臓器" v-model="target" :items="targetSelections" />
         </div>
         <div class="w60 selectionbox">
-          <SelectPane title="手術診断の候補" v-model:value="selectedItem" :items="candidates" @dblclick="CommitChanges()" />
+          <SelectPane title="手術診断の候補" v-model="selectedItem" :items="candidates" @dblclick="CommitChanges()" />
         </div>
       </div>
 
@@ -67,17 +67,54 @@ const candidates = ref([])
 const UserEditingAllowed = computed(() => !!category.value && !selectedItem.value)
 const freewordText = ref('')
 
+onMounted(async () => {
+  const item = JSON.parse(props.ItemValue || '{}')
+  const selectElements = paneSection.value.getElementsByTagName('SELECT')
+
+  if (props.ItemIndex > -1) {
+    // ItemIndex != -1 の場合は新規ではなく再編集
+
+    // カテゴリ・対象の解釈
+    if (item?.Chain[0] !== undefined) {
+      category.value = item.Chain[0]
+      await nextTick()
+      if (item.Chain[1] !== undefined) {
+        target.value = item.Chain[1]
+        await nextTick()
+      }
+    }
+
+    // カテゴリとあれば対象に応じた選択リストの生成
+    await SetCandidateItemsBySelection()
+
+    if (item?.Text && candidates.value.includes(item.Text)) {
+      // 選択肢に該当項目そのものがある場合選択する
+      selectedItem.value = item.Text
+      freewordText.value = ''
+      await nextTick()
+      if (selectElements && selectElements.length >= 3) {
+        selectElements[2].focus()
+      }
+    } else {
+      // 選択肢に入力されている項目がなければ自由入力に展開する
+      selectedItem.value = ''
+      freewordText.value = item.Text
+      await nextTick()
+      freewordSection.value.open()
+    }
+  } else {
+    // 新規編集の場合はカテゴリにフォーカスする
+    if (selectElements && selectElements.length >= 1) {
+      selectElements[0].focus()
+    }
+  }
+})
+
 watch(category, async () => {
   // カテゴリが変更されたら現在の入力は全部クリア
   target.value = ''
   selectedItem.value = ''
   freewordText.value = ''
-
-  if (candidates.value.length > 0) {
-    candidates.value.splice(0)
-  }
-
-  // computedをまつ
   await nextTick()
 
   // targetSelectionが一つだけの時はそれを選択
@@ -85,6 +122,7 @@ watch(category, async () => {
     target.value = targetSelections.value[0]
     await nextTick()
   }
+  SetCandidateItemsBySelection()
 })
 
 watch(target, () => {
@@ -160,44 +198,4 @@ const CommitChanges = async () => {
 }
 
 const GoBack = () => router.replace('./')
-
-onMounted(async () => {
-  const item = JSON.parse(props.ItemValue || '{}')
-  const selectElements = paneSection.value.getElementsByTagName('SELECT')
-
-  if (props.ItemIndex > -1) {
-    // ItemIndex != -1 の場合は新規ではなく再編集
-
-    // カテゴリ・対象の解釈
-    const dummyChain = [...(item?.Chain || []), ' ', ' ']
-    category.value = dummyChain[0]
-    await nextTick()
-    target.value = dummyChain[1]
-    await nextTick()
-
-    // カテゴリとあれば対象に応じた選択リストの生成
-    await SetCandidateItemsBySelection()
-
-    if (item?.Text && candidates.value.includes(item.Text)) {
-      // 選択肢に該当項目そのものがある場合選択する
-      selectedItem.value = item.Text
-      freewordText.value = ''
-      await nextTick()
-      if (selectElements && selectElements.length >= 3) {
-        selectElements[2].focus()
-      }
-    } else {
-      // 選択肢に入力されている項目がなければ自由入力に展開する
-      selectedItem.value = ''
-      freewordText.value = item.Text
-      await nextTick()
-      freewordSection.value.open()
-    }
-  } else {
-    // 新規編集の場合はカテゴリにフォーカスする
-    if (selectElements && selectElements.length >= 1) {
-      selectElements[0].focus()
-    }
-  }
-})
 </script>

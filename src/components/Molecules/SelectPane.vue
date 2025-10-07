@@ -2,10 +2,10 @@
 import { ref, computed } from 'vue'
 
 const props = defineProps({
-  value: {
-    type: String,
-    default: null,
-  },
+  // value: {
+  //   type: String,
+  //   default: null,
+  // },
   title: {
     type: String,
     default: '項目',
@@ -25,15 +25,19 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:value', 'change', 'dblclick', 'keypress-enter'])
+const modelValue = defineModel({
+  type: String,
+  default: null
+})
+const emit = defineEmits(['change', 'dblclick', 'keypress-enter'])
 
 const selectElement = ref()
 
 const paneValue = computed({
-  get: () => props.value,
+  get: () => modelValue.value,
   set: (value) => {
     emit('change', value)
-    emit('update:value', value)
+    modelValue.value = value
   },
 })
 

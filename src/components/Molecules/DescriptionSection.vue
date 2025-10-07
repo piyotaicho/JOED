@@ -12,14 +12,11 @@ const props = defineProps({
   },
   options: {
     type: Array
-  },
-  value: {
-    type: Array
   }
 })
-
-const emit = defineEmits(['update:value'])
-
+const modelValue = defineModel({
+  type: Array
+})
 const title = computed(() => props?.title || '')
 
 const selectionMode = computed(() => props?.selectionMode || 'one')
@@ -27,7 +24,7 @@ const selectionMode = computed(() => props?.selectionMode || 'one')
 const options = computed(() => props?.options || [])
 
 const value = computed({
-  get: () => props.value || [],
+  get: () => modelValue.value || [],
   set: (value) => {
     const newvalueArray = []
     // 単一のvalue / selectから
@@ -46,8 +43,7 @@ const value = computed({
         newvalueArray.splice(0, 0, ...filtedValue)
       }
     }
-
-    emit('update:value', newvalueArray)
+    modelValue.value = newvalueArray
   }
 })
 
