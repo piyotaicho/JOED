@@ -29,7 +29,7 @@
               <input type="text" v-model="AE.BloodCount" :disabled="inaccurateBloodCount" placeholder="出血量を入力してください"/> ml
             </div>
             <div>
-              <LabeledCheckbox v-model="inaccurateBloodCount" @update:container="unknownBleedCountsChanged">出血量不明</LabeledCheckbox>
+              <LabeledCheckbox v-model="inaccurateBloodCount">出血量不明</LabeledCheckbox>
             </div>
           </div>
           </template>
@@ -39,7 +39,7 @@
               <span>{{master.Components[component].Title}}</span>
             </div>
             <div class="w80 AEcheckboxes">
-              <EditAESelect v-model:value="AE[master.Components[component].Element]" :items="master.Components[component].Items" />
+              <EditAESelect v-model="AE[master.Components[component].Element]" :items="master.Components[component].Items" />
             </div>
           </template>
         </div>
@@ -81,7 +81,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed, onMounted } from 'vue'
+import { reactive, ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 import EditSection from '@/components/Molecules/EditSection.vue'
@@ -140,18 +140,19 @@ if (props.ItemValue) {
     }
     Category.value = payload.Category
 
-    // コンポーネント設定の取得
+    // カテゴリのコンポーネント設定の取得
     const components = master.Category.find(element => element.Value === Category.value)?.Components || []
     if (components.length === 0) {
       throw new TypeError()
     }
 
     // コンポーネントの値の展開
-    for (const key in ['Title', 'Cause', 'Location']) {
+    for (const key of ['Title', 'Cause', 'Location']) {
       if (payload[key] === undefined) {
         continue
       }
 
+      // マスタから選択肢を抽出
       const masteritems = components
         .map(component => master.Components[component])
         .filter(component => component.Element === key)
@@ -160,7 +161,7 @@ if (props.ItemValue) {
         .map(item => typeof item === 'string' ? item : item.Value)
 
       // マスタの選択肢に含まれるものだけを値として採用
-      for (const value of item[key]) {
+      for (const value of payload[key]) {
         if (masteritems.includes(value)) {
           AE[key].push(value)
         } else {
@@ -241,7 +242,7 @@ const categoryChanged = () => {
   AE.BloodCount = ''
 }
 
-const unknownBleedCountsChanged = (value) => {
+watch(inaccurateBloodCount, (value) => {
   if (value) {
     inaccurateBloodCount.value = true
     AE.BloodCount = '不明'
@@ -251,16 +252,20 @@ const unknownBleedCountsChanged = (value) => {
       AE.BloodCount = ''
     }
   }
-}
+})
 
 const GoBack = () => {
   router.replace('./')
 }
 
 const CommitChanges = async () => {
-  // 出血量を念のため半角数字にしてトリム
-  if (AE.BloodCount !== '不明' && AE.BloodCount !== '') {
-    AE.BloodCount = ZenToHanNumbers(AE.BloodCount.trim())
+  if (inaccurateBloodCount.value === true) {
+    AE.BloodCount = '不明'
+  } else {
+    if (AE.BloodCount !== '不明' && AE.BloodCount !== '') {
+      // 出血量は念のため半角数字にしてトリム
+      AE.BloodCount = ZenToHanNumbers(AE.BloodCount.trim())
+    }
   }
 
   // ドキュメントの雛型を作成

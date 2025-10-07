@@ -34,9 +34,9 @@ const item = computed(() => JSON.parse(props.item))
 const label = computed(() => {
   if (item.value.Category === '出血') {
     if (item.value.BloodCount === '不明') {
-      return '出血量不明'
+      return ' … 出血量不明'
     } else {
-      return item.value.BloodCount + 'ml'
+      return ' ' + item.value.BloodCount + 'ml'
     }
   } else {
     const labelSource = []
