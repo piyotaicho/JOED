@@ -6,11 +6,9 @@ const props = defineProps({
   item: {
     type: String,
     required: true
-  },
-  value: {}
+  }
 })
-
-const emit = defineEmits(['update:value'])
+const modelValue = defineModel()
 
 const parsedItem = computed(() => {
   try {
@@ -31,8 +29,8 @@ const itemvalue = computed(() => (typeof parsedItem.value === 'object')
 )
 
 const checkboxvalue = computed({
-  get: () => props.value,
-  set: (newvalue) => emit('update:value', newvalue)
+  get: () => modelValue.value,
+  set: (newvalue) => { modelValue.value = newvalue }
 })
 </script>
 
