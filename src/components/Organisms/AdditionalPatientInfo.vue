@@ -11,15 +11,6 @@ const store = useStore()
 
 // Properties
 const props = defineProps({
-  Denial: {
-    type: Boolean
-  },
-  JSOGId: {
-    type: String
-  },
-  NCDId: {
-    type: String
-  },
   DateOfProcedure: {
     type: String
   },
@@ -28,7 +19,17 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:denial', 'update:JSOGId', 'update:NCDId'])
+const Denial = defineModel('Denial', {
+  default: false
+})
+
+const JSOGId = defineModel('JSOGId', {
+  default: ''
+})
+
+const NCDId = defineModel('NCDId', {
+  default: ''
+})
 
 const switchField = ref()
 onMounted(() => {
@@ -37,13 +38,12 @@ onMounted(() => {
   el.style.paddingTop = '0.33rem'
 })
 
-const Denial = computed({
-  get: () => props?.Denial || false,
-  set: (newValue) => emit('update:denial', newValue)
-})
+// 編集フラグ
+const editJSOGId = computed(() => store.getters['system/EditJSOGId'])
+const editNCDId = computed(() => store.getters['system/EditNCDId'])
 
 const hashString = computed(() => {
-  if (props?.Denial && props.DateOfProcedure && props.PatientId) {
+  if (Denial.value && props.DateOfProcedure && props.PatientId) {
     return store.getters['system/generateHash'](
       JSON.stringify({
         DateOfProcedure: props.DateOfProcedure,
@@ -55,17 +55,7 @@ const hashString = computed(() => {
     return undefined
   }
 })
-const editJSOGId = computed(() => store.getters['system/EditJSOGId'])
-const JSOGId = computed({
-  get: () => props?.JSOGId || '',
-  set: (newValue) => emit('update:JSOGId', newValue)
-})
 
-const editNCDId = computed(() => store.getters['system/EditNCDId'])
-const NCDId = computed({
-  get: () => props?.NCDId || '',
-  set: (newValue) => emit('update:NCDId', newValue)
-})
 
 const tooltip = computed(() => {
   let message = ''
@@ -118,7 +108,7 @@ const focusInput = () => {
       <!-- popover content-->
       <div class="additional-patient-info-panel">
           <InputSwitchField
-            v-model:value="Denial"
+            v-model="Denial"
             title="登録拒否"
             :options="['なし', 'あり', false, true, 'var(--color-primary)', 'var(--color-danger)']"
             style="display: flex; flex-direction: row; height: 2.4rem; div.field { border: 1px solid red; };"

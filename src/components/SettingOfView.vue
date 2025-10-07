@@ -47,11 +47,11 @@ async function commitSettings () {
         症例表示画面の設定
       </div></div>
       <InputSwitchField
-        v-model:value="data.showStartupDialog"
+        v-model="data.showStartupDialog"
         title="リスト表示の起動時メッセージの表示"
         :options="{'しない': false, 'する': true}" />
       <InputSwitchField
-        v-model:value="data.revertView"
+        v-model="data.revertView"
         title="リスト表示内容の規定値を初期設定に戻す"
         :options="{'しない': false, 'する': true}" />
 
@@ -59,11 +59,11 @@ async function commitSettings () {
         症例編集画面の設定
       </div></div>
       <InputSwitchField
-        v-model:value="data.editJSOGId"
+        v-model="data.editJSOGId"
         title="日産婦腫瘍登録 症例番号の入力"
         :options="{'しない': false, 'する': true}" />
       <InputSwitchField
-        v-model:value="data.editNCDId"
+        v-model="data.editNCDId"
         title="ロボット支援下手術 NCD症例識別コードの入力"
         :options="{'しない': false, 'する': true}" />
     </div>

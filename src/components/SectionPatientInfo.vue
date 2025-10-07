@@ -6,41 +6,7 @@ import InputNumberField from '@/components/Molecules/InputNumberField.vue'
 import InputProcedureTime from '@/components/Molecules/InputProcedureTime.vue'
 import AdditionalPatientInfo from './Organisms/AdditionalPatientInfo.vue'
 
-// プロパティ
-// const props = defineProps({
-//   DateOfProcedure: {
-//     type: String,
-//     default: ''
-//   },
-//   PatientId: {
-//     type: String,
-//     default: ''
-//   },
-//   Name: {
-//     type: String,
-//     default: ''
-//   },
-//   Age: {
-//     type: [Number, String]
-//   },
-//   ProcedureTime: {
-//     type: String,
-//     default: ''
-//   },
-//   Denial: {
-//     type: Boolean,
-//     default: false
-//   },
-//   JSOGId: {
-//     type: String,
-//     default: ''
-//   },
-//   NCDId: {
-//     type: String,
-//     default: ''
-//   }
-// })
-
+// Properties as v-model
 const DateOfProcedure = defineModel('DateOfProcedure', {
   required: true,
   default: '',

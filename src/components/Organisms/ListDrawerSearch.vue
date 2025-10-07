@@ -205,7 +205,7 @@ export default {
     <div class="subtilte-section">検索対象</div>
     <div>
       <InputSwitchField
-        v-model:value="setting.IgnoreQuery"
+        v-model="setting.IgnoreQuery"
         title=""
         :options="{ 全データ: true, 現在の表示設定: false }"
       />
@@ -238,7 +238,7 @@ export default {
     </div>
     <div>
       <InputSwitchField
-        v-model:value="setting.UseRegexp"
+        v-model="setting.UseRegexp"
         title=""
         :options="{ 部分一致: false, 正規表現: true }"
         :disabled="RegexpDisabled"
