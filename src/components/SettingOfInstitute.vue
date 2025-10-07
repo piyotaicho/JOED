@@ -11,7 +11,7 @@ const data = reactive({
   InstitutionName: '',
   InstitutionID: '',
   JSOGoncologyboardID: '',
-  Preserve: ''
+  Preserve: '[]' // 変更の検知用
 })
 
 const instituteList = reactive({
@@ -19,30 +19,40 @@ const instituteList = reactive({
   show: false
 })
 
+// フォーム内容の初期化
 const settings = store.getters['system/InstituteInformation']
 
-data.InstitutionName = settings.InstitutionName
-data.InstitutionID = settings.InstitutionID
-data.JSOGoncologyboardID = settings.JSOGoncologyboardID
+data.InstitutionName = settings?.InstitutionName || ''
+data.InstitutionID = settings?.InstitutionID || ''
+data.JSOGoncologyboardID = settings?.JSOGoncologyboardID || ''
 
-data.Preserve = JSON.stringify(
-  [
-    data.InstitutionName,
-    data.InstitutionID,
-    data.JSOGoncologyboardID
-  ])
+function preserve () {
+  data.Preserve = JSON.stringify(
+    [
+      data.InstitutionName,
+      data.InstitutionID,
+      data.JSOGoncologyboardID
+    ])
+}
+preserve()
 
-const readyForCommit = computed(() => {
-  return data.InstitutionName.trim() !== '' &&
-    data.InstitutionID.trim() !== '' &&
+const enableCommit = computed(() => {
+  const InstitutionName = data.InstitutionName || ''
+  const InstitutionID = data.InstitutionID || ''
+  const JSOGoncologyboardID = data.JSOGoncologyboardID || ''
+
+  return InstitutionName !== '' &&
+    InstitutionID !== '' &&
     data.Preserve !== JSON.stringify(
       [
-        data.InstitutionName,
-        data.InstitutionID,
-        data.JSOGoncologyboardID
+        InstitutionName,
+        InstitutionID,
+        JSOGoncologyboardID
       ])
 })
 
+// 施設リストをマスタから生成する
+// マスタはリスト生成がリクエストされたときに非同期でインポートする
 function listInstitutes () {
   instituteList.list.splice(0)
   instituteList.show = true
@@ -81,6 +91,7 @@ function listInstitutes () {
   })
 }
 
+// 施設リストから選択された施設情報をフォームにセットする
 function setInstituteFromList (instituteProperties) {
   data.InstitutionName = instituteProperties.name
   data.InstitutionID = instituteProperties.ID
@@ -91,23 +102,18 @@ function setInstituteFromList (instituteProperties) {
 async function commitSettings () {
   if (data.InstitutionName !== '' && data.InstitutionID !== '') {
     data.InstitutionID = ZenToHanNumbers(data.InstitutionID)
-    if (data.InstitutionID.match(InstituteIDFormat) !== null) {
+    if (data.InstitutionID.match(InstituteIDFormat) === null) {
+      Popups.alert('施設IDを確認してください.')
+    } else {
       store.commit('system/SetPreferences',
         {
           InstitutionName: data.InstitutionName,
           InstitutionID: data.InstitutionID,
           JSOGoncologyboardID: data.JSOGoncologyboardID
         })
-      await store.dispatch('system/SavePreferences')
+      await store.dispatch('system/SavePreferences') // 永続化
       Popups.information('設定を保存しました.')
-      this.Preserve = JSON.stringify(
-        [
-          this.InstitutionName,
-          this.InstitutionID,
-          this.JSOGoncologyboardID
-        ])
-    } else {
-      Popups.alert('施設IDを確認してください.')
+      preserve()
     }
   }
 }
@@ -181,7 +187,7 @@ async function commitSettings () {
         placeholder="日産婦の腫瘍登録施設番号" />
     </div>
     <div>
-      <el-button type="primary" @click="commitSettings" :disabled="!readyForCommit">上記設定を保存</el-button>
+      <el-button type="primary" @click="commitSettings" :disabled="!enableCommit">上記設定を保存</el-button>
     </div>
   </div>
 </template>
