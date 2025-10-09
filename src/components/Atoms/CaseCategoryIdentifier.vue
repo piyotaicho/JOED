@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { Select } from '@element-plus/icons-vue'
 
 const props = defineProps({
   category: {
@@ -8,6 +9,10 @@ const props = defineProps({
   },
   notification: {
     type: String,
+  },
+  checked: {
+    type: Boolean,
+    default: false,
   },
 })
 
@@ -41,6 +46,7 @@ const malignancyClass = computed(() => {
 <template>
   <div class="casecategory" :class="notificationClass" :style="boxColorStyle">
     <div :class="malignancyClass"></div>
+    <el-icon style="padding-top: 0.3rem;" v-if="checked"><Select /></el-icon>
   </div>
 </template>
 
@@ -51,6 +57,8 @@ div.casecategory
   margin: auto
   width: 1.7rem
   height: 1.7rem
+  text-align: center
+  vertical-align: middle
 
 div.has-notification::after
   position: absolute

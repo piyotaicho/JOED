@@ -96,9 +96,8 @@ const Select = (event) => {
   }
 }
 const SingleSelect = () => {
-  if (!props.selected) {
-    emit('select', uid.value)
-  }
+  // 単一選択では常に選択状態を更新
+  emit('select', uid.value)
 }
 
 const MultiSelect = () => {
@@ -112,7 +111,7 @@ const MultiSelect = () => {
 
 <template>
   <div
-    :class="props.selected ? ['caseitem', 'selected'] : ['caseitem']"
+    class="caseitem"
     :id="'doc' + uid.toString(10)"
     tabindex="0"
     @keypress.enter="MoveToEditView()"
@@ -122,7 +121,7 @@ const MultiSelect = () => {
     @keydown.x="RemoveDocumentKeypress($event)"
   >
     <div class="caseitem-icon">
-      <CategoryIdentifier :category="Category" :notification="Notification" />
+      <CategoryIdentifier :category="Category" :notification="Notification" :checked="selected" />
     </div>
     <div class="caseitem-description">
       <div class="caseitem-row">

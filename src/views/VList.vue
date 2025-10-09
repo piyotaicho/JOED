@@ -53,7 +53,11 @@ const moveFocus = (offset) => {
     ]
     if (moveto) {
       document.getElementById('doc' + moveto).focus()
-      onSingleSelect(moveto)
+      // フォーカス移動時は選択状態を変更しない
+      // キーボードで選択を変更したい場合は別のキーバインドを使用
+      if (selectedUids.value.length === 1) {
+        selectedUids.value.splice(0)
+      }
     }
   }
 }
@@ -65,6 +69,7 @@ watch(uids, () => {
 
 // SingleSelectのハンドラー
 const onSingleSelect = (uid) => {
+  // 単一選択時は常に複数選択を解除し、指定されたuidのみを選択
   selectedUids.value.splice(0)
   selectedUids.value.push(uid)
 }
@@ -79,6 +84,27 @@ const onMultiSelect = ({ uid, selected }) => {
     const index = selectedUids.value.indexOf(uid)
     if (index !== -1) {
       selectedUids.value.splice(index, 1)
+    }
+  }
+}
+
+// キーボードによる選択機能
+const selectFocusedItem = (single = false) => {
+  const currentid = document.activeElement.id
+  if (!showDrawer.value && !showStartupDialog.value && currentid !== '' && currentid.startsWith('doc')) {
+    const uid = Number(currentid.substring(3))
+    if (single) {
+      // 単一選択モード
+      onSingleSelect(uid)
+      return
+    }
+
+    if (selectedUids.value.includes(uid)) {
+      // 既に選択されている場合は選択解除
+      onMultiSelect({ uid, selected: false })
+    } else {
+      // 選択されていない場合は選択
+      onMultiSelect({ uid, selected: true })
     }
   }
 }
@@ -102,6 +128,8 @@ const loadMore = () => {
     @keydown.k="moveFocus(-1)"
     @keydown.down.prevent="moveFocus(+1)"
     @keydown.j="moveFocus(+1)"
+    @keydown.space.prevent="selectFocusedItem(false)"
+    @keydown.escape="selectFocusedItem(true)"
   >
     <div class="itemlist"
          v-infinite-scroll="loadMore"
@@ -113,7 +141,7 @@ const loadMore = () => {
       <ListDrawer :visible="showDrawer" @close="closeDrawer"/>
 
       <template v-for="uid in uids" :key="uid">
-        <CaseDocument :uid="uid" :selected="selectedUids.includes(uid)" @select="onSingleSelect" @multiselect="onMultiSelect"/>
+        <CaseDocument :uid="uid" :selected="selectedUids.length > 1 && selectedUids.includes(uid)" @select="onSingleSelect" @multiselect="onMultiSelect"/>
       </template>
 
       <div v-if="fetching" class="fetching-container">
