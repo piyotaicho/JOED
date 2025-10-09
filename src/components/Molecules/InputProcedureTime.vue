@@ -2,30 +2,23 @@
 import { computed, ref } from 'vue'
 import { ProcedureTimeSelections, encodeProcedureTime } from '@/modules/ProcedureTimes'
 
-const props = defineProps(['value'])
-const emit = defineEmits(['update:value'])
+const model = defineModel({ type: String })
 
 const procedureTimeSelections = ProcedureTimeSelections()
 
-// reactiveプロパティ
 // キー入力文字列
 const typedString = ref('')
 // キー入力からの候補選択
 const selectionCandidate = ref('')
 
-// 算出プロパティ
-
-// 選択値候補があればプロパティよりもそちらを優先
+// 選択値候補があれば与えられた値よりも候補を優先
 const procedureTime = computed({
-  get: () => selectionCandidate.value !== '' ? selectionCandidate.value : props.value,
+  get: () => selectionCandidate.value !== '' ? selectionCandidate.value : model.value,
   set: (newvalue) => {
-    emit('update:value', newvalue)
+    model.value = newvalue
     clearTypedValue()
   }
 })
-
-// ツールチップの文字列
-// const popoverContent = computed(() => typedString.value === '' ? '' : `直接入力中: ${typedString.value}`)
 
 /**
  * キーボードイベントを処理して入力文字列処理へ渡す
@@ -108,7 +101,11 @@ const clearTypedValue = () => {
   <div style="display: flex; flex-direction: row; height: 2.4rem;">
     <div class="label"><span class="required">手術時間</span></div>
     <div class="field">
-      <el-tooltip ref="popover" placement="top" :offset="2" :manual="true" transition="none" :visible="typedString !== ''" :content="'直接入力中: ' + typedString">
+      <el-tooltip ref="popover" placement="top"
+        :offset="2" :manual="true" transition="none"
+        :visible="typedString !== ''"
+        :content="'直接入力中: ' + typedString"
+        >
         <select v-model="procedureTime"
           :class="[!procedureTime ? 'vacant' : '']"
           v-bind="$attrs"

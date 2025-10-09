@@ -123,7 +123,7 @@ async function commitSettings () {
   <div class="utility">
     <div class="utility-switches">
       <InputTextField
-        v-model:value="data.InstitutionName"
+        v-model="data.InstitutionName"
         title="施設名称"
         placeholder=" 未設定 "
         :required="true">
@@ -137,7 +137,7 @@ async function commitSettings () {
       </InputTextField>
 
       <InputTextField
-        v-model:value="data.InstitutionID"
+        v-model="data.InstitutionID"
         title="施設コード"
         placeholder=" 未設定 "
         :required="true">
@@ -182,7 +182,7 @@ async function commitSettings () {
 
     <div class="utility-switches" v-if="data.JSOGoncologyboardID !== ''">
       <InputTextField
-        v-model:value="data.JSOGoncologyboardID"
+        v-model="data.JSOGoncologyboardID"
         title="腫瘍登録施設番号"
         placeholder="日産婦の腫瘍登録施設番号" />
     </div>

@@ -1,54 +1,56 @@
 <script setup>
-import { reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useStore } from '@/store'
-import InputPasswordField from '@/components/Molecules/InputPasswordField.vue'
+import InputTextField from '@/components/Molecules/InputTextField.vue'
 import InputSwitchField from '@/components/Molecules/InputSwitchField.vue'
 import * as Popups from '@/modules/Popups'
+import { sys } from 'typescript'
 
 const store = useStore()
 
-const data = reactive({
-  UseAuthentication: true,
-  PasswordString: '',
-  NewPasswordString: '',
-  NewPasswordStringVerify: ''
+const systemUseAuthentication = computed(() => store.getters['password/isPasswordRequired'])
+
+// フォーム内容
+const useAuthentication = ref(true)
+const password = reactive({
+  current: '',
+  new: '',
+  verify: ''
 })
 
-const passwordRequired = computed(() => store.getters['password/isPasswordRequired'])
-
-function resetState () {
-  data.UseAuthentication = store.getters['password/isPasswordRequired']
-  data.PasswordString = ''
-  data.NewPasswordString = ''
-  data.NewPasswordStringVerify = ''
-}
-
-resetState()
+onMounted(() => {
+  useAuthentication.value = store.getters['password/isPasswordRequired']
+  password.current = ''
+  password.new = ''
+  password.verify = ''
+})
 
 async function commit () {
   try {
     // パスワードが設定されている場合は変更に認証が必要.(システムの認証状態は変更させない.)
     if (store.getters['password/isPasswordRequired']) {
       await store.dispatch('password/Authenticate',
-        { PasswordString: data.PasswordString, SuppressStateChange: true })
-        .catch(_ => { throw new Error('パスワードが違います.') })
+        { PasswordString: password.current, SuppressStateChange: true })
+        .catch(() => { throw new Error('パスワードが違います.') })
     }
 
     let newPassword = ''
-    if (data.UseAuthentication) {
-      if (data.UseAuthentication === true) {
-        if (data.NewPasswordString.length < 5) throw new Error('パスワードは5文字以上で設定してください.')
-        if (data.NewPasswordString === data.NewPasswordStringVerify) {
-          newPassword = data.NewPasswordString
-        } else {
-          throw new Error('新しいパスワードが確認できません.')
-        }
+    if (useAuthentication.value === true) {
+      if (password.new.length < 5) throw new Error('パスワードは5文字以上で設定してください.')
+      if (password.new === password.verify) {
+        newPassword = password.new
+      } else {
+        throw new Error('新しいパスワードが確認できません.')
       }
     }
     await store.dispatch('password/SetPassword', newPassword)
     Popups.information('認証設定が変更されました.')
 
-    resetState()
+    // フォーム内容の初期化
+    useAuthentication.value = systemUseAuthentication.value
+    password.current = ''
+    password.new = ''
+    password.verify = ''
   } catch (error) {
     Popups.alert(error.message)
   }
@@ -59,29 +61,32 @@ async function commit () {
   <div class="utility">
     <div class="utility-switches">
       <InputSwitchField
-        v-model:value="data.UseAuthentication"
+        v-model="useAuthentication"
         title="起動時のパスワード確認"
         :options="{'しない': false, 'する': true}" />
 
-      <InputPasswordField
-        v-model:value="data.PasswordString"
+      <InputTextField
+        password
+        v-model="password.current"
         title="現在のパスワード"
         placeholder="********"
         :required="true"
-        v-if="passwordRequired" />
+        v-if="systemUseAuthentication" />
 
-      <InputPasswordField
-        v-model:value="data.NewPasswordString"
+      <InputTextField
+        password
+        v-model="password.new"
         title="新しいパスワード"
         placeholder="********"
         :required="true"
-        v-if="data.UseAuthentication" />
-      <InputPasswordField
-        v-model:value="data.NewPasswordStringVerify"
+        v-if="useAuthentication" />
+      <InputTextField
+        password
+        v-model="password.verify"
         title="新しいパスワード(確認)"
         placeholder="********"
         :required="true"
-        v-if="data.UseAuthentication" />
+        v-if="useAuthentication" />
     </div>
     <div>
       <el-button type="primary" @click="commit">上記設定を保存</el-button>

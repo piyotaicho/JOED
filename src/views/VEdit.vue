@@ -15,14 +15,14 @@
       </div>
 
       <SectionDiagnoses
-        v-model:container="CaseData.Diagnoses"
+        v-model="CaseData.Diagnoses"
         @addnewitem="EditSection('diagnosis')"
         @edititem="EditSection('diagnosis', $event)"
         @removeitem="RemoveListItem('Diagnoses', $event)"
       />
 
       <SectionProcedures
-        v-model:container="CaseData.Procedures"
+        v-model="CaseData.Procedures"
         @addnewitem="EditSection('procedure')"
         @edititem="EditSection('procedure', $event)"
         @removeitem="RemoveListItem('Procedures', $event)"

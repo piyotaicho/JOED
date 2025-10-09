@@ -1,19 +1,8 @@
 <script setup>
-import { computed } from 'vue'
 import SectionBlock from '@/components/Molecules/SectionBlock.vue'
 
-const props = defineProps({
-  container: {
-    type: Array,
-    required: true
-  }
-})
-const emit = defineEmits(['addnewitem', 'edititem', 'removeitem', 'update:container'])
-
-const items = computed({
-  get: () => props.container,
-  set: (value) => emit('update:container', value)
-})
+const items = defineModel({ type: Array, required: true })
+const emit = defineEmits(['addnewitem', 'edititem', 'removeitem'])
 
 const AddNewItem = () => emit('addnewitem')
 

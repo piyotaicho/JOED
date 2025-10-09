@@ -3,11 +3,8 @@ import { computed } from 'vue'
 import { ZenToHanNumbers } from '@/modules/ZenHanChars'
 
 const props = defineProps({
-  value: {
-    type: [Number, String]
-  },
   title: {
-    default: 'NUMBER FIELD'
+    default: '数値を入力'
   },
   min: {
     type: Number
@@ -19,13 +16,12 @@ const props = defineProps({
     default: false
   }
 })
-
-const emit = defineEmits(['update:value'])
+const value = defineModel({ type: [Number, String] })
 
 const inputText = computed({
-  get () { return props.value },
+  get () { return value.value },
   set (newvalue) {
-    emit('update:value', ZenToHanNumbers(newvalue))
+    value.value = ZenToHanNumbers(newvalue)
   }
 })
 
@@ -33,7 +29,7 @@ const inputText = computed({
 
 <template>
   <div style="display: flex; flex-direction: row; height: 2.4rem;">
-    <div class="label"><span>{{title || '数値を入力'}}</span></div>
+    <div class="label"><span>{{title}}</span></div>
     <div class="field number-field">
       <input type="number"
         v-model="inputText"

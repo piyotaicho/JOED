@@ -1,12 +1,10 @@
 <script setup>
-import { computed } from 'vue'
 import InputDate from '@/components/Molecules/InputDate.vue'
 import InputTextField from '@/components/Molecules/InputTextField.vue'
 import InputNumberField from '@/components/Molecules/InputNumberField.vue'
 import InputProcedureTime from '@/components/Molecules/InputProcedureTime.vue'
 import AdditionalPatientInfo from './Organisms/AdditionalPatientInfo.vue'
 
-// Properties as v-model
 const DateOfProcedure = defineModel('DateOfProcedure', {
   required: true,
   default: '',
@@ -38,96 +36,39 @@ const JSOGId = defineModel('JSOGId', {
 const NCDId = defineModel('NCDId', {
   default: '',
 })
-
-// computed as v handler
-const valueDateOfProcedure = computed({
-  get: () => DateOfProcedure.value || '',
-  set: (newValue) => {
-    DateOfProcedure.value = newValue
-  },
-})
-
-const valuePatientId = computed({
-  get: () => PatientId.value || '',
-  set: (newValue) => {
-    PatientId.value = newValue
-  },
-})
-
-const valueName = computed({
-  get: () => Name.value || '',
-  set: (newValue) => {
-    Name.value = newValue
-  },
-})
-
-const valueAge = computed({
-  get: () => Age.value?.toString() || '',
-  set: (newValue) => {
-    Age.value = newValue
-  },
-})
-
-const valueProcedureTime = computed({
-  get: () => ProcedureTime.value || '',
-  set: (newValue) => {
-    ProcedureTime.value = newValue
-  },
-})
-
-const valueDenial = computed({
-  get: () => Denial.value || false,
-  set: (newValue) => {
-    Denial.value = newValue
-  },
-})
-
-const valueJSOGId = computed({
-  get: () => JSOGId.value || '',
-  set: (newValue) => {
-    JSOGId.value = newValue
-  },
-})
-
-const valueNCDId = computed({
-  get: () => NCDId.value || '',
-  set: (newValue) => {
-    NCDId.value = newValue
-  },
-})
 </script>
 
 <template>
   <div class="patient-info-section">
     <div class="patient-info-section-left">
-      <InputDate v-model="valueDateOfProcedure" :required="true" />
+      <InputDate v-model="DateOfProcedure" :required="true" />
       <div style="display: flex; flex-direction: row">
         <div style="flex-grow: 2">
           <InputTextField
             title="患者ID"
             :required="true"
-            v-model:value="valuePatientId"
+            v-model="PatientId"
             placeholder="患者の認識子"
           />
         </div>
         <div style="width: 2rem">
           <AdditionalPatientInfo
-            v-model:Denial="valueDenial"
-            v-model:JSOGId="valueJSOGId"
-            v-model:NCDId="valueNCDId"
-            :DateOfProcedure="valueDateOfProcedure"
-            :PatientId="valuePatientId"
+            v-model:Denial="Denial"
+            v-model:JSOGId="JSOGId"
+            v-model:NCDId="NCDId"
+            :DateOfProcedure="DateOfProcedure"
+            :PatientId="PatientId"
           />
         </div>
       </div>
-      <InputTextField title="患者名" v-model:value="valueName" />
-      <InputNumberField title="年齢" v-model:value="valueAge" :min="1" :max="120" />
+      <InputTextField title="患者名" v-model="Name" />
+      <InputNumberField title="年齢" v-model="Age" :min="1" :max="120" />
     </div>
     <div class="patient-info-section-right">
       <div style="position: relative; height: 2.4rem"><!-- space --></div>
       <div style="position: relative; height: 2.4rem"><!-- space --></div>
       <div style="position: relative; height: 2.4rem"><!-- space --></div>
-      <InputProcedureTime v-model:value="valueProcedureTime" />
+      <InputProcedureTime v-model="ProcedureTime" />
     </div>
   </div>
 </template>

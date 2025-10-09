@@ -115,13 +115,13 @@ const focusInput = () => {
             ref="switchField"
           />
         <div v-if="Denial">
-          <InputTextField title="レコード識別子" :value="hashString" readonly/>
+          <InputTextField title="レコード識別子" :modelValue="hashString" readonly/>
         </div>
         <div v-if="editJSOGId || JSOGId !== ''">
-          <InputTextField title="腫瘍登録番号" v-model:value="JSOGId" placeholder="腫瘍登録患者No."/>
+          <InputTextField title="腫瘍登録番号" v-model="JSOGId" placeholder="腫瘍登録患者No."/>
         </div>
         <div v-if="editNCDId || NCDId !== ''">
-          <InputTextField title="NCD症例識別コード" v-model:value="NCDId" placeholder="NCD症例識別コード"/>
+          <InputTextField title="NCD症例識別コード" v-model="NCDId" placeholder="NCD症例識別コード"/>
         </div>
       </div>
     </el-popover>
