@@ -82,7 +82,7 @@ const UpdateView = () => {
 
         <el-collapse-item name="search">
           <template #title>
-            検索 <CircleCheckFilled style="color: var(--color-success); margin-left: 1rem;" v-if="searchActivated"/>
+            検索 <el-icon style="color: var(--color-success); margin-left: 1rem;" v-if="searchActivated"><CircleCheckFilled/></el-icon>
           </template>
           <ListSearch @changed="UpdateView"/>
         </el-collapse-item>
