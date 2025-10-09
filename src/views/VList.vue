@@ -8,7 +8,6 @@ import NewEntryButton from '@/components/Atoms/NewEntryButton.vue'
 import CaseDocument from '@/components/Organisms/CaseDocument.vue'
 import ListDrawer from '@/components/Organisms/ListDrawer.vue'
 import WelcomeBanner from '@/components/Organisms/WelcomeBanner.vue'
-// import InfiniteLoading from 'vue-infinite-fetching' // Vue 3非対応のため削除
 
 const store = useStore()
 const route = useRoute()
@@ -59,7 +58,7 @@ const moveFocus = (offset) => {
   }
 }
 
-// uidsが変更されたらselectedUidsをクリア
+// uidsのリスト内容が変更されたらselectedUidsをクリア
 watch(uids, () => {
   selectedUids.value.splice(0)
 })

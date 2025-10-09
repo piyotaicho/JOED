@@ -39,27 +39,27 @@ onMounted(() => {
   }
 })
 
-const ItemDocument = computed(() => (fetching.value ? {} : store.getters.CaseDocument(uid.value)))
+const currentDocument = computed(() => (fetching.value ? {} : store.getters.CaseDocument(uid.value)))
 
 // ドキュメントの各種フィールド
-const Category = computed(() => (fetching.value ? '' : ItemDocument.value?.TypeOfProcedure || ''))
-const Id = computed(() => (fetching.value ? '' : ItemDocument.value.PatientId || ''))
-const Name = computed(() => (fetching.value ? 'データを取得中' : ItemDocument.value?.Name || ''))
-const DateOfProcedure = computed(() => (fetching.value ? '' : ItemDocument.value?.DateOfProcedure))
+const Category = computed(() => (fetching.value ? '' : currentDocument.value?.TypeOfProcedure || ''))
+const Id = computed(() => (fetching.value ? '' : currentDocument.value.PatientId || ''))
+const Name = computed(() => (fetching.value ? 'データを取得中' : currentDocument.value?.Name || ''))
+const DateOfProcedure = computed(() => (fetching.value ? '' : currentDocument.value?.DateOfProcedure))
 const Age = computed(() =>
-  fetching.value ? '' : (ItemDocument.value?.Age ? '( ' + ItemDocument.value.Age + '歳 )' : '')
+  fetching.value ? '' : (currentDocument.value?.Age ? '( ' + currentDocument.value.Age + '歳 )' : '')
 )
-const Denial = computed(() => (fetching.value ? undefined : ItemDocument.value?.Denial))
+const Denial = computed(() => (fetching.value ? undefined : currentDocument.value?.Denial))
 
 const Diagnosis = computed(() =>
-  fetching.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value?.Diagnoses[0]),
+  fetching.value ? '' : CaseDocumentHandler.ItemValue(currentDocument.value?.Diagnoses[0]),
 )
 const Procedure = computed(() =>
-  fetching.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value?.Procedures[0]),
+  fetching.value ? '' : CaseDocumentHandler.ItemValue(currentDocument.value?.Procedures[0]),
 )
-const PresentAE = computed(() => !fetching.value && (ItemDocument.value?.PresentAE === true))
+const PresentAE = computed(() => !fetching.value && (currentDocument.value?.PresentAE === true))
 
-const Notification = computed(() => (fetching.value ? '' : ItemDocument.value?.Notification || ''))
+const Notification = computed(() => (fetching.value ? '' : currentDocument.value?.Notification || ''))
 
 const MoveToEditView = () => {
   if (!fetching.value) {
