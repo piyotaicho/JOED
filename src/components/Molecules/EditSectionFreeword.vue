@@ -13,37 +13,39 @@ const modelValue = defineModel({
 })
 const emit = defineEmits(['click-search'])
 
-const expandInput = ref(false)
+// element refs
 const inputElement = ref()
 
+// reactive states
+const expandInput = ref(false)
+
 onMounted(() => {
-  if (props.value !== '') {
+  if (modelValue.value !== '') {
     expandInput.value = true
   }
 })
 
-const toggle = () => {
+const Toggle = () => {
   expandInput.value = !expandInput.value
   if (expandInput.value) {
     nextTick(() => inputElement.value.focus())
   }
 }
 
-const open = async () => {
+const Open = async () => {
   expandInput.value = true
   await nextTick()
   inputElement.value.focus()
 }
-const search = () => emit('click-search')
 
-defineExpose({ open })
+defineExpose({ Open })
 </script>
 
 <template>
   <div class="flex-content inputbox">
     <div class="w20"></div>
     <div class="w20 subtitle">
-      <div class="invisible-button" @click="toggle">
+      <div class="invisible-button" @click="Toggle">
         <span>自由入力</span>
         <span style="padding-left: 1rem;">
           <el-icon><component :is="expandInput ? DArrowLeft : DArrowRight" /></el-icon>
@@ -59,7 +61,7 @@ defineExpose({ open })
         />
     </div>
     <div class="w20" v-show="expandInput">
-      <el-button type="primary" @click="search" :icon="Search" :disabled="props.disabled">候補を検索</el-button>
+      <el-button type="primary" @click="emit('click-search')" :icon="Search" :disabled="props.disabled">候補を検索</el-button>
     </div>
   </div>
 </template>

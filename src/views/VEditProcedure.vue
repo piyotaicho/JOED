@@ -71,7 +71,6 @@ import FreewordSection from '@/components/Molecules/EditSectionFreeword.vue'
 const ProceduresMaster = new Master()
 
 const router = useRouter()
-
 const props = defineProps({
   ItemIndex: {
     type: Number,
@@ -86,9 +85,12 @@ const props = defineProps({
   }
 })
 const emit = defineEmits(['data-upsert'])
+
+// Element refs
 const paneSection = ref()
 const freewordSection = ref()
 
+// Reactive states
 const category = ref('')
 const categorySelections = computed(() => ProceduresMaster.Categories())
 
@@ -98,8 +100,6 @@ const targetSelections = computed(() => ProceduresMaster.Targets(category.value)
 const candidates = ref([])
 const selectedItem = ref('')
 const freewordText = ref('')
-
-const UserEditingAllowed = computed(() => !!category.value && !selectedItem.value)
 
 const description = reactive({
   Title: '',
@@ -115,6 +115,8 @@ const additionalProcedure = reactive({
   SelectionMode: 'one',
   Value: []
 })
+
+const UserEditingAllowed = computed(() => !!category.value && !selectedItem.value)
 
 onMounted(async () => {
   const item = JSON.parse(props.ItemValue || '{}')
@@ -188,7 +190,7 @@ onMounted(async () => {
     }
     // 自由入力がある場合は自由入力セクションを開く
     if (freewordText.value !== '') {
-      freewordSection.value.open()
+      freewordSection.value.Open()
     }
   } else {
     // 新規編集の場合はカテゴリにフォーカスする
@@ -229,9 +231,9 @@ watch(selectedItem, async () => {
 
 const ClearSelectedEntry = async () => {
   selectedItem.value = ''
-  setDescription(undefined)
+  SetDescription(undefined)
   additionalProcedure.Title = ''
-  setDescription(
+  SetDescription(
     undefined,
     additionalProcedure
   )
@@ -267,12 +269,12 @@ const OnCandidateSelected = async () => {
       target.value,
       props.year
     )
-    await setDescription(masterItem)
-    await setAdditionalProcedure(masterItem)
+    await SetDescription(masterItem)
+    await SetAdditionalProcedure(masterItem)
   }
 }
 
-const setDescription = async (item, descriptionObj = description, splicedefault = true) => {
+const SetDescription = async (item, descriptionObj = description, splicedefault = true) => {
   // descriptionの設定を削除
   descriptionObj.Value.splice(0)
   descriptionObj.Options.splice(0)
@@ -300,7 +302,7 @@ const setDescription = async (item, descriptionObj = description, splicedefault 
   await nextTick()
 }
 
-const setAdditionalProcedure = async (item) => {
+const SetAdditionalProcedure = async (item) => {
   const procedureTitle = Master.getAdditioninalProcedure(item)
   if (procedureTitle) {
     // Textに術式名を保存し付随種々の情報を展開
@@ -312,7 +314,7 @@ const setAdditionalProcedure = async (item) => {
       target.value,
       props.year
     )
-    await setDescription(
+    await SetDescription(
       additionalItem,
       additionalProcedure,
       false
@@ -320,7 +322,7 @@ const setAdditionalProcedure = async (item) => {
   } else {
     additionalProcedure.Text = ''
 
-    await setDescription(
+    await SetDescription(
       undefined,
       additionalProcedure
     )
