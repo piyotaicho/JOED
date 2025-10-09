@@ -1,5 +1,5 @@
 <script setup>
-import { Loading as LoadingIcon, Edit } from '@element-plus/icons-vue'
+import { Loading, Edit } from '@element-plus/icons-vue'
 import { onMounted, ref, computed } from 'vue'
 import { useStore } from '@/store'
 import { useRouter } from 'vue-router'
@@ -23,7 +23,7 @@ const props = defineProps({
 const emit = defineEmits(['select', 'multiselect'])
 
 // 情報取得中フラグ
-const loadingFlag = ref(true)
+const fetching = ref(true)
 
 // ドキュメントuidを数値化(propsは文字列として受け取るため)
 const uid = computed(() => Number(props.uid))
@@ -32,37 +32,37 @@ onMounted(() => {
   if (uid.value > 0) {
     store
       .dispatch('FetchDocument', { DocumentId: uid.value })
-      .then((_) => {
-        loadingFlag.value = false
+      .then(() => {
+        fetching.value = false
       })
       .catch((e) => e)
   }
 })
 
-const ItemDocument = computed(() => (loadingFlag.value ? {} : store.getters.CaseDocument(uid.value)))
+const ItemDocument = computed(() => (fetching.value ? {} : store.getters.CaseDocument(uid.value)))
 
 // ドキュメントの各種フィールド
-const Category = computed(() => (loadingFlag.value ? '' : ItemDocument.value?.TypeOfProcedure || ''))
-const Id = computed(() => (loadingFlag.value ? '' : ItemDocument.value.PatientId || ''))
-const Name = computed(() => (loadingFlag.value ? 'データを取得中' : ItemDocument.value?.Name || ''))
-const DateOfProcedure = computed(() => (loadingFlag.value ? '' : ItemDocument.value?.DateOfProcedure))
+const Category = computed(() => (fetching.value ? '' : ItemDocument.value?.TypeOfProcedure || ''))
+const Id = computed(() => (fetching.value ? '' : ItemDocument.value.PatientId || ''))
+const Name = computed(() => (fetching.value ? 'データを取得中' : ItemDocument.value?.Name || ''))
+const DateOfProcedure = computed(() => (fetching.value ? '' : ItemDocument.value?.DateOfProcedure))
 const Age = computed(() =>
-  loadingFlag.value ? '' : (ItemDocument.value?.Age ? '( ' + ItemDocument.value.Age + '歳 )' : '')
+  fetching.value ? '' : (ItemDocument.value?.Age ? '( ' + ItemDocument.value.Age + '歳 )' : '')
 )
-const Denial = computed(() => (loadingFlag.value ? undefined : ItemDocument.value?.Denial))
+const Denial = computed(() => (fetching.value ? undefined : ItemDocument.value?.Denial))
 
 const Diagnosis = computed(() =>
-  loadingFlag.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value?.Diagnoses[0]),
+  fetching.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value?.Diagnoses[0]),
 )
 const Procedure = computed(() =>
-  loadingFlag.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value?.Procedures[0]),
+  fetching.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value?.Procedures[0]),
 )
-const PresentAE = computed(() => !loadingFlag.value && (ItemDocument.value?.PresentAE === true))
+const PresentAE = computed(() => !fetching.value && (ItemDocument.value?.PresentAE === true))
 
-const Notification = computed(() => (loadingFlag.value ? '' : ItemDocument.value?.Notification || ''))
+const Notification = computed(() => (fetching.value ? '' : ItemDocument.value?.Notification || ''))
 
 const MoveToEditView = () => {
-  if (!loadingFlag.value) {
+  if (!fetching.value) {
     router.push({ name: 'edit', params: { uid: uid.value } })
   }
 }
@@ -81,7 +81,7 @@ const RemoveDocumentKeypress = (event) => {
 
 const RemoveDocument = async () => {
   if (await Popups.confirm('この症例を削除します.よろしいですか?')) {
-    loadingFlag.value = true
+    fetching.value = true
     store.dispatch('RemoveDocument', { DocumentId: uid.value })
   }
 }
@@ -150,9 +150,9 @@ const MultiSelect = () => {
       </div>
     </div>
     <div class="caseitem-controller">
-      <template v-if="loadingFlag">
+      <template v-if="fetching">
         <div><el-icon class="button-font">
-          <LoadingIcon />
+          <Loading />
         </el-icon></div>
       </template>
       <template v-else>

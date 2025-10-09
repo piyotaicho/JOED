@@ -8,7 +8,7 @@ import NewEntryButton from '@/components/Atoms/NewEntryButton.vue'
 import CaseDocument from '@/components/Organisms/CaseDocument.vue'
 import ListDrawer from '@/components/Organisms/ListDrawer.vue'
 import WelcomeBanner from '@/components/Organisms/WelcomeBanner.vue'
-// import InfiniteLoading from 'vue-infinite-loading' // Vue 3非対応のため削除
+// import InfiniteLoading from 'vue-infinite-fetching' // Vue 3非対応のため削除
 
 const store = useStore()
 const route = useRoute()
@@ -30,7 +30,7 @@ const showStartupDialog = computed(() => store.getters['system/ShowStartupDialog
 const showDrawer = ref(false)
 
 // Element Plus infinite scroll用の状態管理
-const loading = ref(false)
+const fetching = ref(false)
 const noMore = computed(() => store.getters.PagedUidsRange >= store.getters.NumberOfCases)
 
 // リスト項目一覧
@@ -86,13 +86,13 @@ const onMultiSelect = ({ uid, selected }) => {
 
 // Element Plus infinite scroll のハンドラー
 const loadMore = () => {
-  if (loading.value || noMore.value) return
+  if (fetching.value || noMore.value) return
 
-  loading.value = true
+  fetching.value = true
   // 少し遅延を入れてユーザー体験を改善
   setTimeout(() => {
     store.commit('IncrementDocumentListRange')
-    loading.value = false
+    fetching.value = false
   }, 100)
 }
 </script>
@@ -106,7 +106,7 @@ const loadMore = () => {
   >
     <div class="itemlist"
          v-infinite-scroll="loadMore"
-         :infinite-scroll-disabled="loading || noMore"
+         :infinite-scroll-disabled="fetching || noMore"
          :infinite-scroll-distance="200">
       <DrawerButton class="open-drawer" tab-index="0" @click="openDrawer"/>
       <NewEntryButton class="list-new-entry" tab-index="0" @click="createNewEntry"/>
@@ -117,8 +117,8 @@ const loadMore = () => {
         <CaseDocument :uid="uid" :selected="selectedUids.includes(uid)" @select="onSingleSelect" @multiselect="onMultiSelect"/>
       </template>
 
-      <div v-if="loading" class="loading-container">
-        <el-icon class="is-loading">
+      <div v-if="fetching" class="fetching-container">
+        <el-icon>
           <Loading />
         </el-icon>
         <span>読み込み中...</span>
@@ -146,7 +146,7 @@ div.itemlist
     content: ''
 
 // Element Plus infinite scroll用のスタイル
-.loading-container
+.fetching-container
   display: flex
   justify-content: center
   align-items: center
