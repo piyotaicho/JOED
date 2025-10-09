@@ -14,59 +14,55 @@ const props = defineProps({
   uid: {
     required: true,
   },
+  selected: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-const Loading = ref(true)
+const emit = defineEmits(['select', 'multiselect'])
 
+// 情報取得中フラグ
+const loadingFlag = ref(true)
+
+// ドキュメントuidを数値化(propsは文字列として受け取るため)
 const uid = computed(() => Number(props.uid))
 
 onMounted(() => {
   if (uid.value > 0) {
     store
-      .dispatch('FetchDocument', { DocumentId: Number(uid.value) })
+      .dispatch('FetchDocument', { DocumentId: uid.value })
       .then((_) => {
-        Loading.value = false
+        loadingFlag.value = false
       })
       .catch((e) => e)
   }
 })
 
-const ItemDocument = computed(() => (Loading.value ? {} : store.getters.CaseDocument(uid.value)))
+const ItemDocument = computed(() => (loadingFlag.value ? {} : store.getters.CaseDocument(uid.value)))
 
-const Category = computed(() => (Loading.value ? '' : ItemDocument.value.TypeOfProcedure || ''))
-
-const DateOfProcedure = computed(() => (Loading.value ? '' : ItemDocument.value.DateOfProcedure))
-
-const PersonalInformation = computed(() => {
-  return Loading.value
-    ? {
-        Id: '',
-        Name: 'データを取得中',
-        Age: '',
-        Denial: undefined,
-      }
-    : {
-        Id: ItemDocument.value.PatientId,
-        Name: ItemDocument.value.Name || '',
-        Age: ItemDocument.value.Age ? '( ' + Number(ItemDocument.value.Age) + '歳 )' : '',
-        Denial: ItemDocument.value.Denial,
-      }
-})
+// ドキュメントの各種フィールド
+const Category = computed(() => (loadingFlag.value ? '' : ItemDocument.value?.TypeOfProcedure || ''))
+const Id = computed(() => (loadingFlag.value ? '' : ItemDocument.value.PatientId || ''))
+const Name = computed(() => (loadingFlag.value ? 'データを取得中' : ItemDocument.value?.Name || ''))
+const DateOfProcedure = computed(() => (loadingFlag.value ? '' : ItemDocument.value?.DateOfProcedure))
+const Age = computed(() =>
+  loadingFlag.value ? '' : (ItemDocument.value?.Age ? '( ' + ItemDocument.value.Age + '歳 )' : '')
+)
+const Denial = computed(() => (loadingFlag.value ? undefined : ItemDocument.value?.Denial))
 
 const Diagnosis = computed(() =>
-  Loading.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value.Diagnoses[0]),
+  loadingFlag.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value?.Diagnoses[0]),
 )
-
 const Procedure = computed(() =>
-  Loading.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value.Procedures[0]),
+  loadingFlag.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value?.Procedures[0]),
 )
+const PresentAE = computed(() => !loadingFlag.value && (ItemDocument.value?.PresentAE === true))
 
-const PresentAE = computed(() => !Loading.value && ItemDocument.value.PresentAE)
-
-const Notification = computed(() => (Loading.value ? '' : ItemDocument.value?.Notification || ''))
+const Notification = computed(() => (loadingFlag.value ? '' : ItemDocument.value?.Notification || ''))
 
 const MoveToEditView = () => {
-  if (!Loading.value) {
+  if (!loadingFlag.value) {
     router.push({ name: 'edit', params: { uid: uid.value } })
   }
 }
@@ -85,20 +81,44 @@ const RemoveDocumentKeypress = (event) => {
 
 const RemoveDocument = async () => {
   if (await Popups.confirm('この症例を削除します.よろしいですか?')) {
-    Loading.value = true
+    loadingFlag.value = true
     store.dispatch('RemoveDocument', { DocumentId: uid.value })
+  }
+}
+
+const Select = (event) => {
+  if (event.ctrlKey) {
+    // Ctrlキー押下時はMultiSelect
+    MultiSelect()
+  } else {
+    // それ以外はSingleSelect
+    SingleSelect()
+  }
+}
+const SingleSelect = () => {
+  if (!props.selected) {
+    emit('select', uid.value)
+  }
+}
+
+const MultiSelect = () => {
+  if (!props.selected) {
+    emit('multiselect', { uid: uid.value, selected: true })
+  } else {
+    emit('multiselect', { uid: uid.value, selected: false })
   }
 }
 </script>
 
 <template>
   <div
-    class="caseitem"
+    :class="props.selected ? ['caseitem', 'selected'] : ['caseitem']"
     :id="'doc' + uid.toString(10)"
     tabindex="0"
     @keypress.enter="MoveToEditView()"
     @keydown.o="MoveToEditView()"
     @dblclick="MoveToEditView()"
+    @click="Select($event)"
     @keydown.x="RemoveDocumentKeypress($event)"
   >
     <div class="caseitem-icon">
@@ -107,20 +127,20 @@ const RemoveDocument = async () => {
     <div class="caseitem-description">
       <div class="caseitem-row">
         <span class="w20"> {{ DateOfProcedure }} </span>
-        <template v-if="PersonalInformation.Denial === true">
+        <template v-if="Denial === true">
           <el-tooltip
             placement="top-start"
             :open-delay="700"
             content="この症例には登録拒否が設定されています"
           >
-            <span class="w20 caution-font"> {{ PersonalInformation.Id }} </span>
+            <span class="w20 caution-font"> {{ Id }} </span>
           </el-tooltip>
         </template>
         <template v-else>
-          <span class="w20"> {{ PersonalInformation.Id }} </span>
+          <span class="w20"> {{ Id }} </span>
         </template>
-        <span class="w30 truncatable"> {{ PersonalInformation.Name }} </span>
-        <span class="w10"> {{ PersonalInformation.Age }} </span>
+        <span class="w30 truncatable"> {{ Name }} </span>
+        <span class="w10"> {{ Age }} </span>
         <span class="w20"></span>
       </div>
       <div class="caseitem-row">
@@ -130,15 +150,15 @@ const RemoveDocument = async () => {
       </div>
     </div>
     <div class="caseitem-controller">
-      <template v-if="Loading">
-        <el-icon>
-          <LoadingIcon class="button-font" />
-        </el-icon>
+      <template v-if="loadingFlag">
+        <div><el-icon class="button-font">
+          <LoadingIcon />
+        </el-icon></div>
       </template>
       <template v-else>
-        <el-icon class="button-font" v-if="!Loading" @click="MoveToEditView()">
+        <div><el-icon class="button-font" v-if="!Loading" @click="MoveToEditView()">
           <Edit />
-        </el-icon>
+        </el-icon></div>
       </template>
     </div>
   </div>
@@ -159,6 +179,8 @@ div.caseitem
   flex-direction: row
   &:focus
     background: var(--color-text-placeholder)
+  +.selected
+    background: var(--color-text-placeholder)
 div.caseitem-icon
   width: 60px
   display: flex
@@ -176,6 +198,10 @@ div.caseitem-controller
   display: flex
   flex-direction: column
   justify-content: space-around
+  div
+    display: inline-flex
+    flex-direction: row
+    justify-content: center
 .caution-badge
   border-radius: 1rem
   margin: 0.07rem

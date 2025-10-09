@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from '@/store'
 import { Loading } from '@element-plus/icons-vue'
@@ -18,9 +18,10 @@ onMounted(() => {
   // vue routerのscrollを代替 - #doc-id なエレメントが中心になるようにスクロールとfocusする
   if (route.hash) {
     const element = document.getElementById(route.hash.slice(1))
-    if (element) {
+    if (element.id.match(/^doc-\d+$/)) {
       element.scrollIntoView({ block: 'center' })
       element.focus()
+
     }
   }
 })
@@ -34,6 +35,7 @@ const noMore = computed(() => store.getters.PagedUidsRange >= store.getters.Numb
 
 // リスト項目一覧
 const uids = computed(() => store.getters.PagedUids)
+const selectedUids = ref([])
 
 // ハンドラー
 // ドロワーの開閉
@@ -52,6 +54,32 @@ const moveFocus = (offset) => {
     ]
     if (moveto) {
       document.getElementById('doc' + moveto).focus()
+      onSingleSelect(moveto)
+    }
+  }
+}
+
+// uidsが変更されたらselectedUidsをクリア
+watch(uids, () => {
+  selectedUids.value.splice(0)
+})
+
+// SingleSelectのハンドラー
+const onSingleSelect = (uid) => {
+  selectedUids.value.splice(0)
+  selectedUids.value.push(uid)
+}
+
+// MultiSelectのハンドラー
+const onMultiSelect = ({ uid, selected }) => {
+  if (selected) {
+    if (!selectedUids.value.includes(uid)) {
+      selectedUids.value.push(uid)
+    }
+  } else {
+    const index = selectedUids.value.indexOf(uid)
+    if (index !== -1) {
+      selectedUids.value.splice(index, 1)
     }
   }
 }
@@ -86,7 +114,7 @@ const loadMore = () => {
       <ListDrawer :visible="showDrawer" @close="closeDrawer"/>
 
       <template v-for="uid in uids" :key="uid">
-        <CaseDocument :uid="uid"/>
+        <CaseDocument :uid="uid" :selected="selectedUids.includes(uid)" @select="onSingleSelect" @multiselect="onMultiSelect"/>
       </template>
 
       <div v-if="loading" class="loading-container">
