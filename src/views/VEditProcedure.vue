@@ -9,7 +9,7 @@
           <SelectPane title="対象臓器" v-model="target" :items="targetSelections" />
         </div>
         <div class="w60 selectionbox">
-          <SelectPane title="実施手術の候補" v-model="selectedItem" :items="candidates" @change="OnCandidateSelected" @dblclick="CommitChanges()" />
+          <SelectPane title="実施手術の候補" v-model="selectedItem" :items="candidates" @dblclick="CommitChanges()" />
         </div>
       </div>
 
@@ -42,12 +42,12 @@
           :title="additionalProcedure.Title"
           :selectionMode="additionalProcedure.SelectionMode"
           :options="additionalProcedure.Options"
-          v-model:value="additionalProcedure.Value"
+          v-model="additionalProcedure.Value"
          />
       </template>
 
       <FreewordSection
-        v-model:value="freewordText"
+        v-model="freewordText"
         :disabled="!UserEditingAllowed"
         @click-search="SetCandidateItemsByFreeword"
         ref="freewordSection"
@@ -217,6 +217,16 @@ watch(target, () => {
   }
 })
 
+watch(selectedItem, async () => {
+  if (selectedItem.value !== '') {
+    freewordText.value = ''
+    await OnCandidateSelected()
+  } else {
+    // 選択がクリアされた場合は付随情報もクリア
+    await ClearSelectedEntry()
+  }
+})
+
 const ClearSelectedEntry = async () => {
   selectedItem.value = ''
   setDescription(undefined)
@@ -248,8 +258,9 @@ const SetCandidateItemsByFreeword = async () => {
 }
 
 const OnCandidateSelected = async () => {
-  console.log('Candidate Selected.')
+  console.log(`Candidate Selected: ${selectedItem.value}`)
   if (selectedItem.value) {
+    // 選択肢から入力に応じたマスタ情報を取得
     const masterItem = ProceduresMaster.getItem(
       selectedItem.value,
       category.value,

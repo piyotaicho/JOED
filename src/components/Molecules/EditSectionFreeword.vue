@@ -1,17 +1,17 @@
 <script setup>
-import { ref, onMounted, computed, nextTick } from 'vue'
-import { DArrowLeft, DArrowRight } from '@element-plus/icons-vue'
+import { ref, onMounted, nextTick } from 'vue'
+import { DArrowLeft, DArrowRight, Search } from '@element-plus/icons-vue'
 
 const props = defineProps({
-  value: {
-    type: String
-  },
   disabled: {
     type: Boolean,
     default: true
   }
 })
-const emit = defineEmits(['update:value', 'click-search'])
+const modelValue = defineModel({
+  type: String
+})
+const emit = defineEmits(['click-search'])
 
 const expandInput = ref(false)
 const inputElement = ref()
@@ -20,11 +20,6 @@ onMounted(() => {
   if (props.value !== '') {
     expandInput.value = true
   }
-})
-
-const typedValue = computed({
-  get: () => props.value,
-  set: (value) => emit('update:value', value)
 })
 
 const toggle = () => {
@@ -57,14 +52,14 @@ defineExpose({ open })
     </div>
     <div class="w40" v-show="expandInput">
         <input type="text"
-          v-model="typedValue"
+          v-model="modelValue"
           :disabled="props.disabled"
           placeholder="カテゴリ選択後に入力・検索可能になります"
           ref="inputElement"
         />
     </div>
     <div class="w20" v-show="expandInput">
-      <el-button type="primary" @click="search" icon="el-icon-search" :disabled="props.disabled">候補を検索</el-button>
+      <el-button type="primary" @click="search" :icon="Search" :disabled="props.disabled">候補を検索</el-button>
     </div>
   </div>
 </template>
