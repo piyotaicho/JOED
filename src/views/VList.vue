@@ -34,6 +34,8 @@ const noMore = computed(() => store.getters.PagedUidsRange >= store.getters.Numb
 
 // リスト項目一覧
 const uids = computed(() => store.getters.PagedUids)
+// 選択モード
+const multiSelectMode = ref(false)
 const selectedUids = ref([])
 
 // ハンドラー
@@ -53,11 +55,7 @@ const moveFocus = (offset) => {
     ]
     if (moveto) {
       document.getElementById('doc' + moveto).focus()
-      // フォーカス移動時は選択状態を変更しない
-      // キーボードで選択を変更したい場合は別のキーバインドを使用
-      if (selectedUids.value.length === 1) {
-        selectedUids.value.splice(0)
-      }
+      // フォーカス移動時はmultiSelectModeは変化させない
     }
   }
 }
@@ -65,6 +63,7 @@ const moveFocus = (offset) => {
 // uidsのリスト内容が変更されたらselectedUidsをクリア
 watch(uids, () => {
   selectedUids.value.splice(0)
+  multiSelectMode.value = false
 })
 
 // SingleSelectのハンドラー
@@ -72,6 +71,7 @@ const onSingleSelect = (uid) => {
   // 単一選択時は常に複数選択を解除し、指定されたuidのみを選択
   selectedUids.value.splice(0)
   selectedUids.value.push(uid)
+  multiSelectMode.value = false
 }
 
 // MultiSelectのハンドラー
@@ -86,25 +86,52 @@ const onMultiSelect = ({ uid, selected }) => {
       selectedUids.value.splice(index, 1)
     }
   }
+  // CTRL+クリックでの操作では常にmultiSelectModeをtrueにする
+  multiSelectMode.value = true
 }
 
-// キーボードによる選択機能
-const selectFocusedItem = (single = false) => {
+// ESCキーでの選択解除
+const handleEscapeKey = () => {
   const currentid = document.activeElement.id
   if (!showDrawer.value && !showStartupDialog.value && currentid !== '' && currentid.startsWith('doc')) {
     const uid = Number(currentid.substring(3))
-    if (single) {
-      // 単一選択モード
-      onSingleSelect(uid)
-      return
-    }
+    // 現在フォーカスのあるCaseDocumentがあれば[uid]、なければ[]
+    selectedUids.value.splice(0)
+    selectedUids.value.push(uid)
+  } else {
+    // フォーカスがない場合は空にする
+    selectedUids.value.splice(0)
+  }
+  multiSelectMode.value = false
+}
 
-    if (selectedUids.value.includes(uid)) {
-      // 既に選択されている場合は選択解除
-      onMultiSelect({ uid, selected: false })
+// SPACEキーでの選択切り替え
+const handleSpaceKey = () => {
+  const currentid = document.activeElement.id
+  if (!showDrawer.value && !showStartupDialog.value && currentid !== '' && currentid.startsWith('doc')) {
+    const uid = Number(currentid.substring(3))
+
+    if (multiSelectMode.value) {
+      // multiSelectModeの場合は既存の選択に追加/削除
+      if (selectedUids.value.includes(uid)) {
+        // 既に選択されている場合は選択解除
+        const index = selectedUids.value.indexOf(uid)
+        selectedUids.value.splice(index, 1)
+
+        // 結果が空になった場合は[uid]でmultiSelectMode = false
+        if (selectedUids.value.length === 0) {
+          selectedUids.value.push(uid)
+          multiSelectMode.value = false
+        }
+      } else {
+        // 選択されていない場合は追加
+        selectedUids.value.push(uid)
+      }
     } else {
-      // 選択されていない場合は選択
-      onMultiSelect({ uid, selected: true })
+      // multiSelectModeでない場合は単一選択を解除してmultiSelectModeに移行
+      selectedUids.value.splice(0)
+      selectedUids.value.push(uid)
+      multiSelectMode.value = true
     }
   }
 }
@@ -128,8 +155,8 @@ const loadMore = () => {
     @keydown.k="moveFocus(-1)"
     @keydown.down.prevent="moveFocus(+1)"
     @keydown.j="moveFocus(+1)"
-    @keydown.space.prevent="selectFocusedItem(false)"
-    @keydown.escape="selectFocusedItem(true)"
+    @keydown.space.prevent="handleSpaceKey"
+    @keydown.escape="handleEscapeKey"
   >
     <div class="itemlist"
          v-infinite-scroll="loadMore"
@@ -141,7 +168,7 @@ const loadMore = () => {
       <ListDrawer :visible="showDrawer" @close="closeDrawer"/>
 
       <template v-for="uid in uids" :key="uid">
-        <CaseDocument :uid="uid" :selected="selectedUids.length > 1 && selectedUids.includes(uid)" @select="onSingleSelect" @multiselect="onMultiSelect"/>
+        <CaseDocument :uid="uid" :selected="selectedUids.includes(uid) && multiSelectMode" @select="onSingleSelect" @multiselect="onMultiSelect"/>
       </template>
 
       <div v-if="fetching" class="fetching-container">
