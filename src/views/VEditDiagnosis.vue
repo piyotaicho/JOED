@@ -14,7 +14,7 @@
       </div>
 
       <FreewordSection
-        v-model:value="freewordText"
+        v-model="freewordText"
         :disabled="!UserEditingAllowed"
         @click-search="SetCandidateItemsByFreeword"
         ref="freewordSection"
