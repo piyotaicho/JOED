@@ -86,25 +86,14 @@ const RemoveDocument = async () => {
   }
 }
 
+// マウスでの選択 - ctrlキー押下時はMultiSelect
 const Select = (event) => {
   if (event.ctrlKey) {
     // Ctrlキー押下時はMultiSelect
-    MultiSelect()
+    emit('multiselect', { uid: uid.value, selected: !props.selected })
   } else {
     // それ以外はSingleSelect
-    SingleSelect()
-  }
-}
-const SingleSelect = () => {
-  // 単一選択では常に選択状態を更新
-  emit('select', uid.value)
-}
-
-const MultiSelect = () => {
-  if (!props.selected) {
-    emit('multiselect', { uid: uid.value, selected: true })
-  } else {
-    emit('multiselect', { uid: uid.value, selected: false })
+    emit('select', uid.value)
   }
 }
 </script>
@@ -116,6 +105,7 @@ const MultiSelect = () => {
     tabindex="0"
     @keypress.enter="MoveToEditView()"
     @keydown.o="MoveToEditView()"
+    @keydown.l="MoveToEditView()"
     @dblclick="MoveToEditView()"
     @click="Select($event)"
     @keydown.x="RemoveDocumentKeypress($event)"
