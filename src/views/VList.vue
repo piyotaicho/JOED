@@ -8,6 +8,7 @@ import NewEntryButton from '@/components/Atoms/NewEntryButton.vue'
 import CaseDocument from '@/components/Organisms/CaseDocument.vue'
 import ListDrawer from '@/components/Organisms/ListDrawer.vue'
 import WelcomeBanner from '@/components/Organisms/WelcomeBanner.vue'
+import { confirm } from '@/modules/Popups'
 
 const store = useStore()
 const route = useRoute()
@@ -65,6 +66,31 @@ watch(uids, () => {
   selectedUids.value.splice(0)
   multiSelectMode.value = false
 })
+
+// 症例削除のディスパッチ
+const dispatchRemove = async () => {
+  if (selectedUids.value.length === 0) return
+  if (selectedUids.value.length === 1) {
+    // 単一選択の場合は確認ダイアログを表示
+    await confirm('症例を削除します. よろしいですか？', '確認').then((result) => {
+      if (result) {
+        store.dispatch('RemoveDocument', { DocumentId: selectedUids.value[0] })
+        selectedUids.value.splice(0)
+        multiSelectMode.value = false
+      }
+    })
+    return
+  }
+  await confirm(`選択されている${selectedUids.value.length}件の症例を削除します. よろしいですか？`, '確認').then((result) => {
+    if (result) {
+      selectedUids.value.forEach((uid) => {
+        store.dispatch('RemoveDocument', { DocumentId: uid })
+      })
+      selectedUids.value.splice(0)
+      multiSelectMode.value = false
+    }
+  })
+}
 
 // SingleSelectのハンドラー
 const onSingleSelect = (uid) => {
@@ -168,7 +194,7 @@ const loadMore = () => {
       <ListDrawer :visible="showDrawer" @close="closeDrawer"/>
 
       <template v-for="uid in uids" :key="uid">
-        <CaseDocument :uid="uid" :selected="selectedUids.includes(uid) && multiSelectMode" @select="onSingleSelect" @multiselect="onMultiSelect"/>
+        <CaseDocument :uid="uid" :selected="selectedUids.includes(uid) && multiSelectMode" @select="onSingleSelect" @multiselect="onMultiSelect" @remove="dispatchRemove"/>
       </template>
 
       <div v-if="fetching" class="fetching-container">

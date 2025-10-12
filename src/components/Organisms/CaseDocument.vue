@@ -4,7 +4,6 @@ import { onMounted, ref, computed } from 'vue'
 import { useStore } from '@/store'
 import { useRouter } from 'vue-router'
 import CategoryIdentifier from '@/components/Atoms/CaseCategoryIdentifier.vue'
-import * as Popups from '@/modules/Popups'
 import CaseDocumentHandler from '@/modules/DbItemHandler'
 
 const store = useStore()
@@ -20,7 +19,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['select', 'multiselect'])
+const emit = defineEmits(['select', 'multiselect', 'remove'])
 
 // 情報取得中フラグ
 const fetching = ref(true)
@@ -74,22 +73,19 @@ const RemoveDocumentKeypress = (event) => {
         ? event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey // macOS - command
         : event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey // Windows - Ctrl
     ) {
-      RemoveDocument()
+      emit('remove')
+      // RemoveDocument()
     }
-  }
-}
-
-const RemoveDocument = async () => {
-  if (await Popups.confirm('この症例を削除します.よろしいですか?')) {
-    fetching.value = true
-    store.dispatch('RemoveDocument', { DocumentId: uid.value })
   }
 }
 
 // マウスでの選択 - ctrlキー押下時はMultiSelect
 const Select = (event) => {
-  if (event.ctrlKey) {
-    // Ctrlキー押下時はMultiSelect
+  if ( store.getters['system/Platform'] === 'darwin'
+    ? event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey // macOS - command
+    : event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey // Windows - Ctrl
+    ) {
+    // Ctrl or commandキー押下時はMultiSelect
     emit('multiselect', { uid: uid.value, selected: !props.selected })
   } else {
     // それ以外はSingleSelect
