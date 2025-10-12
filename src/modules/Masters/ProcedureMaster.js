@@ -1,9 +1,12 @@
 import Master from '@/modules/Masters/Master'
+import Fuse from 'fuse.js'
 import { ZenToHan } from '@/modules/ZenHanChars'
 // import { getCloseMatches } from 'difflib'
 
 export const LastUpdate = '2024-12-01'
 const defaultReference = '2024'
+
+const Kcodeformat = /^([A-Z]\d{3})(-0?(\d))?(-0?(\d))?/
 
 // Description の Values: [] のフォーマット
 //
@@ -876,47 +879,73 @@ export default class ProcedureMaster extends Master {
     return (this.getDescriptionObject(item)?.Selection || 'one')
   }
 
-  // CloseMatch
+  // あいまい検索での候補選定
+  //
+  // @param {string} 検索文字列
+  // @param {string}
+  // @param {string}
+  // @param {string|number}
+  //
+  // @return {array}
   Matches(text, category = '', target = '', year = this.YearofMaster) {
-    const source = translation(text)
-    if (source === '') {
+    if (text === undefined || text === '') {
       return []
     }
-    const flattenitems = this.Items(category, target, year)
-    const matcheditemtitles = []
-    // ステップ1 ～正規化しての部分一致
-    // これで一致するものがあったら重複を排除して返す
-    for (const item of flattenitems) {
-      if (
-        this.getText(item).includes(source) ||
-        matchCode(ProcedureMaster.getCodes(item), source)
-      ) {
-        matcheditemtitles.push(this.getText(item))
-      }
-    }
-    if (matcheditemtitles.length > 0) {
-      return Array.from(new Set(matcheditemtitles))
+
+    // 検索文字列の正規化
+    const regulaterdText = regulateExpression(text)
+    if (regulaterdText === '') {
+      return []
     }
 
-    // ステップ2 ～closematch
-    return [] //Array.from(new Set(getCloseMatches(
-    //   source,
-    //   flattenitems.map(item => this.getText(item)),
-    //   12, 0.34 // cut and tryでの類似度がこれ
-    // )))
+    // マスタから年次・カテゴリ・対象に応じた術式一覧を取得
+    const masterItems = this.Items(category, target, year)
+      .map(item => {
+        return {
+          Text: item.Text,
+          Kcode: item?.Kcode || [],
+          history: item?.history || []
+        }
+      })
+
+    let results = []
+
+    // Kコードでの検索
+    if (Kcodeformat.test(regulaterdText)) {
+      results = masterItems
+        .filter(item => matchCode(ProcedureMaster.getCodes(item), regulaterdText))
+        .map(item => item.Text)
+    }
+
+    // Fuse.jsを使ったあいまい検索
+    const fuzzyMatch = new Fuse(masterItems, { keys: ['Text', 'Kcode', 'history'], threshold: 0.45 })
+    const fuzzyResults = fuzzyMatch.search(regulaterdText)
+    results.push(...fuzzyResults.map(result => result.item.Text))
+
+    // 重複を排除して返す
+    return results.length < 2 ? results : Array.from(new Set(results))
   }
 } // class ProcedureMaster おわり
 
+// コンパニオン関数
+
+// Kコードの比較 ～ 表記に揺らぎが大きいのでグループ毎に比較する
+//
+// @param {array}
+// @param {string}
+//
+// @return {boolean}
 function matchCode(codes, value) {
   if (codes === undefined || Array.isArray(codes) === false) {
     return false
   }
   // matches $1 - code $3 - subcode $5 - subcode2
-  const codebreaker = /^([A-Z]\d{3})(-0?(\d))?(-0?(\d))?/
-  const valuegroups = (value.toLocaleUpperCase() + '-0-0').match(codebreaker)
+  const valuegroups = (value.toLocaleUpperCase() + '-0-0').match(Kcodeformat)
+  console.log(valuegroups)
   if (valuegroups !== null) {
     for (const code of codes) {
-      const breakedcode = code.match(codebreaker)
+      const breakedcode = code.match(Kcodeformat)
+      console.log('breaked',  breakedcode)
       if (
         valuegroups[1] === breakedcode[1] &&
         Number(valuegroups[3]) === Number(breakedcode[3]) &&
@@ -938,11 +967,11 @@ const ruleset1 = {
   膣: '腟',
   頚: '頸',
   '(瘤|下垂)': '脱',
-  がん: '癌',
+  '(がん|悪性腫瘍|肉腫)': '癌',
   チョコレート: '子宮内膜症性',
-  剔出: '摘出',
   '(のう|嚢)(腫|胞)': '嚢$2',
   '(嚢(腫|胞))核出': '$1摘出',
+  剔出: '摘出',
   '全摘出?': '全摘出',
   // 術式では卵巣とつくものは卵巣癌のみなのでそれ以外は付属器に集約する
   '卵巣[^癌]': '付属器'
@@ -972,7 +1001,7 @@ const ruleset2 = {
   'TCRis-?M': 'K873-00-01'
 }
 
-function translation(str = '') {
+function regulateExpression(str = '') {
   // 型変換と前後の余白の削除
   let searchstring = str.toString().trim()
   if (searchstring === '') {
@@ -983,7 +1012,7 @@ function translation(str = '') {
 
   // 連結文字列の検索、連結が発見されたら例外を発生させる
   if (/([ .､、｡。\t]+|(?<!TLH),(?!=LH))/.test(searchstring)) {
-    throw new Error('区切り文字で区切られた複数項目からなる入力は許容されません.')
+    throw new Error('区切り文字を用いた複数項目の自由入力はできません.')
   }
 
   // 置換1 - 文字列の全置換
@@ -1002,3 +1031,4 @@ function translation(str = '') {
 
   return searchstring
 }
+

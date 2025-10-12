@@ -34,6 +34,7 @@
     "element-plus": "^2.11.1",
     "encoding-japanese": "^2.2.0",
     "events": "^3.3.0",
+    "fuse.js": "^7.1.0",
     "pinia": "^3.0.3",
     "process": "^0.11.10",
     "util": "^0.12.5",

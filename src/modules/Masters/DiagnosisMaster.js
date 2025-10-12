@@ -1,9 +1,12 @@
 import Master from '@/modules/Masters/Master'
+import Fuse from 'fuse.js'
 import { ZenToHan } from '@/modules/ZenHanChars'
 // import { getCloseMatches } from 'difflib'
 
 export const LastUpdate = '2022-05-05'
 const defaultReference = '2022'
+
+const icd10format = /^([A-Z][0-9]{2,3})$/i
 
 export default class DiagnosisMaster extends Master {
   constructor() {
@@ -546,59 +549,81 @@ export default class DiagnosisMaster extends Master {
     return this.parseItem(item, 'ICD10')
   }
 
-  // CloseMatchを行う
+  // あいまい検索での候補選定を行う
   //
   // @param{String} 検索文字列
   // @param{String}
   // @param{String}
   // @param{String|Number}
   //
-  // return Array
+  // @return {array}
   Matches(text, category = '', target = '', year = this.YearofMaster) {
-    const source = translation(text)
-    if (source === '') {
+    if (text === undefined || text === '') {
       return []
     }
-    const flattenitems = this.Items(category, target, year)
-    const matcheditemtitles = []
-    // ステップ1 ～正規化しての部分一致
-    // これで一致するものがあったら重複を排除して返す
-    for (const item of flattenitems) {
-      if (
-        this.getText(item).includes(source) ||
-        matchCode(DiagnosisMaster.getCodes(item), source)
-      ) {
-        matcheditemtitles.push(this.getText(item))
-      }
+
+    // 文字列の正規化を行う
+    const regulaterdText = regulateExpression(text)
+    if (regulaterdText === '') {
+      return []
     }
-    if (matcheditemtitles.length > 0) {
-      return Array.from(new Set(matcheditemtitles))
+
+    // マスタから年次・カテゴリ・対象に応じたフラットな配列を取得
+    const masterItems = this.Items(category, target, year)
+      .map(item => {
+        return {
+          Text: item.Text,
+          ICD10: item?.ICD10 || [],
+          history: item?.history || []
+        }
+      })
+
+    // ICD10コードでの検索を行う
+    let results = []
+    if (icd10format.test(regulaterdText)) {
+      results = masterItems
+        .filter(item => matchCode(DiagnosisMaster.getCodes(item), regulaterdText))
+        .map(result => result.Text)
     }
-    // ステップ2 ～closematch
-    return [] // Array.from(new Set(getCloseMatches(
-    //   source,
-    //   flattenitems.map(item => this.getText(item)),
-    //   12, 0.34 // cut and tryでの類似度がこれ
-    // )))
+
+    // Fuse.jsを利用して曖昧検索を行う
+    const fuzzyMatch = new Fuse(masterItems, { keys: ['Text', 'ICD10', 'history'], threshold: 0.45 })
+    const fuzzyResults = fuzzyMatch.search(regulaterdText)
+    results.push(
+      ...fuzzyResults.map(result => result.item.Text)
+    )
+
+    // 複数候補がある場合重複を排除して返す
+    return results.length < 2 ? results : Array.from(new Set(results))
   }
 } // class DiagnosisMaster おわり
 
+// コンパニオン関数
+
+// ICD10コードの比較を行う
+//
+// @param{Array} ICD10コードの配列
+// @param{String} 比較するコード
+// return Boolean
 function matchCode(codes, value) {
-  if (codes === undefined || Array.isArray(codes) === false) {
+  if (codes === undefined || Array.isArray(codes) === false || codes.length === 0) {
     return false
   }
-  const icd10format = /^([A-Z][0-9]{2,3})$/i
-  if (icd10format.test(value)) {
-    const uppercasedvalue = value.toLocaleUpperCase()
-    for (const code of codes) {
-      if (compareCode(code, uppercasedvalue)) {
-        return true
-      }
-    }
+
+  if (!icd10format.test(value)) {
+    return false
   }
-  return false
+
+  const uppercasedvalue = value.toLocaleUpperCase()
+  return codes.some(code => compareCode(code, uppercasedvalue))
 }
 
+// ワイルドカードを考慮したコードの比較を行う
+//
+// @param{String} 比較するコード1
+// @param{String} 比較するコード2
+//
+// return Boolean
 function compareCode(str1 = 'A', str2 = 'B') {
   const wildcard1 = str1.indexOf('*')
   const wildcard2 = str2.indexOf('*')
@@ -618,7 +643,7 @@ function compareCode(str1 = 'A', str2 = 'B') {
 // @param{String}
 //
 // return String
-function translation(str = '') {
+function regulateExpression(str = '') {
   // 型変換と余白の削除
   let searchstring = str.toString().trim()
   if (searchstring === '') {
@@ -629,7 +654,7 @@ function translation(str = '') {
 
   // 連結文字列の検索、連結が発見されたら例外を発生させる
   if (/[ ,.､、｡。+＋\t]+/.test(searchstring)) {
-    throw new Error('区切り文字で区切られた複数項目からなる入力は許容されません.')
+    throw new Error('区切り文字を用いた複数項目の自由入力はできません.')
   }
 
   // 置換1 - 文字列の全置換
