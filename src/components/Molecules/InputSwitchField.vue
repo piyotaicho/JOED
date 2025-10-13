@@ -50,6 +50,8 @@ if (toString.call(props.options) === '[object Object]') {
     texts = [...props.options].splice(0, 2)
   }
 }
+
+const switchColorStyle = `--el-switch-on-color: ${colors[1]}; --el-switch-off-color: ${colors[0]};`
 </script>
 
 <template>
@@ -60,10 +62,9 @@ if (toString.call(props.options) === '[object Object]') {
         v-model="value"
         :inactive-text="texts[0]"
         :inactive-value="values[0]"
-        :inactive-color="colors[0]"
         :active-text="texts[1]"
         :active-value="values[1]"
-        :active-color="colors[1]"
+        :style="switchColorStyle"
         v-bind="$attrs"
       />
     </div>
