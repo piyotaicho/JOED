@@ -290,10 +290,9 @@ export function MigrateFrom2019 (CaseData) {
       子宮体部前癌病変: '子宮内膜増殖症・異型増殖症',
       帝王切開瘢痕部症候群: '帝王切開瘢痕症候群',
       ...(dataYear >= '2021'
-        ? [
+        ? {
           '機能性不妊症(腹腔内検査)': '機能性不妊症(腹腔内検査,SecondLookを含む)',
-        ]
-
+        } : {}
       )
     }
     for (let index = 0; index < CaseData.Diagnoses.length; index++) {

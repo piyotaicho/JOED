@@ -8,10 +8,9 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits('click', 'buttonClick')
+const emit = defineEmits(['click', 'buttonClick'])
 
 const onClick = () => emit('click')
-
 const onButtonClick = () => emit('buttonClick')
 </script>
 

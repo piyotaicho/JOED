@@ -66,6 +66,7 @@ const exportAsBackup = computed({
 
 const readyToExport = computed(() => jsonText.value.length > 4)
 
+// エクスポート処理
 const Process = async () => {
   if (setting.year === '') {
     await Popups.error('年次が選択されていません.')
@@ -372,7 +373,7 @@ const CreateHeader = async (exportItem, countOfDenial) => {
       <div class="progress-views" v-show="status.processStep !== undefined">
         <el-steps
           :active="status.processStep"
-          process-status="warning"
+          process-status="wait"
           finish-status="success"
           direction="vertical"
           space="42px"
