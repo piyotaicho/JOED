@@ -941,11 +941,9 @@ function matchCode(codes, value) {
   }
   // matches $1 - code $3 - subcode $5 - subcode2
   const valuegroups = (value.toLocaleUpperCase() + '-0-0').match(Kcodeformat)
-  console.log(valuegroups)
   if (valuegroups !== null) {
     for (const code of codes) {
       const breakedcode = code.match(Kcodeformat)
-      console.log('breaked',  breakedcode)
       if (
         breakedcode !== null &&
         valuegroups[1] === breakedcode[1] &&
