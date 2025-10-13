@@ -1,6 +1,6 @@
 import { encodeProcedureTime, parseProcedureTime } from '@/modules/ProcedureTimes'
 import { DateFormat, DateFormatPattern } from '@/modules/CaseValidater'
-import { Migrate2019to2020 } from '@/modules/ImportMergeV4'
+import { MigrateFrom2019 } from '@/modules/ImportMergeV4'
 
 let staticCount = 0
 
@@ -283,7 +283,7 @@ function AEs (CaseData, record, ruleset) {
 
 export function Migrate (CaseData) {
   // MergeV4のルーチンを利用
-  return Migrate2019to2020(CaseData)
+  return MigrateFrom2019(CaseData)
 }
 
 export function ConvertCharacters (str = '') {
