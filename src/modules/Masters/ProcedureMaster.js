@@ -918,7 +918,7 @@ export default class ProcedureMaster extends Master {
     }
 
     // Fuse.jsを使ったあいまい検索
-    const fuzzyMatch = new Fuse(masterItems, { keys: ['Text', 'Kcode', 'history'], threshold: 0.45 })
+    const fuzzyMatch = new Fuse(masterItems, { keys: ['Text', 'history'], threshold: 0.49 })
     const fuzzyResults = fuzzyMatch.search(regulaterdText)
     results.push(...fuzzyResults.map(result => result.item.Text))
 
@@ -947,6 +947,7 @@ function matchCode(codes, value) {
       const breakedcode = code.match(Kcodeformat)
       console.log('breaked',  breakedcode)
       if (
+        breakedcode !== null &&
         valuegroups[1] === breakedcode[1] &&
         Number(valuegroups[3]) === Number(breakedcode[3]) &&
         Number(valuegroups[5]) === Number(breakedcode[5])
@@ -962,6 +963,10 @@ function matchCode(codes, value) {
 const ruleset1 = {
   // 修飾語の除去
   '緊急|右|左': '',
+  '全?腹腔鏡(補助)?下': '',
+  'ロボット(支援下?)?': '',
+  '子宮鏡下?': '',
+  '卵管鏡下?': '',
   // 一般的なゆらぎの内容
   附属器: '付属器',
   膣: '腟',
@@ -1011,7 +1016,7 @@ function regulateExpression(str = '') {
   searchstring = ZenToHan(searchstring)
 
   // 連結文字列の検索、連結が発見されたら例外を発生させる
-  if (/([ .､、｡。\t]+|(?<!TLH),(?!=LH))/.test(searchstring)) {
+  if (/([ +＋.､、｡。\t]+|(?<!TLH),(?!=LH))/.test(searchstring)) {
     throw new Error('区切り文字を用いた複数項目の自由入力はできません.')
   }
 
