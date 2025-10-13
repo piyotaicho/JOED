@@ -100,7 +100,7 @@ onMounted(async () => {
       selectedItem.value = ''
       freewordText.value = item.Text
       await nextTick()
-      freewordSection.value.open()
+      freewordSection.value.Open()
     }
   } else {
     // 新規編集の場合はカテゴリにフォーカスする
@@ -157,11 +157,15 @@ const SetCandidateItemsByFreeword = async () => {
 
 const CommitChanges = async () => {
   const temporaryItem = {}
+  // 選択チェーンの構築
+  temporaryItem.Chain = [category.value, ...(target.value !== '' ? [target.value] : [])]
+
+  // Textの設定
   if (selectedItem.value !== '') {
-    // 選択された内容が最優先
+    // 選択された内容が保存される
+
     // 選択されたものには適切な付随情報を収納
     temporaryItem.Text = selectedItem.value
-    temporaryItem.Chain = [category.value, ...(target.value !== '' ? [target.value] : [])]
   } else {
     if (freewordText.value.trim() !== '') {
       // 自由入力は兎にも角にも候補入力を優先させる.
@@ -186,7 +190,6 @@ const CommitChanges = async () => {
 
       // ユーザ手入力の場合は選択が掛かっていないので最低限の情報のみかつフラグを必ず立てる
       temporaryItem.Text = freewordText.value.trim()
-      temporaryItem.Chain = [category.value]
       temporaryItem.UserTyped = true
     }
   }

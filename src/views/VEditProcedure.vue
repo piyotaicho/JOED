@@ -215,13 +215,11 @@ watch(category, async () => {
 watch(target, () => {
   if (target.value !== '') {
     SetCandidateItemsBySelection()
-    ClearSelectedEntry()
   }
 })
 
 watch(selectedItem, async () => {
   if (selectedItem.value !== '') {
-    freewordText.value = ''
     await OnCandidateSelected()
   } else {
     // 選択がクリアされた場合は付随情報もクリア
@@ -260,7 +258,6 @@ const SetCandidateItemsByFreeword = async () => {
 }
 
 const OnCandidateSelected = async () => {
-  console.log(`Candidate Selected: ${selectedItem.value}`)
   if (selectedItem.value) {
     // 選択肢から入力に応じたマスタ情報を取得
     const masterItem = ProceduresMaster.getItem(
@@ -331,16 +328,18 @@ const SetAdditionalProcedure = async (item) => {
 
 const CommitChanges = async () => {
   const temporaryItem = {}
+  // 選択チェーンの構築
+  temporaryItem.Chain = [
+    category.value,
+    ...(target.value !== '' ? [target.value] : [])
+  ]
 
+  // Text以下の設定
   if (selectedItem.value !== '') {
-    // 選択された内容が最優先
+    // 選択された内容が保存される
 
     // 選択内容を保存
     temporaryItem.Text = selectedItem.value
-    temporaryItem.Chain = [
-      category.value,
-      ...(target.value !== '' ? [target.value] : [])
-    ]
 
     // 選択枝の重複確認情報があればマスタから引用して保存
     const ditto = Master.getDittos(
@@ -433,7 +432,6 @@ const CommitChanges = async () => {
 
       // ユーザ手入力の場合は選択が掛かっていないので最低限の情報のみかつフラグを必ず立てる
       temporaryItem.Text = freewordText.value.trim()
-      temporaryItem.Chain = [category.value]
       temporaryItem.UserTyped = true
     }
   }
