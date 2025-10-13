@@ -53,7 +53,7 @@ div.QueryPane
 div.QueryPaneTitle
   font-weight: 600
   margin: 0 1rem
-  height: 1.4rem
+  height: 32px
 div.QueryPaneList
   position: relative
   min-height: 190.4px

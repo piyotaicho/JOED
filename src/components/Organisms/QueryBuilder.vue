@@ -192,15 +192,9 @@ div.QueryBuilder
   overflow-y: hidden
 
 div.sourceTitle
-  display: inline-flex
+  display: flex
   flex-direction: row
   justify-content: space-between
   height: 1.2rem
   margin-bottom: 0.4rem
-
-// div.record_control
-//   display: inline-block
-//   :hover
-//     color: var(--color-primary)
-//     cursor: pointer
 </style>
