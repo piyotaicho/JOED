@@ -55,12 +55,12 @@ const ComponentList = [
   // { name: '', href: '', license: '' },
   { name: 'Vuex', href: 'https://vuex.vuejs.org/', license: 'MIT' },
   { name: 'Vue Router', href: 'https://router.vuejs.org/', license: 'MIT' },
-  { name: 'Element', href: 'https://element.eleme.io/', license: 'MIT' },
+  { name: 'Element Plus', href: 'https://element-plus.org/', license: 'MIT' },
   { name: 'seald-io/nedb', href: 'https://github.com/seald/nedb', license: 'MIT' },
-  { name: 'Vue.Draggable', href: 'https://github.com/SortableJS/Vue.Draggable', license: 'MIT' },
-  { name: 'Datepicker', href: 'https://github.com/charliekassel/vuejs-datepicker', license: 'MIT' },
+  { name: 'Vue.Draggable', href: 'https://github.com/SortableJS/vue.draggable.next', license: 'MIT' },
+  { name: 'Vue Datepicker', href: 'https://vue3datepicker.com/', license: 'MIT' },
   { name: 'xxhashjs', href: 'https://github.com/pierrec/js-xxhash', license: 'MIT' },
-  { name: 'Difflib.js', href: 'https://github.com/qiao/difflib.js', license: 'PSF' },
+  { name: 'Fuse.js', href: 'https://www.fusejs.io/', license: 'Apache-2.0' },
   { name: 'encoding.js', href: 'https://github.com/polygonplanet/encoding.js', license: 'MIT' },
   ...(process.env.VITE_APP_ELECTRON
     ? [
