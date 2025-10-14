@@ -1,7 +1,9 @@
 export default class CaseDocumentHandler {
-  // データベースの項目
-  // Diagnoses - Array - String/Hash
-  // Procedures - Array - Hash
+  // 症例データの項目に対する操作
+  //
+  // 診断・実施手術項目
+  // Diagnoses - Hash[]
+  // Procedures - Hash[]
   // [
   //   // 以下のhashがitem
   //  {
@@ -113,34 +115,37 @@ export default class CaseDocumentHandler {
   //
   // @Param Object
   static ExportCase (
-    item = {}
+    caserecord = {}
   ) {
     const temporaryItem = {}
 
     // 手術実施年を抽出
-    temporaryItem.YearOfProcedure = item.DateOfProcedure.substring(0, 4)
+    temporaryItem.YearOfProcedure = caserecord.DateOfProcedure.substring(0, 4)
 
     // ProcedureTimeをコピー
-    temporaryItem.ProcedureTime = item.ProcedureTime
+    temporaryItem.ProcedureTime = caserecord.ProcedureTime
 
     // TypeOfProcedureをコピー
-    temporaryItem.TypeOfProcedure = item.TypeOfProcedure
+    temporaryItem.TypeOfProcedure = caserecord.TypeOfProcedure
+
+    // Approachをコピー
+    temporaryItem.Approach = caserecord?.Approach || []
 
     // PresentAEをコピー
-    temporaryItem.PresentAE = item.PresentAE
+    temporaryItem.PresentAE = caserecord.PresentAE
 
     // Importedがtrueの時のみコピー
-    if (item?.Imported) {
+    if (caserecord?.Imported) {
       temporaryItem.Imported = true
     }
 
     // 診断・実施手術を $.[*].Text, $.[*].Description に整形してコピー
-    temporaryItem.Diagnoses = this._flattenItem(item.Diagnoses)
-    temporaryItem.Procedures = this._flattenItem(item.Procedures)
+    temporaryItem.Diagnoses = this._flattenItem(caserecord.Diagnoses)
+    temporaryItem.Procedures = this._flattenItem(caserecord.Procedures)
 
     // 合併症項目をコピー
-    if (item?.AEs && item.AEs.length > 0) {
-      temporaryItem.AEs = Object.assign([], item.AEs)
+    if (caserecord?.AEs && caserecord.AEs.length > 0) {
+      temporaryItem.AEs = Object.assign([], caserecord.AEs)
     }
 
     return temporaryItem
