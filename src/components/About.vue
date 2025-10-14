@@ -57,7 +57,7 @@ const ComponentList = [
   { name: 'Vue Router', href: 'https://router.vuejs.org/', license: 'MIT' },
   { name: 'Element Plus', href: 'https://element-plus.org/', license: 'MIT' },
   { name: 'seald-io/nedb', href: 'https://github.com/seald/nedb', license: 'MIT' },
-  { name: 'Vue.Draggable', href: 'https://github.com/SortableJS/vue.draggable.next', license: 'MIT' },
+  { name: 'Vue.draggable.next', href: 'https://github.com/SortableJS/vue.draggable.next', license: 'MIT' },
   { name: 'Vue Datepicker', href: 'https://vue3datepicker.com/', license: 'MIT' },
   { name: 'xxhashjs', href: 'https://github.com/pierrec/js-xxhash', license: 'MIT' },
   { name: 'Fuse.js', href: 'https://www.fusejs.io/', license: 'Apache-2.0' },
