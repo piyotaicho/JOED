@@ -1,5 +1,4 @@
 <script setup>
-// import { defineModel } from 'vue'
 import NewEntryButton from '@/components/Atoms/NewEntryButton.vue'
 import SectionItem from '@/components/SectionItem.vue'
 import draggableContent from 'vuedraggable'
@@ -14,27 +13,20 @@ const props = defineProps({
     type: String,
     required: true
   },
-  modelValue: {
-    type: Array, // String[]
-    required: true
-  },
   draggable: {
     type: Boolean,
     default: true
   }
 })
-const emit = defineEmits(['addnewitem', 'edititem', 'removeitem'])
+const items = defineModel({ type: Array, required: true })
 
-const items = defineModel()
+const emit = defineEmits(['add', 'edit', 'remove'])
 
-const addNewItem = () => emit('addnewitem')
+const addItem = () => emit('add')
 
-const editItem = (index, item) => emit('edititem', {
-  ItemIndex: index,
-  ItemValue: item
-})
+const editItem = (index, value) => emit('edit', {index, value})
 
-const removeItem = (index) => emit('removeitem', index)
+const removeItem = (index) => emit('remove', index)
 </script>
 
 <template>
@@ -46,7 +38,7 @@ const removeItem = (index) => emit('removeitem', index)
         <template #item="{element, index}">
           <div class="section-item-list">
             <slot :item="element" :index="index">
-              <SectionItem :item="element" @remove="removeItem(index)" @edit="editItem(index, element)" editable/>
+              <SectionItem :value="element" @remove="removeItem(index)" @edit="editItem(index, element)" editable/>
             </slot>
           </div>
         </template>
@@ -56,13 +48,13 @@ const removeItem = (index) => emit('removeitem', index)
       <template v-for="(element, index) in items" :key="index">
         <div class="section-item-list">
           <slot :item="element" :index="index">
-            <SectionItem :item="element" @remove="removeItem(index)" @edit="editItem(index, element)"/>
+            <SectionItem :value="element" @remove="removeItem(index)" @edit="editItem(index, element)"/>
           </slot>
         </div>
       </template>
     </template>
     <slot name="afteritemlist"></slot>
-    <NewEntryButton @click="addNewItem()" tabindex="0" />
+    <NewEntryButton @click="addItem()" tabindex="0" />
   </div>
 </template>
 

@@ -96,11 +96,11 @@ import { alert } from '@/modules/Popups'
 const router = useRouter()
 
 const props = defineProps({
-  ItemIndex: {
+  index: {
     type: Number,
     default: -1
   },
-  ItemValue: {
+  value: {
     type: String
   },
   year: {
@@ -128,12 +128,12 @@ const inaccurateBloodCount = ref(false)
 const firstelement = ref()
 
 // 規定値から省かれた値があるときに通知する為のフラグ
-let irregularItemValue = false
+let irregularvalue = false
 
 // 規定値が与えられた場合mount前に値を展開する
-if (props.ItemValue) {
+if (props.value) {
   try {
-    const payload = JSON.parse(props.ItemValue)
+    const payload = JSON.parse(props.value)
     // カテゴリ
     if (master.Category.map(element => element.Value).indexOf(payload.Category) === -1) {
       throw new Error()
@@ -165,7 +165,7 @@ if (props.ItemValue) {
         if (masteritems.includes(value)) {
           AE[key].push(value)
         } else {
-          irregularItemValue = true
+          irregularvalue = true
         }
       }
     }
@@ -174,7 +174,7 @@ if (props.ItemValue) {
     if (payload?.BloodCount) {
       if (Category.value !== '出血') {
         // 出血以外のカテゴリで出血量が指定されていたら不正入力値として扱う
-        irregularItemValue = true
+        irregularvalue = true
         AE.BloodCount = ''
       } else {
         AE.BloodCount = payload.BloodCount
@@ -186,7 +186,7 @@ if (props.ItemValue) {
     if (payload?.Grade && /([1245]|3[ab])/.test(payload.Grade)) {
       AE.Grade = payload.Grade
     } else {
-      irregularItemValue = true
+      irregularvalue = true
       AE.Grade = ''
     }
 
@@ -203,7 +203,7 @@ if (props.ItemValue) {
         if (courseitems.includes(value)) {
           AE.Course.push(value)
         } else {
-          irregularItemValue = true
+          irregularvalue = true
         }
       }
     }
@@ -213,7 +213,7 @@ if (props.ItemValue) {
 }
 
 onMounted(() => {
-  if (irregularItemValue) {
+  if (irregularvalue) {
     Notification({
       title: 'マスタとの整合性に問題があります',
       message: 'マスタと整合のない既存の入力は自動的に削除されました.',
@@ -287,7 +287,7 @@ const CommitChanges = async () => {
     return
   }
 
-  emit('data-upsert', 'AEs', props.ItemIndex, JSON.stringify(documentAEItem))
+  emit('data-upsert', 'AEs', props.index, JSON.stringify(documentAEItem))
   GoBack()
 }
 </script>

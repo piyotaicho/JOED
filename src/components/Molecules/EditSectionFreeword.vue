@@ -11,7 +11,8 @@ const props = defineProps({
 const modelValue = defineModel({
   type: String
 })
-const emit = defineEmits(['click-search'])
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const emit = defineEmits(['search'])
 
 // element refs
 const inputElement = ref()
@@ -61,7 +62,7 @@ defineExpose({ Open })
         />
     </div>
     <div class="w20" v-show="expandInput">
-      <el-button type="primary" @click="emit('click-search')" :icon="Search" :disabled="props.disabled">候補を検索</el-button>
+      <el-button type="primary" @click="$emit('click-search')" :icon="Search" :disabled="props.disabled">候補を検索</el-button>
     </div>
   </div>
 </template>

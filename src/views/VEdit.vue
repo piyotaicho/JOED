@@ -16,14 +16,14 @@
 
       <SectionDiagnoses
         v-model="CaseData.Diagnoses"
-        @addnewitem="EditSection('diagnosis')"
+        @additem="EditSection('diagnosis')"
         @edititem="EditSection('diagnosis', $event)"
         @removeitem="RemoveListItem('Diagnoses', $event)"
       />
 
       <SectionProcedures
         v-model="CaseData.Procedures"
-        @addnewitem="EditSection('procedure')"
+        @additem="EditSection('procedure')"
         @edititem="EditSection('procedure', $event)"
         @removeitem="RemoveListItem('Procedures', $event)"
       />
@@ -32,7 +32,7 @@
         ref="sectionAEs"
         v-model="CaseData.AEs"
         v-model:optionValue="isNoAEs"
-        @addnewitem="EditSection('AE')"
+        @additem="EditSection('AE')"
         @edititem="EditSection('AE', $event)"
         @removeitem="RemoveListItem('AEs', $event)"
       />
@@ -222,10 +222,11 @@ onBeforeUnmount(() => {
   document.removeEventListener('keydown', keyboardEventListener, true)
 })
 
-onBeforeRouteUpdate((to, _from) => {
-  const goSection = to.name !== 'edit'
-  editingSection.value = goSection
-  if (goSection) {
+onBeforeRouteUpdate((to) => {
+  // 現在の編集状態を確認 - editはセクション編集中ではない
+  editingSection.value = to.name !== 'edit'
+
+  if (editingSection.value) {
     preservedElement = document.activeElement
   } else {
     try {
@@ -265,19 +266,16 @@ const editAnother = (targetUid) => {
   }
 }
 
-const EditSection = (target, params = {}) => {
+const EditSection = (target, payload) => {
   if (editingSection.value) return
-
-  const index = params.ItemIndex !== undefined ? params.ItemIndex : -1
-  const jsonValue = params.ItemValue || '{}'
-  const editingYear = CaseData.DateOfProcedure.substring(0, 4)
+  const {index, value} = payload || {}
 
   router.push({
     name: target,
     query: {
-      ItemIndex: index,
-      ItemValue: jsonValue,
-      year: editingYear,
+      index: index !== undefined ? index : -1,
+      value: value || '{}',
+      year: CaseData.DateOfProcedure.substring(0, 4),
     },
   })
 }

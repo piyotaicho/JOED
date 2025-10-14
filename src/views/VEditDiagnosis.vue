@@ -16,7 +16,7 @@
       <FreewordSection
         v-model="freewordText"
         :disabled="!UserEditingAllowed"
-        @click-search="SetCandidateItemsByFreeword"
+        @search="SetCandidateItemsByFreeword"
         ref="freewordSection"
       />
     </EditSection>
@@ -30,7 +30,6 @@ import Master from '@/modules/Masters/DiagnosisMaster'
 import * as Popups from '@/modules/Popups'
 import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 import EditSection from '@/components/Molecules/EditSection.vue'
-// import ThreePaneSelections from '@/components/Molecules/ThreePaneSelections.vue'
 import SelectPane from '@/components/Molecules/SelectPane.vue'
 import FreewordSection from '@/components/Molecules/EditSectionFreeword.vue'
 
@@ -39,12 +38,12 @@ const DiagnosesMaster = new Master()
 const router = useRouter()
 
 const props = defineProps({
-  ItemIndex: {
+  index: {
     type: Number,
     default: -1,
   },
-  ItemValue: {
-    type: String,
+  value: {
+    type: String, // JSON string
   },
   year: {
     type: String,
@@ -67,46 +66,48 @@ const candidates = ref([])
 const UserEditingAllowed = computed(() => !!category.value && !selectedItem.value)
 const freewordText = ref('')
 
+// 初期化処理
 onMounted(async () => {
-  const item = JSON.parse(props.ItemValue || '{}')
   const selectElements = paneSection.value.getElementsByTagName('SELECT')
 
-  if (props.ItemIndex > -1) {
-    // ItemIndex != -1 の場合は新規ではなく再編集
-
-    // カテゴリ・対象の解釈
-    if (item?.Chain[0] !== undefined) {
-      category.value = item.Chain[0]
-      await nextTick()
-      if (item.Chain[1] !== undefined) {
-        target.value = item.Chain[1]
-        await nextTick()
-      }
-    }
-
-    // カテゴリとあれば対象に応じた選択リストの生成
-    await SetCandidateItemsBySelection()
-
-    if (item?.Text && candidates.value.includes(item.Text)) {
-      // 選択肢に該当項目そのものがある場合選択する
-      selectedItem.value = item.Text
-      freewordText.value = ''
-      await nextTick()
-      if (selectElements && selectElements.length >= 3) {
-        selectElements[2].focus()
-      }
-    } else {
-      // 選択肢に入力されている項目がなければ自由入力に展開する
-      selectedItem.value = ''
-      freewordText.value = item.Text
-      await nextTick()
-      freewordSection.value.Open()
-    }
-  } else {
+  if (props.index < 0) {
     // 新規編集の場合はカテゴリにフォーカスする
     if (selectElements && selectElements.length >= 1) {
       selectElements[0].focus()
     }
+    return
+  }
+
+  // 再編集のため値を展開する
+  const item = JSON.parse(props.value || '{}')
+
+  // カテゴリ・対象の解釈
+  if (item?.Chain[0] !== undefined) {
+    category.value = item.Chain[0]
+    await nextTick()
+    if (item.Chain[1] !== undefined) {
+      target.value = item.Chain[1]
+      await nextTick()
+    }
+  }
+
+  // カテゴリとあれば対象に応じた選択リストの生成
+  await SetCandidateItemsBySelection()
+
+  if (item?.Text && candidates.value.includes(item.Text)) {
+    // 選択肢に該当項目そのものがある場合選択する
+    selectedItem.value = item.Text
+    freewordText.value = ''
+    await nextTick()
+    if (selectElements && selectElements.length >= 3) {
+      selectElements[2].focus()
+    }
+  } else {
+    // 選択肢に入力されている項目がなければ自由入力に展開する
+    selectedItem.value = ''
+    freewordText.value = item.Text
+    await nextTick()
+    freewordSection.value.Open()
   }
 })
 
@@ -195,7 +196,7 @@ const CommitChanges = async () => {
   }
   // 新しいレコードが作成されていたら登録, そうでなければなにもしない.
   if (temporaryItem.Text) {
-    emit('data-upsert', 'Diagnoses', props.ItemIndex, JSON.stringify(temporaryItem))
+    emit('data-upsert', 'Diagnoses', props.index, JSON.stringify(temporaryItem))
     GoBack()
   }
 }

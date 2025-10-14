@@ -4,7 +4,7 @@ import CaseDocumentHandler from '@/modules/DbItemHandler'
 import { Edit, Delete, DCaret } from '@element-plus/icons-vue'
 
 const props = defineProps({
-  item: {
+  value: {
     type: String,
     required: true
   },
@@ -19,13 +19,14 @@ const props = defineProps({
 })
 const emit = defineEmits(['remove', 'edit'])
 
-const item = computed(() => JSON.parse(props.item || '""'))
-const title = computed(() => CaseDocumentHandler.ItemValue(item.value))
+const value = computed(() => JSON.parse(props.value || '""'))
+
+const title = computed(() => CaseDocumentHandler.ItemValue(value.value))
 const description = computed(() => {
-  if (item.value?.Description) {
-    return (Array.isArray(item.value.Description) && item.value.Description.length > 1)
-      ? item.value.Description.map(item => item.replace(/[[\]]/g, '')).join(', ')
-      : item.value.Description[0].replace(/[[\]]/g, '')
+  if (value.value?.Description) {
+    return (Array.isArray(value.value.Description) && value.value.Description.length > 1)
+      ? value.value.Description.map(item => item.replace(/[[\]]/g, '')).join(', ')
+      : value.value.Description[0].replace(/[[\]]/g, '')
   }
   return ''
 })
@@ -44,7 +45,7 @@ function editItem () {
 <template>
   <div class="section-item" tabindex="0" @keydown.delete="removeItem" @keydown.enter="editItem">
     <el-icon class="handle" v-if="props.draggable"><DCaret /></el-icon>
-    <slot :item="item">
+    <slot :item="value">
       <span>{{title}}</span>
       <span v-if="description !== ''">
         ( {{description}} )

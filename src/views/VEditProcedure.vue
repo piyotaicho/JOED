@@ -49,7 +49,7 @@
       <FreewordSection
         v-model="freewordText"
         :disabled="!UserEditingAllowed"
-        @click-search="SetCandidateItemsByFreeword"
+        @search="SetCandidateItemsByFreeword"
         ref="freewordSection"
       />
     </EditSection>
@@ -72,11 +72,11 @@ const ProceduresMaster = new Master()
 
 const router = useRouter()
 const props = defineProps({
-  ItemIndex: {
+  index: {
     type: Number,
     default: -1
   },
-  ItemValue: {
+  value: {
     type: String
   },
   year: {
@@ -119,82 +119,83 @@ const additionalProcedure = reactive({
 const UserEditingAllowed = computed(() => !!category.value && !selectedItem.value)
 
 onMounted(async () => {
-  const item = JSON.parse(props.ItemValue || '{}')
-  if (props.ItemIndex > -1) {
-    // ItemIndex != -1 の場合は新規ではなく再編集になるのでItemValueから最低限必要な情報を展開する
-
-    // カテゴリ・対象の解釈
-    if (item?.Chain[0] !== undefined) {
-      category.value = item.Chain[0]
-      await nextTick()
-      if (item.Chain[1] !== undefined) {
-        target.value = item.Chain[1]
-        await nextTick()
-      }
-    }
-
-    // カテゴリとあれば対象に応じた選択リストの生成
-    await SetCandidateItemsBySelection()
-
-    // 入力値の解釈
-    const text = item?.Text || ''
-
-    if (text !== '') {
-      if (candidates.value.includes(text)) {
-      // 選択肢に該当項目がある場合選択する
-        selectedItem.value = text
-        freewordText.value = ''
-      } else {
-        // 選択肢に入力されている項目がなければ自由入力に展開する
-        selectedItem.value = ''
-        freewordText.value = text
-      }
-      await nextTick()
-    }
-
-    // 再編集で術式の選択がある場合DOMの初期化が必要
-    if (selectedItem.value !== '') {
-      // 選択肢に応じたDOM構成を展開
-      await OnCandidateSelected()
-
-      // 付随情報の入力の必要性があればItemValueから展開する
-      if (description.Title !== '') {
-        if (item?.Description && item.Description.length > 0) {
-          description.Value.splice(0)
-          description.Value.splice(0, 0, ...item.Description)
-        }
-      }
-
-      // 付随手術の入力の必要性があればItemValueから展開する
-      if (additionalProcedure.Text !== '') {
-        additionalProcedure.Value.splice(0)
-        if (item?.AdditionalProcedure?.Description &&
-          item.AdditionalProcedure.Description.length > 0) {
-          additionalProcedure.Value.splice(0, 0,
-            ...item.AdditionalProcedure.Description
-          )
-        } else {
-          // 既存入力が無い場合、デフォルト設定があれば設定
-          const defaultValue =
-            additionalProcedure.Options.filter(
-              (item) => item.slice(-1) === '$'
-            )[0]
-          if (defaultValue) {
-            additionalProcedure.Value.splice(0, 0, defaultValue)
-          }
-        }
-      }
-      // リアクティブの発火と選択枝にフォーカス
-      await nextTick()
-      paneSection.value?.getElementsByTagName('select')[2].focus()
-    }
-    // 自由入力がある場合は自由入力セクションを開く
-    if (freewordText.value !== '') {
-      freewordSection.value.Open()
-    }
-  } else {
+  const item = JSON.parse(props.value || '{}')
+  if (props.index < 0) {
     // 新規編集の場合はカテゴリにフォーカスする
     paneSection.value?.getElementsByTagName('select')[0].focus()
+    return
+  }
+
+  // 再編集 valueから情報を展開する
+
+  // カテゴリ・対象の解釈
+  if (item?.Chain[0] !== undefined) {
+    category.value = item.Chain[0]
+    await nextTick()
+    if (item.Chain[1] !== undefined) {
+      target.value = item.Chain[1]
+      await nextTick()
+    }
+  }
+
+  // カテゴリとあれば対象に応じた選択リストの生成
+  await SetCandidateItemsBySelection()
+
+  // 入力値の解釈
+  const text = item?.Text || ''
+
+  if (text !== '') {
+    if (candidates.value.includes(text)) {
+    // 選択肢に該当項目がある場合選択する
+      selectedItem.value = text
+      freewordText.value = ''
+    } else {
+      // 選択肢に入力されている項目がなければ自由入力に展開する
+      selectedItem.value = ''
+      freewordText.value = text
+    }
+    await nextTick()
+  }
+
+  // 再編集で術式の選択がある場合DOMの初期化が必要
+  if (selectedItem.value !== '') {
+    // 選択肢に応じたDOM構成を展開
+    await OnCandidateSelected()
+
+    // 付随情報の入力の必要性があればvalueから展開する
+    if (description.Title !== '') {
+      if (item?.Description && item.Description.length > 0) {
+        description.Value.splice(0)
+        description.Value.splice(0, 0, ...item.Description)
+      }
+    }
+
+    // 付随手術の入力の必要性があればvalueから展開する
+    if (additionalProcedure.Text !== '') {
+      additionalProcedure.Value.splice(0)
+      if (item?.AdditionalProcedure?.Description &&
+        item.AdditionalProcedure.Description.length > 0) {
+        additionalProcedure.Value.splice(0, 0,
+          ...item.AdditionalProcedure.Description
+        )
+      } else {
+        // 既存入力が無い場合、デフォルト設定があれば設定
+        const defaultValue =
+          additionalProcedure.Options.filter(
+            (item) => item.slice(-1) === '$'
+          )[0]
+        if (defaultValue) {
+          additionalProcedure.Value.splice(0, 0, defaultValue)
+        }
+      }
+    }
+    // リアクティブの発火と選択枝にフォーカス
+    await nextTick()
+    paneSection.value?.getElementsByTagName('select')[2].focus()
+  }
+  // 自由入力がある場合は自由入力セクションを開く
+  if (freewordText.value !== '') {
+    freewordSection.value.Open()
   }
 })
 
@@ -437,7 +438,7 @@ const CommitChanges = async () => {
   }
   // 新しいレコードが作成されていたら登録, そうでなければなにもしない.
   if (temporaryItem.Text) {
-    emit('data-upsert', 'Procedures', props.ItemIndex, JSON.stringify(temporaryItem))
+    emit('data-upsert', 'Procedures', props.index, JSON.stringify(temporaryItem))
     GoBack()
   }
 }

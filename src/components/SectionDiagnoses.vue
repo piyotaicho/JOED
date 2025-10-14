@@ -2,11 +2,11 @@
 import SectionBlock from '@/components/Molecules/SectionBlock.vue'
 
 const items = defineModel({ type: Array, required: true })
-const emit = defineEmits(['addnewitem', 'edititem', 'removeitem'])
+const emit = defineEmits(['additem', 'edititem', 'removeitem'])
 
-const AddNewItem = () => emit('addnewitem')
+const AddNewItem = () => emit('additem')
 
-const EditItem = (value) => emit('edititem', value)
+const EditItem = ({index, value}) => emit('edititem', { index, value })
 
 const RemoveItem = (index) => emit('removeitem', index)
 </script>
@@ -14,8 +14,8 @@ const RemoveItem = (index) => emit('removeitem', index)
 <template>
   <SectionBlock title="手術診断"
     v-model="items"
-    @addnewitem="AddNewItem"
-    @edititem="EditItem"
-    @removeitem="RemoveItem">
+    @add="AddNewItem"
+    @edit="EditItem"
+    @remove="RemoveItem">
   </SectionBlock>
 </template>
