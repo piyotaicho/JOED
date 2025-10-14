@@ -87,6 +87,7 @@
 
               <template v-slot:dropdown>
                 <el-dropdown-menu>
+                  <el-dropdown-item command="temporary">一時保存</el-dropdown-item>
                   <template v-if="isEditingExistingItem">
                     <el-dropdown-item command="next" :disabled="!nextUid"
                       >保存して次へ</el-dropdown-item
@@ -95,7 +96,7 @@
                       >保存して前へ</el-dropdown-item
                     >
                   </template>
-                  <el-dropdown-item command="new">保存して新規作成</el-dropdown-item>
+                  <el-dropdown-item command="new" divided>保存して新規作成</el-dropdown-item>
                   <el-dropdown-item command="temporarynew">一時保存して新規作成</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
