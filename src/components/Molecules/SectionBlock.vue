@@ -76,6 +76,8 @@ div.section
     margin: 1px 8px 2px 42px
     div.section-item
       position: relative
+      display: flex
+      align-items: center
       background: var(--color-text-placeholder)
       border-left: var(--color-text-placeholder) 0.25rem solid
       line-height: 1.5
@@ -84,8 +86,8 @@ div.section
       margin-bottom: 2px
       list-style: none
       .handle
-        font-size: 1.2rem
-        margin: auto 0.7rem auto 0
+        font-size: 1.3rem
+        margin: 0 0.7rem 0 0
       .edit-button
         position: absolute
         font-size: 1.25rem
