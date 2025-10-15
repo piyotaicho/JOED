@@ -1,7 +1,6 @@
 import Master from '@/modules/Masters/Master'
 import Fuse from 'fuse.js'
 import { ZenToHan } from '@/modules/ZenHanChars'
-// import { getCloseMatches } from 'difflib'
 
 export const LastUpdate = '2022-05-05'
 const defaultReference = '2022'
