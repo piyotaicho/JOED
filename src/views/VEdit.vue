@@ -26,6 +26,7 @@
         @additem="EditSection('procedure')"
         @edititem="EditSection('procedure', $event)"
         @removeitem="RemoveListItem('Procedures', $event)"
+        @editapproach="EditSection('approach', { value: approach })"
       />
 
       <SectionAEs

@@ -4,7 +4,9 @@ import SectionItem from '@/components/SectionItem.vue'
 import { confirmYesNo } from '@/modules/Popups'
 
 const items = defineModel({ type: Array, required: true })
-const emit = defineEmits(['additem', 'edititem', 'removeitem'])
+const approach = defineModel('approach', { type: String, default: '{}' })
+
+const emit = defineEmits(['additem', 'edititem', 'removeitem', 'editapproach'])
 
 const addItem = () => emit('additem')
 

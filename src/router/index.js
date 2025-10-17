@@ -43,6 +43,16 @@ const routes = [
         })
       },
       {
+        name: 'approach',
+        path: 'approach',
+        component: () => import('@/views/VEditApproach.vue'),
+        props: route => ({
+          value: route.query.value,
+          year: route.query.year,
+          procedureTypes: route.query.procedureTypes
+        })
+      },
+      {
         name: 'AE',
         path: 'AE',
         component: () => import('@/views/VEditAE.vue'),
