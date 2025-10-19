@@ -1,12 +1,12 @@
 <template>
-  <el-tooltip placement="top-start" :open-delay="700">
+  <el-tooltip placement="top-start" :open-delay="500" :close-delay="100">
     <template v-slot:content>
       <DescriptionOfAE :item="props.item"/>
     </template>
 
     <div class="section-item" tabindex="0" @keydown.delete="removeItem">
       <span class="w20">{{ item.Category }}</span>
-      <span class="w30">
+      <span class="w50 AE-detail-label">
         {{ label }}
       </span>
       <span class="w20">( Grade : {{item.Grade}} )</span>
@@ -20,6 +20,7 @@
 import { computed } from 'vue'
 import DescriptionOfAE from '@/components/Molecules/DescriptionOfAE.vue'
 import { Edit, Delete } from '@element-plus/icons-vue'
+import { close } from 'fs'
 
 const props = defineProps({
   item: {
@@ -34,7 +35,7 @@ const item = computed(() => JSON.parse(props.item))
 const label = computed(() => {
   if (item.value.Category === '出血') {
     if (item.value.BloodCount === '不明') {
-      return ' … 出血量不明'
+      return '(血量不明)'
     } else {
       return ' ' + item.value.BloodCount + 'ml'
     }
@@ -50,16 +51,7 @@ const label = computed(() => {
     }
 
     labelString = labelSource.join(', ')
-    while (labelString.length > 40) {
-      if (labelSource.length > 2) {
-        labelSource.splice(-2, 1)
-        labelString = labelSource.slice(0, -1).join(', ') + ', ..., ' + labelSource.slice(-1)
-      } else {
-        labelString = labelSource[0]
-        break
-      }
-    }
-    return ' … ' + labelString
+    return labelString
   }
 })
 
@@ -67,3 +59,11 @@ const editItem = () => emit('edit')
 
 const removeItem = () => emit('remove')
 </script>
+
+<style lang="sass">
+SPAN.AE-detail-label
+  display: inline-block
+  white-space: nowrap
+  overflow-x: hidden
+  text-overflow: ellipsis
+</style>
