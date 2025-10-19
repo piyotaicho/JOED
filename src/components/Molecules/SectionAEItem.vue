@@ -1,5 +1,5 @@
 <template>
-  <el-tooltip placement="top-start" :open-delay="500" :close-delay="100">
+  <el-tooltip placement="top-start" :show-after="500" :hide-after="0">
     <template v-slot:content>
       <DescriptionOfAE :item="props.item"/>
     </template>
@@ -20,7 +20,6 @@
 import { computed } from 'vue'
 import DescriptionOfAE from '@/components/Molecules/DescriptionOfAE.vue'
 import { Edit, Delete } from '@element-plus/icons-vue'
-import { close } from 'fs'
 
 const props = defineProps({
   item: {

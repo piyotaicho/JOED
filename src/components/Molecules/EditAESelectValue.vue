@@ -4,28 +4,20 @@ import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
 
 const props = defineProps({
   item: {
-    type: String,
+    type: [Object, String],
     required: true
   }
 })
 const modelValue = defineModel()
 
-const parsedItem = computed(() => {
-  try {
-    return JSON.parse(props.item)
-  } catch {
-    return ''
-  }
-})
-
-const itemlabel = computed(() => (typeof parsedItem.value === 'object')
-  ? parsedItem.value.Text
-  : parsedItem.value
+const itemlabel = computed(() => (typeof props.item === 'object')
+  ? (props.item?.Text || '')
+  : props.item
 )
 
-const itemvalue = computed(() => (typeof parsedItem.value === 'object')
-  ? parsedItem.value.Value
-  : parsedItem.value
+const itemvalue = computed(() => (typeof props.item === 'object')
+  ? (props.item?.Value || '')
+  : props.item
 )
 
 const checkboxvalue = computed({

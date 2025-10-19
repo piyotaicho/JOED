@@ -1,5 +1,4 @@
 <script setup>
-import { computed } from 'vue'
 import EditAESelectValue from './EditAESelectValue.vue'
 
 const props = defineProps({
@@ -24,7 +23,7 @@ const modelValue = defineModel()
         <div>
           <template v-for="(item, itemindex) in linearray" :key="itemindex">
             <EditAESelectValue
-              :item="JSON.stringify(item)"
+              :item="item"
               v-model="modelValue"
             />
           </template>
