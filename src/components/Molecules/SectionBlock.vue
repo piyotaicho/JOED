@@ -1,6 +1,6 @@
 <script setup>
 import NewEntryButton from '@/components/Atoms/NewEntryButton.vue'
-import SectionItem from '@/components/SectionItem.vue'
+import SectionItem from '@/components/Molecules/SectionItem.vue'
 import draggableContent from 'vuedraggable'
 
 // vuegraggableのUpdate = undefinedのエラーを回避

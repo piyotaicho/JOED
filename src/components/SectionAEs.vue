@@ -1,7 +1,7 @@
 <script setup>
 import SectionBlock from '@/components/Molecules/SectionBlock.vue'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
-import SectionAEItem from '@/components/SectionAEItem.vue'
+import SectionAEItem from '@/components/Molecules/SectionAEItem.vue'
 
 const emit = defineEmits(['additem', 'edititem', 'removeitem'])
 const items = defineModel({

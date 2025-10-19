@@ -1,10 +1,11 @@
 <script setup>
 import SectionBlock from '@/components/Molecules/SectionBlock.vue'
-import SectionItem from '@/components/SectionItem.vue'
+import SectionItem from '@/components/Molecules/SectionItem.vue'
+import ApproachItem from './Molecules/ApproachItem.vue'
 import { confirmYesNo } from '@/modules/Popups'
 
 const items = defineModel({ type: Array, required: true })
-const approach = defineModel('approach', { type: String, default: '{}' })
+// const approach = defineModel('approach', { type: String, default: '{}' })
 
 const emit = defineEmits(['additem', 'edititem', 'removeitem', 'editapproach'])
 
@@ -29,17 +30,7 @@ const additionalProcedure = (item) => JSON.stringify((JSON.parse(item || '')?.Ad
     v-model="items"
     @add="addItem">
     <template #beforeitemlist>
-      <!-- カテゴリkeyごとにgroup化する ボタンイベントは全て編集 -->
-      <el-button-group style="margin-right: 0.8rem;">
-        <el-button type="primary" size="small" round>通常ポート配置</el-button>
-      </el-button-group>
-      <el-button-group style="margin-right: 0.8rem;">
-        <el-button type="primary" size="small" round>通常ポート配置</el-button>
-      </el-button-group>
-      <el-button-group style="margin-right: 0.8rem;">
-        <el-button type="primary" size="small" round>細径子宮鏡</el-button>
-        <el-button type="primary" size="small" round>非電解質溶液使用</el-button>
-      </el-button-group>
+      <ApproachItem></approachItem>
     </template>
     <template #default="slotprops">
       <template v-if="!hasAdditionalProcedure(slotprops.item)">
