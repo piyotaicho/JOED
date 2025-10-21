@@ -31,8 +31,10 @@ const removeItem = (index) => emit('remove', index)
 
 <template>
   <div class="section">
-    <span class="section-title">{{props.title}} ： </span>
-    <slot name="beforeitemlist"></slot>
+    <div>
+      <span class="section-title">{{props.title}} ： </span>
+      <slot name="beforeitemlist"></slot>
+    </div>
     <template v-if="draggable">
       <draggableContent handle=".handle" v-model="items" item-key="index">
         <template #item="{element, index}">
