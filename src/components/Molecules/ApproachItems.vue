@@ -1,17 +1,19 @@
 <template>
   <template v-if="title !== ''">
-    <template v-if="noitems">
-      <el-button type="warning" size="small" round @click="edit">{{ title }}</el-button>
-    </template>
-    <template v-else>
-      <template v-for="category in categories" :key="category">
-        <el-button-group style="margin-right: 0.8rem;">
-          <template v-for="item in props.value[category]" :key="item">
-            <el-button type="primary" size="small" round @click="edit">{{ item }}</el-button>
-          </template>
-        </el-button-group>
+    <div style="display: inline-block;">
+      <template v-if="noitems">
+        <el-button type="warning" size="small" round @click="edit">{{ title }}</el-button>
       </template>
-    </template>
+      <template v-else>
+        <template v-for="category in categories" :key="category">
+          <el-button-group style="margin-right: 0.8rem;">
+            <template v-for="item in props.value[category]" :key="item">
+              <el-button type="primary" size="small" round @click="edit">{{ item }}</el-button>
+            </template>
+          </el-button-group>
+        </template>
+      </template>
+    </div>
   </template>
 </template>
 
