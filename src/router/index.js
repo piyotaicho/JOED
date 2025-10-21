@@ -49,7 +49,7 @@ const routes = [
         props: route => ({
           value: route.query.value,
           year: route.query.year,
-          procedureTypes: route.query.procedureTypes
+          procedureTypes: route.query?.procedureTypes || '[]'
         })
       },
       {

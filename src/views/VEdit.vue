@@ -23,10 +23,12 @@
 
       <SectionProcedures
         v-model="CaseData.Procedures"
+        :approach="CaseData.Approach"
+        :year="CaseData.DateOfProcedure.substring(0, 4)"
         @additem="EditSection('procedure')"
         @edititem="EditSection('procedure', $event)"
         @removeitem="RemoveListItem('Procedures', $event)"
-        @editapproach="EditSection('approach', { value: approach })"
+        @editapproach="EditSection('approach')"
       />
 
       <SectionAEs
@@ -166,6 +168,7 @@ const CaseData = reactive({
   PresentAE: true,
   Diagnoses: [],
   Procedures: [],
+  Approach: {},
   AEs: [],
   Notification: '',
   Denial: false,
@@ -193,6 +196,7 @@ function created() {
       if (storedDocument !== undefined) {
         for (const key in CaseData) {
           if (storedDocument[key] !== undefined) {
+            // ArrayのアイテムはrouterへのハンドリングをよくするためJSON文字列化して格納する
             if (Array.isArray(storedDocument[key])) {
               CaseData[key] = storedDocument[key].map((item) => JSON.stringify(item))
             } else {
@@ -272,14 +276,27 @@ const EditSection = (target, payload) => {
   if (editingSection.value) return
   const {index, value} = payload || {}
 
-  router.push({
-    name: target,
-    query: {
-      index: index !== undefined ? index : -1,
-      value: value || '{}',
-      year: CaseData.DateOfProcedure.substring(0, 4),
-    },
-  })
+  if (target !== 'approach') {
+    router.push({
+      name: target,
+      query: {
+        index: index !== undefined ? index : -1,
+        value: value || '{}',
+        year: CaseData.DateOfProcedure.substring(0, 4),
+      },
+    })
+  } else {
+    router.push({
+      name: target,
+      query: {
+        value: JSON.stringify(CaseData.Approach),
+        procedureTypes: JSON.stringify(
+          CaseData.Procedures.map(item => JSON.parse(item)?.Chain[0]).map(item => item)
+        ),
+        year: CaseData.DateOfProcedure.substring(0, 4),
+      },
+    })
+  }
 }
 
 const ShowNotification = () => {
@@ -300,7 +317,7 @@ const RemoveListItem = (target, index) => {
 }
 
 const UpdateList = (target, index, value) => {
-  if (['Diagnoses', 'Procedures', 'AEs'].indexOf(target) >= 0) {
+  if (['Diagnoses', 'Procedures', 'AEs'].includes(target)) {
     const isEmptyValue = typeof value === 'undefined' || (typeof value === 'string' && value === '')
     if (index >= 0) {
       if (CaseData[target][index] !== undefined) {
@@ -318,6 +335,10 @@ const UpdateList = (target, index, value) => {
         CaseData[target].push(value)
       }
     }
+  }
+  if (target === 'Approach') {
+    // アプローチではindexは無視
+    CaseData.Approach = JSON.parse(value || '{}')
   }
 }
 
@@ -383,7 +404,7 @@ const StoreCase = async (temporary = false) => {
     // データベース登録に用いるレコードドキュメントを生成
     const newDocument = {}
     for (const key in CaseData) {
-      // ArrayはObject[]なのでJSON文字列化する
+      // ArrayはJSON文字列の配列なので元に戻す
       if (Array.isArray(CaseData[key])) {
         newDocument[key] = CaseData[key].map((item) => JSON.parse(item))
       } else {
