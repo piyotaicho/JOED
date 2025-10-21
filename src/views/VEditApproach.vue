@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 import EditSection from '@/components/Molecules/EditSection.vue'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
+import LabeledRadio from '@/components/Atoms/LabeledRadio.vue'
 import ApproachMaster from '@/modules/Masters/ApproachMaster'
 import * as Popups from '@/modules/Popups'
 
@@ -95,16 +96,15 @@ const GoBack = () => router.replace('./')
   <TheWrapper alpha="10">
     <EditSection @commit="CommitChange" @discard="GoBack">
       <template v-for="category of procedureTypes" :key="category">
-        <div class="flex-content" aria-category="{{ category }}">
+        <div class="flex-content" aria-category="{{ category }}" style="margin-bottom: 1.2rem;">
           <div class="w20">{{ category }}</div>
           <div class="w80">
             <template v-for="directive of masterTree[category]" :key="directive">
               <template v-if="Object.keys(directive)[0] === 'oneOf'">
-                <el-radio-group v-model="categorySelectionOfOneOf[category]">
                   <template v-for="item in directive.oneOf" :key="item">
-                    <el-radio :value="item">{{ item }}</el-radio>
+                    <LabeledRadio v-model="categorySelectionOfOneOf[category]" :value="item" />
                   </template>
-                </el-radio-group><br>
+                  <br/><br/>
               </template>
               <template v-if="Object.keys(directive)[0] === 'anyOf' || Object.keys(directive)[0] === 'check'">
                 <template v-for="item in (directive.anyOf || directive.check)" :key="item">
