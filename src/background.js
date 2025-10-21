@@ -401,7 +401,7 @@ function registerMenu() {
   app.setAboutPanelOptions({
     applicationName: app.getName(),
     applicationVersion: version,
-    copyright: description.indexOf('(C)') !== -1
+    copyright: description.includes('(C)')
       ? description.substring(description.indexOf('(C)') + 3).trim()
       : '2020- P4mohnet and JSGOE',
     credits: '@piyotaicho https://github.com/piyotaicho/JOED/',

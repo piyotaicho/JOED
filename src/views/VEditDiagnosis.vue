@@ -178,7 +178,7 @@ const CommitChanges = async () => {
         return
       }
       // 候補に入力と同じものがある場合は何が何でも選択させる.
-      if (candidates.value.indexOf(freewordText.value.trim()) !== -1) {
+      if (candidates.value.includes(freewordText.value.trim())) {
         await Popups.information('自由入力の内容が候補にありますのでそれを選択してください.')
         return
       }

@@ -360,7 +360,7 @@ const CommitChanges = async () => {
       // 選択枝にないものと単独保存対象外設定された項目(デフォルト)を除外
       const descriptionValue = description.Value
         .filter(item => item.slice(-1) !== '$')
-        .filter(item => description.Options.indexOf(item) !== -1)
+        .filter(item => description.Options.includes(item))
 
       if (
         descriptionValue.length === 0 &&
@@ -392,7 +392,7 @@ const CommitChanges = async () => {
       const descriptionValue =
         additionalProcedure.Value
           .filter(item => item.slice(-1) !== '$')
-          .filter(item => additionalProcedure.Options.indexOf(item) !== -1)
+          .filter(item => additionalProcedure.Options.includes(item))
 
       if (descriptionValue.length > 0) {
         temporaryItem.AdditionalProcedure = {
@@ -416,7 +416,7 @@ const CommitChanges = async () => {
         return
       }
       // 候補に入力と同じものがある場合は何が何でも選択させる.
-      if (candidates.value.indexOf(freewordText.value.trim()) !== -1) {
+      if (candidates.value.includes(freewordText.value.trim())) {
         await Popups.information(
           '自由入力の内容が候補にありますので選択してください.'
         )

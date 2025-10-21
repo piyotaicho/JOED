@@ -35,7 +35,7 @@ const DrawerOpened = () => {
 const CloseDrawer = () => emit('close')
 
 const CollapseChanged = (itemname) => {
-  if (collapseNames.indexOf(itemname) > -1) {
+  if (collapseNames.includes(itemname)) {
     view.value = itemname
 
     if (itemname === 'management') {

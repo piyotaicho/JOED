@@ -57,7 +57,7 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(version),
     __APP_COPYRIGHT__: JSON.stringify(
-      description.indexOf('(C)') !== -1
+      description.includes('(C)')
         ? description.substring(description.indexOf('(C)') + 3).trim()
         : '2020- P4mohnet and JSGOE'
     ),

@@ -135,7 +135,7 @@ if (props.value) {
   try {
     const payload = JSON.parse(props.value)
     // カテゴリ
-    if (master.Category.map(element => element.Value).indexOf(payload.Category) === -1) {
+    if (!master.Category.map(element => element.Value).includes(payload.Category)) {
       throw new Error()
     }
     Category.value = payload.Category

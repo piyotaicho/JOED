@@ -31,6 +31,7 @@ onMounted(() => {
     wrapper.value.style.background = 'transparent'
   }
 
+  // rootElementはドキュメントコレクションでArrayではないので、Array.prototypeで操作する
   const rootElement = document.getElementById('app')
   const myelements = Array.prototype.filter.call(
     wrapper.value.getElementsByTagName('*'),
@@ -43,7 +44,7 @@ onMounted(() => {
       element => element.tabIndex === 0
     )
     documentelements.forEach(element => {
-      if (Array.prototype.indexOf.call(myelements, element) === -1) {
+      if (!Array.prototype.includes.call(myelements, element)) {
         element.tabIndex = -2
       }
     })

@@ -29,7 +29,7 @@ const value = computed({
     const newvalueArray = []
     // 単一のvalue / selectから
     if (value === undefined || typeof value === 'string') {
-      if (value && options.value.indexOf(value) !== -1) {
+      if (value && options.value.includes(value)) {
         newvalueArray.splice(0, 0, value)
       }
     }
@@ -37,7 +37,7 @@ const value = computed({
     if (Array.isArray(value)) {
       // Optionsからvalueに該当するものをピックアップ > Optionsの順番を維持して保持
       const filtedValue = options.value.filter(
-        (option) => value.indexOf(option) !== -1
+        option => value.includes(option)
       )
       if (filtedValue.length > 0 || selectionMode.value === 'anyornone') {
         newvalueArray.splice(0, 0, ...filtedValue)
