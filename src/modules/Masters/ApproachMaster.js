@@ -25,9 +25,16 @@ export default class ApproachMaster {
         'ロボット悪性': 'ロボット',
         '子宮鏡': '子宮鏡'
       },
+      'colormap$': {
+        'undefined': '#DDDDDD',
+        '腹腔鏡': '#8CF700',
+        'ロボット': '#00F063',
+        '子宮鏡': '#00BBFF',
+        '卵管鏡': '#FFD000'
+      },
       '腹腔鏡': [
         {
-          oneOf: ['通常ポート配置', '単孔式/RPS', 'VNOTES', 'つり上げ法']
+          oneOf: ['通常ポート配置', '単孔/RPS', 'VNOTES', 'つり上げ法']
         },
         {
           anyOf: ['経腹膜アプローチ', '腹膜外アプローチ']
@@ -82,6 +89,21 @@ export default class ApproachMaster {
    */
   getTitle () {
     return this?.title || ''
+  }
+
+  /**
+   * カテゴリマップで置換
+   */
+  mapCategory (category) {
+    return this.categorymap[category] || undefined
+  }
+
+  /**
+   * カラーコードを取得
+   */
+  getColorCode (category) {
+    const mappedCategory = this.categorymap[category]
+    return mappedCategory === undefined ? this.colormap['undefined'] : (this.colormap[mappedCategory] || this.colormap['undefined'])
   }
 
   /**

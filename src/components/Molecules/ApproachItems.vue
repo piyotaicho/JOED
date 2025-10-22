@@ -8,7 +8,7 @@
         <template v-for="category in categories" :key="category">
           <el-button-group style="margin-right: 0.8rem;">
             <template v-for="item in props.value[category]" :key="item">
-              <el-button type="primary" size="small" round @click="edit">{{ item }}</el-button>
+              <el-button :color="getColorCode(category)" size="small" round @click="edit">{{ item }}</el-button>
             </template>
           </el-button-group>
         </template>
@@ -48,6 +48,11 @@ const categories = computed(() => {
   const master = new ApproachMaster(props.year || '')
   return master.getCategories(Object.keys(props.value || {}))
 })
+
+const getColorCode = (category) => {
+  const master = new ApproachMaster(props.year || '')
+  return master.getColorCode(category)
+}
 
 const edit = () => {
   emit('click')
