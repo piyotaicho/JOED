@@ -43,7 +43,7 @@ const editJSOGId = computed(() => store.getters['system/EditJSOGId'])
 const editNCDId = computed(() => store.getters['system/EditNCDId'])
 
 const hashString = computed(() => {
-  if (Denial.value && props.DateOfProcedure && props.PatientId) {
+  if (Denial.value && props.DateOfProcedure !== '' && props.PatientId !== '') {
     return store.getters['system/generateHash'](
       JSON.stringify({
         DateOfProcedure: props.DateOfProcedure,
@@ -52,7 +52,7 @@ const hashString = computed(() => {
       props.DateOfProcedure.substring(0, 4) <= '2021'
     )
   } else {
-    return undefined
+    return '手術日と患者IDが必要です'
   }
 })
 
