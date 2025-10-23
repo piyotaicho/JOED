@@ -71,7 +71,7 @@ input.LabeledCheckbox[type="checkbox"]
     left: 0.4rem
     height: 0.8rem
     width: 0.8rem
-    transform: translateY(-0.55rem)
+    transform: translateY(-0.45rem)
   &:checked + span::before
     border-color: var(--color-primary)
     background: var(--color-primary)
@@ -85,5 +85,5 @@ input.LabeledCheckbox[type="checkbox"]
     left: 0.7rem
     height: 0.25rem
     width: 0.48rem
-    transform: rotate(-50deg) translate(0.2rem, -0.4rem)
+    transform: translate(-0.14rem, -0.25rem) rotate(-50deg)
 </style>
