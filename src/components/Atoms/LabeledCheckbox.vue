@@ -51,7 +51,7 @@ const changeState = () => {
 
 <style lang="sass">
 label.LabeledCheckbox
-  padding: 0.1rem 0.7rem 0rem 0rem
+  padding: 0.1rem 0.7rem 0.1rem 0rem
   margin: 0 0 0 0.3rem
   white-space: nowrap
 

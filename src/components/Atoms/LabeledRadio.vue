@@ -17,7 +17,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 
 const props = defineProps({
   // チェックボックスで設定される値
@@ -35,7 +35,7 @@ const props = defineProps({
   },
   required: {
     type: Boolean,
-    default: true
+    default: false
   }
 })
 
@@ -61,7 +61,7 @@ const changeState = () => {
 
 <style lang="sass">
 label.LabeledRadio
-  padding: 0.1rem 0.7rem 0rem 0rem
+  padding: 0.1rem 0.7rem 0.1rem 0rem
   margin: 0 0 0 0.3rem
   white-space: nowrap
 
@@ -82,7 +82,7 @@ input.LabeledRadio[type="radio"]
     height: 0.8rem
     width: 0.8rem
     transform: translateY(-0.45rem)
-  &:invalid + span::before
+  &:required + span::before
     border-color: var(--color-danger)
   &:checked + span::before
     border-color: var(--color-primary)
