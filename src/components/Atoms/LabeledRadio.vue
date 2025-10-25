@@ -6,7 +6,7 @@
     @keydown.space.exact.prevent="changeState">
     <input type="radio" class="LabeledRadio"
       ref="inputElement"
-      v-model="radioValue"
+      v-model="modelValue"
       :disabled="props.disabled"
       :value="props.value"
       :required="props.required">
@@ -39,22 +39,16 @@ const props = defineProps({
   }
 })
 
-// 設定値を双方向バインドするためのコンテナ
-const radioValue = defineModel()
+const modelValue = defineModel()
 
 const inputElement = ref()
 
-// const radioValue = computed({
-//   get: () => container.value || null,
-//   set: (newValue) => { container.value = newValue }
-// })
-
 const changeState = () => {
-  if (radioValue.value === props.value) {
-    // すでに選択されている場合は選択解除
-    radioValue.value = null
+  if (modelValue.value === props.value) {
+    // すでに選択されている場合は選択解除 radioなのでnull
+    modelValue.value = null
   } else {
-    radioValue.value = props.value
+    modelValue.value = props.value
   }
 }
 </script>

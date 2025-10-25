@@ -34,14 +34,13 @@ const props = defineProps({
   }
 })
 
-// 設定値を双方向バインドするためのコンテナ
-const container = defineModel()
+const modelValue = defineModel()
 
 const inputElement = ref()
 
 const checkboxValue = computed({
-  get: () => container.value,
-  set: (newValue) => { container.value = newValue }
+  get: () => modelValue.value,
+  set: (newValue) => { modelValue.value = newValue }
 })
 
 const changeState = () => {
