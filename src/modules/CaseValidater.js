@@ -1,5 +1,6 @@
 import DaignosisMaster from '@/modules/Masters/DiagnosisMaster'
 import ProcedureMaster from '@/modules/Masters/ProcedureMaster'
+import ApproachMaster from '@/modules/Masters/ApproachMaster'
 import AEmaster from '@/modules/Masters/AE'
 
 import { procedureTimeFormat } from '@/modules/ProcedureTimes'
@@ -216,6 +217,7 @@ export async function CheckDupsInProcedures (item) {
 }
 
 // 実施手術名の重複確認と年次ツリーとの整合性検証
+// 実施手術のアプローチの整合性検証
 //
 export async function ValidateProcedures (item, year) {
   if (!(item?.Procedures?.length > 0)) {
@@ -272,12 +274,45 @@ export async function ValidateProcedures (item, year) {
                 }
               }
             }
+          } else {
+            // Descriptionの入力がマスタに定義されていない
+            if (record?.Description !== undefined && record.Description.length > 0) {
+              reject(Error('実施手術 ' + record.Text + ' に不要な詳細情報が入力されています.'))
+            }
           }
         }
         resolve()
       }
     }))
   )
+
+  // アプローチの整合性確認
+  const approach = new ApproachMaster(year)
+  if (Object.keys(approach).length > 0) {
+    const categories = new Set(
+      item.Procedures
+        .map(record => approach.categorymap[record?.Chain?.[0] || ''])
+        .filter(value => value !== undefined)
+    )
+
+    if (categories.size > 0) {
+      // カテゴリ変換でマッチがなければアプローチ不要
+      if (item?.Approach === undefined || Object.keys(item.Approach).length === 0) {
+        // アプローチの入力必須は2026年以降
+        if (year >= 2026) {
+          throw Error('実施手術アプローチの入力がありません.')
+        }
+      } else {
+        const difference = categories.difference(new Set(Object.keys(item.Approach)))
+        if (difference.size > 0) {
+          throw Error(`実施手術${difference.values().reduce((a,v)=>a + ',' + v)}のアプローチの入力がありません.`)
+        } else {
+          // 入力がされていたらチェックする
+          approach.check(item.Approach)
+        }
+      }
+    }
+  }
 }
 
 // 合併症の重複と整合性確認
