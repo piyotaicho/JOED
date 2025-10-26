@@ -150,9 +150,9 @@ const router = useRouter()
 
 const props = defineProps({
   uid: {
-    type: [Number, String],
+    type: String,
     required: true,
-    default: 0,
+    default: '0',
   },
 })
 
@@ -262,13 +262,14 @@ const BackToList = (currentUid) => {
 
 const editAnother = (targetUid) => {
   if (targetUid > 0) {
-    router.push({ name: 'edit', params: { uid: targetUid } })
+    router.push({ name: 'edit', params: { uid: targetUid.toString() } })
   }
   // HACK:
-  // 新規(uid = '0')→新規(uid = '0')ではApp.vueで定義したRouterKeyが重複するための quick hack.
-  // uid = '00' も uid > 0 がjavascriptの型変換ではfalseで新規扱いになるのでそれを利用する.
+  // routerではprops(pramas)がstgringで渡されることを利用する.
+  // 新規レコードを連続で作成する場合(uid = '0')→新規(uid = '0')となりはRouterKeyが重複する
+  // これを '0' ←→ '00' でスイッチして回避する.
   if (targetUid === 0) {
-    router.push({ name: 'edit', params: { uid: props.uid.toString() === '00' ? '0' : '00' } })
+    router.push({ name: 'edit', params: { uid: props.uid === '00' ? '0' : '00' } })
   }
 }
 
@@ -335,8 +336,7 @@ const UpdateList = (target, index, value) => {
         CaseData[target].push(value)
       }
     }
-  }
-  if (target === 'Approach') {
+  } else if (target === 'Approach') {
     // アプローチではindexは無視
     CaseData.Approach = JSON.parse(value || '{}')
   }
@@ -451,6 +451,8 @@ const StoreCase = async (temporary = false) => {
         delete newDocument.PresentAE
       }
     }
+
+    // Approachが不要ならば削除
 
     // データの検証と区分の取得
     const typeofprocedure = await ValidateCase(newDocument, temporary)
