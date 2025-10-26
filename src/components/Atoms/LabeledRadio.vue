@@ -6,9 +6,10 @@
     @keydown.space.exact.prevent="changeState">
     <input type="radio" class="LabeledRadio"
       ref="inputElement"
-      v-model="radioValue"
+      v-model="modelValue"
       :disabled="props.disabled"
-      :value="props.value">
+      :value="props.value"
+      :required="props.required">
     <span>
       <slot>{{typeof(value)==='boolean'?'':value}}</slot>
     </span>
@@ -16,7 +17,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 
 const props = defineProps({
   // チェックボックスで設定される値
@@ -31,43 +32,30 @@ const props = defineProps({
   tabindex: {
     type: [Number, String],
     default: 0
+  },
+  required: {
+    type: Boolean,
+    default: false
   }
 })
 
-// 設定値を双方向バインドするためのコンテナ
-const container = defineModel()
+const modelValue = defineModel()
 
 const inputElement = ref()
 
-const radioValue = computed({
-  get: () => container.value,
-  set: (newValue) => { container.value = newValue }
-})
-
 const changeState = () => {
-  if (radioValue.value === props.value) {
-    if (typeof(props.value) === 'boolean') {
-      // boolean型の場合はfalseに変更
-      radioValue.value = false
-    }
-    if (typeof(props.value) === 'string') {
-      // string型の場合は空文字に変更
-      radioValue.value = ''
-    }
-    if (typeof(props.value) === 'number') {
-      // number型の場合は0に変更
-      radioValue.value = 0
-    }
+  if (modelValue.value === props.value) {
+    // すでに選択されている場合は選択解除 radioなのでnull
+    modelValue.value = null
   } else {
-    radioValue.value = props.value
+    modelValue.value = props.value
   }
-  // inputElement.value.click()
 }
 </script>
 
 <style lang="sass">
 label.LabeledRadio
-  padding: 0.1rem 0.7rem 0rem 0rem
+  padding: 0.1rem 0.7rem 0.1rem 0rem
   margin: 0 0 0 0.3rem
   white-space: nowrap
 
@@ -87,7 +75,9 @@ input.LabeledRadio[type="radio"]
     left: 0.4rem
     height: 0.8rem
     width: 0.8rem
-    transform: translateY(-0.55rem)
+    transform: translateY(-0.45rem)
+  &:required + span::before
+    border-color: var(--color-danger)
   &:checked + span::before
     border-color: var(--color-primary)
     background: var(--color-primary)
@@ -101,5 +91,5 @@ input.LabeledRadio[type="radio"]
     left: 0.7rem
     height: 0.25rem
     width: 0.48rem
-    transform: rotate(-50deg) translate(0.2rem, -0.4rem)
+    transform: translate(-0.14rem, -0.25rem) rotate(-50deg)
 </style>

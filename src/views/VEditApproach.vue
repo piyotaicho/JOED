@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 import EditSection from '@/components/Molecules/EditSection.vue'
@@ -38,6 +38,13 @@ for (const category of procedureTypes) {
   categorySelections.value[category] = []
   categorySelectionOfOneOf.value[category] = ''
 }
+const required = computed(() => { return (category) => {
+  return (
+    categorySelectionOfOneOf.value[category] === undefined ||
+    categorySelectionOfOneOf.value[category] === null ||
+    categorySelectionOfOneOf.value[category] === ''
+  )
+}})
 
 onMounted(() => {
   // props.valueから選択状態を復元
@@ -102,7 +109,7 @@ const GoBack = () => router.replace('./')
             <template v-for="directive of masterTree[category]" :key="directive">
               <template v-if="Object.keys(directive)[0] === 'oneOf'">
                   <template v-for="item in directive.oneOf" :key="item">
-                    <LabeledRadio v-model="categorySelectionOfOneOf[category]" :value="item" />
+                    <LabeledRadio v-model="categorySelectionOfOneOf[category]" :value="item" :required="required(category)"/>
                   </template>
                   <br/><br/>
               </template>
