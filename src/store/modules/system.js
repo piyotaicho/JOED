@@ -6,22 +6,28 @@ export default {
   namespaced: true,
   state: {
     settings: {
+      // システム固有のソルト値
       Salt: 0,
+      // 施設情報
       InstitutionName: '',
       InstitutionID: '',
       JSOGoncologyboardID: '',
+      // 編集設定
       EditJSOGId: true,
       EditNCDId: false,
+      Approach: '{}',
+      // 表示設定
+      ShowStartupDialog: true,
       View: {
         Filters: [],
         Sort: {
           DocumentId: -1
         }
       },
+      // エクスポート設定
       UnlockExportJSOGId: false,
       UnlockExportNCDId: false,
-      CSVruleset: '{}',
-      ShowStartupDialog: true
+      CSVruleset: '{}'
     },
     StartupDialogStatus: true
   },
@@ -109,6 +115,11 @@ export default {
     // NCD登録番号の編集可否
     EditNCDId(state) {
       return state.settings.EditNCDId
+    },
+
+    // アプローチのデフォルト設定
+    Approach(state) {
+      return state.settings.Approach || '{}'
     },
 
     // 起動時のメッセージダイアログ表示の有無
