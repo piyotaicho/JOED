@@ -44,14 +44,22 @@ const initValues = () => {
 
   try {
     // 規定のapproachを展開
-    const approach = JSON.parse(store.getters['system/Approach'])
-    for (const category of Object.keys(approach)) {
-      for (const item of approach[category]) {
-        if (masterTree[category]?.oneOf?.includes(item)) {
+    const defaultApproach = JSON.parse(store.getters['system/Approach'])
+    for (const category of Object.keys(defaultApproach)) {
+      for (const item of defaultApproach[category]) {
+        const oneOfItems = (masterTree[category]
+          ?.filter(directive => Object.keys(directive)[0] === 'oneOf')[0]
+          ?.oneOf) || []
+        const otherItems = (masterTree[category]
+          ?.filter(directive => Object.keys(directive)[0] !== 'oneOf')
+          ?.map(directive => directive[Object.keys(directive)[0]])
+          .flat(2)) || []
+
+        if (oneOfItems.includes(item)) {
           categorySelectionOfOneOf.value[category] = item
           continue
         }
-        if (masterTree[category]?.anyOf?.includes(item) || masterTree[category]?.check?.includes(item)) {
+        if (otherItems.includes(item)) {
           categorySelections.value[category].push(item)
           continue
         }
@@ -95,7 +103,9 @@ const commitSettings = async () => {
   })
 
   await store.dispatch('system/SavePreferences')
-  preserve.value = JSON.stringify(data)
+  preserve.value = JSON.stringify(data) +
+    JSON.stringify(categorySelectionOfOneOf.value) +
+    JSON.stringify(categorySelections.value)
 
   Popups.information('設定が変更されました.')
 }
@@ -143,19 +153,22 @@ const commitSettings = async () => {
       <template v-for="category of master.getCategories()" :key="category">
         <div class="flex-content" aria-category="{{ category }}" style="margin-bottom: 1.2rem;">
           <div class="w20">{{ category }}</div>
-          <div class="w80">
+          <div class="w80" style="display: flex; flex-direction: column; word-break: break-all;">
             <template v-for="directive of masterTree[category]" :key="directive">
               <template v-if="Object.keys(directive)[0] === 'oneOf'">
-                  <template v-for="item in directive.oneOf" :key="item">
-                    <LabeledRadio v-model="categorySelectionOfOneOf[category]" :value="item"/>
-                  </template>
-                  <br/><br/>
+                  <div style="display: inline;">
+                    <template v-for="item in directive.oneOf" :key="item">
+                      <LabeledRadio v-model="categorySelectionOfOneOf[category]" :value="item"/>
+                    </template>
+                  </div>
+                  <br/>
               </template>
               <template v-if="Object.keys(directive)[0] === 'anyOf' || Object.keys(directive)[0] === 'check'">
-                <template v-for="item in (directive.anyOf || directive.check)" :key="item">
-                  <LabeledCheckbox v-model="categorySelections[category]" :value="item" />
-                </template>
-                <br/>
+                <div style="display: inline;">
+                  <template v-for="item in (directive.anyOf || directive.check)" :key="item">
+                    <LabeledCheckbox v-model="categorySelections[category]" :value="item" />
+                  </template>
+                </div>
               </template>
             </template>
           </div>
