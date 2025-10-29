@@ -128,24 +128,26 @@ export default class CaseDocumentHandler {
     // TypeOfProcedureをコピー
     temporaryItem.TypeOfProcedure = caserecord.TypeOfProcedure
 
-    // Approachをコピー
-    temporaryItem.Approach = caserecord?.Approach || []
-
-    // PresentAEをコピー
-    temporaryItem.PresentAE = caserecord.PresentAE
-
-    // Importedがtrueの時のみコピー
-    if (caserecord?.Imported) {
-      temporaryItem.Imported = true
-    }
-
     // 診断・実施手術を $.[*].Text, $.[*].Description に整形してコピー
     temporaryItem.Diagnoses = this._flattenItem(caserecord.Diagnoses)
     temporaryItem.Procedures = this._flattenItem(caserecord.Procedures)
 
+    // Approachがあればコピー
+    if (caserecord?.Approach === undefined) {
+      temporaryItem.Approach = caserecord.Approach
+    }
+
     // 合併症項目をコピー
+    // PresentAEをコピー
+    temporaryItem.PresentAE = caserecord.PresentAE
+
     if (caserecord?.AEs && caserecord.AEs.length > 0) {
       temporaryItem.AEs = Object.assign([], caserecord.AEs)
+    }
+
+    // Importedがtrueの時のみコピー
+    if (caserecord?.Imported) {
+      temporaryItem.Imported = true
     }
 
     return temporaryItem
