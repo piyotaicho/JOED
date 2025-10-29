@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useStore } from '@/store'
 import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 import EditSection from '@/components/Molecules/EditSection.vue'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
@@ -9,6 +10,7 @@ import ApproachMaster from '@/modules/Masters/ApproachMaster'
 import * as Popups from '@/modules/Popups'
 
 const router = useRouter()
+const store = useStore()
 
 const props = defineProps({
   value: {
@@ -63,7 +65,18 @@ onMounted(() => {
         ?.map(directive => directive[Object.keys(directive)[0]])
         .flat(2)) || []
 
-      for (const selection of value[category] || []) {
+      let selections = value[category] || []
+      console.log('selections', selections)
+      if (selections.length === 0) {
+        // 設定値が無い場合デフォルト値をロードする
+        const defaultApproach = JSON.parse(store.getters['system/Approach'])
+        selections = defaultApproach[category] || []
+        if (selections.length !== 0) {
+          console.log('default selections', selections)
+        }
+      }
+
+      for (const selection of selections) {
         if (oneOfItems.includes(selection)) {
           // oneOfの項目は1つだけ
           categorySelectionOfOneOf.value[category] = selection
