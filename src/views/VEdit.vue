@@ -451,6 +451,14 @@ const StoreCase = async (temporary = false) => {
     }
 
     // Approachが不要ならば削除
+    for (const category in newDocument.Approach) {
+      if (
+        !Array.isArray(newDocument.Approach[category]) ||
+        newDocument.Approach[category].length === 0
+      ) {
+        delete newDocument.Approach[category]
+      }
+    }
 
     // データの検証と区分の取得
     const typeofprocedure = await ValidateCase(newDocument, temporary)
@@ -466,6 +474,28 @@ const StoreCase = async (temporary = false) => {
   }
 }
 
+/**
+ * キーボードイベントハンドラー
+ *
+ * CTRL/COMMAND +
+ * 0 : フォーカスを最初の入力欄へ移動
+ * 1 : 診断追加登録
+ * 2 : 実施手術追加登録
+ * 3 : 合併症追加登録
+ * J : 次の症例へ移動 (編集中解除)
+ * K : 前の症例へ移動 (編集中解除)
+ * U : 編集中解除 (変更破棄)
+ * N : 新規症例作成
+ * S or Enter : 編集内容保存
+ * X : 症例削除
+ *
+ * SHIFT + CTRL/COMMAND +
+ * 2 : アプローチ編集
+ * 3 : 合併症なしチェックボックス切替
+ * J : 次の症例へ移動 (編集中保存)
+ * K : 前の症例へ移動 (編集中保存)
+ * S : 一時保存
+ */
 const keyboardEventListener = async (event) => {
   if (editingSection.value || event.repeat) {
     return
@@ -516,6 +546,11 @@ const keyboardEventListener = async (event) => {
       : event.ctrlKey && event.shiftKey && !event.metaKey && !event.altKey // Windows - Ctrl + Shift
   ) {
     switch (event.code) {
+      case 'Digit2':
+        if (CaseData.Procedures.length > 0) {
+          EditSection('approach')
+        }
+        break
       case 'Digit3':
         document.getElementById('noAEcheckbox').click()
         break
