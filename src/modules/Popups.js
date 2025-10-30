@@ -51,11 +51,12 @@ export function information (message) {
     iconClass: 'el-icon-info',
     closeOnClickModal: false,
     showClose: false,
+    lockScroll: false,
     dangerouslyUseHTMLString
   })
 }
 
-export async function confirm (message, caller = null) {
+export async function confirm (message) {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return await MessageBox.confirm(text, {
     title: '確認',
