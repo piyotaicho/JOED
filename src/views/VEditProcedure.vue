@@ -129,12 +129,14 @@ onMounted(async () => {
   // 再編集 valueから情報を展開する
 
   // カテゴリ・対象の解釈
-  if (item?.Chain[0] !== undefined) {
-    category.value = item.Chain[0]
-    await nextTick()
-    if (item.Chain[1] !== undefined) {
-      target.value = item.Chain[1]
+  if (item?.Chain && Array.isArray(item.Chain)) {
+    if (item?.Chain[0] !== undefined) {
+      category.value = item.Chain[0]
       await nextTick()
+      if (item.Chain[1] !== undefined) {
+        target.value = item.Chain[1]
+        await nextTick()
+      }
     }
   }
 
