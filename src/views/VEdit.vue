@@ -23,22 +23,21 @@
 
       <SectionProcedures
         v-model="CaseData.Procedures"
-        :approach="CaseData.Approach"
-        :year="CaseData.DateOfProcedure.substring(0, 4)"
         @additem="EditSection('procedure')"
         @edititem="EditSection('procedure', $event)"
         @removeitem="RemoveListItem('Procedures', $event)"
-        @editapproach="EditSection('approach')"
-      />
+      >
+        <ApproachItems :value="CaseData.Approach" :year="CaseData.DateOfProcedure.substring(0, 4)" :procedureCategories="categories" @click="EditSection('approach')"/>
+      </SectionProcedures>
 
       <SectionAEs
-        ref="sectionAEs"
         v-model="CaseData.AEs"
-        v-model:optionValue="isNoAEs"
         @additem="EditSection('AE')"
         @edititem="EditSection('AE', $event)"
         @removeitem="RemoveListItem('AEs', $event)"
-      />
+      >
+        <LabeledCheckbox v-model="isNoAEs" id="noAEcheckbox">合併症なし</LabeledCheckbox>
+      </SectionAEs>
 
       <!-- Navigations -->
       <el-button
@@ -124,21 +123,16 @@
 </template>
 
 <script setup>
-import {
-  CaretLeft,
-  CaretRight,
-  WarningFilled,
-  ArrowLeft,
-  Delete,
-  Loading,
-} from '@element-plus/icons-vue'
+import { CaretLeft, CaretRight, WarningFilled, ArrowLeft, Delete, Loading } from '@element-plus/icons-vue'
 import { reactive, ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from '@/store'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
 import SectionPatientInfo from '@/components/SectionPatientInfo.vue'
 import SectionDiagnoses from '@/components/SectionDiagnoses.vue'
 import SectionProcedures from '@/components/SectionProcedures.vue'
+import ApproachItems from '@/components/Molecules/ApproachItems.vue'
 import SectionAEs from '@/components/SectionAEs.vue'
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
 import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 
 import { ZenToHan } from '@/modules/ZenHanChars'
@@ -180,15 +174,14 @@ const processing = ref(true)
 const editingSection = ref(false)
 
 const editDialog = ref()
-const sectionAEs = ref()
 
 let preserve = ''
 let preservedElement
 
-// Reactiveでない状態(created)で既存データの読み込みをする.
+// Reactiveでない状態(a.k.a.created)で既存データの読み込みをする.
 //
 // @prop {uid} DocumentId
-function created() {
+function onCreated() {
   const uid = Number(props.uid)
   if (uid > 0) {
     store.dispatch('FetchDocument', { DocumentId: uid }).then((_) => {
@@ -216,7 +209,7 @@ function created() {
     preserve = JSON.stringify(CaseData)
   }
 }
-created()
+onCreated()
 
 onMounted(() => {
   document.addEventListener('keydown', keyboardEventListener, true)
@@ -242,6 +235,11 @@ onBeforeRouteUpdate((to) => {
 })
 
 const uid = computed(() => Number(props.uid))
+
+const categories = computed(() => {
+  const procedureTypes = CaseData.Procedures.map(item => JSON.parse(item)?.Chain).filter(item => item !== undefined && Array.isArray(item)).map(item => item[0])
+  return procedureTypes
+})
 
 const isNoAEs = computed({
   get: () => !CaseData.PresentAE,
