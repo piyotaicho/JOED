@@ -15,9 +15,19 @@ export default class ApproachMaster {
     // check - チェックボックス 複数選択可
     //
     // 各選択肢の最後に $ が付く場合、その選択肢はデフォルト値設定用には含めない
-    const approachMasterSets = year <= '2024' ? {}
-    : {
-      'title$': (year === '2025' ? '腹腔鏡・ロボット・子宮鏡手術のアプローチ法が入力可能です.' : '腹腔鏡・ロボット・子宮鏡手術はアプローチ法の入力が必要です.'),
+    const approachMasterSets = year <= '2024' ? {
+      'requirement$': 'none'
+    } : {
+      'title$': (
+        year === '2025' ?
+          '腹腔鏡・ロボット・子宮鏡手術のアプローチ法が入力可能です.' :
+          '腹腔鏡・ロボット・子宮鏡手術はアプローチ法の入力が必要です.'
+        ),
+      'requirement$': (
+        year === '2025' ?
+          'optional' :
+          'mandatory'
+      ),
       'categorymap$': {
         '腹腔鏡': '腹腔鏡',
         '腹腔鏡悪性': '腹腔鏡',
@@ -68,6 +78,7 @@ export default class ApproachMaster {
       ]
     }
 
+    // マスタデータをプロパティとして設定
     for(const key of Object.keys(approachMasterSets)) {
       if (key.slice(-1) === '$') {
         const propertyName = key.slice(0, -1)
@@ -89,6 +100,18 @@ export default class ApproachMaster {
    */
   getTitle () {
     return this?.title || ''
+  }
+
+  /**
+   * カテゴリから必須かどうかを判断
+   */
+  getRequirement (categories = []) {
+    const mappedCategories = categories.map(category => this.categorymap[category]).filter(category => category !== undefined)
+    if (mappedCategories.length === 0) {
+      return 'none'
+    }
+
+    return this.requirement
   }
 
   /**
