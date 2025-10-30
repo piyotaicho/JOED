@@ -97,11 +97,15 @@ const CommitChange = async () => {
   const returnValue = {}
   for (const category of procedureTypes) {
     returnValue[category] = []
-    if (categorySelectionOfOneOf?.value[category] === undefined || categorySelectionOfOneOf.value[category] === '') {
+    if (
+      categorySelectionOfOneOf?.value[category] === undefined ||
+      categorySelectionOfOneOf.value[category] === '' ||
+      categorySelectionOfOneOf.value[category] === null) {
       await Popups.information(`カテゴリ ${category} の必須項目が選択されていません.`)
       return
     }
     returnValue[category].push(categorySelectionOfOneOf.value[category])
+
     returnValue[category].push(...(categorySelections.value[category] || []))
   }
 
