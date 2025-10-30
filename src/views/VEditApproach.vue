@@ -66,7 +66,7 @@ onMounted(() => {
         .flat(2)) || []
 
       let selections = value[category] || []
-      console.log('selections', selections)
+
       if (selections.length === 0) {
         // 設定値が無い場合デフォルト値をロードする
         const defaultApproach = JSON.parse(store.getters['system/Approach'])
