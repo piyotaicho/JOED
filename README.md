@@ -108,6 +108,7 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |PresentAE                  |boolean| |X|X|合併症の登録があればtrue =(AE.length>0)
 |Diagnoses                  |array  | |X|X|診断オブジェクト - Diagnosis
 |Procedures                 |array  | |X|X|術式オブジェクト - Procedure
+|Approach                   |object | |X|X|アプローチ法オブジェクト - Approach
 |AEs                        |array  | | |X|合併症オブジェクト - AE
 |Imported                   |boolean| | | |読み込まれたデータで欠損などが明らかなもの
 |Notification               |string | | | |データチェックによる確認内容（エラーを含む）の内容
@@ -133,6 +134,12 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |AdditionalProcedure        |object | | | |併施術式 - これも同じ構造を取る(提出データでは別のProcedureオブジェクトとなる)
 |Ditto                      |array  | | | |重複確認の対象となる術式名
 |UserTyped                  |boolean| | |X|手入力情報|
+
+### オブジェクト:Approach
+|名称                        |タイプ  |フォーマット規則|必須項目|エクスポート対象|解説|
+|:--------------------------|:-----:|:--:|:--:|:--:|:--|
+|(PropertyName)             |string | |X|X|アプローチのカテゴリー(腹腔鏡,ロボット,子宮鏡)
+|(Value)                    |array  | |X|X|カテゴリーに応じたアプローチの内容
 
 ### オブジェクト:AE
 |名称                        |タイプ  |フォーマット規則|必須項目|エクスポート対象|解説|
