@@ -45,7 +45,7 @@ const initValues = () => {
   try {
     // 規定のapproachを展開
     const defaultApproach = JSON.parse(store.getters['system/Approach'])
-    for (const category of Object.keys(defaultApproach)) {
+    for (const category in defaultApproach) {
       for (const item of defaultApproach[category]) {
         const oneOfItems = (masterTree[category]
           ?.filter(directive => Object.keys(directive)[0] === 'oneOf')[0]

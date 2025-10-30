@@ -79,7 +79,7 @@ export default class ApproachMaster {
     }
 
     // マスタデータをプロパティとして設定
-    for(const key of Object.keys(approachMasterSets)) {
+    for(const key in approachMasterSets) {
       if (key.slice(-1) === '$') {
         const propertyName = key.slice(0, -1)
         Object.defineProperty(this, propertyName, { value: approachMasterSets[key], enumerable: false, writable: false })
@@ -212,7 +212,7 @@ export default class ApproachMaster {
    * @param { *} selection
    */
   check (selection = {}) {
-    for(const category of Object.keys(selection)) {
+    for(const category in selection) {
       if (!Object.keys(this).includes(category)) {
         throw new Error(`不正なカテゴリ入力 ${category} があります.`)
       }
