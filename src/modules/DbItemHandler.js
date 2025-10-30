@@ -133,8 +133,10 @@ export default class CaseDocumentHandler {
     temporaryItem.Procedures = this._flattenItem(caserecord.Procedures)
 
     // Approachがあればコピー
-    if (caserecord?.Approach === undefined) {
-      temporaryItem.Approach = caserecord.Approach
+    if (caserecord?.Approach !== undefined) {
+      if (Object.keys(caserecord.Approach).length > 0) {
+        temporaryItem.Approach = caserecord.Approach
+      }
     }
 
     // 合併症項目をコピー
