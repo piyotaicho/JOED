@@ -4,18 +4,17 @@
 
 ## 構成
 
-- vue2 + vuex + router
+- vue3 + vuex + router
 - electron
 
 追加パッケージ
 
 - nedb (seald/nedb)
-- Element
-- Vue.Draggable
-- Vuejs Datepicker
-- Vue infinite loading
+- ElementPlus
+- Vue.draggable.next
+- Vue Datepicker
 - js-xxhash
-- Difflib.js
+- Fuse.js
 - encoding.js
 - electron store
 
@@ -45,6 +44,7 @@ allでバックアップも削除.
 lockでは何らかの原因でロックがかかったままになった場合, ロックファイルを削除してロックを解除.(--unlockに移動)
 
 ## 変更履歴
+- 2025-10-30 ビルド環境のVue3(JS),Viteへの移行を完了. アプローチ法の入力を実装.
 - 2025-01-19 [1.5.1845]症例編集画面で削除ボタンで削除後にリストに戻らない現象を修正.
 - 2025-01-13 [1.5.1839]ロボット支援下単純子宮全摘出術のチェックに問題があったため修正, 関連するルーチンでもチェック問題を回避するよう対処.
 - 2025-01-05 [Version 1.5.1831] 各種リファクタリング, ドキュメント更新. 正式リリース.
