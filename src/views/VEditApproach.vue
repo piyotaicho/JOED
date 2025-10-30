@@ -26,12 +26,19 @@ const props = defineProps({
 })
 const emit = defineEmits(['data-upsert'])
 
+const GoBack = () => router.replace('./')
+
 // マスターデータ取得(non-reactive)
 const master = new ApproachMaster(props.year || '')
 // propsのprocedureTypesを配列化(non-reactive)
 const procedureTypes = master.getCategories(JSON.parse(props.procedureTypes || '[]'))
 // マスターツリー取得(non-reactive)
 const masterTree = master.getTree(master.getCategories(procedureTypes))
+
+// 編集項目が無ければ戻る
+if (procedureTypes.length === 0) {
+  GoBack()
+}
 
 // reactivities
 const categorySelections = ref({})
@@ -112,8 +119,6 @@ const CommitChange = async () => {
   emit('data-upsert', 'Approach', 0, JSON.stringify(returnValue))
   GoBack()
 }
-
-const GoBack = () => router.replace('./')
 </script>
 
 <template>
