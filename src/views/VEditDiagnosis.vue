@@ -96,16 +96,19 @@ onMounted(async () => {
   // カテゴリとあれば対象に応じた選択リストの生成
   await SetCandidateItemsBySelection()
 
-  if (item?.Text && candidates.value.includes(item.Text)) {
+  // 入力値の解釈
+  const text = item?.Text || ''
+
+  if (text && candidates.value.includes(text)) {
     // 選択肢に該当項目そのものがある場合選択する
-    selectedItem.value = item.Text
+    selectedItem.value = text
     freewordText.value = ''
     await nextTick()
     if (selectElements && selectElements.length >= 3) {
       selectElements[2].focus()
     }
   } else {
-    // 選択肢に入力されている項目がなければ自由入力に展開する
+    // 選択肢に入力されている項目がなければ自由入力に展開して自由入力欄を開く
     selectedItem.value = ''
     freewordText.value = item.Text
     await nextTick()
@@ -115,9 +118,9 @@ onMounted(async () => {
 
 watch(category, async () => {
   // カテゴリが変更されたら現在の入力は全部クリア
+  // (自由入力欄の内容は残す)
   target.value = ''
   selectedItem.value = ''
-  freewordText.value = ''
   await nextTick()
 
   // targetSelectionが一つだけの時はそれを選択
@@ -135,25 +138,22 @@ watch(target, () => {
 })
 
 const SetCandidateItemsBySelection = async () => {
-  candidates.value = DiagnosesMaster.Items(category.value, target.value, props.year).map(
-    (item) => item.Text,
-  )
+  candidates.value = DiagnosesMaster.Items(
+    category.value, target.value, props.year
+  ).map(item => item.Text)
   selectedItem.value = ''
   await nextTick()
 }
 
 const SetCandidateItemsByFreeword = async () => {
   if (freewordText.value && UserEditingAllowed.value) {
-    candidates.value.splice(
-      0,
-      candidates.value.length,
-      ...DiagnosesMaster.Matches(
-        freewordText.value,
-        category.value,
-        target.value || '',
-        props.year,
-      ),
+    const matches = DiagnosesMaster.Matches(
+      freewordText.value,
+      category.value,
+      target.value || '',
+      props.year,
     )
+    candidates.value.splice(0, candidates.value.length, ...matches)
     await nextTick()
   }
 }
