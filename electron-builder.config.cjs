@@ -5,11 +5,7 @@ module.exports = async () => (
     appId: 'jp.jsgoe.joed5',
     productName: 'JOED',
     copyright: ['Copyright', '(C)', copyright].join(' '),
-    nodeIntegration: false,
-    contextIsolation: true,
-    preload: 'src/preload.js',
-    customFileProtocol: './',
-    afterPack: './unlinkUnusedFiles.js',
+    afterPack: './unlinkUnusedFiles.cjs',
     mac: {
       target: 'dmg',
       category: 'public.app-category.medical',

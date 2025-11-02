@@ -17,6 +17,7 @@
   !define JOEDPUBLISHER "日本産科婦人科内視鏡学会"
 
   !define INSTALL_WELCOMEPAGE_TITLE "症例登録システムのセットアップへようこそ"
+
   !define INSTALL_FINISHPAGE_TITLE "症例登録システムのセットアップは完了しました"
   !define INSTALL_FINISHPAGE_RUN_TEXT "症例登録システムを起動する"
 
@@ -31,10 +32,10 @@
   !define UNINSTALL_FINISHPAGE_RUN_TEXT "設定とデータファイルも削除する場合はチェックしてください."
   !define REMOVE_DATA_FINAL_CONFIRM "設定とデータファイルを削除します, よろしいですか？"
 
-  !define MENUDIRNAME "$SMPROGRAMS\日本産科婦人科内視鏡学会"
-  !define MENUITEM1NAME "$SMPROGRAMS\日本産科婦人科内視鏡学会\症例登録システム.lnk"
-  !define MENUITEM2OLDNAME "$SMPROGRAMS\日本産科婦人科内視鏡学会\アンインストール.lnk"
-  !define MENUITEM2NAME "$SMPROGRAMS\日本産科婦人科内視鏡学会\症例登録アンインストール.lnk"
+#  !define MENUDIRNAME "$SMPROGRAMS\日本産科婦人科内視鏡学会"
+#  !define MENUITEM1NAME "$SMPROGRAMS\日本産科婦人科内視鏡学会\症例登録システム.lnk"
+#  !define MENUITEM2OLDNAME "$SMPROGRAMS\日本産科婦人科内視鏡学会\アンインストール.lnk"
+#  !define MENUITEM2NAME "$SMPROGRAMS\日本産科婦人科内視鏡学会\症例登録アンインストール.lnk"
 
   !define MSG_MSGBOX "設定とデータファイル等を削除しました."
 !endif

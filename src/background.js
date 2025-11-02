@@ -1,18 +1,23 @@
 
 'use strict'
 
-import { app, protocol, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron'
-import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
-import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
+import { app, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron'
+// import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 import xxhash from 'xxhashjs'
 
-import { path } from 'path'
-import { fs } from 'fs'
+import path from 'path'
+import fs from 'fs'
 
-import { ElectronStore } from 'electron-store'
+import ElectronStore from 'electron-store'
 import DB from '@seald-io/nedb'
 
-import { version, description } from '../package.json'
+import { createRequire } from 'module'
+import { fileURLToPath } from 'url'
+
+const require = createRequire(import.meta.url)
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const { version, description } = require('../package.json')
 
 // 重複起動の抑制
 const instanceLock = app.requestSingleInstanceLock()
@@ -35,9 +40,20 @@ const appConfig = {
   enableLocking: false
 }
 
-protocol.registerSchemesAsPrivileged([
-  { scheme: 'app', privileges: { secure: true, standard: true } }
-])
+// 開発サーバーが利用可能かチェックする関数
+const checkDevServer = async (url) => {
+  try {
+    const { net } = await import('electron')
+    const request = net.request(url)
+    return new Promise((resolve) => {
+      request.on('response', () => resolve(true))
+      request.on('error', () => resolve(false))
+      request.end()
+    })
+  } catch {
+    return false
+  }
+}
 
 // 初期設定
 // デフォルト path の documents を userData でオーバーライド
@@ -73,21 +89,33 @@ async function createWindow() {
       enableWebSQL: false,
       webgl: false,
       devTools: isDevelopment,
-      preload: path.resolve(__dirname, 'preload.js')
+      preload: isDevelopment
+        ? path.join(__dirname, 'preload.js')
+        : path.join(__dirname, '../preload.js')
     }
   })
 
-  if (process.env.WEBPACK_DEV_SERVER_URL) {
-    // Load the url of the dev server if in development mode
-    await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
-      .then(() => {
-        if (!process.env.IS_TEST) {
-          win.webContents.openDevTools()
-        }
-      })
+  // 開発環境での適切なロード方法を決定
+  if (isDevelopment) {
+    const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173'
+    const isDevServerRunning = await checkDevServer(devServerUrl)
+
+    if (isDevServerRunning) {
+      // 開発サーバーが動作している場合
+      console.log('Loading from dev server:', devServerUrl)
+      await win.loadURL(devServerUrl)
+    } else {
+      // 開発サーバーが動作していない場合はビルドファイルを読み込み
+      console.log('Dev server not running, loading from dist files')
+      await win.loadFile(path.join(__dirname, '../dist/index.html'))
+    }
+
+    if (!process.env.IS_TEST) {
+      win.webContents.openDevTools()
+    }
   } else {
-    createProtocol('app')
-    await win.loadURL('app://./index.html')
+    // Production build - load the built files
+    await win.loadFile(path.join(__dirname, '../dist/index.html'))
   }
 
   session = win.webContents.session
@@ -121,12 +149,13 @@ function registerAppEvents() {
 
       // ウインドウの作成
       if (isDevelopment && !process.env.IS_TEST) {
-        // Install Vue Devtools
-        try {
-          await installExtension(VUEJS_DEVTOOLS)
-        } catch (e) {
-          console.error('Vue Devtools failed to install:', e.toString())
-        }
+        // Install Vue Devtools (temporarily disabled)
+        console.log('Skipping Vue DevTools installation for now')
+        // try {
+        //   await installExtension(VUEJS_DEVTOOLS)
+        // } catch (e) {
+        //   console.error('Vue Devtools failed to install:', e.toString())
+        // }
       }
       createWindow()
     }

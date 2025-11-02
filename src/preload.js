@@ -1,12 +1,14 @@
 // preload script for electron context isolation
+/* eslint-env node */
+/* eslint-disable @typescript-eslint/no-require-imports */
 //
-import { contextBridge, ipcRenderer } from 'electron'
+const { contextBridge, ipcRenderer } = require('electron')
 
 // Aboutで使用するバージョン文字列、Electron環境の確認にも用いる
 contextBridge.exposeInMainWorld('Versions',
   {
-    ApplicationName: () => import.meta.env.VITE_APP_NAME,
-    ApplicationVersion: () => import.meta.env.VITE_APP_VERSION,
+    ApplicationName: () => process.env.VITE_APP_NAME,
+    ApplicationVersion: () => process.env.VITE_APP_VERSION,
     // 以下はElectron環境でのみ有効
     Platform: () => process.platform,
     Electron: () => process.versions.electron,

@@ -11,6 +11,7 @@
       "license": "MIT"
     }
   ],
+  "main": "src/background.js",
   "type": "module",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
@@ -19,9 +20,10 @@
     "serve": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "lint": "eslint . --fix",
-    "electron:serve": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "vite build --mode electron && electron-builder",
-    "electron:build.production": "cross-env NODE_ENV=production vite build --mode electron && electron-builder",
+    "electron:serve": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
+    "electron:build": "cross-env __APP_VERSION__=$npm_package_version && vite build --mode electron && electron-builder",
+    "electron:build.skip": "cross-env __APP_VERSION__=$npm_package_version && electron-builder --config electron-builder.config.js",
+    "electron:build.production": "cross-env NODE_ENV=production && vite build --mode electron && electron-builder",
     "preview": "vite preview",
     "build-only": "vite build",
     "test:unit": "vitest",
@@ -57,7 +59,7 @@
     "concurrently": "^9.2.1",
     "cross-env": "^10.0.0",
     "electron": "^38.0.0",
-    "electron-builder": "^26.0.12",
+    "electron-builder": "26.0.12",
     "electron-devtools-installer": "^4.0.0",
     "electron-store": "^10.1.0",
     "eslint": "^9.31.0",
@@ -71,6 +73,7 @@
     "vite": "^7.0.6",
     "vite-plugin-vue-devtools": "^8.0.3",
     "vitest": "^3.2.4",
+    "vue-cli-plugin-electron-builder": "^2.1.1",
     "vue-tsc": "^3.0.4",
     "wait-on": "^8.0.4"
   },
