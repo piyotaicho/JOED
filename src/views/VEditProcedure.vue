@@ -119,14 +119,18 @@ const additionalProcedure = reactive({
 const UserEditingAllowed = computed(() => !!category.value && !selectedItem.value)
 
 onMounted(async () => {
-  const item = JSON.parse(props.value || '{}')
+  const selectElements = paneSection.value.getElementsByTagName('SELECT')
+
   if (props.index < 0) {
     // 新規編集の場合はカテゴリにフォーカスする
-    paneSection.value?.getElementsByTagName('select')[0].focus()
+    if (selectElements && selectElements.length >= 1) {
+      selectElements[0].focus()
+    }
     return
   }
 
   // 再編集 valueから情報を展開する
+  const item = JSON.parse(props.value || '{}')
 
   // カテゴリ・対象の解釈
   if (item?.Chain && Array.isArray(item.Chain)) {
@@ -151,15 +155,20 @@ onMounted(async () => {
     // 選択肢に該当項目がある場合選択する
       selectedItem.value = text
       freewordText.value = ''
+      await nextTick()
+      if (selectElements && selectElements.length >= 3) {
+        selectElements[2].focus()
+      }
     } else {
-      // 選択肢に入力されている項目がなければ自由入力に展開する
+      // 選択肢に入力されている項目がなければ自由入力に展開して自由入力欄を開く
       selectedItem.value = ''
       freewordText.value = text
+      await nextTick()
+      freewordSection.value.Open()
     }
-    await nextTick()
   }
 
-  // 再編集で術式の選択がある場合DOMの初期化が必要
+  // 術式の選択である場合DOMの初期化を行う
   if (selectedItem.value !== '') {
     // 選択肢に応じたDOM構成を展開
     await OnCandidateSelected()
@@ -203,7 +212,8 @@ onMounted(async () => {
 
 watch(category, async () => {
   // カテゴリが変更されたら現在の入力は全部クリア
-  ClearSelectedEntry()
+  // (自由入力欄の内容は残す)
+  selectedItem.value = ''
   target.value = ''
   await nextTick()
 
@@ -228,11 +238,15 @@ watch(selectedItem, async () => {
     // 選択がクリアされた場合は付随情報もクリア
     await ClearSelectedEntry()
   }
+  await nextTick()
 })
 
 const ClearSelectedEntry = async () => {
-  selectedItem.value = ''
+  // selectedItem.value = '' が前提(watcherで対応)
+  // descriptionのクリア
   SetDescription(undefined)
+
+  // additionalProcedureのクリア
   additionalProcedure.Title = ''
   SetDescription(
     undefined,
@@ -244,10 +258,12 @@ const SetCandidateItemsBySelection = async () => {
   candidates.value = ProceduresMaster.Items(
     category.value, target.value, props.year
   ).map(item => item.Text)
+  selectedItem.value = ''
+  await nextTick()
 }
 
 const SetCandidateItemsByFreeword = async () => {
-  if (UserEditingAllowed.value && freewordText.value) {
+  if (freewordText.value && UserEditingAllowed.value) {
     const matches = ProceduresMaster.Matches(
       freewordText.value,
       category.value,

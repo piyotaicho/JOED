@@ -62,7 +62,7 @@ defineExpose({ Open })
         />
     </div>
     <div class="w20" v-show="expandInput">
-      <el-button type="primary" @click="$emit('click-search')" :icon="Search" :disabled="props.disabled">候補を検索</el-button>
+      <el-button type="primary" @click="$emit('search')" :icon="Search" :disabled="props.disabled">候補を検索</el-button>
     </div>
   </div>
 </template>
