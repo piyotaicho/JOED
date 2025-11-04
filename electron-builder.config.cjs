@@ -5,6 +5,13 @@ module.exports = async () => (
     appId: 'jp.jsgoe.joed5',
     productName: 'JOED',
     copyright: ['Copyright', '(C)', copyright].join(' '),
+    files: [
+      'src/background.js',
+      'src/preload.js',
+      'dist/**',
+      'dist/**/assets/**',
+      '!dist/**/*-unpacked'
+    ],
     afterPack: './unlinkUnusedFiles.cjs',
     mac: {
       target: 'dmg',

@@ -10,6 +10,7 @@ const isElectron = process.env.VITE_APP_ELECTION !== undefined
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: './',
   plugins: [
     vue(),
     vueDevTools(),

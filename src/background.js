@@ -40,21 +40,6 @@ const appConfig = {
   enableLocking: false
 }
 
-// 開発サーバーが利用可能かチェックする関数
-const checkDevServer = async (url) => {
-  try {
-    const { net } = await import('electron')
-    const request = net.request(url)
-    return new Promise((resolve) => {
-      request.on('response', () => resolve(true))
-      request.on('error', () => resolve(false))
-      request.end()
-    })
-  } catch {
-    return false
-  }
-}
-
 // 初期設定
 // デフォルト path の documents を userData でオーバーライド
 app.setPath('documents', app.getPath('userData'))
@@ -89,21 +74,17 @@ async function createWindow() {
       enableWebSQL: false,
       webgl: false,
       devTools: isDevelopment,
-      preload: isDevelopment
-        ? path.join(__dirname, 'preload.js')
-        : path.join(__dirname, '../preload.js')
+      preload: path.join(__dirname, 'preload.js')
     }
   })
 
   // 開発環境での適切なロード方法を決定
   if (isDevelopment) {
-    const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173'
-    const isDevServerRunning = await checkDevServer(devServerUrl)
 
-    if (isDevServerRunning) {
+    if (process.env?.VITE_DEV_SERVER_URL) {
       // 開発サーバーが動作している場合
-      console.log('Loading from dev server:', devServerUrl)
-      await win.loadURL(devServerUrl)
+      console.log('Loading from dev server:', process.env.VITE_DEV_SERVER_URL)
+      await win.loadURL(process.env.VITE_DEV_SERVER_URL)
     } else {
       // 開発サーバーが動作していない場合はビルドファイルを読み込み
       console.log('Dev server not running, loading from dist files')
