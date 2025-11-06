@@ -36,6 +36,7 @@ const close = () => emit('close')
 
 <style lang="sass">
 div.dashboard
+  position: relative
   margin: 0.6rem 0.5rem 0.7rem 0.7rem
   padding: 0.3rem
   border: 0.18rem solid var(--border-color-base)
