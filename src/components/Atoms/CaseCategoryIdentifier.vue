@@ -63,15 +63,23 @@ div.casecategory
 div.has-notification::after
   position: absolute
   content: ""
-  background: transparent
-  left: 0
-  top: 0
-  width: 0
-  height: 0
-  border-top: 0.37rem solid var(--color-warning)
-  border-left: 0.37rem solid var(--color-warning)
-  border-right: 0.37rem solid transparent
-  border-bottom: 0.37rem solid transparent
+  top: -0.4rem
+  right: -0.4rem
+  width: 0.75rem
+  height: 0.75rem
+  background-color: var(--color-danger)
+  border-radius: 50%
+  z-index: 1
+  // background: transparent
+  // left: 0
+  // top: 0
+  // width: 0
+  // height: 0
+  // border-top: 0.37rem solid var(--color-warning)
+  // border-left: 0.37rem solid var(--color-warning)
+  // border-right: 0.37rem solid transparent
+  // border-bottom: 0.37rem solid transparent
+
 
 div.category-malignancy::after
   position: absolute
