@@ -113,6 +113,7 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |AEs                        |array  | | |X|合併症オブジェクト - AE
 |Imported                   |boolean| | | |読み込まれたデータで欠損などが明らかなもの
 |Notification               |string | | | |データチェックによる確認内容（エラーを含む）の内容
+|Note                       |string | | | |自由メモ入力
 
 ### オブジェクト:Diagnosis
 インポートの際にはDiagnosisItemsから検索して適当なChainを割り付ける.

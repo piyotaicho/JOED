@@ -165,6 +165,7 @@ const CaseData = reactive({
   Approach: {},
   AEs: [],
   Notification: '',
+  Note: '',
   Denial: false,
 })
 
@@ -402,7 +403,7 @@ const StoreCase = async (temporary = false) => {
     // データベース登録に用いるレコードドキュメントを生成
     const newDocument = {}
     for (const key in CaseData) {
-      // ArrayはJSON文字列の配列なので元に戻す
+      // Arrayで保存されているDiganoses, ProceduresはJSON文字列の配列なので元に戻す
       if (Array.isArray(CaseData[key])) {
         newDocument[key] = CaseData[key].map((item) => JSON.parse(item))
       } else {
@@ -458,6 +459,11 @@ const StoreCase = async (temporary = false) => {
       ) {
         delete newDocument.Approach[category]
       }
+    }
+
+    // Noteが不要ならば削除
+    if (newDocument.Note === undefined || newDocument.Note.trim() === '') {
+      delete newDocument.Note
     }
 
     // データの検証と区分の取得
