@@ -52,7 +52,7 @@ const ProcessStream = async () => {
     for (const record of records) {
       try {
         ImportedDocuments.push(CreateDocument(record))
-      } catch (error) {
+      } catch {
         if (!(await Popups.confirm('指定されたファイル中に不適切なレコードがあります.\n残りの処理を続行しますか?'))) {
           throw new Error('不適切なレコード\n', record.map(field => '"' + field + '"').join(','))
         }

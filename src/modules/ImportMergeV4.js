@@ -148,7 +148,7 @@ function DiagnosesAndProceduresPrimary (CaseData, record) {
   // 主たる術式からカテゴリを設定
   try {
     CaseData.TypeOfProcedure = CaseData.Procedures[0].Chain[0]
-  } catch (e) {
+  } catch {
     throw new Error('実施術式カテゴリの抽出に失敗しました.')
   }
 }

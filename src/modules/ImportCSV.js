@@ -288,7 +288,7 @@ export function Migrate (CaseData) {
 
 export function ConvertCharacters (str = '') {
   // 全角記号を半角に丸める
-  // eslint-disable-next-line no-irregular-whitespace
+   
   const index = str.search(/[（）　、，。．]/)
   if (index === -1) {
     return str

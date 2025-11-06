@@ -11,7 +11,7 @@ const crypto = require('crypto')
  */
 try {
   crypto.createHash('md4')
-} catch (e) {
+} catch {
   console.warn('Crypto "md4" is not supported anymore by this Node version')
   const origCreateHash = crypto.createHash
   crypto.createHash = (alg, opts) => {

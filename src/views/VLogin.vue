@@ -28,10 +28,10 @@ onMounted(async () => {
 
 async function performAuthentication () {
   await store.dispatch('password/Authenticate', { PasswordString: password.value })
-    .then(_ => {
+    .then(() => {
       router.push({ name: 'list' })
     })
-    .catch(_ => { loginFailed.value = true })
+    .catch(() => { loginFailed.value = true })
 }
 </script>
 

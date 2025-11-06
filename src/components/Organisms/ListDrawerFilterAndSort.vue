@@ -209,7 +209,7 @@ const DisableSearch = async () => {
         設定
         <template v-slot:dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item @click.native="Store()">現在の表示設定を規定として保存</el-dropdown-item>
+            <el-dropdown-item @click="Store()">現在の表示設定を規定として保存</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>

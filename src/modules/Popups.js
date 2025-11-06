@@ -64,7 +64,7 @@ export async function confirm (message) {
     showClose: false,
     closeOnPressEscape: true,
     dangerouslyUseHTMLString
-  }).then(_ => true, _ => false)
+  }).then(() => true, () => false)
 }
 
 export async function confirmYesNo (message) {
@@ -77,7 +77,7 @@ export async function confirmYesNo (message) {
     cancelButtonText: 'いいえ',
     confirmButtonText: 'はい',
     dangerouslyUseHTMLString
-  }).then(_ => true, _ => false)
+  }).then(() => true, () => false)
 }
 
 export async function confirmAnyOk (message, anyText = 'cancel') {
@@ -89,7 +89,7 @@ export async function confirmAnyOk (message, anyText = 'cancel') {
     cancelButtonText: anyText,
     confirmButtonText: 'OK',
     dangerouslyUseHTMLString
-  }).then(_ => true, _ => false)
+  }).then(() => true, () => false)
 }
 
 export async function prompt (message, rule = undefined) {
@@ -107,5 +107,5 @@ export async function prompt (message, rule = undefined) {
   }
 
   return await MessageBox.prompt(text, options)
-    .then(value => value.value, _ => null)
+    .then(value => value.value, () => null)
 }

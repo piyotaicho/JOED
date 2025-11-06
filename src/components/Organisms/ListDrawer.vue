@@ -48,7 +48,7 @@ const CollapseChanged = (itemname) => {
 }
 
 const UpdateView = () => {
-  store.dispatch('ReloadDocumentList').then(_ => {
+  store.dispatch('ReloadDocumentList').then(() => {
     emit('changed')
 
     Notification({

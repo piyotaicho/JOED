@@ -82,7 +82,7 @@ const commit = async () => {
 
   for (const record of data.CreatedDocument) {
     await store.dispatch('UpsertDocument', record)
-      .then(_ => data.count++)
+      .then(() => data.count++)
       .catch(error => data.errors.push(error.message || error))
   }
 

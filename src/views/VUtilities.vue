@@ -25,8 +25,8 @@ const selectedTab = computed({
   get: () => selectedTabName.value,
   set: (newRouteName) => {
     router.push({ name: newRouteName })
-      .then(_ => { selectedTabName.value = newRouteName })
-      .catch(_ => {})
+      .then(() => { selectedTabName.value = newRouteName })
+      .catch(() => {})
   }
 })
 

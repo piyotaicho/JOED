@@ -184,7 +184,7 @@ let preservedElement
 function onCreated() {
   const uid = Number(props.uid)
   if (uid > 0) {
-    store.dispatch('FetchDocument', { DocumentId: uid }).then((_) => {
+    store.dispatch('FetchDocument', { DocumentId: uid }).then(() => {
       const storedDocument = store.getters.CaseDocument(uid)
       if (storedDocument !== undefined) {
         for (const key in CaseData) {
@@ -342,7 +342,7 @@ const UpdateList = (target, index, value) => {
 
 const RemoveCase = async () => {
   if (uid.value > 0 && (await Popups.confirm('この症例を削除します.よろしいですか?'))) {
-    store.dispatch('RemoveDocument', { DocumentId: uid.value }).then((_) => BackToList(0))
+    store.dispatch('RemoveDocument', { DocumentId: uid.value }).then(() => BackToList(0))
   }
 }
 
