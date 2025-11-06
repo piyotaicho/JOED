@@ -70,16 +70,6 @@ div.has-notification::after
   background-color: var(--color-danger)
   border-radius: 50%
   z-index: 1
-  // background: transparent
-  // left: 0
-  // top: 0
-  // width: 0
-  // height: 0
-  // border-top: 0.37rem solid var(--color-warning)
-  // border-left: 0.37rem solid var(--color-warning)
-  // border-right: 0.37rem solid transparent
-  // border-bottom: 0.37rem solid transparent
-
 
 div.category-malignancy::after
   position: absolute
@@ -89,8 +79,8 @@ div.category-malignancy::after
   bottom: 0
   width: 0
   height: 0
-  border-top: 0.37rem solid transparent
-  border-left: 0.37rem solid transparent
-  border-right: 0.37rem solid var(--color-danger)
-  border-bottom: 0.37rem solid var(--color-danger)
+  border-top: 0.5rem solid transparent
+  border-left: 0.5rem solid transparent
+  border-right: 0.5rem solid var(--color-primary)
+  border-bottom: 0.5rem solid var(--color-primary)
 </style>
