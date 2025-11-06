@@ -29,6 +29,7 @@ const cclickButton = (event) => emit('click', event)
 <style lang="sass">
 div.new-entry-button
   position: absolute
+  cursor: pointer
   right: 5px
   bottom: 5px
   width: 30px
