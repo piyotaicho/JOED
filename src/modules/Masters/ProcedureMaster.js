@@ -2,8 +2,8 @@ import Master from '@/modules/Masters/Master'
 import Fuse from 'fuse.js'
 import { ZenToHan } from '@/modules/ZenHanChars'
 
-export const LastUpdate = '2024-12-01'
-const defaultReference = '2024'
+export const LastUpdate = '2025-11-11'
+const defaultReference = '2025'
 
 const Kcodeformat = /^([A-Z]\d{3})(-0?(\d))?(-0?(\d))?/
 
@@ -589,19 +589,54 @@ export default class ProcedureMaster extends Master {
               'ロボット支援下骨盤内臓全摘術'
             ]
           },
+          // 2025 新規
+          {
+            Text: '子宮筋腫核出術(ロボット支援下)',
+            ValidFrom: '2025'
+          },
+          // 2025 新規
+          {
+            Text: '子宮腺筋症病巣除去術(ロボット支援下)',
+            ValidFrom: '2025'
+          },
           // 2021 削除
           {
             Text: '骨盤臓器脱修復術(ロボット支援下)',
             ValidTo: '2020'
           },
+          // 2025 削除
           {
-            Text: 'ロボット支援下その他'
+            Text: 'ロボット支援下その他',
+            ValidTo: '2024'
           }
         ],
         付属器: [
+          // 2025 削除
           {
-            Text: 'ロボット支援下その他'
-          }
+            Text: 'ロボット支援下その他',
+            ValidTo: '2024'
+          },
+          // 2025 新規
+          {
+            Text: '子宮付属器嚢胞摘出術(ロボット支援下)',
+            ValidFrom: '2025'
+          },
+          {
+            Text: '卵管切除術(ロボット支援下)',
+            ValidFrom: '2025'
+          },
+          {
+            Text: '子宮付属器切除術(ロボット支援下)',
+            ValidFrom: '2025'
+          },
+          {
+            Text: '子宮内膜症病巣除去術(ロボット支援下)',
+            ValidFrom: '2025'
+          },
+          {
+            Text: '子宮付属器癒着剥離術(ロボット支援下)',
+            ValidFrom: '2025'
+          },
         ],
         その他: [
           // 2021 削除
@@ -613,8 +648,15 @@ export default class ProcedureMaster extends Master {
             Text: '仙骨腟固定術(ロボット支援下)',
             Kcode: ['K865-02-00']
           },
+          // 2025 新規
           {
-            Text: 'ロボット支援下その他'
+            Text: '腟断端挙上術(ロボット支援下)',
+            Kcode: ['K860-03-00']
+          },
+          // 2025 削除
+          {
+            Text: 'ロボット支援下その他',
+            ValidTo: '2024'
           }
         ]
       },
@@ -688,8 +730,10 @@ export default class ProcedureMaster extends Master {
             ],
             ValidFrom: '2024'
           },
+          // 2026 削除
           {
-            Text: '治療のために開腹手術へ移行(合併症を除く)'
+            Text: '治療のために開腹手術へ移行(合併症を除く)',
+            ValidTo: '2025'
           },
           // 2020 削除
           {
@@ -704,6 +748,12 @@ export default class ProcedureMaster extends Master {
             Text: '婦人科以外の悪性疾患によるロボット支援下子宮全摘出術',
             ValidFrom: '2020',
             Kcode: ['K877-02-00']
+          }
+        ],
+        付属器: [
+          // 2025 新規
+          {
+
           }
         ]
       },
