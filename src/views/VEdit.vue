@@ -39,6 +39,15 @@
         <LabeledCheckbox v-model="isNoAEs" id="noAEcheckbox">合併症なし</LabeledCheckbox>
       </SectionAEs>
 
+      <SectionBox title="メモ" v-show="editingNote">
+        <div style="margin: 1px 28px 0px 42px;">
+          <textarea
+            v-model.trim="CaseData.Note"
+            style="font-size: 1rem; min-width: 100%; max-width: 100%; min-height: 6rem; padding: 0.28rem; line-height: 1.5rem;"
+          />
+        </div>
+      </SectionBox>
+
       <!-- Navigations -->
       <el-button
         :icon="CaretLeft"
@@ -64,6 +73,11 @@
       <!--Controls -->
       <div class="edit-controls">
         <div class="edit-controls-left">
+          <el-button
+            :type="CaseData.Note.trim() !== '' ? 'primary' : 'default'"
+            :icon="Memo"
+            style="padding-left: 8px; padding-right: 8px;" @click="ToggleEditingNote()"
+          />
           <el-button
             type="warning"
             :icon="WarningFilled"
@@ -123,13 +137,14 @@
 </template>
 
 <script setup>
-import { CaretLeft, CaretRight, WarningFilled, ArrowLeft, Delete, Loading } from '@element-plus/icons-vue'
-import { reactive, ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { CaretLeft, CaretRight, WarningFilled, ArrowLeft, Memo, Delete, Loading } from '@element-plus/icons-vue'
+import { reactive, ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useStore } from '@/store'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
 import SectionPatientInfo from '@/components/SectionPatientInfo.vue'
 import SectionDiagnoses from '@/components/SectionDiagnoses.vue'
 import SectionProcedures from '@/components/SectionProcedures.vue'
+import SectionBox from '@/components/Atoms/SectionBox.vue'
 import ApproachItems from '@/components/Molecules/ApproachItems.vue'
 import SectionAEs from '@/components/SectionAEs.vue'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
@@ -173,6 +188,7 @@ const prevUid = ref(0)
 const nextUid = ref(0)
 const processing = ref(true)
 const editingSection = ref(false)
+const editingNote = ref(false)
 
 const editDialog = ref()
 
@@ -183,6 +199,7 @@ let preservedElement
 //
 // @prop {uid} DocumentId
 function onCreated() {
+  // uid '0','00'は新規作成 - uid > 0 は既存データ編集
   const uid = Number(props.uid)
   if (uid > 0) {
     store.dispatch('FetchDocument', { DocumentId: uid }).then(() => {
@@ -190,7 +207,7 @@ function onCreated() {
       if (storedDocument !== undefined) {
         for (const key in CaseData) {
           if (storedDocument[key] !== undefined) {
-            // ArrayのアイテムはrouterへのハンドリングをよくするためJSON文字列化して格納する
+            // Arrayのアイテムはrouterへのハンドリングをよくするため事前にJSON文字列化して格納する
             if (Array.isArray(storedDocument[key])) {
               CaseData[key] = storedDocument[key].map((item) => JSON.stringify(item))
             } else {
@@ -199,9 +216,17 @@ function onCreated() {
           }
         }
       }
+
+      // メモ自動表示設定を設定から反映
+      if (CaseData?.Note !== undefined && CaseData.Note.trim() !== '') {
+        if (store.getters['system/ShowNote']) {
+          editingNote.value = true
+        }
+      }
+      processing.value = false
       preserve = JSON.stringify(CaseData)
 
-      processing.value = false
+      // ナビケーションボタンの動作設定
       prevUid.value = store.getters.NextUids(uid).Prev
       nextUid.value = store.getters.NextUids(uid).Next
     })
@@ -212,6 +237,7 @@ function onCreated() {
 }
 onCreated()
 
+// ライフサイクルフック - キーボードイベント登録と削除
 onMounted(() => {
   document.addEventListener('keydown', keyboardEventListener, true)
   window.addEventListener('beforeunload', BeforeUnloadLister)
@@ -235,6 +261,7 @@ onBeforeRouteUpdate((to) => {
   }
 })
 
+//
 const uid = computed(() => Number(props.uid))
 
 const categories = computed(() => {
@@ -301,6 +328,19 @@ const EditSection = (target, payload) => {
 
 const ShowNotification = () => {
   Popups.information(CaseData.Notification)
+}
+
+const ToggleEditingNote = () => {
+  editingNote.value = !editingNote.value
+  // ノートの編集が開いたらtextareaをフォーカスする
+  nextTick().then(() => {
+    if (editingNote.value) {
+      const textareas = editDialog.value.getElementsByTagName('textarea')
+      if (textareas?.length > 0) {
+        textareas[0].focus()
+      }
+    }
+  })
 }
 
 const EditListItem = (target, index, value) => {

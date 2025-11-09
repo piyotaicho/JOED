@@ -1,24 +1,54 @@
-<script>
+<script setup>
 import { computed, reactive } from 'vue'
 import { useStore } from '@/store'
 import InputSwitchField from '@/components/Molecules/InputSwitchField.vue'
 
-// private 定数 関数
-const makeRegex = (str = '', regex = false) => {
+const store = useStore()
+const emit = defineEmits(['changed'])
+
+const setting = reactive({
+  IgnoreQuery: false,
+  UseRegexp: false,
+  Field: '',
+  Search: ''
+})
+
+const OnCreated = () => {
+  if (store.getters.ViewSettings.Search) {
+    const preservedSearch = JSON.parse(store.getters.ViewSettings.Search.Preserve || '{}')
+
+    for (const key in setting) {
+      if (preservedSearch[key] !== undefined) {
+        setting[key] = preservedSearch[key]
+      }
+    }
+  }
+}
+OnCreated()
+
+/**
+ * 指定した正規表現オブジェクトを生成
+ * @param str 検索対象の文字列
+ * @param regex 正規表現を使用するかどうか
+ * @param multiline 複数行にまたがる検索を行うかどうか
+ */
+const makeRegex = (str = '', regex = false, multiline = false) => {
   let queryRegex
   if (regex) {
+    // 正規表現のエラーがあったら空の正規表現を返す
     try {
-      queryRegex = new RegExp(str, 'i')
+      queryRegex = new RegExp(str, 'i' + (multiline ? 'm' : ''))
     } catch {
       queryRegex = new RegExp()
     }
   } else {
     // 文字列の正規表現シンタックスをエスケープして文字列検索パターンを生成
-    queryRegex = new RegExp(str.replace(/[\\/.*+?^$-|()\][]/g, c => '\\' + c), 'i')
+    queryRegex = new RegExp(str.replace(/[\\/.*+?^$-|{}()\][]/g, '\\$&'), 'i' + (multiline ? 'm' : ''))
   }
   return queryRegex
 }
 
+// 検索設定
 const SearchSetting = {
   Id: {
     title: '患者ID',
@@ -28,7 +58,7 @@ const SearchSetting = {
       const queries = query.split(/[\s,，]+/)
         .map(item => item
           .replace(/[-ｰー－～]/g, '')
-          .replace(/./g, c => c + '[-ｰー－～]*')
+          .replace(/./g, '$&[-ｰー－～]*')
         )
 
       if (queries.length > 0) {
@@ -62,7 +92,7 @@ const SearchSetting = {
     }
   },
   DiagnosesMain: {
-    title: '主たる手術診断',
+    title: '手術診断 (主たる診断のみ)',
     regexp: true,
     createquery: (query, regexp) => {
       return {
@@ -84,7 +114,7 @@ const SearchSetting = {
             }
           },
           {
-            Diagnoses: {
+            Procedures: {
               $elemMatch: {
                 'AdditionalProcedure.Text': { $regex: makeRegex(query, regexp) }
               }
@@ -95,12 +125,26 @@ const SearchSetting = {
     }
   },
   ProceduresMain: {
-    title: '主たる実施手術',
+    title: '実施手術 (主たる手術のみ)',
     regexp: true,
     createquery: (query, regexp) => {
       return {
         'Procedures.0.Text': { $regex: makeRegex(query, regexp) }
       }
+    }
+  },
+  Note: {
+    title: 'メモ',
+    regexp: true,
+    createquery: (query, regexp) => {
+      return { Note: { $regex: makeRegex(query, regexp) } }
+    }
+  },
+  NoteMultiline: {
+    title: 'メモ(行ごとに評価)',
+    regexp: true,
+    createquery: (query, regexp) => {
+      return { Note: { $regex: makeRegex(query, regexp, true) } }
     }
   },
   Hash: {
@@ -117,86 +161,53 @@ const SearchSetting = {
   }
 }
 
-export default {
-  components: {
-    InputSwitchField
-  },
-  emits: ['changed'],
-  setup (_props, { emit }) {
-    const store = useStore()
-    const setting = reactive({
-      IgnoreQuery: false,
-      UseRegexp: false,
-      Field: '',
-      Search: ''
-    })
+const SearchActivated = computed(() => store.getters.SearchActivated)
 
-    const created = () => {
-      if (store.getters.ViewSettings.Search) {
-        const preservedSearch = JSON.parse(store.getters.ViewSettings.Search.Preserve || '{}')
+const RegexpDisabled = computed(() => {
+  const preset = SearchSetting[setting.Field]
 
-        for (const key in setting) {
-          if (preservedSearch[key] !== undefined) {
-            setting[key] = preservedSearch[key]
-          }
-        }
-      }
-    }
-    created()
+  if (preset && preset.regexp !== undefined) {
+    return !preset.regexp
+  } else {
+    return true
+  }
+})
 
-    const SearchActivated = computed(() => store.getters.SearchActivated)
+const MultipleQueryAccepted = computed(() => {
+  const preset = SearchSetting[setting.Field]
 
-    const RegexpDisabled = computed(() => {
-      const preset = SearchSetting[setting.Field]
+  if (preset && preset.multiple !== undefined) {
+    return SearchSetting[setting.Field].multiple
+  } else {
+    return false
+  }
+})
 
-      if (preset && preset.regexp !== undefined) {
-        return !preset.regexp
-      } else {
-        return true
-      }
-    })
+const performQuery = () => {
+  if (setting.Field && setting.Search) {
+    const query = Object.entries(
+      SearchSetting[setting.Field].createquery(setting.Search, setting.UseRegexp) || {}
+    )[0]
 
-    const MultipleQueryAccepted = computed(() => {
-      const preset = SearchSetting[setting.Field]
-
-      if (preset && preset.multiple !== undefined) {
-        return SearchSetting[setting.Field].multiple
-      } else {
-        return false
-      }
-    })
-
-    const performQuery = () => {
-      if (setting.Field && setting.Search) {
-        const query = Object.entries(
-          SearchSetting[setting.Field].createquery(setting.Search, setting.UseRegexp) || {}
-        )[0]
-
-        if (query && query.length === 2) {
-          store.commit('SetSearch', {
-            IgnoreQuery: setting.IgnoreQuery,
-            Filter: {
-              Field: query[0],
-              Value: query[1]
-            },
-            Preserve: JSON.stringify(setting)
-          })
-          emit('changed')
-        }
-      }
-    }
-
-    const cancelQuery = () => {
+    if (query && query.length === 2) {
       store.commit('SetSearch', {
-        Filter: {}
+        IgnoreQuery: setting.IgnoreQuery,
+        Filter: {
+          Field: query[0],
+          Value: query[1]
+        },
+        Preserve: JSON.stringify(setting)
       })
       emit('changed')
     }
-
-    return {
-      setting, SearchActivated, RegexpDisabled, MultipleQueryAccepted, performQuery, cancelQuery
-    }
   }
+}
+
+const cancelQuery = () => {
+  store.commit('SetSearch', {
+    Filter: {}
+  })
+  emit('changed')
 }
 </script>
 
@@ -221,6 +232,8 @@ export default {
             <option value="DiagnosesMain">手術診断 (主たる診断のみ)</option>
             <option value="Procedures">実施手術</option>
             <option value="ProceduresMain">実施手術 (主たる手術のみ)</option>
+            <option value="Note">メモ</option>
+            <option value="NoteMultiline">メモ(行ごとに評価)</option>
             <option value="Hash">問い合わせレコード識別子</option>
           </select>
         </div>

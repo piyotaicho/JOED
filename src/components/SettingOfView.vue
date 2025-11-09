@@ -18,6 +18,7 @@ const data = reactive({
   showStartupDialog: false,
   editJSOGId: false,
   editNCDId: false,
+  showNote: true,
   revertView: false
 })
 const preserve = ref('')
@@ -35,6 +36,7 @@ const changed = computed(() => preserve.value !== (
 data.showStartupDialog = store.getters['system/ShowStartupDialog']
 data.editJSOGId = store.getters['system/EditJSOGId']
 data.editNCDId = store.getters['system/EditNCDId']
+data.showNote = store.getters['system/ShowNote']
 
 const initValues = () => {
   for (const category of master.getCategories()) {
@@ -99,6 +101,7 @@ const commitSettings = async () => {
     ShowStartupDialog: data.showStartupDialog,
     EditJSOGId: data.editJSOGId,
     EditNCDId: data.editNCDId,
+    ShowNote: data.showNote,
     Approach: JSON.stringify(approach)
   })
 
@@ -142,6 +145,10 @@ const commitSettings = async () => {
       <InputSwitchField
         v-model="data.editNCDId"
         title="ロボット支援下手術 NCD症例識別コードの入力"
+        :options="{'しない': false, 'する': true}" />
+      <InputSwitchField
+        v-model="data.showNote"
+        title="メモが入力されていた場合編集を開く"
         :options="{'しない': false, 'する': true}" />
 
       <div>
