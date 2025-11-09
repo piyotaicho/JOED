@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed, nextTick } from 'vue'
+import { onMounted, ref, reactive, computed, nextTick } from 'vue'
 import { useStore } from '@/store'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
 import { CategoriesOfProcedure } from '@/modules/CaseValidater'
@@ -9,19 +9,20 @@ const store = useStore()
 
 const emit = defineEmits(['changed'])
 
-const data = ref({
+const setting = reactive({
   // カテゴリ: CaterogyTranslation から作成される
   Categories: {},
   // 年次: created()で非同期にロードされる
   Years: {},
   Conditions: {
-    合併症あり: { Field: 'PresentAE', Value: true },
-    読み込み症例: { Field: 'Imported', Value: true },
-    情報あり: { Field: 'Notification', Value: { $exists: true } },
-    登録拒否: { Field: 'Denial', Value: true }
+    合併症あり: { PropertyName: 'PresentAE', Value: true },
+    読み込み症例: { PropertyName: 'Imported', Value: true },
+    情報あり: { PropertyName: 'Notification', Value: { $exists: true } },
+    登録拒否: { PropertyName: 'Denial', Value: true }
   },
   Sort: {
-    Item: 'DocumentId',
+    PropertyName: 'DocumentId',
+    // ソート Ascending: 1, Descending: -1
     Order: -1
   }
 })
@@ -29,15 +30,13 @@ const data = ref({
 const FilterItems = ref([])
 
 // 選択肢項目オブジェクトの初期化
-function initData () {
+function onCreated () {
   // カテゴリをインポート
   CategoriesOfProcedure.forEach(categorylabel => {
-    data.value.Categories[categorylabel] = { Field: 'TypeOfProcedure', Value: categorylabel }
+    setting.Categories[categorylabel] = { PropertyName: 'TypeOfProcedure', Value: categorylabel }
   })
 }
-
-// onCreated: オブジェクト生成時の初期設定
-initData()
+onCreated()
 
 // onMounted: 既存の設定の反映
 onMounted(async () => await ImportSettings())
@@ -60,7 +59,7 @@ const ImportSettings = async () => {
   await store.dispatch('GetYears')
     .then((CountByYear) => {
       Object.keys(CountByYear).forEach(year => {
-        data.value.Years[year + '年'] = { Field: 'DateOfProcedure', Value: year }
+        setting.Years[year + '年'] = { PropertyName: 'DateOfProcedure', Value: year }
       })
     })
 
@@ -69,20 +68,20 @@ const ImportSettings = async () => {
 
   if (view) {
     if (view.Sort && Object.entries(view.Sort).length > 0) {
-      [data.value.Sort.Item, data.value.Sort.Order] = Object.entries(view.Sort)[0]
+      [setting.Sort.PropertyName, setting.Sort.Order] = Object.entries(view.Sort)[0]
     }
 
     FilterItems.value.splice(0)
     if (view.Filters) {
       const newFilters = view.Filters.map(filter => {
-        switch (filter.Field) {
+        switch (filter.PropertyName) {
           case 'TypeOfProcedure':
             return filter.Value
           case 'DateOfProcedure':
             return filter.Value + '年'
           default:
-            for (const condition in data.value.Conditions) {
-              if (data.value.Conditions[condition].Field === filter.Field) {
+            for (const condition in setting.Conditions) {
+              if (setting.Conditions[condition].PropertyName === filter.PropertyName) {
                 return condition
               }
             }
@@ -99,11 +98,11 @@ const ImportSettings = async () => {
  */
 const Apply = async () => {
   const FilterObjects = FilterItems.value
-    .map(filter => data.value.Categories[filter] || data.value.Years[filter] || data.value.Conditions[filter])
+    .map(filter => setting.Categories[filter] || setting.Years[filter] || setting.Conditions[filter])
     .filter(filter => filter)
 
   store.commit('SetFilters', FilterObjects)
-  store.commit('SetSort', { [data.value.Sort.Item]: data.value.Sort.Order })
+  store.commit('SetSort', { [setting.Sort.PropertyName]: setting.Sort.Order })
   await DisableSearch()
   emit('changed')
 }
@@ -150,7 +149,7 @@ const DisableSearch = async () => {
     <div class="subtitle">表示の順番</div>
     <div class="menu-item-content">
       <div>
-        <select v-model="data.Sort.Item">
+        <select v-model="setting.Sort.PropertyName">
           <option value="DocumentId">登録順</option>
           <option value="DateOfProcedure">手術日</option>
           <option value="ProcedureTime">手術時間</option>
@@ -162,7 +161,7 @@ const DisableSearch = async () => {
 
       <div>
         <el-switch
-          v-model="data.Sort.Order"
+          v-model="setting.Sort.Order"
           active-text="昇順"
           :active-value="1"
           active-color="var(--color-primary)"
@@ -179,7 +178,7 @@ const DisableSearch = async () => {
       <div>
         <div>カテゴリ</div>
         <div>
-          <template v-for="(value, category) in data.Categories" :key="category">
+          <template v-for="(value, category) in setting.Categories" :key="category">
             <LabeledCheckbox v-model="FilterItems" :value="category" />
           </template>
         </div>
@@ -188,7 +187,7 @@ const DisableSearch = async () => {
       <div>
         <div>年次</div>
         <div>
-          <template v-for="(value, year) in data.Years" :key="year">
+          <template v-for="(value, year) in setting.Years" :key="year">
             <LabeledCheckbox v-model="FilterItems" :value="year" />
           </template>
         </div>
@@ -197,7 +196,7 @@ const DisableSearch = async () => {
       <div>
         <div>情報</div>
         <div>
-          <template v-for="(value, condition) in data.Conditions" :key="condition">
+          <template v-for="(value, condition) in setting.Conditions" :key="condition">
             <LabeledCheckbox v-model="FilterItems" :value="condition" />
           </template>
         </div>
