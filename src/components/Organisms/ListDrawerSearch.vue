@@ -161,8 +161,7 @@ const SearchSetting = {
   }
 }
 
-const SearchActivated = computed(() => store.getters.SearchActivated)
-
+// 正規表現使用の有効/無効
 const RegexpDisabled = computed(() => {
   const preset = SearchSetting[setting.Field]
 
@@ -173,10 +172,12 @@ const RegexpDisabled = computed(() => {
   }
 })
 
+const SearchActivated = computed(() => store.getters.SearchActivated)
+
 const MultipleQueryAccepted = computed(() => {
   const preset = SearchSetting[setting.Field]
 
-  if (preset && preset.multiple !== undefined) {
+  if (preset && preset?.multiple !== undefined) {
     return SearchSetting[setting.Field].multiple
   } else {
     return false
@@ -226,15 +227,9 @@ const cancelQuery = () => {
         <div>
           <select v-model="setting.Field">
             <option value="" disabled style="display: none;">検索する項目を選択してください.</option>
-            <option value="Id">患者ID</option>
-            <option value="Name">患者名</option>
-            <option value="Diagnoses">手術診断</option>
-            <option value="DiagnosesMain">手術診断 (主たる診断のみ)</option>
-            <option value="Procedures">実施手術</option>
-            <option value="ProceduresMain">実施手術 (主たる手術のみ)</option>
-            <option value="Note">メモ</option>
-            <option value="NoteMultiline">メモ(行ごとに評価)</option>
-            <option value="Hash">問い合わせレコード識別子</option>
+            <template v-for="(preset, key) in SearchSetting" :key="key">
+              <option :value="key">{{ preset.title }}</option>
+            </template>
           </select>
         </div>
       </div>
