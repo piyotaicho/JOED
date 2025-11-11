@@ -15,6 +15,7 @@ export default {
       // 編集設定
       EditJSOGId: true,
       EditNCDId: false,
+      ShowNote: true,
       Approach: '{}',
       // 表示設定
       ShowStartupDialog: true,
@@ -116,7 +117,10 @@ export default {
     EditNCDId(state) {
       return state.settings.EditNCDId
     },
-
+    // メモ編集の自動表示設定
+    ShowNote(state) {
+      return state.settings.ShowNote
+    },
     // アプローチのデフォルト設定
     Approach(state) {
       return state.settings.Approach || '{}'

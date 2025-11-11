@@ -78,9 +78,6 @@ onMounted(() => {
         // 設定値が無い場合デフォルト値をロードする
         const defaultApproach = JSON.parse(store.getters['system/Approach'])
         selections = defaultApproach[category] || []
-        if (selections.length !== 0) {
-          console.log('default selections', selections)
-        }
       }
 
       for (const selection of selections) {
