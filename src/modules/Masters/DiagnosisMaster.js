@@ -2,8 +2,8 @@ import Master from '@/modules/Masters/Master'
 import Fuse from 'fuse.js'
 import { ZenToHan } from '@/modules/ZenHanChars'
 
-export const LastUpdate = '2022-05-05'
-const defaultReference = '2022'
+export const LastUpdate = '2025-11-11'
+const defaultReference = '2025'
 
 const icd10format = /^([A-Z][0-9]{2,3})$/i
 
@@ -304,6 +304,11 @@ export default class DiagnosisMaster extends Master {
           {
             Text: '術後合併症・処置後合併症',
             ValidFrom: '2021'
+          },
+          // 2025 新規
+          {
+            Text: 'その他骨盤内良性病変',
+            ValidFrom: '2025'
           }
         ]
       },

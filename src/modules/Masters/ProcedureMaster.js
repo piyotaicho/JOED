@@ -34,7 +34,7 @@ export default class ProcedureMaster extends Master {
             Text: '異所性妊娠手術(その他)',
             Ditto: ['異所性妊娠手術(卵管摘出術)', '異所性妊娠手術(卵管線状切開術)'],
             ValidFrom: '2020',
-            Kcode: ['K9 12-00-02']
+            Kcode: ['K912-00-02']
           },
           {
             Text: '腟式子宮全摘出術(LAVH)',
@@ -78,7 +78,8 @@ export default class ProcedureMaster extends Master {
             Text: '子宮腺筋症病巣除去術(腹腔鏡下)'
           },
           {
-            Text: '腹腔内観察'
+            Text: '腹腔内観察',
+            Kcode: ['D314-00-00', 'K636-03-00']
           },
           // 2021 削除
           {
@@ -94,11 +95,6 @@ export default class ProcedureMaster extends Master {
           {
             Text: '仙骨子宮靭帯縫縮術',
             ValidFrom: '2021',
-            ValidTo: '2021'
-          },
-          {
-            Text: '仙骨子宮靭帯縫縮術',
-            ValidFrom: '2022',
             Kcode: ['K860-03-00']
           },
           // 2021 新規
@@ -112,7 +108,8 @@ export default class ProcedureMaster extends Master {
               Text: '実施内容',
               Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術'],
               Selection: 'any'
-            }
+            },
+            Kcode: ['K877-02-00', 'K888-00-02', 'K888-02-02']
           },
           // 2020 新規
           {
@@ -229,7 +226,8 @@ export default class ProcedureMaster extends Master {
             Kcode: ['K888-02-02']
           },
           {
-            Text: '腹腔内観察'
+            Text: '腹腔内観察',
+            Kcode: ['D314-00-00', 'K636-03-00']
           },
           {
             Text: '上記以外の付属器手術',
@@ -298,6 +296,7 @@ export default class ProcedureMaster extends Master {
           {
             Text: '異所性妊娠手術(その他)',
             Ditto: ['異所性妊娠手術(卵管摘出術)', '異所性妊娠手術(卵管線状切開術)'],
+            Kcode: ['K912-00-02'],
             ValidFrom: '2020'
           },
           {
@@ -320,12 +319,18 @@ export default class ProcedureMaster extends Master {
           // 2021 新規
           {
             Text: '仙骨子宮靭帯縫縮術',
+            Kcode: ['K860-03-00'],
             ValidFrom: '2021'
           },
           // 2021 新規
           {
             Text: 'その他の骨盤臓器脱修復術',
             ValidFrom: '2021'
+          },
+          // 2025 新規
+          {
+            Text: 'その他骨盤内良性病変摘出術',
+            ValidFrom: '2025'
           },
           {
             Text: '術後合併症の修復術'
@@ -465,13 +470,21 @@ export default class ProcedureMaster extends Master {
             ValidFrom: '2020',
             Kcode: ['D314-00-00', 'K636-03-00', 'K636-04-00']
           },
+          // 2025 変更
           {
             Text: '腹腔鏡下付属器摘出術',
             Description: {
               Text: '大網切除・生検',
               Values: ['[大網切除・生検]あり', '[大網切除・生検]なし']
             },
-            Kcode: ['K888-00-02', 'K642-02-00']
+            Kcode: ['K888-00-02', 'K642-02-00'],
+            ValidTo: '2024'
+          },
+          {
+            Text: '腹腔鏡下付属器摘出術',
+            AdditionalProcedure: '腹腔鏡下大網生検・切除術',
+            Kcode: ['K888-00-02'],
+            ValidFrom: '2025'
           },
           {
             Text: '腹腔鏡下リンパ節生検・郭清',
@@ -491,8 +504,10 @@ export default class ProcedureMaster extends Master {
             Text: '他の診療科との合同手術',
             ValidFrom: '2020'
           },
+          // 2026 削除
           {
-            Text: '治療のために開腹手術へ移行(合併症を除く)'
+            Text: '治療のために開腹手術へ移行(合併症を除く)',
+            ValidTo: '2025'
           },
           {
             Text: '他の悪性疾患の予防的切除術',
@@ -500,7 +515,8 @@ export default class ProcedureMaster extends Master {
               Text: '実施内容',
               Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術'],
               Selection: 'any'
-            }
+            },
+            Kcode: ['K877-02-00', 'K888-00-02', 'K888-02-02']
           },
           // 2020 新規
           {
@@ -518,14 +534,30 @@ export default class ProcedureMaster extends Master {
             Text: '妊孕性温存のための付属器摘出術',
             ValidFrom: '2020'
           },
-          // 2020 新規
+          // 2020 新規, 2025 変更
           {
             Text: '転移性卵巣癌による付属器摘出術',
             Description: {
               Text: '大網切除・生検',
               Values: ['[大網切除・生検]あり', '[大網切除・生検]なし']
             },
-            Kcode: ['K888-00-02']
+            Kcode: ['K888-00-02'],
+            ValidTo: '2024'
+          },
+          {
+            Text: '転移性卵巣癌による付属器摘出術',
+            AdditionalProcedure: '腹腔鏡下大網生検・切除術',
+            Kcode: ['K888-00-02'],
+            ValidFrom: '2025'
+          },
+          // 2025 新規
+          {
+            Text: '腹腔鏡下大網生検・切除術',
+            Description: {
+              Text: '大網切除・生検の範囲',
+              Values: ['なし$', '生検・部分切除', '亜全摘', '全摘']
+            },
+            ValidFrom: '2025'
           },
           // 2020 新規
           {
@@ -561,13 +593,25 @@ export default class ProcedureMaster extends Master {
             Text: '他の診療科との合同手術',
             ValidFrom: '2020'
           },
+          // 2026 削除
           {
-            Text: '治療のために開腹手術へ移行(合併症を除く)'
+            Text: '治療のために開腹手術へ移行(合併症を除く)',
+            ValidTo: '2025'
           },
           // 2020 削除
           {
             Text: 'Second Look Operation',
             ValidTo: '2019'
+          },
+          // 2025 新規
+          {
+            Text: '腹腔鏡下大網生検・切除術',
+            Description: {
+              Text: '大網切除・生検の範囲',
+              Values: ['なし$', '生検・部分切除', '亜全摘', '全摘'],
+              Selection: 'one'
+            },
+            ValidFrom: '2025'
           },
           {
             Text: '術後合併症の修復術'
@@ -594,9 +638,16 @@ export default class ProcedureMaster extends Master {
             Text: '子宮筋腫核出術(ロボット支援下)',
             ValidFrom: '2025'
           },
-          // 2025 新規
           {
             Text: '子宮腺筋症病巣除去術(ロボット支援下)',
+            ValidFrom: '2025'
+          },
+          {
+            Text: '子宮腟上部切断術(ロボット支援下)',
+            ValidFrom: '2025'
+          },
+          {
+            Text: '子宮付属器癒着剥離術(ロボット支援下)',
             ValidFrom: '2025'
           },
           // 2021 削除
@@ -626,7 +677,7 @@ export default class ProcedureMaster extends Master {
             ValidFrom: '2025'
           },
           {
-            Text: '子宮付属器切除術(ロボット支援下)',
+            Text: '子宮付属器切除術((ロボット支援下)',
             ValidFrom: '2025'
           },
           {
@@ -651,7 +702,18 @@ export default class ProcedureMaster extends Master {
           // 2025 新規
           {
             Text: '腟断端挙上術(ロボット支援下)',
-            Kcode: ['K860-03-00']
+            Kcode: ['K860-03-00'],
+            ValidFrom: '2025'
+          },
+          {
+            Text: '仙骨子宮靭帯縫縮術(ロボット支援下)',
+            ValidFrom: '2021',
+            ValidFrom: '2025'
+          },
+          // 2025 新規
+          {
+            Text: 'その他骨盤内良性病変摘出術(ロボット支援下)',
+            ValidFrom: '2025'
           },
           // 2025 削除
           {
@@ -730,6 +792,16 @@ export default class ProcedureMaster extends Master {
             ],
             ValidFrom: '2024'
           },
+          // 2025 新規
+          {
+            Text: 'ロボット支援下大網生検・切除術',
+            Description: {
+              Text: '大網切除・生検の範囲',
+              Values: ['なし$', '生検・部分切除', '亜全摘', '全摘'],
+              Selection: 'one'
+            },
+            ValidFrom: '2025'
+          },
           // 2026 削除
           {
             Text: '治療のために開腹手術へ移行(合併症を除く)',
@@ -748,13 +820,77 @@ export default class ProcedureMaster extends Master {
             Text: '婦人科以外の悪性疾患によるロボット支援下子宮全摘出術',
             ValidFrom: '2020',
             Kcode: ['K877-02-00']
-          }
+          },
+          // 2025 新規
+          {
+            Text: '他の悪性疾患のロボット支援下予防的切除術',
+            Description: {
+              Text: '実施内容',
+              Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術'],
+              Selection: 'any'
+            },
+            ValidFrom: '2025'
+          },
+          // 2025 新規
+          {
+            Text: '再発病巣のロボット支援下摘出術',
+            ValidFrom: '2025'
+          },
         ],
         付属器: [
           // 2025 新規
           {
+            Text: 'ロボット支援下付属器摘出術',
+            AdditionalProcedure: 'ロボット支援下大網生検・切除術',
+            Kcode: ['K888-00-02'],
+            ValidFrom: '2025'
+          },
+          {
+            Text: 'ロボット支援下大網生検・切除術',
+            Description: {
+              Text: '大網切除・生検の範囲',
+              Values: ['なし$', '生検・部分切除', '亜全摘', '全摘'],
+              Selection: 'one'
+            },
+            ValidFrom: '2025'
+          },
+          // 2025 新規
+          {
+            Text: '他の悪性疾患のロボット支援下予防的切除術',
+            Description: {
+              Text: '実施内容',
+              Values: ['予防的卵管摘出術', '予防的卵巣摘出術', '予防的子宮全摘出術'],
+              Selection: 'any'
+            },
+            ValidFrom: '2025'
+          },
+          // 2025 新規
+          {
+            Text: '再発病巣のロボット支援下摘出術',
+            ValidFrom: '2025'
+          },
+        ],
+        その他: [
+          // 2025 新規
+          {
+            Text: 'ロボット支援下大網生検・切除術',
+            Description: {
+              Text: '大網切除・生検の範囲',
+              Values: ['なし$', '生検・部分切除', '亜全摘', '全摘'],
+              Selection: 'one'
+            },
+            ValidFrom: '2025'
+          },
+          // 2025 新規
+          {
+            Text: 'ロボット支援下リンパ節生検・郭清',
+            Description: {
+              Text: 'リンパ節郭清の範囲',
+              Values: ['なし(センチネル生検なし)$', 'なし(センチネル生検あり)', 'PLN', 'PLN+PAN', 'PAN'],
+              Selection: 'one'
+            }
+          },
 
-          }
         ]
       },
       子宮鏡: {
