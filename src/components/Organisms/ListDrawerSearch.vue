@@ -186,16 +186,16 @@ const MultipleQueryAccepted = computed(() => {
 
 const performQuery = () => {
   if (setting.Field && setting.Search) {
-    const query = Object.entries(
+    const [field, value] = Object.entries(
       SearchSetting[setting.Field].createquery(setting.Search, setting.UseRegexp) || {}
-    )[0]
+    ).flat()
 
-    if (query && query.length === 2) {
+    if (field !== undefined && value !== undefined) {
       store.commit('SetSearch', {
         IgnoreQuery: setting.IgnoreQuery,
         Filter: {
-          Field: query[0],
-          Value: query[1]
+          Field: field,
+          Value: value
         },
         Preserve: JSON.stringify(setting)
       })
