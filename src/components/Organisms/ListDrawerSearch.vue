@@ -67,7 +67,7 @@ const SearchSetting = {
           PatientId: { $regex: new RegExp(regexp) }
         }
       } else {
-        return undefined
+        return {}
       }
     }
   },
@@ -155,7 +155,7 @@ const SearchSetting = {
       if (query && query.trim().length > 0) {
         return { Hash: query.trim() }
       } else {
-        return undefined
+        return {}
       }
     }
   }
@@ -187,7 +187,7 @@ const MultipleQueryAccepted = computed(() => {
 const performQuery = () => {
   if (setting.Field && setting.Search) {
     const [field, value] = Object.entries(
-      SearchSetting[setting.Field].createquery(setting.Search, setting.UseRegexp) || {}
+      SearchSetting[setting.Field]?.createquery(setting.Search, setting.UseRegexp) || {}
     ).flat()
 
     if (field !== undefined && value !== undefined) {
