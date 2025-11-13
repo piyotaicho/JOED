@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-import VueDatePicker from '@vuepic/vue-datepicker'
+import { VueDatePicker } from '@vuepic/vue-datepicker'
 import { ja } from 'date-fns/locale'
 
 const props = defineProps({
@@ -55,21 +55,23 @@ const datepickerValue = computed({
       <VueDatePicker
         ref="datepicker"
         v-model="datepickerValue"
-        :enable-time-picker="false"
         model-type="yyyy-MM-dd"
-        format="yyyy-MM-dd"
-        :clearable="false"
-        :format-locale="ja"
+        :formats="{ format: 'yyyy-MM-dd', preview: 'yyyy-MM-dd' }"
+        :locale="ja"
+        :time-config="{ enableTimePicker: false }"
         week-start="0"
         :auto-apply="true"
+        :input-attrs="{ clearable: false }"
         :text-input="{
           enterSubmit: true,
           tabSubmit: true,
           openMenu: 'toggle',
           escClose: true,
         }"
-        select-text="選択"
-        cancel-text="閉じる"
+        :action-row="{
+          selectBtnLabel: '選択',
+          cancelBtnLabel: '閉じる'
+        }"
       >
         <template #calendar-header="{ index, day }">
           <div
