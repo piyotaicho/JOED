@@ -14,6 +14,27 @@ const store = useStore()
 const route = useRoute()
 const router = useRouter()
 
+// スクロールコンテナへの参照
+const scrollContainer = ref(null)
+
+// スクロールバーが表示されるまで自動ロード
+const ensureScrollbar = () => {
+  if (!scrollContainer.value || fetching.value || noMore.value) return
+
+  const { scrollHeight, clientHeight } = scrollContainer.value
+  // スクロールバーが表示されていない（コンテンツが足りない）場合は追加ロード
+  // ただし、全データを表示してもスクロールバーが出ない場合はnoMore.valueがtrueになるので停止する
+  if (scrollHeight <= clientHeight && !noMore.value) {
+    fetching.value = true
+    setTimeout(() => {
+      store.commit('IncrementDocumentListRange')
+      fetching.value = false
+      // ロード後、次のDOMレンダリング後に再度チェック
+      setTimeout(() => ensureScrollbar(), 50)
+    }, 100)
+  }
+}
+
 onMounted(() => {
   // vue routerのscrollを代替 - #doc-id なエレメントが中心になるようにスクロールとfocusする
   if (route.hash) {
@@ -24,6 +45,9 @@ onMounted(() => {
 
     }
   }
+
+  // 初期ロード：スクロールバーが表示されるまでデータをロード
+  setTimeout(() => ensureScrollbar(), 100)
 })
 
 const showStartupDialog = computed(() => store.getters['system/ShowStartupDialog'])
@@ -61,10 +85,21 @@ const moveFocus = (offset) => {
   }
 }
 
-// uidsのリスト内容が変更されたらselectedUidsをクリア
+// uidsのリスト内容が変更されたら選択をクリアし、スクロールバーチェック
 watch(uids, () => {
   selectedUids.value.splice(0)
   multiSelectMode.value = false
+  // データ追加・フィルタリング後、DOMレンダリング完了後にスクロールバーチェック
+  setTimeout(() => ensureScrollbar(), 100)
+})
+
+// noMoreの変化も監視（全データロード完了時）
+watch(noMore, (isNoMore) => {
+  if (isNoMore) {
+    // 全データロード完了時、スクロールバーが出ない場合はそのまま終了
+    // これにより、データ量が少ない場合の無限ループを防ぐ
+    fetching.value = false
+  }
 })
 
 // 症例削除のディスパッチ
@@ -162,16 +197,20 @@ const handleSpaceKey = () => {
   }
 }
 
-// Element Plus infinite scroll のハンドラー
-const loadMore = () => {
+// ネイティブスクロールイベントでの無限スクロール実装
+const handleScroll = (event) => {
   if (fetching.value || noMore.value) return
 
-  fetching.value = true
-  // 少し遅延を入れてユーザー体験を改善
-  setTimeout(() => {
-    store.commit('IncrementDocumentListRange')
-    fetching.value = false
-  }, 100)
+  const { scrollTop, scrollHeight, clientHeight } = event.target
+  // スクロール位置が下から200px以内に来たらloadMore
+  if (scrollHeight - scrollTop - clientHeight < 200) {
+    fetching.value = true
+    // 少し遅延を入れてユーザー体験を改善
+    setTimeout(() => {
+      store.commit('IncrementDocumentListRange')
+      fetching.value = false
+    }, 100)
+  }
 }
 </script>
 
@@ -185,9 +224,8 @@ const loadMore = () => {
     @keydown.escape="handleEscapeKey"
   >
     <div class="itemlist"
-         v-infinite-scroll="loadMore"
-         :infinite-scroll-disabled="fetching || noMore"
-         :infinite-scroll-distance="200">
+         ref="scrollContainer"
+         @scroll="handleScroll">
       <DrawerButton class="open-drawer" tab-index="0" @click="openDrawer"/>
       <NewEntryButton class="list-new-entry" tab-index="0" @click="createNewEntry"/>
 
