@@ -94,7 +94,6 @@ const datepickerValue = computed({
             @keypress="onKeypress"
             @keydown="onKeypress($event)"
             @paste="handlePaste"
-            style="font-family: sans-serif;"
           />
         </template>
       </VueDatePicker>
