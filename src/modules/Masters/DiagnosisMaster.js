@@ -97,12 +97,12 @@ export default class DiagnosisMaster extends Master {
           },
           {
             Text: '機能性不妊症(腹腔内検査,SecondLookを含む)',
-            Code: ['N972', 'N973', 'N979'],
+            Code: ['N970', 'N971', 'N972', 'N973', 'N979'],
             ValidFrom: '2021'
           },
           {
             Text: '子宮奇形',
-            Code: ['Q512', 'Q513', 'Q514', 'Q518']
+            Code: ['Q51*']
           },
           {
             Text: '骨盤腹膜炎',
@@ -145,7 +145,7 @@ export default class DiagnosisMaster extends Master {
           {
             Text: '子宮内膜症(子宮内膜症性嚢胞含む)',
             ValidFrom: '2020',
-            Code: ['N80']
+            Code: ['N80*']
           },
           // 2020 表記変更 異所性妊娠(子宮外妊娠) -> 異所性妊娠
           {
@@ -345,12 +345,14 @@ export default class DiagnosisMaster extends Master {
           // 2020 新規
           {
             Text: '絨毛性疾患',
-            ValidFrom: '2020'
+            ValidFrom: '2020',
+            Code: ['O019', 'D392', 'C56', 'C58']
           },
           // 2020 新規
           {
             Text: '婦人科以外の悪性腫瘍',
-            ValidFrom: '2020'
+            ValidFrom: '2020',
+            Code: ['C1*', 'C2*', 'C3*', 'C4*', 'C50*', 'C6*', 'C7*', 'C8*', 'C9*']
           },
           // 2020 表記変更 予防的内性器摘出術適応 -> 予防的内性器摘出術の適応
           {
@@ -668,9 +670,11 @@ function regulateExpression(str = '') {
 
     '([AC]IS|CIN(-|)[123])': 'N879',
     'AEH((-|)C|)': 'N850',
+    '異型ポリープ状腺筋腫': 'APAM',
 
     '不妊': '機能性不妊',
     '卵巣(機能)?不全': '機能性不妊',
+    '着床不全': '子宮性不妊・不育症',
 
     GTD: 'F649',
     FTM: 'F649',
@@ -691,7 +695,6 @@ function regulateExpression(str = '') {
     STD: 'N735',
     PCOS: 'N97',
     DOR: 'N97'
-
   }
 
   for (const rule in ruleset2) {
