@@ -901,15 +901,22 @@ export default class ProcedureMaster extends Master {
             Code: ['K872-03-01', 'K872-03-02', 'K873-00-01', 'K873-00-02'],
             ValidTo: '2021'
           },
+          // 2026 詳細調査はアプローチに移行
           {
             Text: '子宮筋腫摘出術',
             Code: ['K872-03-01', 'K872-03-02', 'K873-00-01', 'K873-00-02'],
             ValidFrom: '2022',
+            ValidTo: '2025',
             Description: {
               Text: '主たる使用機器',
               Values: ['レゼクトスコープ 電解質溶液使用', 'レゼクトスコープ 非電解質溶液使用', '細径子宮鏡', '軟性子宮鏡', 'シェーバー'],
               Selection: 'one'
             }
+          },
+          {
+            Text: '子宮筋腫摘出術',
+            Code: ['K872-03-01', 'K872-03-02', 'K873-00-01', 'K873-00-02'],
+            ValidFrom: '2026'
           },
           // 2022 詳細調査追加
           {
@@ -917,15 +924,22 @@ export default class ProcedureMaster extends Master {
             Code: ['K872-03-01', 'K872-03-02'],
             ValidTo: '2021'
           },
+          // 2026 詳細調査はアプローチに移行
           {
             Text: '子宮内膜ポリープ摘出術',
             Code: ['K872-03-01', 'K872-03-02'],
             ValidFrom: '2022',
+            ValidTo: '2025',
             Description: {
               Text: '主たる使用機器',
               Values: ['レゼクトスコープ 電解質溶液使用', 'レゼクトスコープ 非電解質溶液使用', '細径子宮鏡', '軟性子宮鏡', 'シェーバー'],
               Selection: 'one'
             }
+          },
+          {
+            Text: '子宮内膜ポリープ摘出術',
+            Code: ['K872-03-01', 'K872-03-02'],
+            ValidFrom: '2026'
           },
           // 2022 詳細調査追加
           {
@@ -933,15 +947,22 @@ export default class ProcedureMaster extends Master {
             Code: ['K863-02-00'],
             ValidTo: '2021'
           },
+          // 2026 詳細調査はアプローチに移行
           {
             Text: '子宮内腔癒着剥離術',
             Code: ['K863-02-00'],
             ValidFrom: '2022',
+            ValidTo: '2025',
             Description: {
               Text: '主たる使用機器',
               Values: ['レゼクトスコープ 電解質溶液使用', 'レゼクトスコープ 非電解質溶液使用', '細径子宮鏡', '軟性子宮鏡', 'シェーバー'],
               Selection: 'one'
             }
+          },
+          {
+            Text: '子宮内腔癒着剥離術',
+            Code: ['K863-02-00'],
+            ValidFrom: '2026'
           },
           {
             Text: '子宮鏡下子宮中隔切除術',
@@ -960,15 +981,22 @@ export default class ProcedureMaster extends Master {
             Code: ['K861-00-00', 'K872-03-01', 'K872-03-02'],
             ValidTo: '2021'
           },
+          // 2026 詳細調査はアプローチに移行
           {
             Text: '胎盤ポリープ・胎盤遺残摘出術',
             Code: ['K861-00-00', 'K872-03-01', 'K872-03-02'],
             ValidFrom: '2022',
+            ValidTo: '2025',
             Description: {
               Text: '主たる使用機器',
               Values: ['レゼクトスコープ 電解質溶液使用', 'レゼクトスコープ 非電解質溶液使用', '細径子宮鏡', '軟性子宮鏡', 'シェーバー'],
               Selection: 'one'
             }
+          },
+          {
+            Text: '胎盤ポリープ・胎盤遺残摘出術',
+            Code: ['K861-00-00', 'K872-03-01', 'K872-03-02'],
+            ValidFrom: '2026'
           },
           // 2020 新規
           {
