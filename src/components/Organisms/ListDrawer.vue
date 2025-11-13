@@ -105,6 +105,8 @@ const UpdateView = () => {
 .el-collapse-item__content
   padding: 0 2rem
   font-size: 1rem !important
+.el-collapse-icon-position-right .el-collapse-item__header
+  padding-right: 0 !important
 
 .drawer-alignright
   font-size: 1.2rem
