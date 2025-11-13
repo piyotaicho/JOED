@@ -15,25 +15,26 @@ const setting = reactive({
   // 年次: created()で非同期にロードされる
   Years: {},
   Conditions: {
-    合併症あり: { PropertyName: 'PresentAE', Value: true },
-    読み込み症例: { PropertyName: 'Imported', Value: true },
-    情報あり: { PropertyName: 'Notification', Value: { $exists: true } },
-    登録拒否: { PropertyName: 'Denial', Value: true }
+    合併症あり: { Field: 'PresentAE', Value: true },
+    読み込み症例: { Field: 'Imported', Value: true },
+    情報あり: { Field: 'Notification', Value: { $exists: true } },
+    登録拒否: { Field: 'Denial', Value: true }
   },
   Sort: {
-    PropertyName: 'DocumentId',
+    Field: 'DocumentId',
     // ソート Ascending: 1, Descending: -1
     Order: -1
   }
 })
 
+// 選択の内容配列
 const FilterItems = ref([])
 
 // 選択肢項目オブジェクトの初期化
 function onCreated () {
   // カテゴリをインポート
   CategoriesOfProcedure.forEach(categorylabel => {
-    setting.Categories[categorylabel] = { PropertyName: 'TypeOfProcedure', Value: categorylabel }
+    setting.Categories[categorylabel] = { Field: 'TypeOfProcedure', Value: categorylabel }
   })
 }
 onCreated()
@@ -59,7 +60,7 @@ const ImportSettings = async () => {
   await store.dispatch('GetYears')
     .then((CountByYear) => {
       Object.keys(CountByYear).forEach(year => {
-        setting.Years[year + '年'] = { PropertyName: 'DateOfProcedure', Value: year }
+        setting.Years[year + '年'] = { Field: 'DateOfProcedure', Value: year }
       })
     })
 
@@ -67,21 +68,25 @@ const ImportSettings = async () => {
   const view = store.getters.ViewSettings
 
   if (view) {
-    if (view.Sort && Object.entries(view.Sort).length > 0) {
-      [setting.Sort.PropertyName, setting.Sort.Order] = Object.entries(view.Sort)[0]
+    // ソート設定の取得
+    const [field, order] = Object.entries(view.Sort || {}).flat()
+    if (field !== undefined && order !== undefined ) {
+      setting.Sort.Field = field
+      setting.Sort.Order = order
     }
 
+    // フィルタの設定値を取得して配列に反映
     FilterItems.value.splice(0)
     if (view.Filters) {
       const newFilters = view.Filters.map(filter => {
-        switch (filter.PropertyName) {
-          case 'TypeOfProcedure':
+        switch (filter.Field) {
+          case 'TypeOfProcedure': // カテゴリ
             return filter.Value
-          case 'DateOfProcedure':
+          case 'DateOfProcedure': // 年次
             return filter.Value + '年'
-          default:
+          default:  // その他：合併症あり・読み込み症例・情報あり・登録拒否
             for (const condition in setting.Conditions) {
-              if (setting.Conditions[condition].PropertyName === filter.PropertyName) {
+              if (setting.Conditions[condition].Field === filter.Field) {
                 return condition
               }
             }
@@ -102,7 +107,7 @@ const Apply = async () => {
     .filter(filter => filter)
 
   store.commit('SetFilters', FilterObjects)
-  store.commit('SetSort', { [setting.Sort.PropertyName]: setting.Sort.Order })
+  store.commit('SetSort', { [setting.Sort.Field]: setting.Sort.Order })
   await DisableSearch()
   emit('changed')
 }
@@ -149,7 +154,7 @@ const DisableSearch = async () => {
     <div class="subtitle">表示の順番</div>
     <div class="menu-item-content">
       <div>
-        <select v-model="setting.Sort.PropertyName">
+        <select v-model="setting.Sort.Field">
           <option value="DocumentId">登録順</option>
           <option value="DateOfProcedure">手術日</option>
           <option value="ProcedureTime">手術時間</option>

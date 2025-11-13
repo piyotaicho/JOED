@@ -99,10 +99,13 @@ const store = createStore({
     },
     // 現在のView設定からのクエリを作成する
     ViewQuery (state) {
-      const filters = (state.Filters && [...state.Filters]) || []
-      const sort = (state.Sort && { ...state.Sort }) || { DocumentId: -1 }
       const query = {}
 
+      // フィルタの初期値を設定
+      const filters = (state.Filters && [...state.Filters]) || []
+      const sort = (state.Sort && { ...state.Sort }) || { DocumentId: -1 }
+
+      // 検索が有効ならば検索条件にあわせてフィルタを置換・追加
       if (Object.keys(state.Search.Filter).length > 0) {
         if (state.Search.IgnoreQuery) {
           filters.splice(0, filters.length, state.Search.Filter)
@@ -111,35 +114,35 @@ const store = createStore({
         }
       }
 
+      // フィルタ条件のクエリへの追加
       for (const filter of filters) {
-        const key = filter.Field
+        const field = filter.Field
         const value = filter.Value
 
-        if (query[key] === undefined) {
-          query[key] = value
+        if (query[field] === undefined) {
+          // 指定フィールドへのフィルタ未定義ならば $eq として値を直接追加
+          query[field] = value
         } else {
-          if (query[key].$in) {
-            query[key].$in.push(value)
+          // 指定フィールドへのフィルタ既定義 -> $in: [] 条件に変換
+          if (query[field]?.$in) {
+            query[field].$in.push(value)
           } else {
-            query[key] = { $in: [query[key], value] }
+            query[field] = { $in: [query[field], value] }
           }
         }
       }
 
-      // DocumentId > 0 は DocumentIdの指定が無い限り必ず入るのでハードコード
+      // DocumentIdの指定が無い限り DocumentId > 0 は必須条件
       if (!query.DocumentId) {
         query.DocumentId = { $gt: 0 }
       }
 
+      // DateOfProcedureの正規表現変換
       if (query.DateOfProcedure) {
-        let regexp = ''
-        if (query.DateOfProcedure.$in) {
-          regexp = query.DateOfProcedure.$in.join('|')
-        } else {
-          regexp = query.DateOfProcedure
-        }
-        regexp = '^(' + regexp + ')-'
-        query.DateOfProcedure = { $regex: new RegExp(regexp) }
+        const datepart = query.DateOfProcedure.$in
+          ? query.DateOfProcedure.$in.join('|')
+          : query.DateOfProcedure
+        query.DateOfProcedure = { $regex: new RegExp( `^(${datepart})-` ) }
       }
 
       return {
@@ -221,13 +224,12 @@ const store = createStore({
     //
     // @param {Object}
     SetSort (state, payload = {}) {
-      const keyvalue = Object.entries(payload)[0]
-      state.Sort =
-        (keyvalue && keyvalue.length === 2)
-          ? {
-              [keyvalue[0]]: keyvalue[1]
-            }
-          : state.system.settings.View.Sort
+      const [field, value] = Object.entries(payload).flat()
+      if (field !== undefined && value !== undefined) {
+        state.Sort = { [field]: value }
+      } else {
+        state.Sort = state.system.settings.View.Sort
+      }
     }
   },
 
