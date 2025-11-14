@@ -19,6 +19,10 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const { version, description } = require('../package.json')
 
+console.log('process.env:\n', JSON.stringify(process.env, null, 2))
+console.log('import.meta.env:\n', JSON.stringify(import.meta.env, null, 2))
+
+
 // 重複起動の抑制
 const instanceLock = app.requestSingleInstanceLock()
 if (!instanceLock) {
@@ -68,7 +72,7 @@ async function createWindow() {
     icon: './build/Windows.ico',
     backgroundColor: '#dddddd',
     webPreferences: {
-      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
+      nodeIntegration: false,
       contextIsolation: true,
       spellcheck: false,
       enableWebSQL: false,
@@ -534,6 +538,38 @@ function createDatabaseInstance() {
   }
 }
 
+/**
+ * $regex を RexExpオブジェクトでの呼び出しに変換する
+ * @param {*} obj
+ */
+function unescapeRegexInObject(obj) {
+  // $regex: string の指定があるかチェック なければそのまま返す
+  if (!JSON.stringify(obj).includes('"$regex":"/')) {
+    return obj
+  }
+
+  if (obj === null && typeof obj !== 'object') {
+    return obj
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(item => unescapeRegexInObject(item))
+  }
+  if (typeof obj === 'object') {
+    const newobj = {}
+    for (const key in obj) {
+      if (key === '$regex' && typeof obj[key] === 'string') {
+        // 文字列からRegExpオブジェクトに変換
+        const regexBody = obj[key].substring(1, obj[key].lastIndexOf('/'))
+        const regexFlags = obj[key].substring(obj[key].lastIndexOf('/') + 1)
+        newobj[key] = new RegExp(regexBody, regexFlags)
+      } else {
+        newobj[key] = unescapeRegexInObject(obj[key])
+      }
+    }
+    return newobj
+  }
+  return obj
+}
 //
 // IPCとデータベースのAPIラッパー
 //
@@ -561,7 +597,7 @@ function registerIPChandlers() {
   // @Object.Limit : String, Number
   ipcMain.handle('Find', (_, payload) => {
     return new Promise((resolve, reject) => {
-      const query = payload.Query ? payload.Query : {}
+      const query = payload.Query ? unescapeRegexInObject(payload.Query) : {}
       const projection = payload.Projection ? payload.Projection : {}
       const sort = payload.Sort ? payload.Sort : {}
       const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
@@ -590,7 +626,7 @@ function registerIPChandlers() {
   // @Object.Skip : String, Number
   ipcMain.handle('FindOne', (_, payload) => {
     return new Promise((resolve, reject) => {
-      const query = payload.Query ? payload.Query : {}
+      const query = payload.Query ? unescapeRegexInObject(payload.Query) : {}
       const projection = payload.Projection ? payload.Projection : {}
       const sort = payload.Sort ? payload.Sort : {}
       const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
@@ -654,7 +690,7 @@ function registerIPChandlers() {
   // @Object.Query : Object
   ipcMain.handle('Count', (_, payload) => {
     return new Promise((resolve, reject) => {
-      const query = payload.Query ? payload.Query : {}
+      const query = payload.Query ? unescapeRegexInObject(payload.Query) : {}
       appConfig.databaseInstance
         .count(query, (error, count) => {
           if (error) {
@@ -672,7 +708,7 @@ function registerIPChandlers() {
   // @Object.Options : Object
   ipcMain.handle('Update', (_, payload) => {
     return new Promise((resolve, reject) => {
-      const query = payload.Query ? payload.Query : {}
+      const query = payload.Query ? unescapeRegexInObject(payload.Query) : {}
       const update = payload.Update ? payload.Update : {}
       const options = payload.Options ? payload.Options : {}
       appConfig.databaseInstance
@@ -691,7 +727,7 @@ function registerIPChandlers() {
   // @Object.Options : Object
   ipcMain.handle('Remove', (_, payload) => {
     return new Promise((resolve, reject) => {
-      const query = payload.Query ? payload.Query : {}
+      const query = payload.Query ? unescapeRegexInObject(payload.Query) : {}
       const options = payload.Options ? payload.Options : {}
       appConfig.databaseInstance
         .remove(query, options, (error, numrows) => {

@@ -1,4 +1,5 @@
 import { createStore } from 'vuex'
+// データベースアクセスモジュールは環境依存のため分離(viteでパスが解決される)
 import * as NedbAccess from 'depmodules/NedbAccess'
 import system from '@/store/modules/system'
 import password from '@/store/modules/passwordauth'
@@ -237,40 +238,40 @@ const store = createStore({
     // データベース操作 - moduleのフォルダで実行環境を分離する作戦
     // Insert document
     // @Param {Object} Document
-    dbInsert (context, payload) {
+    dbInsert (_, payload) {
       return NedbAccess.Insert(payload)
     },
     // Find documents
     // @Param {Object} Query, Projection, Sort,
     // @Param {Number} Skip, Limit
-    dbFind (context, payload) {
+    dbFind (_, payload) {
       return NedbAccess.Find(payload)
     },
-    // Find a first document
+    // Find a document
     // @Param {Object} Query, Projection, Sort,
     // @Param {Number} Skip
-    dbFindOne (context, payload) {
+    dbFindOne (_, payload) {
       return NedbAccess.FindOne(payload)
     },
     // Find a document by hash
     // @Param {String} Hash
     // @Param {Number} SALT
-    dbFindOneByHash (context, payload) {
+    dbFindOneByHash (_, payload) {
       return NedbAccess.FindOneByHash(payload)
     },
     // Count matched documents
     // @Param {Object} Query
-    dbCount (context, payload) {
+    dbCount (_, payload) {
       return NedbAccess.Count(payload)
     },
     // Update documents
     // @Param {Object} Query, Update, Options
-    dbUpdate (context, payload) {
+    dbUpdate (_, payload) {
       return NedbAccess.Update(payload)
     },
     // Remove documents
     // @Param {Object} Query, Options
-    dbRemove (context, payload) {
+    dbRemove (_, payload) {
       return NedbAccess.Remove(payload)
     },
 
@@ -336,9 +337,7 @@ const store = createStore({
           await context.dispatch('dbCount', { Query: { DocumentId: { $gt: 0 } } })
         )
       } catch (error) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.error(error)
-        }
+        console.error(error)
         throw new Error('データベースエラー(FIND)です.')
       }
     },
@@ -364,9 +363,7 @@ const store = createStore({
             await context.dispatch('dbFindOne', { Query: { DocumentId: payload.DocumentId }, Projection: { _id: 0 } })
           )
         } catch (error) {
-          if (process.env.NODE_ENV !== 'production') {
-            console.error(error)
-          }
+          console.error(error)
           throw new Error('データベースエラー(FINDONE)です.')
         }
       }
@@ -390,9 +387,7 @@ const store = createStore({
         if (error.message === 'DUP') {
           throw new Error(`同一の日付(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
         } else {
-          if (process.env.NODE_ENV !== 'production') {
-            console.error(error)
-          }
+          console.error(error)
           throw new Error('データベースエラー(INSERT/UPDATE)です.')
         }
       }
@@ -441,10 +436,7 @@ const store = createStore({
         // レコード操作をしたら必ずキャッシュをリロード
         await context.dispatch('ReloadDocumentList')
       } catch (error) {
-        // Insertに失敗
-        if (process.env.NODE_ENV !== 'production') {
-          console.error(error)
-        }
+        console.error(error)
         throw new Error('データベースエラー(INSERT)です.')
       }
     },
@@ -475,9 +467,7 @@ const store = createStore({
         if (error.message === 'DUP') {
           throw new Error(`同一の日付(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
         } else {
-          if (process.env.NODE_ENV !== 'production') {
-            console.error(error)
-          }
+          console.error(error)
           throw new Error('データベースエラー(UPDATE)です.')
         }
       }
@@ -495,9 +485,7 @@ const store = createStore({
         // レコード操作をしたら必ずキャッシュをリロード
         await context.dispatch('ReloadDocumentList')
       } catch (error) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.error(error)
-        }
+        console.error(error)
         throw new Error('データベースエラー(UPDATE)です.')
       }
     },
@@ -531,9 +519,7 @@ const store = createStore({
         // レコード操作をしたら必ずキャッシュをリロード
         await context.dispatch('ReloadDocumentList')
       } catch (error) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.error(error)
-        }
+        console.error(error)
         throw new Error('データベースエラー(REMOVE)です.')
       }
     },

@@ -447,7 +447,12 @@ const StoreCase = async (temporary = false) => {
       if (Array.isArray(CaseData[key])) {
         newDocument[key] = CaseData[key].map((item) => JSON.parse(item))
       } else {
-        newDocument[key] = CaseData[key]
+        if (typeof CaseData[key] === 'object' && CaseData[key] !== null) {
+          // オブジェクト(Approachのみ)は生のオブジェクトに変換
+          newDocument[key] = JSON.parse(JSON.stringify(CaseData[key]))
+        } else {
+          newDocument[key] = CaseData[key]
+        }
       }
     }
 

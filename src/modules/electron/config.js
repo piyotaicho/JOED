@@ -1,4 +1,4 @@
-// Interface to electron store
+// IPC経由でelectron storeの設定ファイルへアクセスする
 import HHX from 'xxhashjs'
 
 export async function LoadConfig () {
@@ -22,10 +22,11 @@ export async function SavePassword (payload) {
   return await ipcSaveConfig('Password', { Password: hashedpassword })
 }
 
+// IPC wrappers : Proxy Object対策で生のオブジェクトに変換して渡す
 async function ipcLoadConfig (key, defaultvalue) {
-  return await window.API.LoadConfig({ Key: key, DefaultConfig: defaultvalue || {} })
+  return await window.API.LoadConfig(JSON.parse(JSON.stringify({ Key: key, DefaultConfig: defaultvalue || {} })))
 }
 
 async function ipcSaveConfig (key, settings) {
-  return await window.API.SaveConfig({ Key: key, Config: settings })
+  return await window.API.SaveConfig(JSON.parse(JSON.stringify({ Key: key, Config: settings })))
 }
