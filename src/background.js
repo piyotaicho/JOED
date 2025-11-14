@@ -19,10 +19,6 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const { version, description } = require('../package.json')
 
-console.log('process.env:\n', JSON.stringify(process.env, null, 2))
-console.log('import.meta.env:\n', JSON.stringify(import.meta.env, null, 2))
-
-
 // 重複起動の抑制
 const instanceLock = app.requestSingleInstanceLock()
 if (!instanceLock) {
@@ -84,7 +80,6 @@ async function createWindow() {
 
   // 開発環境での適切なロード方法を決定
   if (isDevelopment) {
-
     if (process.env?.VITE_DEV_SERVER_URL) {
       // 開発サーバーが動作している場合
       console.log('Loading from dev server:', process.env.VITE_DEV_SERVER_URL)

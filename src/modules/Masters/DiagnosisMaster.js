@@ -573,7 +573,6 @@ export default class DiagnosisMaster extends Master {
     if (regulaterdText === '') {
       return []
     }
-    console.log(`DiagnosisMaster: Searching for "${regulaterdText}" in ${category}/${target} for year ${year}`)
 
     // マスタから年次・カテゴリ・対象に応じたフラットな配列を取得
     const masterItems = this.Items(category, target, year)
