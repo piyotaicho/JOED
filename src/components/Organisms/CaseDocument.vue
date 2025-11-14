@@ -51,10 +51,10 @@ const Age = computed(() =>
 const Denial = computed(() => (fetching.value ? undefined : currentDocument.value?.Denial))
 
 const Diagnosis = computed(() =>
-  fetching.value ? '' : CaseDocumentHandler.ItemValue(currentDocument.value?.Diagnoses[0]),
+  fetching.value ? '' : CaseDocumentHandler.ItemValue((currentDocument.value?.Diagnoses || [''])[0]),
 )
 const Procedure = computed(() =>
-  fetching.value ? '' : CaseDocumentHandler.ItemValue(currentDocument.value?.Procedures[0]),
+  fetching.value ? '' : CaseDocumentHandler.ItemValue((currentDocument.value?.Procedures || [''])[0]),
 )
 const PresentAE = computed(() => !fetching.value && (currentDocument.value?.PresentAE === true))
 
