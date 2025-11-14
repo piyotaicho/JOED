@@ -21,7 +21,7 @@ const CoreList = [
     version: store.getters['system/VueVersion'],
     license: 'MIT',
   },
-  ...(process.env.VITE_APP_ELECTRON
+  ...(import.meta.env.VITE_APP_ELECTRON
     ? [
         {
           name: 'Electron',
@@ -62,7 +62,7 @@ const ComponentList = [
   { name: 'xxhashjs', href: 'https://github.com/pierrec/js-xxhash', license: 'MIT' },
   { name: 'Fuse.js', href: 'https://www.fusejs.io/', license: 'Apache-2.0' },
   { name: 'encoding.js', href: 'https://github.com/polygonplanet/encoding.js', license: 'MIT' },
-  ...(process.env.VITE_APP_ELECTRON
+  ...(import.meta.env.VITE_APP_ELECTRON
     ? [
         {
           name: 'electron store',

@@ -20,7 +20,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'changed'])
 
 // non-reactive value
-const webApp = !process.env.VITE_APP_ELECTRON
+const webApp = !import.meta.env.VITE_APP_ELECTRON
 const collapseNames = ['view', 'search',
   ...(webApp ? ['management', 'settings'] : [])] // 'view'|'search'|'management'|'settings'
 
