@@ -42,13 +42,13 @@ const currentDocument = computed(() => (fetching.value ? {} : store.getters.Case
 
 // ドキュメントの各種フィールド
 const Category = computed(() => (fetching.value ? '' : currentDocument.value?.TypeOfProcedure || ''))
-const Id = computed(() => (fetching.value ? '' : currentDocument.value.PatientId || ''))
+const Id = computed(() => (fetching.value ? '' : currentDocument.value?.PatientId || ''))
 const Name = computed(() => (fetching.value ? 'データを取得中' : currentDocument.value?.Name || ''))
 const DateOfProcedure = computed(() => (fetching.value ? '' : currentDocument.value?.DateOfProcedure))
 const Age = computed(() =>
   fetching.value ? '' : (currentDocument.value?.Age ? '( ' + currentDocument.value.Age + '歳 )' : '')
 )
-const Denial = computed(() => (fetching.value ? undefined : currentDocument.value?.Denial))
+const Denial = computed(() => (!fetching.value && currentDocument.value?.Denial === true))
 
 const Diagnosis = computed(() =>
   fetching.value ? '' : CaseDocumentHandler.ItemValue((currentDocument.value?.Diagnoses || [''])[0]),
