@@ -340,7 +340,7 @@ const CreateHeader = async (exportItem, countOfDenial) => {
       <InputSwitchField
         v-model="exportAsBackup"
         title="出力する様式"
-        :options="{ 学会提出データ: false, バックアップデータ: true }"
+        :options="[{ text: '学会提出データ', value: false }, { text: 'バックアップデータ', value: true }]"
       />
 
       <div>
@@ -356,7 +356,7 @@ const CreateHeader = async (exportItem, countOfDenial) => {
         v-model="setting.validate"
         :disabled="!exportAsBackup"
         title="データのエラーチェック"
-        :options="{ 行う: true, 行わない: false }"
+        :options="[{ text: '行う', value: true }, { text: '行わない', value: false }]"
       />
 
       <div>

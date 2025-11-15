@@ -219,7 +219,7 @@ const cancelQuery = () => {
       <InputSwitchField
         v-model="setting.IgnoreQuery"
         title=""
-        :options="{ 全データ: true, 現在の表示設定: false }"
+        :options="[{ text: '全データ', value: true }, { text: '現在の表示設定', value: false }]"
       />
     </div>
     <div class="menu-item-content">
@@ -248,7 +248,7 @@ const cancelQuery = () => {
       <InputSwitchField
         v-model="setting.UseRegexp"
         title=""
-        :options="{ 部分一致: false, 正規表現: true }"
+        :options="[{ text: '部分一致', value: false }, { text: '正規表現', value: true }]"
         :disabled="RegexpDisabled"
       />
     </div>

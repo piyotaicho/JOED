@@ -110,7 +110,7 @@ const focusInput = () => {
           <InputSwitchField
             v-model="Denial"
             title="登録拒否"
-            :options="['なし', 'あり', false, true, 'var(--color-primary)', 'var(--color-danger)']"
+            :options="[{text: 'なし', value: false, color: 'var(--color-primary)'}, {text: 'あり', value: true, color: 'var(--color-danger)'}]"
             style="display: flex; flex-direction: row; height: 2.4rem; div.field { border: 1px solid red; };"
             ref="switchField"
           />

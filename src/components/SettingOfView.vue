@@ -126,12 +126,11 @@ const commitSettings = async () => {
       <InputSwitchField
         v-model="data.showStartupDialog"
         title="リスト表示の起動時メッセージの表示"
-        :options="{'しない': false, 'する': true}" />
+        :options="[{text: 'しない', value: false}, {text: 'する', value: true}]" />
       <InputSwitchField
         v-model="data.revertView"
         title="リスト表示内容の規定値をアプリケーションの初期設定に戻す"
-        :options="{'しない': false, 'する': true}" />
-
+        :options="[{text: 'しない', value: false}, {text: 'する', value: true}]" />
       <div>
         <div class="label">
           <i class="el-icon-arrow-down" style="padding-top: 0.36rem; margin-right: 0.6rem;"/>
@@ -141,15 +140,15 @@ const commitSettings = async () => {
       <InputSwitchField
         v-model="data.editJSOGId"
         title="日産婦腫瘍登録 症例番号の入力"
-        :options="{'しない': false, 'する': true}" />
+        :options="[{text: 'しない', value: false}, {text: 'する', value: true}]" />
       <InputSwitchField
         v-model="data.editNCDId"
         title="ロボット支援下手術 NCD症例識別コードの入力"
-        :options="{'しない': false, 'する': true}" />
+        :options="[{text: 'しない', value: false}, {text: 'する', value: true}]" />
       <InputSwitchField
         v-model="data.showNote"
         title="メモが入力されていた場合編集を開く"
-        :options="{'しない': false, 'する': true}" />
+        :options="[{text: 'しない', value: false}, {text: 'する', value: true}]" />
 
       <div>
         <div class="label">

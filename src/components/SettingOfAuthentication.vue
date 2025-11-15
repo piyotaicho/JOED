@@ -62,7 +62,7 @@ async function commit () {
       <InputSwitchField
         v-model="useAuthentication"
         title="起動時のパスワード確認"
-        :options="{'しない': false, 'する': true}" />
+        :options="[{text: 'しない'}, {text: 'する'}]" />
 
       <InputTextField
         password

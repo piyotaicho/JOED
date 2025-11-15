@@ -1,57 +1,67 @@
 <script setup>
+import { onMounted, nextTick } from 'vue'
+
 const props = defineProps({
   title: {
     default: 'スイッチ'
   },
   options: {
-    type: [Array, Object]
+    type: [Array]
   },
   required: {
     default: false
   }
 })
 
-const value = defineModel({
+const modelValue = defineModel({
   type: [String, Number, Boolean],
   required: true,
   default: false
 })
 
-// DOMの初期化パラメータはプロパティから構成される(注意！non reactiveに限定)
+// DOMの初期化パラメータはプロパティから構成 - non reactiveであることに注意
 let texts = ['FALSE', 'TRUE']
 let values = [false, true]
 let colors = ['var(--color-primary)', 'var(--color-primary)']
 
 // DOMの初期化パラメータの設定
-if (toString.call(props.options) === '[object Object]') {
-  // objectでは {テキスト1: 値1, テキスト2: 値2} または
-  // {テキスト1: {value: 値1, color: 色1}, テキスト2: {value: 値2, color: 色2}} の形で指定
-  const keys = Object.keys(props.options)
-  for (let index = 0; index < 2; index++) {
-    texts[index] = keys[index]
-    if (toString.call(props.options[keys[index]] !== '[object Object]')) {
-      values[index] = props.options[keys[index]]
+// options: [ inactive, active ]
+//  inactive/active: String, Number, Boolean, Object
+//  Objectの場合は {value: 値, text: 表示, color: 色} の形で指定
+if (props.options !== undefined && props.options !== null) {
+  if (props.options.length < 2) {
+    throw new Error('InputSwitchField: optionsプロパティは最低2要素必要です')
+  }
+
+  const parseOption = (option) => {
+    if (Object.prototype.toString.call(option) === '[object Object]') {
+      return {
+        ...option?.value !== undefined ? {value: option.value} : {},
+        ...option?.text !== undefined ? {text: option.text} :
+          option?.value !== undefined
+            ? {text: typeof option.value === 'boolean' ? (option.value ? 'TRUE' : 'FALSE') : String(option.value)}
+            : {},
+        ...option?.color !== undefined ? {color: option.color} : {}
+      }
     } else {
-      values[index] = props.options[keys[index]]?.value
-      if (props.options[keys[index]]?.color) {
-        colors[index] = props.options[keys[index]]?.color
+      return {
+        text: typeof option === 'boolean' ? (option ? 'TRUE' : 'FALSE') : String(option),
+        value: option
       }
     }
   }
-} else {
-  // arrayでは テキスト1, テキスト2, 値1, 値2, 色1, 色2 の順に指定
-  if (props.options.length === 6) {
-    colors = [...props.options].splice(4, 2)
-  }
-  if (props.options.length === 4) {
-    values = [...props.options].splice(2, 2)
-  }
-  if (props.options.length === 2) {
-    texts = [...props.options].splice(0, 2)
-  }
+
+  const inactiveOption = parseOption(props.options[0])
+  const activeOption = parseOption(props.options[1])
+
+  texts = [inactiveOption?.text || texts[0], activeOption?.text || texts[1]]
+  values = [inactiveOption?.value || values[0], activeOption?.value || values[1]]
+  colors = [inactiveOption?.color || colors[0], activeOption?.color || colors[1]]
 }
 
 const switchColorStyle = `--el-switch-on-color: ${colors[1]}; --el-switch-off-color: ${colors[0]};`
+
+onMounted(() => nextTick())
 </script>
 
 <template>
@@ -59,7 +69,7 @@ const switchColorStyle = `--el-switch-on-color: ${colors[1]}; --el-switch-off-co
     <div class="label"><span>{{title}}</span></div>
     <div class="field" style="padding-top: 0;">
       <el-switch
-        v-model="value"
+        v-model="modelValue"
         :inactive-text="texts[0]"
         :inactive-value="values[0]"
         :active-text="texts[1]"
