@@ -139,10 +139,6 @@ export default class ProcedureMaster extends Master {
           }
         ],
         付属器: [
-          {
-            Text: '子宮内膜症病巣除去術',
-            Code: ['K863-00-00']
-          },
           // 2020 表記変更 子宮付属器嚢胞摘出術(チョコレート嚢胞) -> 子宮付属器嚢胞摘出術(子宮内膜症性嚢胞)
           {
             Text: '子宮付属器嚢胞摘出術(チョコレート嚢胞)',
@@ -180,16 +176,8 @@ export default class ProcedureMaster extends Master {
             Code: ['K886-00-02']
           },
           {
-            Text: '卵巣多孔術(開孔術)',
-            Code: ['K887-04-00']
-          },
-          {
-            Text: '卵管結紮術',
-            Code: ['K887-02-02']
-          },
-          {
-            Text: '卵管形成術',
-            Code: ['K887-03-02', 'K888-02-02', 'K890-03-00']
+            Text: '子宮内膜症病巣除去術',
+            Code: ['K863-00-00']
           },
           // 2020 表記変更 異所性(子宮外)妊娠手術(卵管摘出術) -> 異所性妊娠手術(卵管摘出術)
           {
@@ -227,16 +215,24 @@ export default class ProcedureMaster extends Master {
             Code: ['K912-00-02']
           },
           {
+            Text: '卵巣多孔術(開孔術)',
+            Code: ['K887-04-00']
+          },
+          {
             Text: '卵管切除術',
             Code: ['K888-02-02']
           },
           {
-            Text: '腹腔内観察',
-            Code: ['D314-00-00', 'K636-03-00']
+            Text: '卵管結紮術',
+            Code: ['K887-02-02']
           },
           {
-            Text: '上記以外の付属器手術',
-            Code: ['K913-02-02']
+            Text: '卵管形成術',
+            Code: ['K887-03-02', 'K888-02-02', 'K890-03-00']
+          },
+          {
+            Text: '腹腔内観察',
+            Code: ['D314-00-00', 'K636-03-00']
           },
           // 2020 表記変更 チョコレート嚢胞エタノール固定術 -> 卵巣嚢腫エタノール固定術(子宮内膜症性嚢胞含む)
           {
@@ -274,6 +270,10 @@ export default class ProcedureMaster extends Master {
           {
             Text: '妊孕性温存のための付属器摘出術',
             ValidFrom: '2020'
+          },
+          {
+            Text: '上記以外の付属器手術',
+            Code: ['K913-02-02']
           },
           {
             Text: '術後合併症の修復術'
@@ -695,11 +695,11 @@ export default class ProcedureMaster extends Master {
             ValidFrom: '2025'
           },
           {
-            Text: '卵管切除術(ロボット支援下)',
+            Text: '子宮付属器切除術((ロボット支援下)',
             ValidFrom: '2025'
           },
           {
-            Text: '子宮付属器切除術((ロボット支援下)',
+            Text: '子宮付属器癒着剥離術(ロボット支援下)',
             ValidFrom: '2025'
           },
           {
@@ -707,7 +707,7 @@ export default class ProcedureMaster extends Master {
             ValidFrom: '2025'
           },
           {
-            Text: '子宮付属器癒着剥離術(ロボット支援下)',
+            Text: '卵管切除術(ロボット支援下)',
             ValidFrom: '2025'
           },
         ],
