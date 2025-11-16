@@ -68,7 +68,7 @@ const UpdateView = () => {
     direction="ltr"
     :with-header="false"
     :model-value="props.visible"
-    :destroy-on-close="true"
+    :destroy-on-close="false"
     @open="DrawerOpened"
     @close="CloseDrawer"
     >
