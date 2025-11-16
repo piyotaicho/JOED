@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, nextTick } from 'vue'
+import { reactive } from 'vue'
 
 const props = defineProps({
   title: {
@@ -19,10 +19,18 @@ const modelValue = defineModel({
   default: false
 })
 
-// DOMの初期化パラメータはプロパティから構成 - non reactiveであることに注意
-let texts = ['FALSE', 'TRUE']
-let values = [false, true]
-let colors = ['var(--color-primary)', 'var(--color-primary)']
+const switchParams = reactive({
+  inactive: {
+    text: 'FALSE',
+    value: false,
+    color: 'var(--color-primary)'
+  },
+  active: {
+    text: 'TRUE',
+    value: true,
+    color: 'var(--color-primary)'
+  }
+})
 
 // DOMの初期化パラメータの設定
 // options: [ inactive, active ]
@@ -54,14 +62,15 @@ if (props.options !== undefined && props.options !== null) {
   const inactiveOption = parseOption(props.options[0])
   const activeOption = parseOption(props.options[1])
 
-  texts = [inactiveOption?.text || texts[0], activeOption?.text || texts[1]]
-  values = [inactiveOption?.value || values[0], activeOption?.value || values[1]]
-  colors = [inactiveOption?.color || colors[0], activeOption?.color || colors[1]]
+  switchParams.inactive = {
+    ...switchParams.inactive,
+    ...inactiveOption
+  }
+  switchParams.active = {
+    ...switchParams.active,
+    ...activeOption
+  }
 }
-
-const switchColorStyle = `--el-switch-on-color: ${colors[1]}; --el-switch-off-color: ${colors[0]};`
-
-onMounted(() => nextTick())
 </script>
 
 <template>
@@ -70,11 +79,11 @@ onMounted(() => nextTick())
     <div class="field" style="padding-top: 0;">
       <el-switch
         v-model="modelValue"
-        :inactive-text="texts[0]"
-        :inactive-value="values[0]"
-        :active-text="texts[1]"
-        :active-value="values[1]"
-        :style="switchColorStyle"
+        :inactive-text="switchParams.inactive.text"
+        :inactive-value="switchParams.inactive.value"
+        :active-text="switchParams.active.text"
+        :active-value="switchParams.active.value"
+        :style="`--el-switch-on-color: ${switchParams.active.color}; --el-switch-off-color: ${switchParams.inactive.color};`"
         v-bind="$attrs"
       />
     </div>

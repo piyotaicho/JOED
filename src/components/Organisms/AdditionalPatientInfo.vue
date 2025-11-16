@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 // vue2.7 + compositionAPI store hack
 import { useStore } from '@/store'
 import { InfoFilled } from '@element-plus/icons-vue'
-import InputSwitchField from '../Molecules/InputSwitchField.vue'
+// import InputSwitchField from '../Molecules/InputSwitchField.vue'
 import InputTextField from '@/components/Molecules/InputTextField.vue'
 
 // vue2.7 + compositionAPI store hack
@@ -34,8 +34,8 @@ const NCDId = defineModel('NCDId', {
 const switchField = ref()
 onMounted(() => {
   // コンポーネント内へスタイルシートを適応仕切れないので適宜対応
-  const el = switchField.value.$el.getElementsByClassName('field')[0]
-  el.style.paddingTop = '0.33rem'
+  // const el = switchField.value.$el.getElementsByClassName('field')[0]
+  // el.style.paddingTop = '0.33rem'
 })
 
 // 編集フラグ
@@ -107,22 +107,36 @@ const focusInput = () => {
       </template>
       <!-- popover content-->
       <div class="additional-patient-info-panel">
-          <InputSwitchField
-            v-model="Denial"
-            title="登録拒否"
-            :options="[{text: 'なし', value: false, color: 'var(--color-primary)'}, {text: 'あり', value: true, color: 'var(--color-danger)'}]"
-            style="display: flex; flex-direction: row; height: 2.4rem; div.field { border: 1px solid red; };"
-            ref="switchField"
-          />
-        <div v-if="Denial">
+          <div style="display: flex; flex-direction: row; height: 2.4rem;">
+            <div class="label"><span>登録拒否</span></div>
+            <div class="field" ref="switchField">
+              <el-switch
+                v-model="Denial"
+                :active-text="'あり'"
+                :active-value="true"
+                active-color="var(--color-danger)"
+                :inactive-text="'なし'"
+                :inactive-value="false"
+                inactive-color="var(--color-primary)" />
+            </div>
+          </div>
+
+        <!-- <InputSwitchField
+          v-model="Denial"
+          title="登録拒否"
+          :options="[{text: 'なし', value: false, color: 'var(--color-primary)'}, {text: 'あり', value: true, color: 'var(--color-danger)'}]"
+          ref="switchField"
+          style="display: flex; flex-direction: row; height: 2.4rem;"
+        /> -->
+        <template v-if="Denial">
           <InputTextField title="レコード識別子" :modelValue="hashString" readonly/>
-        </div>
-        <div v-if="editJSOGId || JSOGId !== ''">
+        </template>
+        <template v-if="editJSOGId || JSOGId !== ''">
           <InputTextField title="腫瘍登録番号" v-model="JSOGId" placeholder="腫瘍登録患者No."/>
-        </div>
-        <div v-if="editNCDId || NCDId !== ''">
+        </template>
+        <template v-if="editNCDId || NCDId !== ''">
           <InputTextField title="NCD症例識別コード" v-model="NCDId" placeholder="NCD症例識別コード"/>
-        </div>
+        </template>
       </div>
     </el-popover>
   </div>
