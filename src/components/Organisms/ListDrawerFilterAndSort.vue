@@ -30,39 +30,25 @@ const setting = reactive({
 // 選択の内容配列
 const FilterItems = ref([])
 
-// 選択肢項目オブジェクトの初期化
-function onCreated () {
-  // カテゴリをインポート
+/**
+ * 表示設定の選択肢設定と
+ * 現在の表示設定をstoreからインポート
+ */
+onMounted(async () => {
+  // カテゴリを設定
   CategoriesOfProcedure.forEach(categorylabel => {
     setting.Categories[categorylabel] = { Field: 'TypeOfProcedure', Value: categorylabel }
   })
-}
-onCreated()
 
-// onMounted: 既存の設定の反映
-onMounted(async () => await ImportSettings())
-
-const isFilterItemsEmpty = computed({
-  get: () => FilterItems.value.length === 0,
-  set: (newvalue) => {
-    // newvalue: boolean
-    if (newvalue) {
-      FilterItems.value.splice(0)
-    }
-  }
-})
-
-/**
- * 現在の表示設定をstoreからインポート
- */
-const ImportSettings = async () => {
-  // 年次データを更新
+  // 年次を設定
   await store.dispatch('GetYears')
     .then((CountByYear) => {
       Object.keys(CountByYear).forEach(year => {
         setting.Years[year + '年'] = { Field: 'DateOfProcedure', Value: year }
       })
     })
+
+  await nextTick()
 
   // 現在の表示設定をインポート
   const view = store.getters.ViewSettings
@@ -96,7 +82,17 @@ const ImportSettings = async () => {
       FilterItems.value.push(...newFilters)
     }
   }
-}
+})
+
+const isFilterItemsEmpty = computed({
+  get: () => FilterItems.value.length === 0,
+  set: (newvalue) => {
+    // newvalue: boolean
+    if (newvalue) {
+      FilterItems.value.splice(0)
+    }
+  }
+})
 
 /**
  * 現在の表示設定をstoreに保存

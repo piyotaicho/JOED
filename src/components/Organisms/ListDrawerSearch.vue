@@ -6,7 +6,7 @@ import InputSwitchField from '@/components/Molecules/InputSwitchField.vue'
 const store = useStore()
 const emit = defineEmits(['changed'])
 
-const setting = reactive({
+const settings = reactive({
   IgnoreQuery: false,
   UseRegexp: false,
   Field: '',
@@ -17,9 +17,9 @@ const OnCreated = () => {
   if (store.getters.ViewSettings.Search) {
     const preservedSearch = JSON.parse(store.getters.ViewSettings.Search.Preserve || '{}')
 
-    for (const key in setting) {
+    for (const key in settings) {
       if (preservedSearch[key] !== undefined) {
-        setting[key] = preservedSearch[key]
+        settings[key] = preservedSearch[key]
       }
     }
   }
@@ -163,7 +163,7 @@ const SearchSetting = {
 
 // 正規表現使用の有効/無効
 const RegexpDisabled = computed(() => {
-  const preset = SearchSetting[setting.Field]
+  const preset = SearchSetting[settings.Field]
 
   if (preset && preset.regexp !== undefined) {
     return !preset.regexp
@@ -175,29 +175,29 @@ const RegexpDisabled = computed(() => {
 const SearchActivated = computed(() => store.getters.SearchActivated)
 
 const MultipleQueryAccepted = computed(() => {
-  const preset = SearchSetting[setting.Field]
+  const preset = SearchSetting[settings.Field]
 
   if (preset && preset?.multiple !== undefined) {
-    return SearchSetting[setting.Field].multiple
+    return SearchSetting[settings.Field].multiple
   } else {
     return false
   }
 })
 
 const performQuery = () => {
-  if (setting.Field && setting.Search) {
+  if (settings.Field && settings.Search) {
     const [field, value] = Object.entries(
-      SearchSetting[setting.Field]?.createquery(setting.Search, setting.UseRegexp) || {}
+      SearchSetting[settings.Field]?.createquery(settings.Search, settings.UseRegexp) || {}
     ).flat()
 
     if (field !== undefined && value !== undefined) {
       store.commit('SetSearch', {
-        IgnoreQuery: setting.IgnoreQuery,
+        IgnoreQuery: settings.IgnoreQuery,
         Filter: {
           Field: field,
           Value: value
         },
-        Preserve: JSON.stringify(setting)
+        Preserve: JSON.stringify(settings)
       })
       emit('changed')
     }
@@ -217,7 +217,7 @@ const cancelQuery = () => {
     <div class="subtilte-section">検索対象</div>
     <div>
       <InputSwitchField
-        v-model="setting.IgnoreQuery"
+        v-model="settings.IgnoreQuery"
         title=""
         :options="[{ text: '全データ', value: true }, { text: '現在の表示設定', value: false }]"
       />
@@ -225,7 +225,7 @@ const cancelQuery = () => {
     <div class="menu-item-content">
       <div>
         <div>
-          <select v-model="setting.Field">
+          <select v-model="settings.Field">
             <option value="" disabled style="display: none;">検索する項目を選択してください.</option>
             <template v-for="(preset, key) in SearchSetting" :key="key">
               <option :value="key">{{ preset.title }}</option>
@@ -242,11 +242,11 @@ const cancelQuery = () => {
       </span>
     </div>
     <div class="menu-item-content">
-      <input type="text" v-model="setting.Search" />
+      <input type="text" v-model="settings.Search" />
     </div>
     <div>
       <InputSwitchField
-        v-model="setting.UseRegexp"
+        v-model="settings.UseRegexp"
         title=""
         :options="[{ text: '部分一致', value: false }, { text: '正規表現', value: true }]"
         :disabled="RegexpDisabled"
@@ -254,7 +254,7 @@ const cancelQuery = () => {
     </div>
 
     <div class="menu-item-bottom">
-      <el-button type="primary" :disabled="setting.Field === '' || setting.Search.trim() === ''" @click="performQuery">検索</el-button>
+      <el-button type="primary" :disabled="settings.Field === '' || settings.Search.trim() === ''" @click="performQuery">検索</el-button>
       <el-button type="success" :disabled="!SearchActivated" @click="cancelQuery">検索の解除</el-button>
     </div>
   </div>

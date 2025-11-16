@@ -51,7 +51,7 @@ onMounted(() => {
 })
 
 const showStartupDialog = computed(() => store.getters['system/ShowStartupDialog'])
-const showDrawer = ref(false)
+const drawerOpened = ref(false)
 
 // Element Plus infinite scroll用の状態管理
 const fetching = ref(false)
@@ -65,8 +65,8 @@ const selectedUids = ref([])
 
 // ハンドラー
 // ドロワーの開閉
-const openDrawer = () => { showDrawer.value = true }
-const closeDrawer = () => { showDrawer.value = false }
+const openDrawer = () => { drawerOpened.value = true }
+const closeDrawer = () => { drawerOpened.value = false }
 
 // 新規症例の作成
 const createNewEntry = () => router.push({ name: 'edit', params: { uid: 0 } })
@@ -74,7 +74,7 @@ const createNewEntry = () => router.push({ name: 'edit', params: { uid: 0 } })
 // リスト項目へのフォーカス移動
 const moveFocus = (offset) => {
   const currentid = document.activeElement.id
-  if (!showDrawer.value && !showStartupDialog.value && currentid !== '') {
+  if (!drawerOpened.value && !showStartupDialog.value && currentid !== '') {
     const moveto = uids.value[
       uids.value.indexOf(Number(currentid.substring(3))) + offset
     ]
@@ -154,7 +154,7 @@ const onMultiSelect = ({ uid, selected }) => {
 // ESCキーでの選択解除
 const handleEscapeKey = () => {
   const currentid = document.activeElement.id
-  if (!showDrawer.value && !showStartupDialog.value && currentid !== '' && currentid.startsWith('doc')) {
+  if (!drawerOpened.value && !showStartupDialog.value && currentid !== '' && currentid.startsWith('doc')) {
     const uid = Number(currentid.substring(3))
     // 現在フォーカスのあるCaseDocumentがあれば[uid]、なければ[]
     selectedUids.value.splice(0)
@@ -169,7 +169,7 @@ const handleEscapeKey = () => {
 // SPACEキーでの選択切り替え
 const handleSpaceKey = () => {
   const currentid = document.activeElement.id
-  if (!showDrawer.value && !showStartupDialog.value && currentid !== '' && currentid.startsWith('doc')) {
+  if (!drawerOpened.value && !showStartupDialog.value && currentid !== '' && currentid.startsWith('doc')) {
     const uid = Number(currentid.substring(3))
 
     if (multiSelectMode.value) {
@@ -229,7 +229,7 @@ const handleScroll = (event) => {
       <DrawerButton class="open-drawer" tab-index="0" @click="openDrawer"/>
       <NewEntryButton class="list-new-entry" tab-index="0" @click="createNewEntry"/>
 
-      <ListDrawer :visible="showDrawer" @close="closeDrawer"/>
+      <ListDrawer :visible="drawerOpened" @close="closeDrawer"/>
 
       <template v-for="uid in uids" :key="uid">
         <CaseDocument :uid="uid" :selected="selectedUids.includes(uid) && multiSelectMode" @select="onSingleSelect" @multiselect="onMultiSelect" @remove="dispatchRemove"/>
