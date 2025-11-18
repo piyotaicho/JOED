@@ -88,5 +88,6 @@
     "last 2 versions"
   ],
   "license": "MIT",
-  "productName": "JOED5"
+  "productName": "JOED5",
+  "packageManager": "yarn@4.11.0"
 }

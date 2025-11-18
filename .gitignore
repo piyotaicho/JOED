@@ -2,6 +2,18 @@
 node_modules
 /dist
 
+# Yarn
+/.yarn
+.yarn/install-state.gz
+!.yarn/cache
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+.yarnrc.yml
+
 # local env files
 .env.local
 .env.*.local
@@ -24,5 +36,6 @@ yarn-error.log*
 /dist_electron
 
 #Windows batch files
+*.ps1
 *.bat
 /*.exe
