@@ -2675,9 +2675,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vuepic/vue-datepicker@npm:^12.0.4":
-  version: 12.0.4
-  resolution: "@vuepic/vue-datepicker@npm:12.0.4"
+"@vuepic/vue-datepicker@npm:^12.0.5":
+  version: 12.0.5
+  resolution: "@vuepic/vue-datepicker@npm:12.0.5"
   dependencies:
     "@date-fns/tz": "npm:^1.4.1"
     "@floating-ui/vue": "npm:^1.1.9"
@@ -2685,7 +2685,7 @@ __metadata:
     date-fns: "npm:^4.1.0"
   peerDependencies:
     vue: ">=3.5.0"
-  checksum: 10c0/c0680b99f7e871fbb06bd4de71f5fa5731ecd584e52f756410af6215cd9cbe7c182336a0b2937b20acea002a66f21bfcda621a4bae687ac6e9bf7d28317618b7
+  checksum: 10c0/6f53ed17b8a648fea7923b0694c031234f83882e2755f4142a9bfe3132466979ad4ce67ba96ecf8c50d8aa5bcf0893d721fb5d8672099fb2b554e0112b394ad9
   languageName: node
   linkType: hard
 
@@ -7857,7 +7857,7 @@ __metadata:
     "@vue/eslint-config-typescript": "npm:^14.6.0"
     "@vue/test-utils": "npm:^2.4.6"
     "@vue/tsconfig": "npm:^0.8.1"
-    "@vuepic/vue-datepicker": "npm:^12.0.4"
+    "@vuepic/vue-datepicker": "npm:^12.0.5"
     concurrently: "npm:^9.2.1"
     cross-env: "npm:^10.0.0"
     electron: "npm:^38.0.0"
