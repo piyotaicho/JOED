@@ -453,8 +453,10 @@ export default class ProcedureMaster extends Master {
             Text: '他の診療科との合同手術',
             ValidFrom: '2020'
           },
+          // 2026 削除
           {
-            Text: '治療のために開腹手術へ移行(合併症を除く)'
+            Text: '治療のために開腹手術へ移行(合併症を除く)',
+            ValidTo: '2025'
           },
           {
             Text: '術後合併症の修復術'
