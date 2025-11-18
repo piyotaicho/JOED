@@ -138,7 +138,7 @@
 
 <script setup>
 import { CaretLeft, CaretRight, WarningFilled, ArrowLeft, Memo, Delete, Loading } from '@element-plus/icons-vue'
-import { reactive, ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { reactive, ref, computed, onMounted, onBeforeUnmount, nextTick, useTemplateRef } from 'vue'
 import { useStore } from '@/store'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
 import SectionPatientInfo from '@/components/SectionPatientInfo.vue'
@@ -190,7 +190,7 @@ const processing = ref(true)
 const editingSection = ref(false)
 const editingNote = ref(false)
 
-const editDialog = ref()
+const editDialog = useTemplateRef('editDialog')
 
 let preserve = ''
 let preservedElement
@@ -603,7 +603,7 @@ const keyboardEventListener = async (event) => {
         }
         break
       case 'Digit3':
-        document.getElementById('noAEcheckbox').click()
+        editDialog.value.getElementById('noAEcheckbox').click()
         break
       case 'KeyJ':
         await CommitCase('next')

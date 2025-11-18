@@ -1,7 +1,7 @@
 <template>
   <TheWrapper alpha="10">
     <EditSection @commit="CommitChanges" @discard="GoBack">
-      <div class="flex-content" ref="paneSection">
+      <div class="flex-content" ref="panes">
         <div class="w20 selectionbox">
           <SelectPane title="カテゴリ" v-model="category" :items="categorySelections" />
         </div>
@@ -87,7 +87,7 @@ const props = defineProps({
 const emit = defineEmits(['data-upsert'])
 
 // Element refs
-const paneSection = ref()
+const panes = useTemplateRef('panes')
 const freewordSection = ref()
 
 // Reactive states
@@ -119,7 +119,7 @@ const additionalProcedure = reactive({
 const UserEditingAllowed = computed(() => !!category.value && !selectedItem.value)
 
 onMounted(async () => {
-  const selectElements = paneSection.value.getElementsByTagName('SELECT')
+  const selectElements = panes.value.getElementsByTagName('SELECT')
 
   if (props.index < 0) {
     // 新規編集の場合はカテゴリにフォーカスする
@@ -202,7 +202,7 @@ onMounted(async () => {
     }
     // リアクティブの発火と選択枝にフォーカス
     await nextTick()
-    paneSection.value?.getElementsByTagName('select')[2].focus()
+    panes.value?.getElementsByTagName('select')[2].focus()
   }
   // 自由入力がある場合は自由入力セクションを開く
   if (freewordText.value !== '') {

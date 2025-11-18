@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, useTemplateRef, computed } from 'vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import { ja } from 'date-fns/locale'
 
@@ -18,7 +18,7 @@ const props = defineProps({
 const dateOfProcedure = defineModel()
 
 // Set tabindex
-const datepicker = ref()
+const datepicker = useTemplateRef('datepicker')
 let inputelement
 onMounted(() => {
   try {
