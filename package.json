@@ -29,7 +29,8 @@
     "build-only": "vite build",
     "test:unit": "vitest",
     "type-check": "vue-tsc --build",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "dumpmaster": "bun --tsconfig-override ./jsconfig.json tools/generate-json.js"
   },
   "dependencies": {
     "@seald-io/nedb": "^4.1.2",
