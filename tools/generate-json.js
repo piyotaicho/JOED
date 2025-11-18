@@ -11,6 +11,7 @@ commander
   .option('--dump', 'Generate master object tree dump insted of array of texts')
   .option('--year <year>', 'Year of master items')
   .option('--level', 'Output as object with category keys (not effective with --dump)')
+  .option('--mark', 'Mark description')
   .option('-o, --output <file>', 'Output file name')
   .parse(process.argv)
 
@@ -23,7 +24,7 @@ const getMaster = async () => {
   } else if (options.procedure) {
     MasterClass = ProcedureMaster
   } else {
-    console.error('Error: Please specify --diagnosis or --procedure')
+    console.error('Error: Please specify --diagnosis, --procedure or --ae')
     process.exit(1)
   }
 
@@ -73,7 +74,11 @@ const main = async () => {
         const result = {}
         for (const category of categories) {
           const items = master.Items(category, undefined, options.year)
-          result[category] = [...new Set(items.map(item => item.Text))]
+          if (!options.mark) {
+            result[category] = [...new Set(items.map(item => item.Text))]
+          } else {
+            result[category] = [...new Set(items.map(item => item.Text + (item?.Description ? '$' : '') + (item?.AdditionalProcedure ? '+' : '')))]
+          }
         }
         jsonOutput = JSON.stringify(result, null, 2)
       } else {
@@ -82,8 +87,13 @@ const main = async () => {
         for (const category of categories) {
           items.push(...master.Items(category, undefined, options.year))
         }
-        const texts = [...new Set(items.map(item => item.Text))]
-        jsonOutput = JSON.stringify(texts, null, 2)
+        if (!options.mark) {
+          const texts = [...new Set(items.map(item => item.Text))]
+          jsonOutput = JSON.stringify(texts, null, 2)
+        } else {
+          const texts = [...new Set(items.map(item => item.Text + (item?.Description ? '$' : '') + (item?.AdditionalProcedure ? '+' : '')))]
+          jsonOutput = JSON.stringify(texts, null, 2)
+        }
       }
     } else {
       // AE master output
