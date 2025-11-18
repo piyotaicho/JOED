@@ -46,6 +46,35 @@ const datepickerValue = computed({
     }
   },
 })
+
+// yyyy-MM-dd形式にフォーマット
+const formatDisplayValue = (value) => {
+  if (!value) return ''
+
+  // 既にyyyy-MM-dd形式ならそのまま返す
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value
+  }
+
+  // MM/dd/yyyy形式の文字列を変換
+  if (typeof value === 'string' && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(value)) {
+    const parts = value.split('/')
+    const month = parts[0].padStart(2, '0')
+    const day = parts[1].padStart(2, '0')
+    const year = parts[2]
+    return `${year}-${month}-${day}`
+  }
+
+  // Dateオブジェクトの場合はフォーマット
+  if (value instanceof Date) {
+    const year = value.getFullYear()
+    const month = String(value.getMonth() + 1).padStart(2, '0')
+    const day = String(value.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  return value
+}
 </script>
 
 <template>
@@ -56,19 +85,23 @@ const datepickerValue = computed({
         ref="datepicker"
         v-model="datepickerValue"
         model-type="yyyy-MM-dd"
-        :formats="{ format: 'yyyy-MM-dd', preview: 'yyyy-MM-dd' }"
         :locale="ja"
         :time-config="{ enableTimePicker: false }"
         week-start="0"
         :auto-apply="true"
-        :input-attrs="{ clearable: false }"
         :text-input="{
           enterSubmit: true,
           tabSubmit: true,
           openMenu: 'toggle',
           escClose: true,
+          format: 'yyyy-MM-dd'
+        }"
+        :input-attrs="{
+          clearable: false
         }"
         :action-row="{
+          showSelect: true,
+          showCancel: true,
           selectBtnLabel: '選択',
           cancelBtnLabel: '閉じる'
         }"
@@ -84,18 +117,19 @@ const datepickerValue = computed({
             {{ day }}
           </div>
         </template>
-        <template #dp-input="{ value, onInput, onBlur, onFocus, onKeypress, handlePaste }">
+        <template #dp-input="{ value, onInput, onBlur, onFocus, onKeypress, onEnter, onTab, onPaste }">
           <input
             type="text"
-            :value="value"
+            :value="formatDisplayValue(value)"
             placeholder="クリックでカレンダー"
             :class="[!value && props.required ? 'vacant' : '']"
-            @input="onInput"
-            @blue="onBlur"
+            @input="(e) => onInput(e)"
+            @blur="onBlur"
             @focus="onFocus"
             @keypress="onKeypress"
-            @keydown="onKeypress($event)"
-            @paste="handlePaste"
+            @keydown.enter="onEnter"
+            @keydown.tab="onTab"
+            @paste="(e) => onPaste(e)"
           />
         </template>
       </VueDatePicker>
