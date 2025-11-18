@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import { ref, useTemplateRef, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Master from '@/modules/Masters/DiagnosisMaster'
 import * as Popups from '@/modules/Popups'

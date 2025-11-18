@@ -57,7 +57,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, nextTick, onMounted } from 'vue'
+import { ref, useTemplateRef, reactive, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Master from '@/modules/Masters/ProcedureMaster'
 import * as Popups from '@/modules/Popups'
