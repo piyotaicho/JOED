@@ -1,11 +1,12 @@
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useStore } from './store'
 import { useRoute, useRouter } from 'vue-router'
 
 const store = useStore()
 const route = useRoute()
 const router = useRouter()
+const routerViewRef = ref(null)
 
 // 設定とデータリストを取得
 store.dispatch('system/LoadPreferences')
@@ -22,20 +23,37 @@ store.dispatch('system/LoadPreferences')
 // electron環境下でのメインプロセスからのメッセージ(メニュー操作によるrouter変更)を処理
 if (window?.API) {
   window.API.onChangeRouter((_undefined, routename) => {
+    if (route.name === routename || routename === '') {
+      return
+    }
+
+    // 現在のルート名に応じて適切に遷移先の指定を処理
     switch (route.name) {
       case 'list':
         if (routename === 'new') {
           router.push({ name: 'edit', params: { uid: 0 } })
-        } else {
-          if (routename !== '') {
-            router.push({ name: routename })
-          }
+          break
         }
+        if (routename === 'list.drawer') {
+          console.log(routerViewRef.value)
+          if (routerViewRef.value && typeof routerViewRef.value?.openDrawer === 'function') {
+            routerViewRef.value.openDrawer()
+          }
+          break
+        }
+        if (routename === 'list.delete') {
+          if (routerViewRef.value && typeof routerViewRef.value?.remove === 'function') {
+            routerViewRef.value.remove()
+          }
+          break
+        }
+        router.push({ name: routename })
         break
+
       case 'export':
       case 'import':
       case 'settings':
-        if (routename !== '' && routename !== 'new' && route.name !== routename) {
+        if (routename !== 'new' && routename.startsWith('list.')) {
           router.push({ name: routename })
         }
         break
@@ -54,6 +72,10 @@ const routeKey = computed(() => {
 
 <template>
   <div id="app">
-    <router-view :key="routeKey"></router-view>
+    <router-view :key="routeKey">
+      <template v-slot="{ Component }">
+        <component :is="Component"  ref="routerViewRef"/>
+      </template>
+    </router-view>
   </div>
 </template>

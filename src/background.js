@@ -341,6 +341,7 @@ function registerMenu() {
       label: 'ファイル',
       submenu: [
         { label: '新規症例の登録', id: 'list-new', enabled: false, accelerator: 'CmdORCtrl+N', click: (item, focusedWindow) => RendererRoute('new', focusedWindow) },
+        { label: '症例の削除', id: 'list-delete', enabled: false, accelerator: 'CmdORCtrl+X', click: (item, focusedWindow) => RendererRoute('list.delete', focusedWindow) },
         { type: 'separator' },
         { label: 'データの読み込み', id: 'list-import', enabled: false, click: (item, focusedWindow) => RendererRoute('import', focusedWindow) },
         { label: 'データの書き出し', id: 'list-export', enabled: false, click: (item, focusedWindow) => RendererRoute('export', focusedWindow) },
@@ -349,6 +350,7 @@ function registerMenu() {
           : [
             { type: 'separator' },
             { label: '設定', id: 'setup', enabled: false, accelerator: 'Ctrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+            { label: 'リスト表示の設定', id: 'list-settings', enabled: false, click: (item, focusedWindow) => RendererRoute('list.drawer', focusedWindow) },
             { label: '終了', accelerator: 'Alt+F4', role: 'quit' }
           ])
       ]
@@ -437,28 +439,36 @@ function switchMenu(payload) {
     case 'procedure':
     case 'AE':
       menu.getMenuItemById('list-new').enabled = false
+      menu.getMenuItemById('list-delete').enabled = false
       menu.getMenuItemById('list-import').enabled = false
       menu.getMenuItemById('list-export').enabled = false
       menu.getMenuItemById('setup').enabled = false
+      menu.getMenuItemById('list-settings').enabled = false
       break
     case 'list':
       menu.getMenuItemById('list-new').enabled = true
+      menu.getMenuItemById('list-delete').enabled = true
       menu.getMenuItemById('list-import').enabled = true
       menu.getMenuItemById('list-export').enabled = true
       menu.getMenuItemById('setup').enabled = true
+      menu.getMenuItemById('list-settings').enabled = true
       break
     case 'utility':
     case 'setup':
       menu.getMenuItemById('list-new').enabled = false
+      menu.getMenuItemById('list-delete').enabled = false
       menu.getMenuItemById('list-import').enabled = true
       menu.getMenuItemById('list-export').enabled = true
       menu.getMenuItemById('setup').enabled = true
+      menu.getMenuItemById('list-settings').enabled = false
       break
     default:
       menu.getMenuItemById('list-new').enabled = false
+      menu.getMenuItemById('list-delete').enabled = false
       menu.getMenuItemById('list-import').enabled = false
       menu.getMenuItemById('list-export').enabled = false
       menu.getMenuItemById('setup').enabled = false
+      menu.getMenuItemById('list-settings').enabled = false
   }
 }
 
@@ -534,7 +544,7 @@ function createDatabaseInstance() {
 }
 
 /**
- * $regex を RexExpオブジェクトでの呼び出しに変換する
+ * クエリ中の $regex を RexExpオブジェクトでの呼び出しに変換する
  * @param {*} obj
  */
 function unescapeRegexInObject(obj) {

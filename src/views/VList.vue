@@ -14,8 +14,40 @@ const store = useStore()
 const route = useRoute()
 const router = useRouter()
 
+// リスト項目一覧
+const uids = computed(() => store.getters.PagedUids)
+
 // スクロールコンテナへの参照
 const scrollContainer = ref(null)
+
+// 表示状態フラグ
+const showStartupDialog = computed(() => store.getters['system/ShowStartupDialog'])
+const drawerOpened = ref(false)
+
+// Element Plus infinite scroll用の状態管理
+const fetching = ref(false)
+const noMore = computed(() => store.getters.PagedUidsRange >= store.getters.NumberOfCases)
+
+// 選択モード
+const multiSelectMode = ref(false)
+const selectedUids = ref([])
+
+// uidsのリスト内容が変更されたら選択をクリアし、スクロールバーチェック
+watch(uids, () => {
+  selectedUids.value.splice(0)
+  multiSelectMode.value = false
+  // データ追加・フィルタリング後、DOMレンダリング完了後にスクロールバーチェック
+  setTimeout(() => ensureScrollbar(), 100)
+})
+
+// noMoreの変化も監視（全データロード完了時）
+watch(noMore, (isNoMore) => {
+  if (isNoMore) {
+    // 全データロード完了時、スクロールバーが出ない場合はそのまま終了
+    // これにより、データ量が少ない場合の無限ループを防ぐ
+    fetching.value = false
+  }
+})
 
 // スクロールバーが表示されるまで自動ロード
 const ensureScrollbar = () => {
@@ -50,26 +82,17 @@ onMounted(() => {
   setTimeout(() => ensureScrollbar(), 100)
 })
 
-const showStartupDialog = computed(() => store.getters['system/ShowStartupDialog'])
-const drawerOpened = ref(false)
-
-// Element Plus infinite scroll用の状態管理
-const fetching = ref(false)
-const noMore = computed(() => store.getters.PagedUidsRange >= store.getters.NumberOfCases)
-
-// リスト項目一覧
-const uids = computed(() => store.getters.PagedUids)
-// 選択モード
-const multiSelectMode = ref(false)
-const selectedUids = ref([])
-
 // ハンドラー
 // ドロワーの開閉
 const openDrawer = () => { drawerOpened.value = true }
 const closeDrawer = () => { drawerOpened.value = false }
 
 // 新規症例の作成
-const createNewEntry = () => router.push({ name: 'edit', params: { uid: 0 } })
+const createNewEntry = () => {
+  // ドロワーがあいているときはイベントの処理をしない
+  if (drawerOpened.value) return
+  router.push({ name: 'edit', params: { uid: 0 } })
+}
 
 // リスト項目へのフォーカス移動
 const moveFocus = (offset) => {
@@ -85,37 +108,39 @@ const moveFocus = (offset) => {
   }
 }
 
-// uidsのリスト内容が変更されたら選択をクリアし、スクロールバーチェック
-watch(uids, () => {
-  selectedUids.value.splice(0)
-  multiSelectMode.value = false
-  // データ追加・フィルタリング後、DOMレンダリング完了後にスクロールバーチェック
-  setTimeout(() => ensureScrollbar(), 100)
-})
+// 症例削除
+const remove = async () => {
+  // ドロワーがあいているときは処理しない
+  if (drawerOpened.value) return
 
-// noMoreの変化も監視（全データロード完了時）
-watch(noMore, (isNoMore) => {
-  if (isNoMore) {
-    // 全データロード完了時、スクロールバーが出ない場合はそのまま終了
-    // これにより、データ量が少ない場合の無限ループを防ぐ
-    fetching.value = false
-  }
-})
-
-// 症例削除のディスパッチ
-const dispatchRemove = async () => {
+  // 選択無しも処理しない
   if (selectedUids.value.length === 0) return
+
+  // 単一選択の削除
   if (selectedUids.value.length === 1) {
+    // 一時的にmultiselectModeを設定して症例にチェックをつける
+    multiSelectMode.value = true
+
+    // 症例の内容を取得
+    const caseDocument = store.getters.CaseDocument(selectedUids.value[0])
+    const DateOfProcedure = caseDocument?.DateOfProcedure || ''
+    const patientId = caseDocument?.PatientId || ''
+
     // 単一選択の場合は確認ダイアログを表示
-    await confirm('症例を削除します. よろしいですか？', '確認').then((result) => {
+    await confirm(`手術実施日:${DateOfProcedure} 患者ID:${patientId} \nの症例を削除します. よろしいですか？`, '確認').then((result) => {
       if (result) {
         store.dispatch('RemoveDocument', { DocumentId: selectedUids.value[0] })
         selectedUids.value.splice(0)
         multiSelectMode.value = false
       }
     })
+
+    // multiSelectModeを解除
+    multiSelectMode.value = false
     return
   }
+
+  // 複数選択の削除
   await confirm(`選択されている${selectedUids.value.length}件の症例を削除します. よろしいですか？`, '確認').then((result) => {
     if (result) {
       selectedUids.value.forEach((uid) => {
@@ -212,6 +237,11 @@ const handleScroll = (event) => {
     }, 100)
   }
 }
+
+defineExpose({
+  openDrawer,
+  remove
+})
 </script>
 
 <template>
@@ -232,7 +262,7 @@ const handleScroll = (event) => {
       <ListDrawer :visible="drawerOpened" @close="closeDrawer"/>
 
       <template v-for="uid in uids" :key="uid">
-        <CaseDocument :uid="uid" :selected="selectedUids.includes(uid) && multiSelectMode" @select="onSingleSelect" @multiselect="onMultiSelect" @remove="dispatchRemove"/>
+        <CaseDocument :uid="uid" :selected="selectedUids.includes(uid) && multiSelectMode" @select="onSingleSelect" @multiselect="onMultiSelect" @remove="remove"/>
       </template>
 
       <div v-if="fetching" class="fetching-container">
