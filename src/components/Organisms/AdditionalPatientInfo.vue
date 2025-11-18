@@ -1,15 +1,11 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-// vue2.7 + compositionAPI store hack
+import { computed, useTemplateRef } from 'vue'
 import { useStore } from '@/store'
 import { InfoFilled } from '@element-plus/icons-vue'
-// import InputSwitchField from '../Molecules/InputSwitchField.vue'
 import InputTextField from '@/components/Molecules/InputTextField.vue'
 
-// vue2.7 + compositionAPI store hack
 const store = useStore()
 
-// Properties
 const props = defineProps({
   DateOfProcedure: {
     type: String
@@ -31,12 +27,7 @@ const NCDId = defineModel('NCDId', {
   default: ''
 })
 
-const switchField = ref()
-onMounted(() => {
-  // コンポーネント内へスタイルシートを適応仕切れないので適宜対応
-  // const el = switchField.value.$el.getElementsByClassName('field')[0]
-  // el.style.paddingTop = '0.33rem'
-})
+const switchField = useTemplateRef('switchField')
 
 // 編集フラグ
 const editJSOGId = computed(() => store.getters['system/EditJSOGId'])
@@ -52,7 +43,7 @@ const hashString = computed(() => {
       props.DateOfProcedure.substring(0, 4) <= '2021'
     )
   } else {
-    return '手術日と患者IDが必要です'
+    return '手術日と患者IDの入力が必須です'
   }
 })
 
@@ -84,23 +75,23 @@ const iconColor = computed(() => {
 
 const focusInput = () => {
   // スイッチへフォーカスする
-  const inputElement = switchField.value.$el.getElementsByTagName('input')[0]
+  const inputElement = switchField.value.getElementsByTagName('input')[0]
   inputElement.focus()
 }
 </script>
 
 <template>
   <div>
-    <el-popover placement="bottom" width="400" trigger="click" @after-enter="focusInput" :tabindex="-1">
+    <el-popover placement="bottom" width="400" trigger="click" @after-enter="focusInput">
       <!-- display button -->
       <template #reference>
         <div class="additonal-patient-info-button">
           <template v-if="tooltip === ''">
-            <el-icon :style="iconColor"><InfoFilled /></el-icon>
+            <el-icon :style="{borderRadius: '50%', ...iconColor}" tabindex="0"><InfoFilled /></el-icon>
           </template>
           <template v-else>
             <el-tooltip class="item" effect="dark" placement="right" :content="tooltip">
-              <el-icon :style="iconColor"><InfoFilled /></el-icon>
+              <el-icon :style="{borderRadius: '50%', ...iconColor} " tabindex="0"><InfoFilled /></el-icon>
             </el-tooltip>
           </template>
         </div>
@@ -114,20 +105,12 @@ const focusInput = () => {
                 v-model="Denial"
                 :active-text="'あり'"
                 :active-value="true"
-                active-color="var(--color-danger)"
                 :inactive-text="'なし'"
                 :inactive-value="false"
-                inactive-color="var(--color-primary)" />
+                style="--el-switch-on-color: var(--color-danger); --el-switch-off-color: var(--color-primary);" />
             </div>
           </div>
 
-        <!-- <InputSwitchField
-          v-model="Denial"
-          title="登録拒否"
-          :options="[{text: 'なし', value: false, color: 'var(--color-primary)'}, {text: 'あり', value: true, color: 'var(--color-danger)'}]"
-          ref="switchField"
-          style="display: flex; flex-direction: row; height: 2.4rem;"
-        /> -->
         <template v-if="Denial">
           <InputTextField title="レコード識別子" :modelValue="hashString" readonly/>
         </template>

@@ -51,7 +51,7 @@ const NCDId = defineModel('NCDId', {
             placeholder="患者の認識子"
           />
         </div>
-        <div style="width: 2rem">
+        <div style="width: 2rem; margin-left: 0.3rem;">
           <AdditionalPatientInfo
             v-model:Denial="Denial"
             v-model:JSOGId="JSOGId"

@@ -25,5 +25,5 @@ const inputText = defineModel({ type: String, required: true })
         :class="[(!inputText && props.required) ? 'vacant' : '']"
         v-bind="$attrs"/>
     </div>
-</div>
+  </div>
 </template>
