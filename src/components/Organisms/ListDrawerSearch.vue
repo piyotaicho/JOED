@@ -55,16 +55,31 @@ const SearchSetting = {
     regexp: false,
     multiple: true,
     createquery: (query) => {
+      // 検索文字から区切り文字を消して、区切り文字を含んだ検索を可能にする
+      // ハイフンに類似した文字
+      //  U+002D ASCIIのハイフン
+      //  U+30FC 全角の長音
+      //  U+2010 別のハイフン
+      //  U+2011 改行しないハイフン
+      //  U+2013 ENダッシュ
+      //  U+2014 EMダッシュ
+      //  U+2015 全角のダッシュ
+      //  U+2212 全角のマイナス
+      //  U+FF70 半角カナの長音
+      // チルダに類似した文字
+      //  U+007E 半角チルダ
+      //  U+301C WAVE DASH
+      //  U+FF5E 全角チルダ
       const queries = query.split(/[\s,，]+/)
         .map(item => item
-          .replace(/[-ｰー－～]/g, '')
-          .replace(/./g, '$&[-ｰー－～]*')
+          .replace(/[\u{002d}\u{2010}\u{2013}\u{2014}\u{2212}\u{30fc}\u{007e}\u{301c}\u{ff5e}]/gu, '')
+          .replace(/./g, '$&[\u{002d}\u{2010}\u{2013}\u{2014}\u{2212}\u{30fc}\u{007e}\u{301c}\u{ff5e}]*')
         )
 
       if (queries.length > 0) {
         const regexp = '^(' + queries.join('|') + ')$'
         return {
-          PatientId: { $regex: new RegExp(regexp) }
+          PatientId: { $regex: new RegExp(regexp, 'u') }
         }
       } else {
         return {}
