@@ -346,7 +346,10 @@ function registerMenu() {
         { label: 'データの読み込み', id: 'list-import', enabled: false, click: (item, focusedWindow) => RendererRoute('import', focusedWindow) },
         { label: 'データの書き出し', id: 'list-export', enabled: false, click: (item, focusedWindow) => RendererRoute('export', focusedWindow) },
         ...(process.platform === 'darwin'
-          ? []
+          ? [
+            { type: 'separator' },
+            { label: 'リスト表示の設定', id: 'list-settings', enabled: false, click: (item, focusedWindow) => RendererRoute('list.drawer', focusedWindow) },
+          ]
           : [
             { type: 'separator' },
             { label: '設定', id: 'setup', enabled: false, accelerator: 'Ctrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
