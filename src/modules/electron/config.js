@@ -22,6 +22,10 @@ export async function SavePassword (payload) {
   return await ipcSaveConfig('Password', { Password: hashedpassword })
 }
 
+export async function GetSystemInfo () {
+  return await window.API.GetSystemInfo()
+}
+
 // IPC wrappers : Proxy Object対策で生のオブジェクトに変換して渡す
 async function ipcLoadConfig (key, defaultvalue) {
   return await window.API.LoadConfig(JSON.parse(JSON.stringify({ Key: key, DefaultConfig: defaultvalue || {} })))

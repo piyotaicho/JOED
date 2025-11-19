@@ -316,7 +316,7 @@ const CreateHeader = async (exportItem, countOfDenial) => {
       const hash = HHX.h64(
         Encoder.encode(jsonText).buffer,
         TimeStamp.toString()).toString(16)
-
+      console.log(store.getters['system/Platform'])
       exportItem.unshift({
         InstitutionName: store.getters['system/InstitutionName'],
         InstitutionID: store.getters['system/InstitutionID'],
@@ -325,7 +325,7 @@ const CreateHeader = async (exportItem, countOfDenial) => {
         NumberOfCases: exportItem.length,
         NumberOfDenial: countOfDenial,
         Version: store.getters['system/ApplicationVersion'],
-        Plathome: store.getters['system/Plathome'],
+        Platform: store.getters['system/Platform'],
         hash
       })
     }

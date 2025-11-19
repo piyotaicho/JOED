@@ -92,7 +92,7 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |NumberOfCases              |integer| |登録手術数（サードパーティーからの書き出しに対するエラーチェック用）|
 |NumberOfDenial             |integer| |登録拒否数|
 |Version                    |string | |提出データ作成時のソフトウエアのバージョン|
-|Plathome                   |string | |使用環境 plathome (arch)|
+|Platform                   |string | |JOEDソフトウエア利用環境を示す文字列|
 |hash                       |string | |症例データ部分だけのハッシュ値|
 
 ### 症例データベースオブジェクト:Case

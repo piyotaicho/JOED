@@ -766,6 +766,17 @@ function registerIPChandlers() {
     appConfig.electronStore.set(payload.Key, payload.Config)
   )
 
+  // GetSystemInfo
+  // @no params
+  ipcMain.handle('GetSystemInfo', () => {
+    const os = require('os')
+    const ostype = os.type()
+    const osversion = os.release()
+    const osarch = os.arch()
+
+    return `${ostype} ${osversion} (${osarch})`
+  })
+
   //
   // Routerからのメニュー制御
   //

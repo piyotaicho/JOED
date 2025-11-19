@@ -33,6 +33,8 @@ contextBridge.exposeInMainWorld('API',
     LoadConfig: async (payload) => await ipcRenderer.invoke('LoadConfig', payload),
     SaveConfig: async (payload) => await ipcRenderer.invoke('SaveConfig', payload),
 
+    GetSystemInfo: async (payload) => await ipcRenderer.invoke('GetSystemInfo', payload),
+
     SwitchMenu: (payload) => ipcRenderer.send('SwitchMenu', payload),
 
     OpenURL: (payload) => ipcRenderer.send('OpenURL', payload),

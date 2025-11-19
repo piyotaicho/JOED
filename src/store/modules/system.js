@@ -1,6 +1,6 @@
 import { version as VueVersionString } from 'vue'
 import HHX from 'xxhashjs'
-import { LoadConfig, SaveConfig } from 'depmodules/config'
+import { LoadConfig, SaveConfig, GetSystemInfo } from 'depmodules/config'
 
 export default {
   namespaced: true,
@@ -30,7 +30,8 @@ export default {
       UnlockExportNCDId: false,
       CSVruleset: '{}'
     },
-    StartupDialogStatus: true
+    StartupDialogStatus: true,
+    Platform: ''
   },
   getters: {
     // システム固有のソルト値
@@ -68,19 +69,9 @@ export default {
     VueVersion() {
       return VueVersionString || 'undefined'
     },
-    // 実行プラットフォーム - 可能な限り検出する
-    Platform() {
-      return import.meta.env.VITE_APP_ELECTRON
-        ? window?.Versions?.Platform()
-        : (
-          (
-            window.navigator?.platform ||
-            window.navigator?.userAgentData?.platform ||
-            'win32'
-          ).includes('Mac')
-            ? 'darwin'
-            : 'win32'
-        )
+    // 実行プラットフォーム情報
+    Platform(state) {
+      return state.Platform
     },
 
     // settingsオブジェクト全体
@@ -179,6 +170,12 @@ export default {
     // @param{boolean}
     CloseStartupDialog(state) {
       state.StartupDialogStatus = false
+    },
+    // 実行プラットフォーム情報設定
+    //
+    // @param{string}
+    SetPlatform(state, payload) {
+      state.Platform = payload
     }
   },
   actions: {
@@ -214,6 +211,12 @@ export default {
         Sort: context.rootState.Sort
       })
       await context.dispatch('SavePreferences')
+    },
+    // 実行環境情報を取得保存する
+    //
+    async getPlatformInfo(context) {
+      const platformInfo = await GetSystemInfo()
+      context.commit('SetPlatform', platformInfo)
     }
   }
 }

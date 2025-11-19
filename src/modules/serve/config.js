@@ -48,3 +48,7 @@ export async function SavePassword (payload, storecontext) {
       { root: true })
   }
 }
+
+export async function GetSystemInfo () {
+  return navigator?.userAgent ?? 'Unknown Environment'
+}

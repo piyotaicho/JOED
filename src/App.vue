@@ -19,6 +19,13 @@ store.dispatch('system/LoadPreferences')
   })
   .then(() => store.dispatch('ReloadDocumentList'))
 
+// 実行環境情報を取得
+store.dispatch('system/getPlatformInfo')
+  .catch((e) => {
+    console.error(e)
+    store.commit('system/SetPlatform', 'failed to get platform info')
+  })
+
 // ルーティングの設定
 // electron環境下でのメインプロセスからのメッセージ(メニュー操作によるrouter変更)を処理
 if (window?.API) {
