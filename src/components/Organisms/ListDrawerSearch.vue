@@ -8,9 +8,9 @@ const emit = defineEmits(['changed'])
 
 const settings = reactive({
   IgnoreQuery: false,
-  UseRegexp: false,
-  Field: '',
-  Search: ''
+  Field: ['', ''],
+  Search: ['', ''],
+  UseRegexp: [false, false],
 })
 
 const OnCreated = () => {
@@ -19,7 +19,14 @@ const OnCreated = () => {
 
     for (const key in settings) {
       if (preservedSearch[key] !== undefined) {
-        settings[key] = preservedSearch[key]
+        if (Array.isArray(settings[key])) {
+          // 配列の場合は要素ごとにコピー
+          for (let i = 0; i < settings[key].length; i++) {
+            settings[key][i] = preservedSearch[key][i] || settings[key][i]
+          }
+        } else {
+          settings[key] = preservedSearch[key]
+        }
       }
     }
   }
@@ -54,6 +61,7 @@ const SearchSetting = {
     title: '患者ID',
     regexp: false,
     multiple: true,
+    another: false,
     createquery: (query) => {
       // 検索文字から区切り文字を消して、区切り文字を含んだ検索を可能にする
       // ハイフンに類似した文字
@@ -89,6 +97,7 @@ const SearchSetting = {
   Name: {
     title: '患者名',
     regexp: true,
+    another: false,
     createquery: (query, regexp) => {
       return { Name: { $regex: makeRegex(query, regexp) } }
     }
@@ -96,6 +105,7 @@ const SearchSetting = {
   Diagnoses: {
     title: '手術診断',
     regexp: true,
+    another: true,
     createquery: (query, regexp) => {
       return {
         Diagnoses: {
@@ -109,6 +119,7 @@ const SearchSetting = {
   DiagnosesMain: {
     title: '手術診断 (主たる診断のみ)',
     regexp: true,
+    another: true,
     createquery: (query, regexp) => {
       return {
         'Diagnoses.0.Text': { $regex: makeRegex(query, regexp) }
@@ -118,6 +129,7 @@ const SearchSetting = {
   Procedures: {
     title: '実施手術',
     regexp: true,
+    another: true,
     createquery: (query, regexp) => {
       return {
         $or: [
@@ -142,6 +154,7 @@ const SearchSetting = {
   ProceduresMain: {
     title: '実施手術 (主たる手術のみ)',
     regexp: true,
+    another: true,
     createquery: (query, regexp) => {
       return {
         'Procedures.0.Text': { $regex: makeRegex(query, regexp) }
@@ -151,6 +164,7 @@ const SearchSetting = {
   Note: {
     title: 'メモ',
     regexp: true,
+    another: true,
     createquery: (query, regexp) => {
       return { Note: { $regex: makeRegex(query, regexp) } }
     }
@@ -158,6 +172,7 @@ const SearchSetting = {
   NoteMultiline: {
     title: 'メモ(行ごとに評価)',
     regexp: true,
+    another: true,
     createquery: (query, regexp) => {
       return { Note: { $regex: makeRegex(query, regexp, true) } }
     }
@@ -166,6 +181,7 @@ const SearchSetting = {
     title: '問い合わせレコード識別子',
     regexp: false,
     multiple: false,
+    another: false,
     createquery: (query) => {
       if (query && query.trim().length > 0) {
         return { Hash: query.trim() }
@@ -178,7 +194,7 @@ const SearchSetting = {
 
 // 正規表現使用の有効/無効
 const RegexpDisabled = computed(() => {
-  const preset = SearchSetting[settings.Field]
+  const preset = SearchSetting[settings.Field[0]]
 
   if (preset && preset.regexp !== undefined) {
     return !preset.regexp
@@ -187,8 +203,27 @@ const RegexpDisabled = computed(() => {
   }
 })
 
+const RegexpDisabledSearch2 = computed(() => {
+  const preset = SearchSetting[settings.Field[1]]
+
+  if (preset && preset.regexp !== undefined) {
+    return !preset.regexp
+  } else {
+    return true
+  }
+})
+
+// 追加検索条件設定が可能かどうか
+const Search2Enabled = computed(() => {
+  if (settings.Field[0] === '') {
+    return false
+  }
+  return SearchSetting[settings.Field[0]]?.another === true
+})
+
 const SearchActivated = computed(() => store.getters.SearchActivated)
 
+// 複数検索が可能かどうか(検索条件1のみ)
 const MultipleQueryAccepted = computed(() => {
   const preset = SearchSetting[settings.Field]
 
@@ -200,18 +235,36 @@ const MultipleQueryAccepted = computed(() => {
 })
 
 const performQuery = () => {
-  if (settings.Field && settings.Search) {
+  // 検索条件1は必須
+  if (settings.Field[0] && settings.Search[0]) {
+    const filterQuery = []
     const [field, value] = Object.entries(
-      SearchSetting[settings.Field]?.createquery(settings.Search, settings.UseRegexp) || {}
+      SearchSetting[settings.Field[0]]?.createquery(settings.Search[0], settings.UseRegexp[0]) || {}
     ).flat()
 
     if (field !== undefined && value !== undefined) {
+      filterQuery.push({
+        Field: field,
+        Value: value
+      })
+
+      // 検索条件2が有効ならば追加
+      if (Search2Enabled.value && settings.Field[1] && settings.Search[1]) {
+        const [field2, value2] = Object.entries(
+          SearchSetting[settings.Field[1]]?.createquery(settings.Search[1], settings.UseRegexp[1]) || {}
+        ).flat()
+
+        if (field2 !== undefined && value2 !== undefined) {
+          filterQuery.push({
+            Field: field2,
+            Value: value2
+          })
+        }
+      }
+
       store.commit('SetSearch', {
         IgnoreQuery: settings.IgnoreQuery,
-        Filter: {
-          Field: field,
-          Value: value
-        },
+        Filter: filterQuery,
         Preserve: JSON.stringify(settings)
       })
       emit('changed')
@@ -237,10 +290,12 @@ const cancelQuery = () => {
         :options="[{ text: '全データ', value: true }, { text: '現在の表示設定', value: false }]"
       />
     </div>
+
+    <div class="subtilte-section">検索フィールド</div>
     <div class="menu-item-content">
       <div>
         <div>
-          <select v-model="settings.Field">
+          <select v-model="settings.Field[0]">
             <option value="" disabled style="display: none;">検索する項目を選択してください.</option>
             <template v-for="(preset, key) in SearchSetting" :key="key">
               <option :value="key">{{ preset.title }}</option>
@@ -257,19 +312,50 @@ const cancelQuery = () => {
       </span>
     </div>
     <div class="menu-item-content">
-      <input type="text" v-model="settings.Search" />
+      <input type="search" v-model="settings.Search[0]" clearable />
     </div>
     <div>
       <InputSwitchField
-        v-model="settings.UseRegexp"
+        v-model="settings.UseRegexp[0]"
         title=""
         :options="[{ text: '部分一致', value: false }, { text: '正規表現', value: true }]"
         :disabled="RegexpDisabled"
       />
     </div>
 
+    <div v-show="Search2Enabled">
+      <div class="subtilte-section">追加検索フィールド</div>
+      <div class="menu-item-content">
+        <div>
+          <div>
+            <select v-model="settings.Field[1]">
+              <option value="" disabled style="display: none;">検索する項目を選択してください.</option>
+              <template v-for="(preset, key) in SearchSetting" :key="key">
+                <option :value="key" v-if="preset?.another === true">{{ preset.title }}</option>
+              </template>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="subtilte-section">
+        検索内容
+      </div>
+      <div class="menu-item-content">
+        <input type="search" v-model="settings.Search[1]" :disabled="settings.Search[0].trim() === ''"/>
+      </div>
+      <div>
+        <InputSwitchField
+          v-model="settings.UseRegexp[1]"
+          title=""
+          :options="[{ text: '部分一致', value: false }, { text: '正規表現', value: true }]"
+          :disabled="RegexpDisabledSearch2"
+        />
+      </div>
+    </div>
+
     <div class="menu-item-bottom">
-      <el-button type="primary" :disabled="settings.Field === '' || settings.Search.trim() === ''" @click="performQuery">検索</el-button>
+      <el-button type="primary" :disabled="settings.Field[0] === '' || settings.Search[0].trim() === ''" @click="performQuery">検索</el-button>
       <el-button type="success" :disabled="!SearchActivated" @click="cancelQuery">検索の解除</el-button>
     </div>
   </div>

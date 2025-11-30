@@ -30,7 +30,7 @@ const store = createStore({
     },
     Search: {
       IgnoreQuery: false,
-      Filter: {},
+      Filter: [],
       Preserve: ''
     }
   },
@@ -109,18 +109,22 @@ const store = createStore({
       const sort = (state.Sort && { ...state.Sort }) || { DocumentId: -1 }
 
       // 検索が有効ならば検索条件にあわせてフィルタを置換・追加
-      if (Object.keys(state.Search.Filter).length > 0) {
+      if (state.Search.Filter.length > 0) {
         if (state.Search.IgnoreQuery) {
-          filters.splice(0, filters.length, state.Search.Filter)
+          filters.splice(0, filters.length, ...state.Search.Filter)
         } else {
-          filters.push(state.Search.Filter)
+          filters.push(...state.Search.Filter)
         }
       }
 
       // フィルタ条件のクエリへの追加
       for (const filter of filters) {
-        const field = filter.Field
-        const value = filter.Value
+        const field = filter?.Field
+        const value = filter?.Value
+
+        if (field === undefined || value === undefined) {
+          continue
+        }
 
         if (query[field] === undefined) {
           // 指定フィールドへのフィルタ未定義ならば $eq として値を直接追加

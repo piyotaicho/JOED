@@ -124,7 +124,7 @@ div.menu-item-content
     width: 100%
     margin: 0.3rem 0
     height: 2rem
-  input[type="text"]
+  input[type="text"],[type="search"]
     width: 100%
     height: 2rem
   label
