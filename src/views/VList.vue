@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed, watch } from 'vue'
+import { onMounted, nextTick, ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from '@/store'
 import { Loading } from '@element-plus/icons-vue'
@@ -62,24 +62,32 @@ const ensureScrollbar = () => {
       store.commit('IncrementDocumentListRange')
       fetching.value = false
       // ロード後、次のDOMレンダリング後に再度チェック
-      setTimeout(() => ensureScrollbar(), 50)
+      nextTick(() => ensureScrollbar())
     }, 100)
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // 初期ロード：スクロールバーが表示されるまでデータをロード
+  ensureScrollbar()
+  await nextTick()
+
   // vue routerのscrollを代替 - #doc-id なエレメントが中心になるようにスクロールとfocusする
   if (route.hash) {
-    const element = document.getElementById(route.hash.slice(1))
-    if (element.id.match(/^doc-\d+$/)) {
+    const docId = route.hash.slice(1)
+
+    let element = document.getElementById(docId)
+    while (element === null && !noMore.value) {
+      loadMore(false)
+      await nextTick()
+      element = document.getElementById(docId)
+    }
+
+    if (element !== null && element.id.match(/^doc\d+$/)) {
       element.scrollIntoView({ block: 'center' })
       element.focus()
-
     }
   }
-
-  // 初期ロード：スクロールバーが表示されるまでデータをロード
-  setTimeout(() => ensureScrollbar(), 100)
 })
 
 // ハンドラー
@@ -229,12 +237,23 @@ const handleScroll = (event) => {
   const { scrollTop, scrollHeight, clientHeight } = event.target
   // スクロール位置が下から200px以内に来たらloadMore
   if (scrollHeight - scrollTop - clientHeight < 200) {
-    fetching.value = true
-    // 少し遅延を入れてユーザー体験を改善
+    loadMore()
+  }
+}
+
+// ドキュメントのロードを指示
+const loadMore = (wait = true) => {
+  if (fetching.value || noMore.value) return
+
+  fetching.value = true
+  if (wait) {
     setTimeout(() => {
       store.commit('IncrementDocumentListRange')
       fetching.value = false
     }, 100)
+  } else {
+    store.commit('IncrementDocumentListRange')
+    fetching.value = false
   }
 }
 
