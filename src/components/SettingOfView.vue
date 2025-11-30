@@ -1,6 +1,7 @@
 <script setup>
 import { reactive, ref, computed } from 'vue'
 import { useStore } from '@/store'
+import { ArrowDown } from '@element-plus/icons-vue'
 import InputSwitchField from '@/components/Molecules/InputSwitchField.vue'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
 import LabeledRadio from '@/components/Atoms/LabeledRadio.vue'
@@ -119,8 +120,8 @@ const commitSettings = async () => {
     <div class="utility-switches">
       <div>
         <div class="label">
-          <i class="el-icon-arrow-down" style="padding-top: 0.36rem; margin-right: 0.6rem;"/>
-          症例表示画面の設定
+          <el-icon style="padding-top: 0.36rem; margin-right: 0.6rem;"><ArrowDown /></el-icon>
+          リスト表示画面の設定
         </div>
       </div>
       <InputSwitchField
@@ -129,11 +130,11 @@ const commitSettings = async () => {
         :options="[{text: 'しない', value: false}, {text: 'する', value: true}]" />
       <InputSwitchField
         v-model="data.revertView"
-        title="リスト表示内容の規定値をアプリケーションの初期設定に戻す"
+        title="表示内容の規定値をアプリケーション初期設定に戻す"
         :options="[{text: 'しない', value: false}, {text: 'する', value: true}]" />
       <div>
         <div class="label">
-          <i class="el-icon-arrow-down" style="padding-top: 0.36rem; margin-right: 0.6rem;"/>
+          <el-icon style="padding-top: 0.36rem; margin-right: 0.6rem;"><ArrowDown /></el-icon>
           症例編集画面の設定
         </div>
       </div>
@@ -152,14 +153,14 @@ const commitSettings = async () => {
 
       <div>
         <div class="label">
-          <i class="el-icon-arrow-down" style="padding-top: 0.36rem; margin-right: 0.6rem;"/>
+          <el-icon style="padding-top: 0.36rem; margin-right: 0.6rem;"><ArrowDown /></el-icon>
           アプローチ入力の規定値
         </div>
       </div>
       <template v-for="category of master.getCategories()" :key="category">
         <div class="flex-content" aria-category="{{ category }}" style="margin-bottom: 1.2rem;">
-          <div class="w20">{{ category }}</div>
-          <div class="w80" style="display: flex; flex-direction: column; word-break: break-all;">
+          <div style="width: 16%;">{{ category }}</div>
+          <div style="width: 84%; display: flex; flex-direction: column; word-break: break-all;">
             <template v-for="directive of masterTree[category]" :key="directive">
               <template v-if="Object.keys(directive)[0] === 'oneOf'">
                   <div style="display: inline;">
