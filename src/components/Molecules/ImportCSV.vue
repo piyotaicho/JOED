@@ -1,6 +1,7 @@
 <script setup>
 import { shallowRef, reactive, computed, watch, nextTick, triggerRef } from 'vue'
 import { useStore } from '@/store'
+import { QuestionFilled } from '@element-plus/icons-vue'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
 import QueryBuilder from '@/components/Organisms/QueryBuilder.vue'
 import ReportViewer from '@/components/Atoms/Reports.vue'
@@ -84,12 +85,6 @@ const convertStream = async () => {
   data.LogMessages.splice(0)
   const ImportedDocuments = []
   try {
-    data.ProcessStep = 0
-    data.LogMessages.push('ファイルにはタイトル行を含めて' + data.CsvArray.length + '行の情報があります.')
-
-    data.ProcessStep++
-    await nextTick()
-
     // ルールセットの確認
     if (RuleSet.value['手術日 (必須)'] && RuleSet.value['ID (必須)']) {
       for (const title of ['手術診断', '実施手術']) {
@@ -104,6 +99,13 @@ const convertStream = async () => {
     } else {
       throw new Error('手術日とIDへの割り当ては必須です.')
     }
+
+    // CSVデータの確認表示
+    data.ProcessStep = 0
+    data.LogMessages.push('ファイルにはタイトル行を含めて' + data.CsvArray.length + '行の情報があります.')
+
+    data.ProcessStep++
+    await nextTick()
 
     // レコード毎にドキュメントを作成
     for (
@@ -187,11 +189,10 @@ const storeRuleset = () => {
       <LabeledCheckbox v-model="data.PerformMigration" :value="false">診断名称・実施手術の入力に対して基本的な置換操作を行う</LabeledCheckbox>
       <el-tooltip placement="top-start" :tabindex="-1">
         <template #content><div>チョコレート嚢胞→子宮内膜症性嚢胞, 子宮外妊娠→異所性妊娠 など<br/>2019年以前の登録で利用されていた内容のうち表記変更のあったものを一律に置換します.</div></template>
-        <i class="el-icon-question" style="padding-top: 0.36rem; margin-left: 0.6rem;"/>
+        <el-icon style="padding-top: 0.36rem;"><QuestionFilled /></el-icon>
       </el-tooltip>
     </div>
-    <div style="padding-bottom: 1rem;">
-      <br/>
+    <div style="padding: 1rem 0;">
       <el-button type="primary" :disabled="disableProcess" @click="convertStream">上記ルールに則ってデータを変換</el-button>
       <el-button type="primary" :disabled="props.disabled" @click="storeRuleset">ルールを保存</el-button>
     </div>

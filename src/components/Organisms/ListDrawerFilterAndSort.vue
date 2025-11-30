@@ -2,6 +2,7 @@
 import { onMounted, ref, reactive, computed, nextTick } from 'vue'
 import { useStore } from '@/store'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
+import InputSwitchField from '../Molecules/InputSwitchField.vue'
 import { CategoriesOfProcedure } from '@/modules/CaseValidater'
 import * as Popups from '@/modules/Popups'
 
@@ -161,14 +162,12 @@ const DisableSearch = async () => {
       </div>
 
       <div>
-        <el-switch
+        <InputSwitchField
           v-model="setting.Sort.Order"
-          active-text="昇順"
-          :active-value="1"
-          active-color="var(--color-primary)"
-          inactive-text="降順"
-          :inactive-value="-1"
-          inactive-color="var(--color-primary)" />
+          title=""
+          :options="[{ text: '降順', value: -1 }, { text: '昇順', value: 1}]"
+          style="padding-top: 0.13rem;"
+        />
       </div>
     </div>
 

@@ -2,7 +2,9 @@
 import { computed, useTemplateRef } from 'vue'
 import { useStore } from '@/store'
 import { InfoFilled } from '@element-plus/icons-vue'
+import InputSwitchField from '@/components/Molecules/InputSwitchField.vue'
 import InputTextField from '@/components/Molecules/InputTextField.vue'
+import { sw } from 'element-plus/es/locales.mjs'
 
 const store = useStore()
 
@@ -76,7 +78,9 @@ const iconColor = computed(() => {
 const focusInput = () => {
   // スイッチへフォーカスする
   const inputElement = switchField.value.getElementsByTagName('input')[0]
-  inputElement.focus()
+  if (inputElement !== null) {
+    inputElement.focus()
+  }
 }
 </script>
 
@@ -97,19 +101,13 @@ const focusInput = () => {
         </div>
       </template>
       <!-- popover content-->
-      <div class="additional-patient-info-panel">
-          <div style="display: flex; flex-direction: row; height: 2.4rem;">
-            <div class="label"><span>登録拒否</span></div>
-            <div class="field" ref="switchField">
-              <el-switch
-                v-model="Denial"
-                :active-text="'あり'"
-                :active-value="true"
-                :inactive-text="'なし'"
-                :inactive-value="false"
-                style="--el-switch-on-color: var(--color-danger); --el-switch-off-color: var(--color-primary);" />
-            </div>
-          </div>
+      <div class="additional-patient-info-panel" ref="switchField">
+        <InputSwitchField
+          title="登録拒否"
+          v-model="Denial"
+          :options="[{ text: 'なし', value: false, color: 'var(--color-primary)' }, { text: 'あり', value: true, color: 'var(--color-danger)' }]"
+          style="display: flex; flex-direction: row; height: 2.4rem;"
+        />
 
         <template v-if="Denial">
           <InputTextField title="レコード識別子" :modelValue="hashString" readonly/>

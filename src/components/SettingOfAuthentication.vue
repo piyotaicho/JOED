@@ -62,7 +62,8 @@ async function commit () {
       <InputSwitchField
         v-model="useAuthentication"
         title="起動時のパスワード確認"
-        :options="[{text: 'しない'}, {text: 'する'}]" />
+        :options="[{text: 'しない'}, {text: 'する'}]"
+        :class-override="['label w30', 'field w70']" />
 
       <InputTextField
         password
@@ -70,6 +71,7 @@ async function commit () {
         title="現在のパスワード"
         placeholder="********"
         :required="true"
+        :class-override="['label w30', 'field w70']"
         v-if="systemUseAuthentication" />
 
       <InputTextField
@@ -78,6 +80,7 @@ async function commit () {
         title="新しいパスワード"
         placeholder="********"
         :required="true"
+        :class-override="['label w30', 'field w70']"
         v-if="useAuthentication" />
       <InputTextField
         password
@@ -85,10 +88,15 @@ async function commit () {
         title="新しいパスワード(確認)"
         placeholder="********"
         :required="true"
+        :class-override="['label w30', 'field w70']"
         v-if="useAuthentication" />
-    </div>
-    <div>
-      <el-button type="primary" @click="commit">上記設定を保存</el-button>
+
+      <div>
+        <div class="label w30"></div>
+        <div class="field w70">
+          <el-button type="primary" @click="commit">上記設定を保存</el-button>
+        </div>
+      </div>
     </div>
   </div>
 </template>

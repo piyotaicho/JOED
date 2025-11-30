@@ -126,7 +126,8 @@ async function commitSettings () {
         v-model="data.InstitutionName"
         title="施設名称"
         placeholder=" 未設定 "
-        :required="true">
+        :required="true"
+        :class-override="['label w30', 'field w70']">
         <template #title>
           施設名称
           <el-tooltip placement="bottom-start" :tabindex="-1">
@@ -140,12 +141,13 @@ async function commitSettings () {
         v-model="data.InstitutionID"
         title="施設コード"
         placeholder=" 未設定 "
-        :required="true">
+        :required="true"
+        :class-override="['label w30', 'field w70']">
       </InputTextField>
 
       <div>
-        <div class="label"></div>
-        <div class="field">
+        <div class="label w30"></div>
+        <div class="field w70">
           <el-button type="primary"
             @click="listInstitutes"
             :disabled="data.InstitutionName === '' || data.InstitutionID !== ''">

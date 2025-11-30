@@ -121,19 +121,27 @@ const commit = async () => {
 
 <template>
   <div class="utility">
-    <div>
-      <div class="title">データ読み込み</div>
-      <div class="subtitle">ファイル種別の指定</div>
+    <div class="utility-switches">
       <div>
-        <select v-model="importMode">
-          <option value="json">JOED5のバックアップ形式に準拠した jsonファイル</option>
-          <option value="csv">ExcelやFilemaker等から出力した CSVファイル</option>
-          <option value="merge">症例登録システム version4 で入力・出力した mergeファイル</option>
-        </select>
+        <div class="title">データ読み込み</div>
       </div>
-      <input-file @load="updateStreamData" ButtonText="ファイルの指定" :AcceptFileTypes="data.FileExtentions[importMode]" />
+      <div>
+        <div class="label w30">ファイル種別の指定</div>
+        <div class="field w70">
+          <select v-model="importMode">
+            <option value="json">JOED5のバックアップ形式に準拠した jsonファイル</option>
+            <option value="csv">ExcelやFilemaker等から出力した CSVファイル</option>
+            <option value="merge">症例登録システム version4 で入力・出力した mergeファイル</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div class="label w30"></div>
+        <div class="field w70">
+          <input-file @load="updateStreamData" ButtonText="ファイルの指定" :AcceptFileTypes="data.FileExtentions[importMode]" />
+        </div>
+      </div>
     </div>
-
     <!-- Importerセクション -->
     <import-CSV v-if="importMode === 'csv'"
       :stream="data.FileStream" :disabled="!data.FileStream" @done="updateCreatedDocument" />
@@ -143,8 +151,11 @@ const commit = async () => {
       :stream="data.FileStream" :disabled="!data.FileStream" @done="updateCreatedDocument" />
 
     <div>
-      <el-button type="primary" :disabled="data.CreatedDocument.length === 0 || data.Committing > 0"
-        @click="commit">変換したデータの登録</el-button>
+      <div class="label w30"></div>
+      <div class="field w70">
+        <el-button type="primary" :disabled="data.CreatedDocument.length === 0 || data.Committing > 0"
+          @click="commit">変換したデータの登録</el-button>
+      </div>
     </div>
 
     <template v-if="data.errorText !== ''">

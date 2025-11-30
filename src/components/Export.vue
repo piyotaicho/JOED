@@ -22,7 +22,7 @@ const setting = reactive({
   csv: false,
 })
 
-const jsonText = ref('')
+const outputText = ref('')
 
 const status = reactive({
   processing: false,
@@ -38,7 +38,7 @@ watch(
   (newValue, oldValue) => {
     if (oldValue !== newValue) {
       status.processStep = undefined
-      jsonText.value = ''
+      outputText.value = ''
       if (setting.year === 'ALL') {
         setting.year = ''
       }
@@ -51,7 +51,7 @@ watch(
   () => setting.year,
   () => {
     status.processStep = undefined
-    jsonText.value = ''
+    outputText.value = ''
   },
   { immediate: true }
 )
@@ -104,7 +104,7 @@ const csvOptionalExportTargets = computed(() => {
   return []
 })
 
-const readyToExport = computed(() => jsonText.value.length > 4)
+const readyToExport = computed(() => outputText.value.length > 4)
 
 // エクスポート処理
 const Process = async () => {
@@ -120,7 +120,7 @@ const Process = async () => {
   status.progressCheckConsistency = 0
   status.progressCreateData = 0
   status.showPreview = false
-  jsonText.value = ''
+  outputText.value = ''
 
   try {
     await CheckSystemConfiguration()
@@ -135,7 +135,7 @@ const Process = async () => {
     const { exportItems, countOfDenial } = await CreateExportData(documentIds)
     status.processStep++
 
-    jsonText.value = await FinaliseExportData(exportItems, countOfDenial)
+    outputText.value = await FinaliseExportData(exportItems, countOfDenial)
     status.processStep++
   } catch (error) {
     await nextTick()
@@ -160,11 +160,11 @@ const Download = async () => {
     const temporaryElementA = document.createElement('A')
     if (!setting.csv) {
       // JSONデータを設定
-      temporaryElementA.href = URL.createObjectURL(new Blob([jsonText.value]), { type: 'application/json' })
+      temporaryElementA.href = URL.createObjectURL(new Blob([outputText.value]), { type: 'application/json' })
       temporaryElementA.download = 'joed-export-data.json'
     } else {
       // SHIFT-JISのCSVデータを設定
-      temporaryElementA.href = URL.createObjectURL(new Blob([new Uint8Array(Encoding.convert(jsonText.value, { to: 'SJIS', type: 'array' }))]), { type: 'text/csv;charset=shift_jis;' })
+      temporaryElementA.href = URL.createObjectURL(new Blob([new Uint8Array(Encoding.convert(outputText.value, { to: 'SJIS', type: 'array' }))]), { type: 'text/csv;charset=shift_jis;' })
       temporaryElementA.download = 'joed-export-data.csv'
     }
     temporaryElementA.style.display = 'none'
@@ -369,10 +369,10 @@ const FinaliseExportData = async (exportItem, countOfDenial) => {
       const TimeStamp = Date.now()
       const Encoder = new TextEncoder()
 
-      const jsonText = JSON.stringify(exportItem, ' ', 2)
+      const outputText = JSON.stringify(exportItem, ' ', 2)
       // ヘッダが保持するドキュメント部分のハッシュ値
       const hash = HHX.h64(
-        Encoder.encode(jsonText).buffer,
+        Encoder.encode(outputText).buffer,
         TimeStamp.toString()).toString(16)
       console.log(store.getters['system/Platform'])
       exportItem.unshift({
@@ -431,8 +431,8 @@ const FinaliseExportData = async (exportItem, countOfDenial) => {
   <div class="utility">
     <div class="utility-switches">
       <div>
-        <div class="label">出力の形式</div>
-        <div class="field">
+        <div class="label w30">出力の形式</div>
+        <div class="field w70">
           <select v-model="exportType">
             <option value="registration">学会提出データ</option>
             <option value="dump">バックアップデータ</option>
@@ -442,9 +442,9 @@ const FinaliseExportData = async (exportItem, countOfDenial) => {
       </div>
 
       <div>
-        <div class="label">出力する年次</div>
+        <div class="label w30">出力する年次</div>
         <SelectYear
-          class="field"
+          class="field w70"
           v-model="setting.year"
           :selection-all="exportType === 'dump' || exportType === 'CSV'"
           :optional-values="csvOptionalExportTargets"
@@ -456,15 +456,18 @@ const FinaliseExportData = async (exportItem, countOfDenial) => {
         :disabled="exportType === 'registration'"
         title="データのエラーチェック"
         :options="[{ text: '行う', value: true }, { text: '行わない', value: false }]"
+        :class-override="['label w30', 'field w70']"
       />
 
       <div>
-        <el-button
-          type="primary"
-          @click="Process()"
-          :disabled="!setting.year || status.processing"
-          >出力データの作成</el-button
-        >
+        <div class="label w30"></div>
+        <div class="field w70">
+          <el-button
+            type="primary"
+            @click="Process()"
+            :disabled="!setting.year || status.processing"
+            >出力データの作成</el-button>
+        </div>
       </div>
     </div>
 
@@ -511,7 +514,7 @@ const FinaliseExportData = async (exportItem, countOfDenial) => {
 
     <TheWrapper prevent-close v-if="status.processing" />
     <template v-if="status.showPreview">
-      <ViewerOverlay @click="status.showPreview = false">{{ jsonText }}</ViewerOverlay>
+      <ViewerOverlay @click="status.showPreview = false">{{ outputText }}</ViewerOverlay>
     </template>
   </div>
 </template>

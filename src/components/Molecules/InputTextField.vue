@@ -11,6 +11,10 @@ const props = defineProps({
   password: {
     type: Boolean,
     default: false
+  },
+  classOverride: {
+    type: Array,
+    default: () => ['label', 'field']
   }
 })
 const inputText = defineModel({ type: String, required: true })
@@ -18,8 +22,8 @@ const inputText = defineModel({ type: String, required: true })
 
 <template>
   <div style="display: flex; flex-direction: row; height: 2.4rem;">
-    <div class="label"><slot name="title"><span>{{title}}</span></slot></div>
-    <div class="field">
+    <div :class="classOverride[0]"><slot name="title"><span>{{title}}</span></slot></div>
+    <div :class="classOverride[1]">
       <input :type="!password ? 'text' : 'password'"
         v-model="inputText"
         :class="[(!inputText && props.required) ? 'vacant' : '']"

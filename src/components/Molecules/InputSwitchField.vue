@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, computed } from 'vue'
 
 const props = defineProps({
   title: {
@@ -10,6 +10,10 @@ const props = defineProps({
   },
   required: {
     default: false
+  },
+  classOverride: {
+    type: Array,
+    default: () => ['label', 'field']
   }
 })
 
@@ -71,21 +75,31 @@ if (props.options !== undefined && props.options !== null) {
     ...activeOption
   }
 }
+
+const isChecked = computed(() => {
+  return modelValue.value === switchParams.active.value
+})
 </script>
 
 <template>
   <div>
-    <div class="label"><span>{{title}}</span></div>
-    <div class="field" style="padding-top: 0;">
-      <el-switch
-        v-model="modelValue"
-        :inactive-text="switchParams.inactive.text"
-        :inactive-value="switchParams.inactive.value"
-        :active-text="switchParams.active.text"
-        :active-value="switchParams.active.value"
-        :style="`--el-switch-on-color: ${switchParams.active.color}; --el-switch-off-color: ${switchParams.inactive.color};`"
-        v-bind="$attrs"
-      />
+    <div :class="classOverride[0]"><span>{{title}}</span></div>
+    <div :class="classOverride[1]">
+      <div style="display: flex; flex-direction: row;">
+        <div style="padding: 0.35rem 0.8rem; font-size: 14px;" v-if="switchParams.inactive.text !== ''">
+          <span :style="{fontWeight: isChecked ? 'normal' : 'bold'}">{{switchParams.inactive.text}}</span>
+        </div>
+        <el-switch
+          v-model="modelValue"
+          :inactive-value="switchParams.inactive.value"
+          :active-value="switchParams.active.value"
+          :style="`--el-switch-on-color: ${switchParams.active.color}; --el-switch-off-color: ${switchParams.inactive.color};`"
+          v-bind="$attrs"
+        />
+        <div style="padding: 0.35rem 0.8rem; font-size: 14px;" v-if="switchParams.active.text !== ''">
+          <span :style="{fontWeight: isChecked ? 'bold' : 'normal'}">{{switchParams.active.text}}</span>
+        </div>
+      </div>
     </div>
 </div>
 </template>

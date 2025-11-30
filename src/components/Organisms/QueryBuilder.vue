@@ -14,11 +14,11 @@
       <template #title>
         <div class="sourceTitle">
           <div>
-            <el-switch v-model="paneMode"
-              inactive-text="CSVファイルのフィールド"
-              inactive-value="csv"
-              active-text="生成値"
-              active-value="functions" />
+            <InputSwitchField
+              v-model="paneMode"
+              title=""
+              :options="[{ text: 'CSVファイルのフィールド', value: 'csv' }, { text: '生成値', value: 'functions' }]"
+              />
           </div>
 
           <div class="record_control" v-show="paneMode === 'csv'">
@@ -37,6 +37,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import QueryPane from '@/components/Molecules/QueryPane.vue'
+import InputSwitchField from '../Molecules/InputSwitchField.vue'
 import { prompt } from '@/modules/Popups'
 import { fieldNames, generatorFunctions } from '@/modules/ImportCSV.js'
 import { ArrowLeft, ArrowRight, Document } from '@element-plus/icons-vue'
