@@ -1,7 +1,7 @@
 <script setup>
 import { watch, ref, toRef } from 'vue'
 import ReportViewer from '@/components/Atoms/Reports.vue'
-import { phraseTitledCSV } from '@/modules/CSV'
+import { parseTitledCSV } from '@/modules/CSV'
 import { ValidateRecords, CreateDocument } from '@/modules/ImportMergeV4.js'
 import * as Popups from '@/modules/Popups'
 
@@ -35,7 +35,7 @@ const ProcessStream = async () => {
     Processing.value = true
     // mergeファイル(quoted, titled CSV)の読み込み
     // 不正なCSVファイル(フィールド数が違うなど)では例外を発生する.
-    const records = phraseTitledCSV(stream.value)
+    const records = parseTitledCSV(stream.value)
 
     // CSVのフォーマット確認
     LogMessages.value.push(
