@@ -5,6 +5,10 @@ import system from '@/store/modules/system'
 import password from '@/store/modules/passwordauth'
 import { parseProcedureTime } from '@/modules/ProcedureTimes'
 
+// 内部定数
+const numberLoadAtAtime = 20 // 一度にロードするデータの数
+
+// ストア
 const store = createStore({
   modules: {
     system, password
@@ -16,7 +20,6 @@ const store = createStore({
       Range: 0, // 表示対象のuidの数
       Identifier: 0 // 表示クエリ変更のシリアル値
     },
-    LoadAtOnce: 20, // 一度にロードするデータの数
 
     DataStore: [], // インメモリのデータベースレプリケーション
 
@@ -190,12 +193,12 @@ const store = createStore({
     // 表示対象数をクリア
     //
     ClearDocumentListRange (state) {
-      state.DocumentIds.Range = Math.min(state.LoadAtOnce, state.DocumentIds.List.length)
+      state.DocumentIds.Range = Math.min(numberLoadAtAtime, state.DocumentIds.List.length)
     },
     // 表示対象数を増やす
     //
     IncrementDocumentListRange (state) {
-      state.DocumentIds.Range = Math.min(state.DocumentIds.Range + state.LoadAtOnce, state.DocumentIds.List.length)
+      state.DocumentIds.Range = Math.min(state.DocumentIds.Range +  numberLoadAtAtime, state.DocumentIds.List.length)
     },
 
     // Filtersを設定
