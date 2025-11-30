@@ -226,9 +226,9 @@ function onCreated() {
       processing.value = false
       preserve = JSON.stringify(CaseData)
 
-      // ナビケーションボタンの動作設定
-      prevUid.value = store.getters.NextUids(uid).Prev
-      nextUid.value = store.getters.NextUids(uid).Next
+      // ナビゲーションボタンの動作設定
+      prevUid.value = store.getters.GetRelativeDocumentId(uid, -1)
+      nextUid.value = store.getters.GetRelativeDocumentId(uid, +1)
     })
   } else {
     processing.value = false

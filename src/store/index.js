@@ -39,18 +39,6 @@ const store = createStore({
     Uids (state) {
       return state.DocumentIds.List
     },
-    // 現在表示されているドキュメントの DocumentId を配列で返す.
-    PagedUids (state) {
-      return state.DocumentIds.List.slice(0, state.DocumentIds.Range)
-    },
-    // 現在表示されているドキュメントの数
-    PagedUidsRange (state) {
-      return state.DocumentIds.Range
-    },
-    // 現在表示対象のドキュメントリストのシリアル値
-    DisplayIdentifier (state) {
-      return state.DocumentIds.Identifier
-    },
     // 現在queryで設定されているドキュメントの数を返す.
     NumberOfCases (state) {
       return state.DocumentIds.List.length
@@ -59,28 +47,39 @@ const store = createStore({
     TotalNumberOfCases (state) {
       return state.DocumentIds.TotalCount
     },
+    // 現在queryで設定されているドキュメントの DocumentId を配列で返す.
+    PagedUids (state) {
+      return state.DocumentIds.List.slice(0, state.DocumentIds.Range)
+    },
+    // 現在表示対象となっているドキュメントの数
+    PagedUidsRange (state) {
+      return state.DocumentIds.Range
+    },
     // 指定された DocumentId の前後の DocumentId を返す.
     // 存在しないものは 0.
-    NextUids (state, getters) {
-      return function (currentUid) {
+    // @param {Number} currentUid
+    // @param {Number} offset 0:Self, -1:Prev, +1:Next
+    GetRelativeDocumentId (state, getters) {
+      return function (currentUid, offset) {
         const index = state.DocumentIds.List.indexOf(currentUid)
         if (currentUid === 0 || index === -1) {
-          return { Prev: 0, Next: 0 }
-        } else {
-          const listlength = state.DocumentIds.List.length
-          return {
-            Prev: index === 0 ? 0 : getters.Uids[index - 1],
-            Next: index === listlength - 1 ? 0 : getters.Uids[index + 1]
-          }
+          return 0
         }
+        const offsetedIndex = index + offset
+        if (offsetedIndex <= 0) {
+          return 0
+        }
+        if (offsetedIndex > state.DocumentIds.List.length) {
+          return 0
+        }
+        return getters.Uids[offsetedIndex]
       }
     },
     // DocumentId をもつドキュメントを取得する. ロードされていない場合は空のオブジェクトが返る.
-    // @param {Number or Object}
+    // @param {Number}
     CaseDocument (state) {
-      return function (payload) {
-        if (payload) {
-          const uid = payload || payload.DocumentId
+      return function (uid) {
+        if (Number.isInteger(uid) && uid > 0) {
           const DocumentIndex = state.DataStore.findIndex(item => item.DocumentId === uid)
           if (DocumentIndex !== -1) {
             return state.DataStore[DocumentIndex]
