@@ -106,7 +106,7 @@ const focusInput = () => {
           title="登録拒否"
           v-model="Denial"
           :options="[{ text: 'なし', value: false, color: 'var(--color-primary)' }, { text: 'あり', value: true, color: 'var(--color-danger)' }]"
-          style="display: flex; flex-direction: row; height: 2.4rem;"
+          style="display: flex; flex-direction: row;"
         />
 
         <template v-if="Denial">
