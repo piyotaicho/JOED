@@ -7,6 +7,10 @@ const props = defineProps({
   selectionAll: {
     type: Boolean,
     default: true
+  },
+  optionalValues: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -33,7 +37,10 @@ onMounted(async () => {
 <template>
   <div>
     <select v-model="value">
-      <option value="ALL" v-if="props.selectionAll">すべて</option>
+      <option value="ALL" v-if="props.selectionAll">すべて ({{store.getters['TotalNumberOfCases'] || 0}}件)</option>
+      <template v-for="item in props.optionalValues" :key="item.value">
+        <option :value="item.value">{{item.text || item.value}}</option>
+      </template>
       <template v-for="item in selections" :key="item.year">
         <option :value="item.year">
           {{item.year}}年 ({{item.count}}件)

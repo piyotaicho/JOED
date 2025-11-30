@@ -159,6 +159,10 @@ const store = createStore({
         Query: query,
         Sort: sort
       }
+    },
+    // エクスポート用に選択されたDocumentIdリストを取得
+    GetSelectedUidsForExport (state) {
+      return state.Selected
     }
   },
 
