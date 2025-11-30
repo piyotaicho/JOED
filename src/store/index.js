@@ -14,14 +14,14 @@ const store = createStore({
     system, password
   },
   state: {
+    DataStore: [], // インメモリのデータベースレプリケーション
+
     DocumentIds: {
       List: [], // queryされたuidの全リスト
       TotalCount: 0, // 全登録数
       Range: 0, // 表示対象のuidの数
       Identifier: 0 // 表示クエリ変更のシリアル値
     },
-
-    DataStore: [], // インメモリのデータベースレプリケーション
 
     // 以下データベースリストのクエリの待避
     Filters: [],
@@ -32,7 +32,10 @@ const store = createStore({
       IgnoreQuery: false,
       Filter: [],
       Preserve: ''
-    }
+    },
+
+    // 複数選択モードでエクスポート用に選択されたDocumentIdリスト
+    Selected: [],
   },
   getters: {
     // 現在queryで設定されているドキュメントの DocumentId を配列で返す.
@@ -236,6 +239,18 @@ const store = createStore({
         state.Sort = { [field]: value }
       } else {
         state.Sort = state.system.settings.View.Sort
+      }
+    },
+
+    // エクスポート用に選択されたDocumentIdリストを設定
+    //
+    // @param {Array} DocumentIdの配列
+    SetSelectedUidsForExport (state, payload) {
+      console.log('SetSelectedUidsForExport', payload)
+      if (Array.isArray(payload)) {
+        state.Selected.splice(0, state.Selected.length, ...payload)
+      } else {
+        state.Selected.splice(0)
       }
     }
   },

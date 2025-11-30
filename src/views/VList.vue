@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, nextTick, ref, computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useStore } from '@/store'
 import { Loading } from '@element-plus/icons-vue'
 import DrawerButton from '@/components/Atoms/DrawerButton.vue'
@@ -229,6 +229,16 @@ const handleSpaceKey = () => {
     }
   }
 }
+
+// exportへ遷移する時に複数選択内容を保存 (CSVエクスポート用)
+onBeforeRouteLeave((to) => {
+  if (to.name === 'export' && multiSelectMode.value && selectedUids.value.length > 0) {
+    console.log('Setting selected UIDs for export:', selectedUids.value )
+    store.commit('SetSelectedUidsForExport', selectedUids.value.slice())
+  } else {
+    store.commit('SetSelectedUidsForExport', [])
+  }
+})
 
 // ネイティブスクロールイベントでの無限スクロール実装
 const handleScroll = (event) => {
