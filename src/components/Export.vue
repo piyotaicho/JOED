@@ -10,8 +10,9 @@ import CaseDocumentHandler from '@/modules/DbItemHandler'
 import * as Popups from '@/modules/Popups'
 import HHX from 'xxhashjs'
 import { generateCSVFromObjects } from '@/modules/CSV.js'
-import { ValidateCase } from '@/modules/CaseValidater'
+import { ValidateCase, InstituteIDFormat } from '@/modules/CaseValidater'
 import Encoding from 'encoding-japanese'
+import { InvalidIDs } from '@/modules/Masters/InstituteList'
 
 const store = useStore()
 
@@ -183,8 +184,18 @@ const CheckSystemConfiguration = async () => {
   }
 
   // 施設コードは必須
-  if (!store.getters['system/InstitutionID']) {
+   if (!store.getters['system/InstitutionID']) {
     throw new Error('施設情報が未設定です.')
+  }
+
+  // 施設コードのフォーマットチェック
+  if (store.getters['system/InstitutionID'].match(InstituteIDFormat) === null) {
+    throw new Error('設定された施設コードが不正です. \n施設情報を確認してください.')
+  }
+
+  // 無効な施設コードのチェック
+  if (InvalidIDs().includes(store.getters['system/InstitutionID'])) {
+    throw new Error('利用できない施設コードが設定されています.\n施設情報を確認してください.')
   }
 }
 
