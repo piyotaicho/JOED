@@ -42,7 +42,6 @@ if (window?.API) {
           break
         }
         if (routename === 'list.drawer') {
-          console.log(routerViewRef.value)
           if (routerViewRef.value && typeof routerViewRef.value?.openDrawer === 'function') {
             routerViewRef.value.openDrawer()
           }

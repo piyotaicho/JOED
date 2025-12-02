@@ -250,7 +250,6 @@ const store = createStore({
     //
     // @param {Array} DocumentIdの配列
     SetSelectedUidsForExport (state, payload) {
-      console.log('SetSelectedUidsForExport', payload)
       if (Array.isArray(payload)) {
         state.Selected.splice(0, state.Selected.length, ...payload)
       } else {

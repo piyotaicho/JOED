@@ -385,7 +385,6 @@ const FinaliseExportData = async (exportItem, countOfDenial) => {
       const hash = HHX.h64(
         Encoder.encode(outputText).buffer,
         TimeStamp.toString()).toString(16)
-      console.log(store.getters['system/Platform'])
       exportItem.unshift({
         InstitutionName: store.getters['system/InstitutionName'],
         InstitutionID: store.getters['system/InstitutionID'],
