@@ -181,10 +181,13 @@ const commitSettings = async () => {
           </div>
         </div>
       </template>
-    </div>
 
-    <div>
-      <el-button type="primary" :disabled="!changed" @click="commitSettings">上記設定を保存</el-button>
+      <div>
+        <div class="label"></div>
+        <div class="field">
+          <el-button type="primary" :disabled="!changed" @click="commitSettings">上記設定を保存</el-button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
