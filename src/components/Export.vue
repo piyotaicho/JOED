@@ -2,6 +2,7 @@
 <script setup>
 import { reactive, ref, watch, computed, nextTick } from 'vue'
 import { useStore } from '@/store'
+import { useRouter } from 'vue-router'
 import InputSwitchField from '@/components/Molecules/InputSwitchField.vue'
 import SelectYear from '@/components/Molecules/SelectYear.vue'
 import TheWrapper from '@/components/Atoms/TheWrapper.vue'
@@ -15,6 +16,7 @@ import Encoding from 'encoding-japanese'
 import { InvalidIDs } from '@/modules/Masters/InstituteList'
 
 const store = useStore()
+const router = useRouter()
 
 const setting = reactive({
   year: '',
@@ -140,7 +142,10 @@ const Process = async () => {
     status.processStep++
   } catch (error) {
     await nextTick()
-    Popups.error(error.message)
+    const errorMessage = error.message.trim()
+    if (errorMessage) {
+      await Popups.error(errorMessage)
+    }
   } finally {
     status.processing = false
   }
@@ -185,16 +190,25 @@ const CheckSystemConfiguration = async () => {
 
   // 施設コードは必須
    if (!store.getters['system/InstitutionID']) {
-    throw new Error('施設情報が未設定です.')
+    if (await Popups.confirmYesNo('施設情報が未設定です.\n設定画面へ移動しますか?')) {
+      router.push({ name: 'settings' })
+    }
+    throw new Error()
   }
 
   // 施設コードのフォーマットチェック
   if (store.getters['system/InstitutionID'].match(InstituteIDFormat) === null) {
+    if (await Popups.confirmYesNo('不正な施設コードが設定されています. \n施設情報の設定画面へ移動しますか?')) {
+      router.push({ name: 'settings' })
+    }
     throw new Error('設定された施設コードが不正です. \n施設情報を確認してください.')
   }
 
   // 無効な施設コードのチェック
   if (InvalidIDs().includes(store.getters['system/InstitutionID'])) {
+    if (await Popups.confirmYesNo('利用できない施設コードが設定されています.\n施設情報の設定画面へ移動しますか?')) {
+      router.push({ name: 'settings' })
+    }
     throw new Error('利用できない施設コードが設定されています.\n施設情報を確認してください.')
   }
 }
