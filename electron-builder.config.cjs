@@ -3,7 +3,7 @@ const copyright = '2020-2025 P4mohnet and 日本産科婦人科内視鏡学会'
 module.exports = async () => (
   {
     appId: 'jp.jsgoe.joed5',
-    productName: 'JOED',
+    productName: 'JOED5',
     copyright: ['Copyright', '(C)', copyright].join(' '),
     files: [
       'src/background.js',
@@ -14,10 +14,16 @@ module.exports = async () => (
     ],
     afterPack: './unlinkUnusedFiles.cjs',
     mac: {
-      target: 'dmg',
+      target: [
+        {
+          target: 'dmg',
+          arch: ['universal']
+        }
+      ],
       category: 'public.app-category.medical',
       hardenedRuntime: true,
-      icon: 'icon.icns'
+      icon: 'icon.icns',
+      singleArchFiles: '*'
     },
     dmg: {
       title: '症例登録システム ${version}'
