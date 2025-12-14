@@ -33,19 +33,19 @@
     "dumpmaster": "bun --tsconfig-override ./jsconfig.json tools/generate-json.js"
   },
   "dependencies": {
-    "@seald-io/nedb": "^4.1.2",
-    "@vuepic/vue-datepicker": "^12.0.5",
-    "element-plus": "^2.11.8",
-    "encoding-japanese": "^2.2.0",
-    "events": "^3.3.0",
-    "fuse.js": "^7.1.0",
-    "process": "^0.11.10",
-    "util": "^0.12.5",
     "vue": "^3.5.25",
-    "vue-router": "^4.6.3",
-    "vuedraggable": "^4.1.0",
     "vuex": "4.1.0",
-    "xxhashjs": "^0.2.2"
+    "vue-router": "^4.6.3",
+    "element-plus": "^2.11.8",
+    "@seald-io/nedb": "^4.1.2",
+    "xxhashjs": "^0.2.2",
+    "@vuepic/vue-datepicker": "^12.0.5",
+    "vuedraggable": "^4.1.0",
+    "encoding-japanese": "^2.2.0",
+    "fuse.js": "^7.1.0",
+    "events": "^3.3.0",
+    "process": "^0.11.10",
+    "util": "^0.12.5"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.5",
