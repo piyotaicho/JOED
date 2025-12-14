@@ -19,7 +19,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['select', 'multiselect', 'remove'])
+const emit = defineEmits(['select', 'multiselect', 'remove', 'blur'])
 
 // 情報取得中フラグ
 const fetching = ref(true)
@@ -92,6 +92,11 @@ const Select = (event) => {
     emit('select', uid.value)
   }
 }
+
+// フォーカスを失ったことを通知するイベント
+const onBlur = () => {
+  emit('blur', uid.value)
+}
 </script>
 
 <template>
@@ -105,6 +110,7 @@ const Select = (event) => {
     @dblclick="MoveToEditView()"
     @click="Select($event)"
     @keydown.x="RemoveDocumentKeypress($event)"
+    @blur="onBlur()"
   >
     <div class="caseitem-icon">
       <CategoryIdentifier :category="Category" :notification="Notification" :checked="selected" />

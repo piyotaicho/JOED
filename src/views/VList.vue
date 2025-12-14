@@ -31,6 +31,7 @@ const noMore = computed(() => store.getters.PagedUidsRange >= store.getters.Numb
 // 選択モード
 const multiSelectMode = ref(false)
 const selectedUids = ref([])
+const blurredUid = ref(null)
 
 // uidsのリスト内容が変更されたら選択をクリアし、スクロールバーチェック
 watch(uids, () => {
@@ -86,6 +87,7 @@ onMounted(async () => {
     if (element !== null && element.id.match(/^doc\d+$/)) {
       element.scrollIntoView({ block: 'center' })
       element.focus()
+      onSingleSelect(Number(element.id.substring(3)))
     }
   }
 })
@@ -112,6 +114,11 @@ const moveFocus = (offset) => {
     if (moveto) {
       document.getElementById('doc' + moveto).focus()
       // フォーカス移動時はmultiSelectModeは変化させない
+      if (!multiSelectMode.value) {
+        // singleSelectの場合は移動先を選択
+        selectedUids.value.splice(0)
+        selectedUids.value.push(moveto)
+      }
     }
   }
 }
@@ -166,11 +173,15 @@ const onSingleSelect = (uid) => {
   selectedUids.value.splice(0)
   selectedUids.value.push(uid)
   multiSelectMode.value = false
+  blurredUid.value = null
 }
 
 // MultiSelectのハンドラー
 const onMultiSelect = ({ uid, selected }) => {
   if (selected) {
+    if (blurredUid.value !== null && selectedUids.value.length === 0) {
+      selectedUids.value.push(blurredUid.value)
+    }
     if (!selectedUids.value.includes(uid)) {
       selectedUids.value.push(uid)
     }
@@ -182,6 +193,21 @@ const onMultiSelect = ({ uid, selected }) => {
   }
   // CTRL+クリックでの操作では常にmultiSelectModeをtrueにする
   multiSelectMode.value = true
+
+  blurredUid.value = null
+}
+
+// フォーカスを失った際の選択解除ハンドラー
+const onBlur = (uid) => {
+  // singleSelectの場合で選択されていた時のみ選択解除
+  if (!multiSelectMode.value) {
+    if (selectedUids.value.includes(uid)) {
+      selectedUids.value.splice(0)
+      blurredUid.value = uid
+    }
+    return
+  }
+  blurredUid.value = null
 }
 
 // ESCキーでの選択解除
@@ -290,7 +316,7 @@ defineExpose({
       <ListDrawer :visible="drawerOpened" @close="closeDrawer"/>
 
       <template v-for="uid in uids" :key="uid">
-        <CaseDocument :uid="uid" :selected="selectedUids.includes(uid) && multiSelectMode" @select="onSingleSelect" @multiselect="onMultiSelect" @remove="remove"/>
+        <CaseDocument :uid="uid" :selected="selectedUids.includes(uid) && multiSelectMode" @select="onSingleSelect" @multiselect="onMultiSelect" @remove="remove" @blur="onBlur" />
       </template>
 
       <div v-if="fetching" class="fetching-container">
