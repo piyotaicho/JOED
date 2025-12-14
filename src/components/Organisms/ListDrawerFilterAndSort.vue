@@ -52,6 +52,38 @@ onMounted(async () => {
   await nextTick()
 
   // 現在の表示設定をインポート
+  ReflectSettings()
+  await nextTick()
+})
+
+const isFilterItemsEmpty = computed({
+  get: () => FilterItems.value.length === 0,
+  set: (newvalue) => {
+    // newvalue: boolean
+    if (newvalue) {
+      FilterItems.value.splice(0)
+    }
+  }
+})
+
+/**
+ * 現在の表示設定をstoreに保存
+ */
+const Apply = async () => {
+  const FilterObjects = FilterItems.value
+    .map(filter => setting.Categories[filter] || setting.Years[filter] || setting.Conditions[filter])
+    .filter(filter => filter)
+
+  store.commit('SetFilters', FilterObjects)
+  store.commit('SetSort', { [setting.Sort.Field]: setting.Sort.Order })
+  await DisableSearch()
+  emit('changed')
+}
+
+/**
+ * storeの表示設定を反映
+ */
+const ReflectSettings = () => {
   const view = store.getters.ViewSettings
 
   if (view) {
@@ -83,36 +115,12 @@ onMounted(async () => {
       FilterItems.value.push(...newFilters)
     }
   }
-})
-
-const isFilterItemsEmpty = computed({
-  get: () => FilterItems.value.length === 0,
-  set: (newvalue) => {
-    // newvalue: boolean
-    if (newvalue) {
-      FilterItems.value.splice(0)
-    }
-  }
-})
-
-/**
- * 現在の表示設定をstoreに保存
- */
-const Apply = async () => {
-  const FilterObjects = FilterItems.value
-    .map(filter => setting.Categories[filter] || setting.Years[filter] || setting.Conditions[filter])
-    .filter(filter => filter)
-
-  store.commit('SetFilters', FilterObjects)
-  store.commit('SetSort', { [setting.Sort.Field]: setting.Sort.Order })
-  await DisableSearch()
-  emit('changed')
 }
 
 /**
  * 現在の表示設定を規定として保存
  */
-const Store = async () => {
+const StoreDefault = async () => {
   try {
     await store.dispatch('system/SaveCurrentView')
     await Popups.information('現在の表示設定を規定として保存しました.\n環境設定から初期設定にリセットできます.')
@@ -123,12 +131,12 @@ const Store = async () => {
 /**
  * storeに保存された規定の表示設定に戻す
  */
-const Revert = async () => {
+const RevertToDefault = async () => {
   store.commit('SetFilters', {})
   store.commit('SetSort', {})
   await DisableSearch()
   emit('changed')
-  ImportSettings()
+  ReflectSettings()
   nextTick()
 }
 
@@ -137,7 +145,7 @@ const Revert = async () => {
  */
 const DisableSearch = async () => {
   if (store.getters.SearchActivated) {
-    if (await Popups.confirmYesNo('検索が実行されています.\n検索を解除しますか?')) {
+    if (await Popups.confirmYesNo('検索が実行されています.\n検索を解除して表示の設定を更新しますか?')) {
       store.commit('SetSearch', {
         Filter: {}
       })
@@ -208,9 +216,9 @@ const DisableSearch = async () => {
         設定
         <template v-slot:dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item @click="Revert()">規定の設定に戻す</el-dropdown-item>
+            <el-dropdown-item @click="RevertToDefault()">規定の設定に戻す</el-dropdown-item>
             <el-dropdown-item divided />
-            <el-dropdown-item @click="Store()">現在の表示設定を規定として保存</el-dropdown-item>
+            <el-dropdown-item @click="StoreDefault()">現在の表示設定を規定として保存</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
