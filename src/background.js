@@ -1,15 +1,12 @@
 
 'use strict'
-
-import { app, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron'
-// import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
-import xxhash from 'xxhashjs'
-
 import path from 'path'
 import fs from 'fs'
+import { app, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron'
 
 import ElectronStore from 'electron-store'
 import DB from '@seald-io/nedb'
+import xxhash from 'xxhashjs'
 
 import { createRequire } from 'module'
 import { fileURLToPath } from 'url'
@@ -26,7 +23,7 @@ if (!instanceLock) {
 }
 
 // バックエンドの変数
-const isDevelopment = process.env.NODE_ENV !== 'production'
+const isDevelopment = process.env.NODE_ENV === 'development'
 let win = null
 let session = null
 const appConfig = {
@@ -55,7 +52,6 @@ registerAppEvents()
 registerIPChandlers()
 registerMenu()
 
-// CreateBrowserWindow
 async function createWindow() {
   win = new BrowserWindow({
     width: 960,
@@ -128,15 +124,6 @@ function registerAppEvents() {
       appConfig.databaseInstance = createDatabaseInstance()
 
       // ウインドウの作成
-      if (isDevelopment && !process.env.IS_TEST) {
-        // Install Vue Devtools (temporarily disabled)
-        console.log('Skipping Vue DevTools installation for now')
-        // try {
-        //   await installExtension(VUEJS_DEVTOOLS)
-        // } catch (e) {
-        //   console.error('Vue Devtools failed to install:', e.toString())
-        // }
-      }
       createWindow()
     }
   })

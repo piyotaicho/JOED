@@ -6,7 +6,6 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 import { version, description } from './package.json'
 
-// https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   // 環境変数を読み込み
   const env = loadEnv(mode, process.cwd(), '')
@@ -30,6 +29,7 @@ export default defineConfig(({ mode }) => {
             ? './src/modules/electron'
             : './src/modules/serve',
           import.meta.url)),
+        // viteのビルドではnedbのブラウザ版を自動で認識できずnodeがデフォルトとなるため、個別に指定
         ...isElectron
           ? {}
           : {
