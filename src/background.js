@@ -23,7 +23,8 @@ if (!instanceLock) {
 }
 
 // バックエンドの変数
-const isDevelopment = process.env.NODE_ENV === 'development'
+// VITEで置換される
+const isDevelopment = import.meta.env?.DEV === true
 let win = null
 let session = null
 const appConfig = {
@@ -70,7 +71,10 @@ async function createWindow() {
       enableWebSQL: false,
       webgl: false,
       devTools: isDevelopment,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, '../dist-electron/preload.cjs')
+      // app.isPackaged
+      //   ? path.join(__dirname, '../dist-electron/preload.cjs')
+      //   : path.join(__dirname, 'preload.js')
     }
   })
 
@@ -84,10 +88,6 @@ async function createWindow() {
       // 開発サーバーが動作していない場合はビルドファイルを読み込み
       console.log('Dev server not running, loading from dist files')
       await win.loadFile(path.join(__dirname, '../dist/index.html'))
-    }
-
-    if (!process.env.IS_TEST) {
-      win.webContents.openDevTools()
     }
   } else {
     // Production build - load the built files

@@ -5,13 +5,21 @@ module.exports = async () => (
     appId: 'jp.jsgoe.joed5',
     productName: 'JOED5',
     copyright: ['Copyright', '(C)', copyright].join(' '),
+    directories: {
+      output: 'dist-electron'
+    },
     files: [
-      'src/background.js',
-      'src/preload.js',
+      'dist-electron/**',
       'dist/**',
       'dist/**/assets/**',
-      '!dist/**/*-unpacked'
+      '!dist/**/*-unpacked',
+      '!dist-electron/**/*-unpacked',
+      '!dist-electron/*.dmg',
+      '!dist-electron/*.exe',
     ],
+    extraMetadata: {
+      main: 'dist-electron/background.js'
+    },
     afterPack: './unlinkUnusedFiles.cjs',
     mac: {
       target: [

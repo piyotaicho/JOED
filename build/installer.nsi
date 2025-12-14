@@ -65,7 +65,7 @@ Section
     RMDIR /r "$INSTDIR\locales"
     RMDIR /r "$INSTDIR\resources"
 
-    File /r "${PROJECT_DIR}\dist\win-unpacked\*.*"
+    File /r "${PROJECT_DIR}\dist-electron\win-unpacked\*.*"
 
     # prepare uninstaller
     WriteUninstaller "$INSTDIR\Uninstall.exe"

@@ -11,7 +11,7 @@
       "license": "MIT"
     }
   ],
-  "main": "src/background.js",
+  "main": "dist-electron/background.js",
   "type": "module",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
@@ -20,11 +20,11 @@
     "serve": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "lint": "eslint . --fix",
-    "electron:serve": "concurrently -k \"vite --mode electron\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
-    "electron:build": "vite build --mode electron && electron-builder --config electron-builder.config.cjs",
-    "electron:build.nopack": "vite build --mode electron && electron-builder --dir --config electron-builder.config.cjs",
-    "electron:build.skipbundle": "electron-builder --config electron-builder.config.cjs",
-    "electron:build.production": "vite build --mode electron && electron-builder --config electron-builder.config.cjs",
+    "electron:serve": "vite build --mode electron --config vite.main.config.ts && vite build --mode electron --config vite.preload.config.ts && concurrently -k  \"vite --mode electron\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
+    "electron:build": "vite build --mode electron && vite build --mode electron --config vite.main.config.ts && vite build --mode electron --config vite.preload.config.ts && electron-builder --config electron-builder.config.cjs",
+    "electron:build.skipbundle": "vite build --mode electron --config vite.main.config.ts && vite build --mode electron --config vite.preload.config.ts && electron-builder --config electron-builder.config.cjs",
+    "electron:build.nopack": "vite build --mode electron && vite build --mode electron --config vite.main.config.ts && vite build --mode electron --config vite.preload.config.ts && electron-builder --dir --config electron-builder.config.cjs",
+    "electron:build.production": "vite build --mode electron.production && vite build --mode electron.production --config vite.main.config.ts && vite build --mode electron.production --config vite.preload.config.ts && electron-builder --config electron-builder.config.cjs",
     "preview": "vite preview",
     "build-only": "vite build",
     "test:unit": "vitest",
