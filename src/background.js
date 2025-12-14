@@ -319,15 +319,15 @@ function registerMenu() {
     ...(
       process.platform === 'darwin'
         ? [{
-          label: app.getName(),
+          label: 'JOED5',
           submenu: [
-            { label: app.getName() + 'について', role: 'about' },
+            { label: 'JOED5について', role: 'about' },
             { type: 'separator' },
             { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
             { type: 'separator' },
             { label: 'サービス', role: 'services', submenu: [] },
             { type: 'separator' },
-            { label: app.getName() + 'を隠す', accelerator: 'Command+H', role: 'hide' },
+            { label: 'JOED5を隠す', accelerator: 'Command+H', role: 'hide' },
             { label: '他を隠す', accelerator: 'Command+Alt+H', role: 'hideothers' },
             { label: '全てを表示', role: 'unhide' },
             { type: 'separator' },
@@ -382,7 +382,7 @@ function registerMenu() {
         ? [{
           label: 'ヘルプ',
           submenu: [
-            { label: app.getName() + 'について', role: 'about' }
+            { label: 'JOED5について', role: 'about' }
           ]
         }]
         : []
