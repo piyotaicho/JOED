@@ -99,6 +99,37 @@ const store = createStore({
         Search: state.Search
       }
     },
+    // 表示設定が規定から変更されているかを取得
+    ViewSettingsChanged (state) {
+      const defaultFilters = state.system.settings.View.Filters || []
+      const defaultSort = state.system.settings.View.Sort || { DocumentId: -1 }
+
+      // Filtersの比較
+      if (state.Filters.length !== defaultFilters.length) {
+        return true
+      }
+      for (let i = 0; i < state.Filters.length; i++) {
+        const filterA = state.Filters[i]
+        const filterB = defaultFilters[i]
+        if (filterA.Field !== filterB.Field || filterA.Value !== filterB.Value) {
+          return true
+        }
+      }
+
+      // Sortの比較
+      const sortKeysA = Object.keys(state.Sort)
+      const sortKeysB = Object.keys(defaultSort)
+      if (sortKeysA.length !== sortKeysB.length) {
+        return true
+      }
+      for (const key of sortKeysA) {
+        if (state.Sort[key] !== defaultSort[key]) {
+          return true
+        }
+      }
+
+      return false
+    },
     // 検索が有効かを取得
     SearchActivated (state) {
       return Object.keys(state.Search.Filter).length > 0

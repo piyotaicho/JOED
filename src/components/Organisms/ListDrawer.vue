@@ -26,6 +26,7 @@ const collapseNames = ['view', 'search',
 
 const view = ref('view')
 
+const isViewSettingsChanged = computed(() => store.getters.ViewSettingsChanged)
 const searchActivated = computed(() => store.getters.SearchActivated)
 
 const DrawerOpened = () => {
@@ -76,7 +77,10 @@ const UpdateView = () => {
       <ListDashboard @close="CloseDrawer"/>
 
       <el-collapse accordion @change="CollapseChanged" :model-value="view">
-        <el-collapse-item title="表示の設定" name="view">
+        <el-collapse-item name="view">
+          <template #title>
+            表示の設定 <el-icon style="color: var(--color-success); margin-left: 1rem;" v-if="isViewSettingsChanged"><CircleCheckFilled/></el-icon>
+          </template>
           <FilterAndSort @changed="UpdateView"/>
         </el-collapse-item>
 
