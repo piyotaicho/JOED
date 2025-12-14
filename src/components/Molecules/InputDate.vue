@@ -105,6 +105,7 @@ const formatDisplayValue = (value) => {
           selectBtnLabel: '選択',
           cancelBtnLabel: '閉じる'
         }"
+        style="font-family: inherit;"
       >
         <template #calendar-header="{ index, day }">
           <div
