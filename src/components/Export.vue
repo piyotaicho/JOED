@@ -112,7 +112,7 @@ const readyToExport = computed(() => outputText.value.length > 4)
 // エクスポート処理
 const Process = async () => {
   if (setting.year === '') {
-    await Popups.error('年次が選択されていません.')
+    await Popups.error('年次が選択されていません.', 'エクスポートエラー')
     return
   }
 
@@ -144,7 +144,7 @@ const Process = async () => {
     await nextTick()
     const errorMessage = error.message.trim()
     if (errorMessage) {
-      await Popups.error(errorMessage)
+      await Popups.error(errorMessage, 'エクスポートエラー')
     }
   } finally {
     status.processing = false
@@ -189,27 +189,25 @@ const CheckSystemConfiguration = async () => {
   }
 
   // 施設コードは必須
-   if (!store.getters['system/InstitutionID']) {
-    if (await Popups.confirmYesNo('施設情報が未設定です.\n設定画面へ移動しますか?')) {
+  try {
+    if (!store.getters['system/InstitutionID']) {
+      throw new Error('施設情報が未設定です.')
+    }
+
+    // 施設コードのフォーマットチェック
+    if (store.getters['system/InstitutionID'].match(InstituteIDFormat) === null) {
+      throw new Error('不正な施設コードが設定されています.')
+    }
+
+    // 無効な施設コードのチェック
+    if (InvalidIDs().includes(store.getters['system/InstitutionID'])) {
+      throw new Error('利用できない施設コードが設定されています.')
+    }
+  } catch (error) {
+    if (await Popups.confirmYesNo(`${error.message}\n設定画面へ移動しますか?`, '施設情報設定エラー')) {
       router.push({ name: 'settings' })
     }
     throw new Error()
-  }
-
-  // 施設コードのフォーマットチェック
-  if (store.getters['system/InstitutionID'].match(InstituteIDFormat) === null) {
-    if (await Popups.confirmYesNo('不正な施設コードが設定されています. \n施設情報の設定画面へ移動しますか?')) {
-      router.push({ name: 'settings' })
-    }
-    throw new Error('設定された施設コードが不正です. \n施設情報を確認してください.')
-  }
-
-  // 無効な施設コードのチェック
-  if (InvalidIDs().includes(store.getters['system/InstitutionID'])) {
-    if (await Popups.confirmYesNo('利用できない施設コードが設定されています.\n施設情報の設定画面へ移動しますか?')) {
-      router.push({ name: 'settings' })
-    }
-    throw new Error('利用できない施設コードが設定されています.\n施設情報を確認してください.')
   }
 }
 
@@ -237,7 +235,7 @@ const CheckImportedRecords = async () => {
   })
 
   if (count > 0) {
-    throw new Error('要確認の症例が ' + count + ' 症例あります.\n確認を御願いします.')
+    throw new Error('登録内容の確認が必要な症例が ' + count + ' 症例あります.\n確認を御願いします.')
   }
 }
 
