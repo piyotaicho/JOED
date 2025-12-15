@@ -177,7 +177,7 @@ const onSingleSelect = (uid) => {
 }
 
 // MultiSelectのハンドラー
-const onMultiSelect = ({ uid, selected }) => {
+const onMultiSelect =  ({ uid, selected }) => {
   if (selected) {
     if (blurredUid.value !== null && selectedUids.value.length === 0) {
       selectedUids.value.push(blurredUid.value)
@@ -204,6 +204,14 @@ const onBlur = (uid) => {
     if (selectedUids.value.includes(uid)) {
       selectedUids.value.splice(0)
       blurredUid.value = uid
+
+      // 通常の人間の動作にあわせて150ms後にblurredUidをクリア(高橋名人が62.5msで連打するので2.5クリック分を想定)
+      // これで症例を続けてクリックしてmultiSelectに移行する動作をサポート
+      setTimeout(() => {
+        if (blurredUid.value === uid) {
+          blurredUid.value = null
+        }
+      }, 150)
     }
     return
   }
