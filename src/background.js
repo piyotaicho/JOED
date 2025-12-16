@@ -23,6 +23,8 @@ if (!instanceLock) {
 }
 
 // バックエンドの変数
+const backupGeneration = 5
+
 // VITEで置換される
 const isDevelopment = import.meta.env?.DEV === true
 let win = null
@@ -279,9 +281,9 @@ function parseCommandLineDirectives() {
 
     try {
       if (app.commandLine.getSwitchValue('drop-database').toLowerCase() === 'all') {
-        fs.unlinkSync(DBfilename + '.3')
-        fs.unlinkSync(DBfilename + '.2')
-        fs.unlinkSync(DBfilename + '.1')
+        for (let i = 1; i <= backupGeneration; i++) {
+          fs.unlinkSync(DBfilename + `.${i}`)
+        }
       }
     } catch { }
 
@@ -497,10 +499,8 @@ function createDatabaseInstance() {
     app.exit(-1)
   }
 
-  // データベースファイルのバックアップを作る(5世代まで)
+  // データベースファイルのバックアップを作る
   // 原則としてバックアップ作成に関わるエラーは全て無視する.
-  const backupGeneration = 5
-
   for (let i = (backupGeneration - 1); i > 0; i--) {
     try {
       fs.copyFileSync(DBfilename + `.${i}`, DBfilename + `.${i + 1}`)
@@ -735,6 +735,23 @@ function registerIPChandlers() {
     })
   })
 
+  // Drop
+  // @Boolean.RemoveBackupFiles : Boolean
+  ipcMain.handle('DropDatabase', async (_, removeBackupFiles) => {
+    // データベースを全削除する
+    await appConfig.databaseInstance.dropDatabaseAsync()
+    // バックアップファイルも削除する
+    if (removeBackupFiles) {
+      const DBfilename = path.join(app.getPath('documents'), 'joed.nedb')
+
+      for (let i = 1; i <= backupGeneration; i++) {
+        try {
+          fs.unlinkSync(DBfilename + `.${i}`)
+        } catch { }
+      }
+    }
+  })
+
   //
   // アプリケーション設定 electron-store
   //
@@ -764,13 +781,16 @@ function registerIPChandlers() {
     return `${ostype} ${osversion} (${osarch})`
   })
 
-  //
   // Routerからのメニュー制御
-  //
   ipcMain.on('SwitchMenu', (_, payload) => switchMenu(payload))
 
-  //
   // Renderが指定する外部リンクをシステムで開く
-  //
   ipcMain.on('OpenURL', (_, target) => shell.openExternal(target))
+
+  // 再起動
+  ipcMain.on('RelaunchApp', () => {
+    console.log('Relaunching application...')
+    app.relaunch()
+    app.exit(0)
+  })
 }

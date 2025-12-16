@@ -52,3 +52,7 @@ export async function SavePassword (payload, storecontext) {
 export async function GetSystemInfo () {
   return navigator?.userAgent ?? 'Unknown Environment'
 }
+
+export function relaunchApp () {
+  window.location.reload()
+}

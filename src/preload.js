@@ -29,6 +29,7 @@ contextBridge.exposeInMainWorld('API',
     Count: async (payload) => await ipcRenderer.invoke('Count', payload),
     Update: async (payload) => await ipcRenderer.invoke('Update', payload),
     Remove: async (payload) => await ipcRenderer.invoke('Remove', payload),
+    DropDatabase: async (payload) => await ipcRenderer.invoke('DropDatabase', payload),
 
     LoadConfig: async (payload) => await ipcRenderer.invoke('LoadConfig', payload),
     SaveConfig: async (payload) => await ipcRenderer.invoke('SaveConfig', payload),
@@ -38,6 +39,7 @@ contextBridge.exposeInMainWorld('API',
     SwitchMenu: (payload) => ipcRenderer.send('SwitchMenu', payload),
 
     OpenURL: (payload) => ipcRenderer.send('OpenURL', payload),
+    RelaunchApp: () => ipcRenderer.send('RelaunchApp'),
 
     // Main to renderer
     onChangeRouter: (callback) => ipcRenderer.on('update-router', callback)

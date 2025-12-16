@@ -329,7 +329,23 @@ const store = createStore({
     dbRemove (_, payload) {
       return NedbAccess.Remove(payload)
     },
+    // Dump database documents
+    dbDump () {
+      return NedbAccess.Dump()
+    },
+    // Drop database
+    // @Param (boolean) removeBackupFiles - バックアップファイルも削除する
+    dbDrop ({state}, payload) {
+      NedbAccess.Drop(payload)
 
+      // stateのDataStoreもクリアする
+      state.DataStore.splice(0, state.DataStore.length)
+      state.DocumentIds.List.splice(0, state.DocumentIds.List.length)
+      state.DocumentIds.TotalCount = 0
+      state.DocumentIds.Range = 0
+      state.DocumentIds.Identifier = 0
+      state.Selected.splice(0, state.Selected.length)
+    },
     // DocumentIdリストの更新. データベースの操作後は必ず実行する.
     //
     //

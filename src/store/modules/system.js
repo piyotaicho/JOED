@@ -138,7 +138,14 @@ export default {
     SetPreferences(state, payload = {}) {
       for (const key in payload) {
         if (state.settings[key] !== undefined) {
-          state.settings[key] = payload[key]
+          if (typeof state.settings[key] !== 'object') {
+            state.settings[key] = payload[key]
+          } else {
+            state.settings[key] = Object.assign(
+              state.settings[key],
+              payload[key]
+            )
+          }
         }
       }
     },
@@ -180,7 +187,7 @@ export default {
   },
   actions: {
     // 設定(ファイル)から設定を読み込みストアに反映する
-    //
+    // @return {Promise<object>} settingsオブジェクト
     async LoadPreferences(context) {
       const settings = (await LoadConfig(context))?.Settings || {}
 
@@ -191,6 +198,8 @@ export default {
       if (settings?.ShowStartupDialog === false) {
         context.commit('CloseStartupDialog')
       }
+
+      return settings
     },
     // 設定(ファイル)にストアの状況を保存する
     //

@@ -34,3 +34,7 @@ async function ipcLoadConfig (key, defaultvalue) {
 async function ipcSaveConfig (key, settings) {
   return await window.API.SaveConfig(JSON.parse(JSON.stringify({ Key: key, Config: settings })))
 }
+
+export function relaunchApp () {
+  return window.API.RelaunchApp()
+}
