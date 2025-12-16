@@ -5376,16 +5376,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:^38.7.2":
-  version: 38.7.2
-  resolution: "electron@npm:38.7.2"
+"electron@npm:37":
+  version: 37.10.3
+  resolution: "electron@npm:37.10.3"
   dependencies:
     "@electron/get": "npm:^2.0.0"
     "@types/node": "npm:^22.7.7"
     extract-zip: "npm:^2.0.1"
   bin:
     electron: cli.js
-  checksum: 10c0/b79fc6bf44086649c8ff0ffd3572bb1e6ba65993a6a09a32c42f246cd69aaedd5864fac7d3ed4aacdedb03f2d6c21dee9b92d0982c20617e288c185d847b570b
+  checksum: 10c0/a09c10d76be021a94f6c8b251ef990553fe530a6a1271c22026f06a502e977fac116a88b78e73abf50177386a76d69b1c9a52f62d6de60006cc50ed4cb969f0f
   languageName: node
   linkType: hard
 
@@ -7732,7 +7732,7 @@ __metadata:
     "@vuepic/vue-datepicker": "npm:^12.0.5"
     concurrently: "npm:^9.2.1"
     cross-env: "npm:^10.1.0"
-    electron: "npm:^38.7.2"
+    electron: "npm:37"
     electron-builder: "npm:26.3.1"
     electron-devtools-installer: "npm:^4.0.0"
     electron-store: "npm:^10.1.0"
