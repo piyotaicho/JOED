@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue'
 import { useStore } from '@/store'
-import { Plus, Menu } from '@element-plus/icons-vue'
 import CloseButton from '@/components/Atoms/CloseButton.vue'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
 import TheWrapper from '@/components/Atoms/TheWrapper.vue'
@@ -23,11 +22,9 @@ function closeDialog () {
       <div id="welcome-banner-title">JOED5へようこそ</div>
       <div id="welcome-banner-text">
         症例・合併症登録にご協力頂きありがとうございます.<br/>
-        症例登録は、右上の <el-icon><Plus /></el-icon> ボタンを押して開始して下さい.<br/>
-        リストのソートなど各種機能は左上の <el-icon><Menu /></el-icon> ボタンからご利用いただけます.<br/>
-        初期設定やファイルの入出力はメニューから利用して下さい.<br/>
         <br />
-        お問い合わせは学会の症例登録ページからおねがいいたします.<br />
+        ソフトウエアは適宜更新されますので、定期的に確認と最新版へのアップデートをお願いいたします.<br />
+        なお、ソフトウエアならびに登録に関する質問は症例登録ページの問い合わせフォームから受け付けております.<br />
       </div>
 
       <div id="welcome-banner-control">
