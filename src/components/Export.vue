@@ -159,7 +159,7 @@ const Download = async () => {
   if (!setting.backup ||
     (
       await Popups.confirmYesNo('保存されるデータにはID番号・氏名・年齢などの個人情報が含まれている可能性があります.\n処理を続行しますか?') &&
-      await Popups.confirm('出力されたファイルの取り扱いは厳重行ってください.')
+      await Popups.confirm('出力されたファイルの取り扱いは厳重に行ってください.')
     )
   ) {
     // ブラウザの機能でダウンロードさせる.
