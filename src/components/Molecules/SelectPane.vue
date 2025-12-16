@@ -29,17 +29,9 @@ const modelValue = defineModel({
   type: String,
   default: null
 })
-const emit = defineEmits(['change', 'dblclick', 'keypress-enter'])
+const emit = defineEmits(['dblclick', 'keypress-enter'])
 
 const selectElement = ref()
-
-const paneValue = computed({
-  get: () => modelValue.value,
-  set: (value) => {
-    emit('change', value)
-    modelValue.value = value
-  },
-})
 
 const dblClick = (value) => emit('dblclick', value)
 
@@ -61,7 +53,7 @@ defineExpose({
       tabindex="0"
       ref="selectElement"
       :size="props.lines"
-      v-model="paneValue"
+      v-model="modelValue"
       @keypress.enter="enter"
       @dblclick="dblClick"
       :disabled="disabled"

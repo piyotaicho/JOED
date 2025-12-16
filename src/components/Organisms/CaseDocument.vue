@@ -1,5 +1,5 @@
 <script setup>
-import { Loading, Edit } from '@element-plus/icons-vue'
+import { Loading, EditPen } from '@element-plus/icons-vue'
 import { onMounted, ref, computed } from 'vue'
 import { useStore } from '@/store'
 import { useRouter } from 'vue-router'
@@ -106,7 +106,6 @@ const onBlur = () => {
     tabindex="0"
     @keypress.enter="MoveToEditView()"
     @keydown.o="MoveToEditView()"
-    @keydown.l="MoveToEditView()"
     @dblclick="MoveToEditView()"
     @click="Select($event)"
     @keydown.x="RemoveDocumentKeypress($event)"
@@ -147,8 +146,8 @@ const onBlur = () => {
         </el-icon></div>
       </template>
       <template v-else>
-        <div><el-icon class="button-font" v-if="!Loading" @click="MoveToEditView()">
-          <Edit />
+        <div><el-icon class="button-font" @click="MoveToEditView()">
+          <EditPen />
         </el-icon></div>
       </template>
     </div>

@@ -9,7 +9,7 @@
           <SelectPane title="対象臓器" v-model="target" :items="targetSelections" />
         </div>
         <div class="w60 selectionbox">
-          <SelectPane title="手術診断の候補" v-model="selectedItem" :items="candidates" @dblclick="CommitChanges()" />
+          <SelectPane title="手術診断の候補" v-model="selectedItem" :items="candidates" @dblclick="CommitChanges()" @keypress-enter="CommitChanges()" />
         </div>
       </div>
 

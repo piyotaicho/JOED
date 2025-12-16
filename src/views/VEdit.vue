@@ -511,6 +511,11 @@ const StoreCase = async (temporary = false) => {
       delete newDocument.Note
     }
 
+    // Noteの大きさは10kbytesまでに制限
+    if (newDocument.Note !== undefined && newDocument.Note.length > 10000) {
+      throw new Error('メモの内容は10,000文字以内にしてください.')
+    }
+
     // データの検証と区分の取得
     const typeofprocedure = await ValidateCase(newDocument, temporary)
 
