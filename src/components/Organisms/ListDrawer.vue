@@ -93,7 +93,7 @@ const UpdateView = () => {
 
         <template v-if="webApp">
           <el-collapse-item title="データの処理" name="management"/>
-          <el-collapse-item title="環境設定" name="settings"/>
+          <el-collapse-item title="設定" name="settings"/>
         </template>
       </el-collapse>
     </div>
