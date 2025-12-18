@@ -28,26 +28,12 @@ export default class ApproachMaster {
           'optional' :
           'mandatory'
       ),
-      'categorymap$': {
-        '腹腔鏡': '腹腔鏡',
-        '腹腔鏡悪性': '腹腔鏡',
-        'ロボット': 'ロボット',
-        'ロボット悪性': 'ロボット',
-        '子宮鏡': '子宮鏡'
-      },
-      'colormap$': {
-        'undefined': '#DDDDDD',
-        '腹腔鏡': '#8CF700',
-        'ロボット': '#00F063',
-        '子宮鏡': '#00BBFF',
-        '卵管鏡': '#FFD000'
-      },
       '腹腔鏡': [
         {
-          oneOf: ['通常ポート配置', '単孔/RPS', 'VNOTES', 'つり上げ法']
+          oneOf: ['通常ポート配置', '[単孔/]RPS', 'VNOTES', 'つり上げ法']
         },
         {
-          anyOf: ['経腹膜アプローチ', '腹膜外アプローチ']
+          anyOf: ['腹腔内アプローチ[(リンパ節処理)]', '後腹膜アプローチ[(リンパ節処理)]']
         },
         {
           check: ['治療のため開腹移行$']
@@ -55,10 +41,10 @@ export default class ApproachMaster {
       ],
       'ロボット': [
         {
-          oneOf: ['da Vinci Si,X,Xi,5', 'da Vinci SP', 'Hugo', 'hinotori', 'Saroa']
+          oneOf: ['da Vinci[ Si,X,Xi,5]', 'da Vinci SP', 'Hugo', 'hinotori', 'Saroa']
         },
         {
-          anyOf: ['経腹膜アプローチ', '腹膜外アプローチ']
+          anyOf: ['腹腔内アプローチ[(リンパ節処理)]', '後腹膜アプローチ[(リンパ節処理)]']
         },
         {
           check: ['ダブルバイポーラ']
@@ -76,6 +62,23 @@ export default class ApproachMaster {
           ]
         }
       ]
+    }
+
+    // カテゴリマップとカラーマップを定義(基本的に年次に左右されない)
+    approachMasterSets['categorymap$'] = {
+      '腹腔鏡': '腹腔鏡',
+      '腹腔鏡悪性': '腹腔鏡',
+      'ロボット': 'ロボット',
+      'ロボット悪性': 'ロボット',
+      '子宮鏡': '子宮鏡'
+    }
+
+    approachMasterSets['colormap$'] = {
+      'undefined': '#DDDDDD',
+      '腹腔鏡': '#8CF700',
+      'ロボット': '#00F063',
+      '子宮鏡': '#00BBFF',
+      '卵管鏡': '#FFD000'
     }
 
     // マスタデータをプロパティとして設定
@@ -106,7 +109,7 @@ export default class ApproachMaster {
    * カテゴリから必須かどうかを判断
    */
   getRequirement (categories = []) {
-    const mappedCategories = categories.map(category => this.categorymap[category]).filter(category => category !== undefined)
+    const mappedCategories = categories.map(category => this.mapCategory(category)).filter(category => category !== undefined)
     if (mappedCategories.length === 0) {
       return 'none'
     }
@@ -118,6 +121,9 @@ export default class ApproachMaster {
    * カテゴリマップで置換
    */
   mapCategory (category) {
+    if (!this?.categorymap) {
+      return undefined
+    }
     return this.categorymap[category] || undefined
   }
 
@@ -125,8 +131,11 @@ export default class ApproachMaster {
    * カラーコードを取得
    */
   getColorCode (category) {
-    const mappedCategory = this.categorymap[category]
-    return mappedCategory === undefined ? this.colormap['undefined'] : (this.colormap[mappedCategory] || this.colormap['undefined'])
+    if (this.colormap[category]) {
+      return this.colormap[category]
+    }
+    const mappedCategory = this.mapCategory(category) || 'undefined'
+    return (this.colormap[mappedCategory] || this.colormap['undefined'])
   }
 
   /**
@@ -138,7 +147,7 @@ export default class ApproachMaster {
     }
 
     const mappedCategories = categories
-      .map(category => this.categorymap[category])
+      .map(category => this.mapCategory(category))
       .filter(category => category !== undefined)
       .reduce((acc, category) => {
         if (!acc.includes(category)) {
@@ -158,16 +167,16 @@ export default class ApproachMaster {
   getTree (argCategories, asDefaultValues = false) {
     const categories = new Set()
 
-    if (typeof argCategories === 'string' && Object.keys(this.categorymap).includes(argCategories)) {
-      categories.add(this.categorymap[argCategories])
+    if (typeof argCategories === 'string' && Object.keys(this?.categorymap || {}).includes(argCategories)) {
+      categories.add(this.mapCategory(argCategories))
     }
     if (typeof argCategories === 'object' && Array.isArray(argCategories)) {
       if (argCategories.length === 0) {
         Object.keys(this).forEach(category => categories.add(category))
       } else {
         for (const category of argCategories) {
-          if (Object.keys(this.categorymap).includes(category)) {
-            categories.add(this.categorymap[category])
+          if (Object.keys(this?.categorymap || {}).includes(category)) {
+            categories.add(this.mapCategory(category))
           }
         }
       }
@@ -213,12 +222,16 @@ export default class ApproachMaster {
    */
   check (selection = {}) {
     for(const category in selection) {
+      // 不正なカテゴリのチェック
       if (!Object.keys(this).includes(category)) {
         throw new Error(`不正なカテゴリ入力 ${category} があります.`)
       }
 
       // 不正な入力項目のチェック
-      const validItems = this[category].map(directive => directive[Object.keys(directive)[0]].map(item => item.slice(-1) === '$' ? item.slice(0, -1) : item)).flat()
+      const validItems = this[category]
+        .map(directive => directive[Object.keys(directive)[0]]
+        .map(item => ApproachMaster.asValue(item)))
+        .flat()
       const difference = Array.from((new Set(selection[category])).difference(new Set(validItems)))
       if (difference.length > 0) {
         throw new Error(`${category}のアプローチに不正な入力 ${difference.join(',')} があります.`)
@@ -229,7 +242,7 @@ export default class ApproachMaster {
       for (const directive of this[category]) {
         if (directive?.oneOf) {
           if (selection[category]) {
-            selected.push(...selection[category].filter(item => directive.oneOf.includes(item)))
+            selected.push(...selection[category].filter(item => directive.oneOf.map(item => ApproachMaster.asValue(item)).includes(item)))
           }
         }
       }
@@ -238,6 +251,43 @@ export default class ApproachMaster {
       }
       if (selected.length > 1) {
         throw new Error(`${category}のアプローチに複数の必須選択肢が入力されています.`)
+      }
+    }
+  }
+
+  /**
+   * マスタ文字列から値に変換 (static)
+   */
+  static asValue (value = '') {
+    if (value.slice(-1) === '$') {
+      value = value.slice(0, -1)
+    }
+    return value.replace(/\[.*\]/, '')
+  }
+
+  /**
+   * マスタ文字列から表示用文字列に変換 (static)
+   */
+  static asLabel (value = '') {
+    if (value.slice(-1) === '$') {
+      value = value.slice(0, -1)
+    }
+    return value.replace(/[\[\]]/g, '')
+  }
+
+  /**
+   * 値から表示用文字列に変換
+   */
+  valueToLabel (value = '', category = undefined) {
+    const tree = this.getTree(category)
+    for (const treecategory in tree) {
+      const directives = tree[treecategory]
+      for (const directive of directives) {
+        const directiveType = Object.keys(directive)[0]
+        const foundIndex = directive[directiveType].findIndex(item => ApproachMaster.asValue(item) === value)
+        if (foundIndex !== -1) {
+          return ApproachMaster.asLabel(directive[directiveType][foundIndex])
+        }
       }
     }
   }

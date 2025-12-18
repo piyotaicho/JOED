@@ -8,7 +8,7 @@
         <template v-for="category in dataCategories" :key="category">
           <el-button-group style="margin-right: 0.8rem;">
             <template v-for="item in props.value[category]" :key="item">
-              <el-button :color="getColorCode(category)" size="small" round @click="edit">{{ item }}</el-button>
+              <el-button :color="getColorCode(category)" size="small" round @click="edit">{{ valueToLabel(item, category) }}</el-button>
             </template>
           </el-button-group>
         </template>
@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import ApproachMaster from '@/modules/Masters/ApproachMaster'
 
 const props = defineProps({
@@ -38,9 +38,12 @@ const props = defineProps({
 
 const emit = defineEmits(['click'])
 
+const master = computed(() => {
+  return new ApproachMaster(props.year)
+})
+
 const requirment = computed(() => {
-  const master = new ApproachMaster(props.year || '')
-  return master.getRequirement(props.procedureCategories || [])
+  return master.value.getRequirement(props.procedureCategories || [])
 })
 
 const noitems = computed(() => {
@@ -49,19 +52,18 @@ const noitems = computed(() => {
 })
 
 const title = computed(() => {
-  const master = new ApproachMaster(props.year || '')
-  return master.getTitle()
+  return master.value.getTitle()
 })
 
 const dataCategories = computed(() => {
-  const master = new ApproachMaster(props.year || '')
-  return master.getCategories(Object.keys(props.value || {}))
+  return master.value.getCategories(Object.keys(props.value || {}))
 })
 
-const getColorCode = (category) => {
-  const master = new ApproachMaster(props.year || '')
-  return master.getColorCode(category)
-}
+const getColorCode = computed(() => category => master.value.getColorCode(category))
+
+const valueToLabel = computed(() => (value, category) => {
+  return master.value.valueToLabel(value, category)
+})
 
 const edit = () => {
   emit('click')

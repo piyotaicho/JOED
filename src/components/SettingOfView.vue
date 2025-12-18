@@ -165,7 +165,9 @@ const commitSettings = async () => {
               <template v-if="Object.keys(directive)[0] === 'oneOf'">
                   <div style="display: inline;">
                     <template v-for="item in directive.oneOf" :key="item">
-                      <LabeledRadio v-model="categorySelectionOfOneOf[category]" :value="item"/>
+                      <LabeledRadio v-model="categorySelectionOfOneOf[category]" :value="ApproachMaster.asValue(item)">
+                        {{ ApproachMaster.asLabel(item) }}
+                      </LabeledRadio>
                     </template>
                   </div>
                   <br/>
@@ -173,7 +175,9 @@ const commitSettings = async () => {
               <template v-if="Object.keys(directive)[0] === 'anyOf' || Object.keys(directive)[0] === 'check'">
                 <div style="display: inline;">
                   <template v-for="item in (directive.anyOf || directive.check)" :key="item">
-                    <LabeledCheckbox v-model="categorySelections[category]" :value="item" />
+                    <LabeledCheckbox v-model="categorySelections[category]" :value="ApproachMaster.asValue(item)">
+                      {{ ApproachMaster.asLabel(item) }}
+                    </LabeledCheckbox>
                   </template>
                 </div>
               </template>

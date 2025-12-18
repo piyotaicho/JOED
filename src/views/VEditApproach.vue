@@ -81,13 +81,13 @@ onMounted(() => {
       }
 
       for (const selection of selections) {
-        if (oneOfItems.includes(selection)) {
+        if (oneOfItems.map(item => ApproachMaster.asValue(item)).includes(selection)) {
           // oneOfの項目は1つだけ
           categorySelectionOfOneOf.value[category] = selection
           continue
         }
 
-        if (otherItems.includes(selection)) {
+        if (otherItems.map(item => ApproachMaster.asValue(item)).includes(selection)) {
           // その他の項目の場合は複数選択として扱う
           categorySelections.value[category].push(selection)
         }
@@ -128,13 +128,17 @@ const CommitChange = async () => {
             <template v-for="directive of masterTree[category]" :key="directive">
               <template v-if="Object.keys(directive)[0] === 'oneOf'">
                   <template v-for="item in directive.oneOf" :key="item">
-                    <LabeledRadio v-model="categorySelectionOfOneOf[category]" :value="item" :required="required(category)"/>
+                    <LabeledRadio v-model="categorySelectionOfOneOf[category]" :value="ApproachMaster.asValue(item)" :required="required(category)">
+                      {{ ApproachMaster.asLabel(item) }}
+                    </LabeledRadio>
                   </template>
                   <br/><br/>
               </template>
               <template v-if="Object.keys(directive)[0] === 'anyOf' || Object.keys(directive)[0] === 'check'">
                 <template v-for="item in (directive.anyOf || directive.check)" :key="item">
-                  <LabeledCheckbox v-model="categorySelections[category]" :value="item" />
+                  <LabeledCheckbox v-model="categorySelections[category]" :value="ApproachMaster.asValue(item)">
+                    {{ ApproachMaster.asLabel(item) }}
+                  </LabeledCheckbox>
                 </template>
                 <br/>
               </template>
