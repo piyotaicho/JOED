@@ -73,7 +73,7 @@ async function createWindow() {
       enableWebSQL: false,
       webgl: false,
       devTools: isDevelopment,
-      preload: path.join(__dirname, '../dist-electron/preload.cjs')
+      preload: path.join(__dirname, '../dist/preload.cjs')
       // app.isPackaged
       //   ? path.join(__dirname, '../dist-electron/preload.cjs')
       //   : path.join(__dirname, 'preload.js')

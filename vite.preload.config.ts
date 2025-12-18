@@ -1,6 +1,10 @@
 import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
 
+if (process.env.NODE_ENV === 'production') {
+  console.log('Build preload script for production.')
+}
+
 // Electronプリロードスクリプト用のVite設定
 export default defineConfig({
   // Node.js環境でのビルドを明示
@@ -8,7 +12,7 @@ export default defineConfig({
     noExternal: true
   },
   build: {
-    outDir: 'dist-electron',
+    outDir: 'dist',
     emptyOutDir: false,
     // SSR（Server-Side Rendering）モード = Node.js環境
     ssr: true,

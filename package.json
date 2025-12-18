@@ -11,7 +11,7 @@
       "license": "MIT"
     }
   ],
-  "main": "dist-electron/background.js",
+  "main": "dist/background.js",
   "type": "module",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"

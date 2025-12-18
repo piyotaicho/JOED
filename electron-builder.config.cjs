@@ -9,16 +9,22 @@ module.exports = async () => (
       output: 'dist-electron'
     },
     files: [
-      'dist-electron/**',
+      // 'dist-electron/*.js',
+      // 'dist-electron/*.cjs',
+      // 'dist-electron/icon.png',
+      // 'dist-electron/AppIcon32.ico',
       'dist/**',
       'dist/**/assets/**',
-      '!dist/**/*-unpacked',
-      '!dist-electron/**/*-unpacked',
-      '!dist-electron/*.dmg',
-      '!dist-electron/*.exe',
+      // '!dist/**/*-unpacked',
+      // '!dist-electron/**/*-unpacked',
+      // '!dist-electron/*.dmg',
+      // '!dist-electron/*.exe',
+      // '!dist-electron/*.yaml',
+      // '!dist-electron/*.yml',
+      // '!dist-electron/*.blockmap',
     ],
     extraMetadata: {
-      main: 'dist-electron/background.js'
+      main: 'dist/background.js'
     },
     afterPack: './unlinkUnusedFiles.cjs',
     mac: {
@@ -30,6 +36,7 @@ module.exports = async () => (
       ],
       category: 'public.app-category.medical',
       hardenedRuntime: true,
+      mergeASARs: true,
       icon: 'icon.icns',
       singleArchFiles: '*'
     },

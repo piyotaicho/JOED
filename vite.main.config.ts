@@ -1,6 +1,10 @@
 import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
 
+if (process.env.NODE_ENV === 'production') {
+  console.log('Build main script for production.')
+}
+
 // Electronメインプロセス用のVite設定
 export default defineConfig({
   // Node.js環境でのビルドを明示
@@ -9,8 +13,8 @@ export default defineConfig({
   },
   build: {
     // メインプロセスのビルド先
-    outDir: 'dist-electron',
-    emptyOutDir: true,
+    outDir: 'dist',
+    emptyOutDir: false,
     // SSR（Server-Side Rendering）モード = Node.js環境
     ssr: true,
     // ライブラリモードでビルド

@@ -72,9 +72,9 @@ export default defineConfig(({ mode }) => {
       'process.env': {}
     },
     build: {
-      rollupOptions: {
+      rolldownOptions: {
         input: './index.html'
-      }
+      },
     },
     test: {
       globals: true,
