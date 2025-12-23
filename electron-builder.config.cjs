@@ -35,7 +35,10 @@ module.exports = async () => (
         }
       ],
       category: 'public.app-category.medical',
-      hardenedRuntime: true,
+      entitlements: 'build/entitlements.mac.plist',
+      entitlementsInherit: 'build/entitlements.mac.inherit.plist',
+      notarize: false,
+      hardenedRuntime: true,     
       mergeASARs: true,
       icon: 'icon.icns',
       singleArchFiles: '*'
