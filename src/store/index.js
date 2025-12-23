@@ -407,8 +407,7 @@ const store = createStore({
         context.commit('SetTotalDocumentCount',
           await context.dispatch('dbCount', { Query: { DocumentId: { $gt: 0 } } })
         )
-      } catch (error) {
-        console.error(error)
+      } catch {
         throw new Error('データベースエラー(FIND)です.')
       }
     },
@@ -433,8 +432,7 @@ const store = createStore({
           context.commit('SetDatastore',
             await context.dispatch('dbFindOne', { Query: { DocumentId: payload.DocumentId }, Projection: { _id: 0 } })
           )
-        } catch (error) {
-          console.error(error)
+        } catch {
           throw new Error('データベースエラー(FINDONE)です.')
         }
       }
@@ -458,8 +456,7 @@ const store = createStore({
         if (error.message === 'DUP') {
           throw new Error(`同一の日付(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
         } else {
-          console.error(error)
-          throw new Error('データベースエラー(INSERT/UPDATE)です.')
+          throw new Error('データベースエラー(COUNT)です.')
         }
       }
 
@@ -506,8 +503,7 @@ const store = createStore({
 
         // レコード操作をしたら必ずキャッシュをリロード
         await context.dispatch('ReloadDocumentList')
-      } catch (error) {
-        console.error(error)
+      } catch {
         throw new Error('データベースエラー(INSERT)です.')
       }
     },
@@ -520,6 +516,7 @@ const store = createStore({
       if (payload.DocumentId <= 0) {
         throw new Error('内部IDの指定に問題があります.')
       }
+
       try {
         // 重複入力の確認
         const documents = await context.dispatch('dbFind', {
@@ -531,15 +528,14 @@ const store = createStore({
         })
         for (const document of documents) {
           if (document.DocumentId !== payload.DocumentId) {
-            throw new Error('同一の日付に同一IDの症例は登録できません.')
+            throw new Error('DUP')
           }
         }
       } catch (error) {
         if (error.message === 'DUP') {
           throw new Error(`同一の日付(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
         } else {
-          console.error(error)
-          throw new Error('データベースエラー(UPDATE)です.')
+          throw new Error('データベースエラー(FIND)です.')
         }
       }
 
@@ -555,8 +551,7 @@ const store = createStore({
 
         // レコード操作をしたら必ずキャッシュをリロード
         await context.dispatch('ReloadDocumentList')
-      } catch (error) {
-        console.error(error)
+      } catch {
         throw new Error('データベースエラー(UPDATE)です.')
       }
     },
@@ -589,8 +584,7 @@ const store = createStore({
 
         // レコード操作をしたら必ずキャッシュをリロード
         await context.dispatch('ReloadDocumentList')
-      } catch (error) {
-        console.error(error)
+      } catch {
         throw new Error('データベースエラー(REMOVE)です.')
       }
     },
@@ -598,17 +592,21 @@ const store = createStore({
     // 症例データのもつ DateOfProcedure から年次と症例数を集計したobjectを返す
     //
     async GetYears (context) {
-      const documents = await context.dispatch('dbFind',
-        {
-          Query: { DocumentId: { $gt: 0 } },
-          Projection: { DateOfProcedure: 1, _id: 0 }
-        })
-      const CountByYear = {}
-      for (const document of documents) {
-        const year = document.DateOfProcedure.substring(0, 4)
-        CountByYear[year] = (CountByYear[year] === undefined) ? 1 : CountByYear[year] + 1
+      try {
+        const documents = await context.dispatch('dbFind',
+          {
+            Query: { DocumentId: { $gt: 0 } },
+            Projection: { DateOfProcedure: 1, _id: 0 }
+          })
+        const CountByYear = {}
+        for (const document of documents) {
+          const year = document.DateOfProcedure.substring(0, 4)
+          CountByYear[year] = (CountByYear[year] === undefined) ? 1 : CountByYear[year] + 1
+        }
+        return CountByYear
+      } catch {
+        throw new Error('データベースエラー(FIND)です.')
       }
-      return CountByYear
     }
   }
 })

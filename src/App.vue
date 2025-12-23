@@ -22,7 +22,6 @@ store.dispatch('system/LoadPreferences')
 // 実行環境情報を取得
 store.dispatch('system/getPlatformInfo')
   .catch((e) => {
-    console.error(e)
     store.commit('system/SetPlatform', 'failed to get platform info')
   })
 

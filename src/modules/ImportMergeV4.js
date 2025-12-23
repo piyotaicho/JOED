@@ -31,9 +31,7 @@ export function CreateDocument (record) {
     DiagnosesAndProceduresPrimary(CaseData, record)
     DiagnosesAndProceduresSecondary(CaseData, record)
     AEs(CaseData, record)
-  } catch (error) {
-    console.warn(error.message)
-  }
+  } catch {}
 
   // 2019年マスターからの単純置換(2020～のみ)
   MigrateFrom2019(CaseData)

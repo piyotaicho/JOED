@@ -123,8 +123,6 @@ const convertStream = async () => {
         }
         ImportedDocuments.push(newdocument)
       } catch (error) {
-        console.warn(`On line ${index + 1} - ${error.message}.`)
-
         if (!(await Popups.confirmYesNo(error.message + '\n残りの処理を続行しますか?'))) {
           throw new Error(`${index + 1}行目の不適切なフィールドにより変換を中止しました.`)
         }
