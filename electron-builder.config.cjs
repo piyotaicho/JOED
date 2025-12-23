@@ -9,19 +9,8 @@ module.exports = async () => (
       output: 'dist-electron'
     },
     files: [
-      // 'dist-electron/*.js',
-      // 'dist-electron/*.cjs',
-      // 'dist-electron/icon.png',
-      // 'dist-electron/AppIcon32.ico',
       'dist/**',
-      'dist/**/assets/**',
-      // '!dist/**/*-unpacked',
-      // '!dist-electron/**/*-unpacked',
-      // '!dist-electron/*.dmg',
-      // '!dist-electron/*.exe',
-      // '!dist-electron/*.yaml',
-      // '!dist-electron/*.yml',
-      // '!dist-electron/*.blockmap',
+      '!dist-electron'
     ],
     extraMetadata: {
       main: 'dist/background.js'
@@ -38,7 +27,7 @@ module.exports = async () => (
       entitlements: 'build/entitlements.mac.plist',
       entitlementsInherit: 'build/entitlements.mac.inherit.plist',
       notarize: false,
-      hardenedRuntime: true,     
+      hardenedRuntime: true,
       mergeASARs: true,
       icon: 'icon.icns',
       singleArchFiles: '*'

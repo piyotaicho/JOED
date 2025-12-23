@@ -2,19 +2,16 @@
 'use strict'
 import path from 'path'
 import fs from 'fs'
+import os from 'os'
 import { app, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron'
 
 import ElectronStore from 'electron-store'
 import DB from '@seald-io/nedb'
 import xxhash from 'xxhashjs'
 
-import { createRequire } from 'module'
-import { fileURLToPath } from 'url'
-
-const require = createRequire(import.meta.url)
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const { version, description } = require('../package.json')
+// Viteのdefineで置き換えられる定数
+const version = __APP_VERSION__
+const description = __APP_DESCRIPTION__
 
 // 重複起動の抑制
 const instanceLock = app.requestSingleInstanceLock()
@@ -73,27 +70,22 @@ async function createWindow() {
       enableWebSQL: false,
       webgl: false,
       devTools: isDevelopment,
-      preload: path.join(__dirname, '../dist/preload.cjs')
+      preload: path.join(import.meta.dirname, '../dist/preload.cjs')
       // app.isPackaged
-      //   ? path.join(__dirname, '../dist-electron/preload.cjs')
-      //   : path.join(__dirname, 'preload.js')
+      //   ? path.join(import.meta.dirname, '../dist-electron/preload.cjs')
+      //   : path.join(import.meta.dirname, 'preload.js')
     }
   })
 
   // 開発環境での適切なロード方法を決定
   if (isDevelopment) {
-    if (process.env?.VITE_DEV_SERVER_URL) {
-      // 開発サーバーが動作している場合
-      console.log('Loading from dev server:', process.env.VITE_DEV_SERVER_URL)
-      await win.loadURL(process.env.VITE_DEV_SERVER_URL)
-    } else {
-      // 開発サーバーが動作していない場合はビルドファイルを読み込み
-      console.log('Dev server not running, loading from dist files')
-      await win.loadFile(path.join(__dirname, '../dist/index.html'))
-    }
+    // electron-viteが設定する開発サーバーURL
+    const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173'
+    console.info('Loading from dev server:', devServerUrl)
+    await win.loadURL(devServerUrl)
   } else {
     // Production build - load the built files
-    await win.loadFile(path.join(__dirname, '../dist/index.html'))
+    await win.loadFile(path.join(import.meta.dirname, '../dist/index.html'))
   }
 
   session = win.webContents.session
@@ -519,7 +511,7 @@ function createDatabaseInstance() {
   } catch (error) {
     // データベースファイルが作成できないのは致命的エラーなのでダイアログを出して終了する
     if (isDevelopment) {
-      console.log(error)
+      console.warn('[Unable to create database file] ' + error?.message)
     }
     dialog.showMessageBoxSync({
       title: 'JOED5',
@@ -773,7 +765,6 @@ function registerIPChandlers() {
   // GetSystemInfo
   // @no params
   ipcMain.handle('GetSystemInfo', () => {
-    const os = require('os')
     const ostype = os.type()
     const osversion = os.release()
     const osarch = os.arch()
@@ -789,7 +780,6 @@ function registerIPChandlers() {
 
   // 再起動
   ipcMain.on('RelaunchApp', () => {
-    console.log('Relaunching application...')
     app.relaunch()
     app.exit(0)
   })
