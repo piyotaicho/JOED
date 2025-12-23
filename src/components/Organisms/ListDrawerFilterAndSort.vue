@@ -48,6 +48,10 @@ onMounted(async () => {
         setting.Years[year + '年'] = { Field: 'DateOfProcedure', Value: year }
       })
     })
+    .catch(async () => {
+      await Popups.alert('データベースエラーにより年次リストの取得に失敗しました.')
+      setting.Years = {}
+    })
 
   await nextTick()
 

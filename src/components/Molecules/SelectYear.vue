@@ -31,6 +31,10 @@ onMounted(async () => {
         )
       }
     })
+    .catch(async () => {
+      await Popups.alert('データベースエラーにより年次ごとのデータ取得に失敗しました.')
+      selections.value.splice(0)
+    })
 })
 </script>
 
