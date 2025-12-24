@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@seald-io/nedb": "^4.1.2",
+    "electron-store": "^11.0.2",
     "@vuepic/vue-datepicker": "^12.0.5",
     "element-plus": "^2.11.8",
     "encoding-japanese": "^2.2.0",
@@ -61,7 +62,6 @@
     "electron": "37",
     "electron-builder": "26.3.1",
     "electron-devtools-installer": "^4.0.0",
-    "electron-store": "^11.0.2",
     "electron-vite": "^5.0.0",
     "eslint": "^9.39.1",
     "eslint-plugin-vue": "^10.6.2",
