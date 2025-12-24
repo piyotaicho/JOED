@@ -20,12 +20,13 @@ module.exports = async () => (
       target: [
         {
           target: 'dmg',
-          arch: ['universal']
+          arch: 'universal'
         }
       ],
       category: 'public.app-category.medical',
       entitlements: 'build/entitlements.mac.plist',
       entitlementsInherit: 'build/entitlements.mac.inherit.plist',
+      
       notarize: false,
       hardenedRuntime: true,
       mergeASARs: true,

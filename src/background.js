@@ -3,6 +3,7 @@
 import path from 'path'
 import fs from 'fs'
 import os from 'os'
+import { fileURLToPath } from 'url'
 import { app, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron'
 
 import ElectronStore from 'electron-store'
@@ -24,6 +25,7 @@ const backupGeneration = 5
 
 // VITEで置換される
 const isDevelopment = import.meta.env?.MODE === 'development' || false
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 let win = null
 let session = null
@@ -71,7 +73,7 @@ async function createWindow() {
       enableWebSQL: false,
       webgl: false,
       devTools: isDevelopment,
-      preload: path.join(import.meta.dirname, '../dist/preload.cjs')
+      preload: path.join(__dirname, 'preload.cjs')
     }
   })
 
@@ -83,7 +85,8 @@ async function createWindow() {
     await win.loadURL(devServerUrl)
   } else {
     // Production build - load the built files
-    await win.loadFile(path.join(import.meta.dirname, '../dist/index.html'))
+    // app.asar内ではbackground.jsとindex.htmlは同じdist/に配置される
+    await win.loadFile(path.join(__dirname, 'index.html'))
   }
 
   session = win.webContents.session
