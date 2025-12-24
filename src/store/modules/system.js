@@ -61,7 +61,7 @@ export default {
     ApplicationName() {
       return import.meta.env.VITE_APP_NAME
     },
-    // APP_VERSIONの中継
+    // APP_VERSIONの中継(Viteのdefineで埋め込み)
     ApplicationVersion() {
       return __APP_VERSION__ || 'undefined'
     },

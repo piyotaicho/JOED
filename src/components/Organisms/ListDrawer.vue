@@ -19,10 +19,12 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'changed'])
 
-// non-reactive value
-const webApp = !import.meta.env.VITE_APP_ELECTRON
+// 非理アクティブ定数
+// Webアプリ環境かどうかViteのdefineで埋め込みを判定
+const webApp = __APP_ELECTRON__ !== 'true'
 const collapseNames = ['view', 'search',
   ...(webApp ? ['management', 'settings'] : [])] // 'view'|'search'|'management'|'settings'
+
 
 const view = ref('view')
 

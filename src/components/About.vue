@@ -7,6 +7,9 @@ const store = useStore()
 
 const CopyrightString = __APP_COPYRIGHT__ || '2020- P4mohnet and JSGOE'
 
+// Electron環境かどうかViteのdefineで埋め込みを判定
+const isElectron = __APP_ELECTRON__ === 'true'
+
 const CoreList = [
   // { name: '', href: '', version: '', license: ''}
   {
@@ -21,7 +24,7 @@ const CoreList = [
     version: store.getters['system/VueVersion'],
     license: 'MIT',
   },
-  ...(import.meta.env.VITE_APP_ELECTRON
+  ...(isElectron
     ? [
         {
           name: 'Electron',
@@ -62,7 +65,7 @@ const ComponentList = [
   { name: 'xxhashjs', href: 'https://github.com/pierrec/js-xxhash', license: 'MIT' },
   { name: 'Fuse.js', href: 'https://www.fusejs.io/', license: 'Apache-2.0' },
   { name: 'encoding.js', href: 'https://github.com/polygonplanet/encoding.js', license: 'MIT' },
-  ...(import.meta.env.VITE_APP_ELECTRON
+  ...(isElectron
     ? [
         {
           name: 'electron store',
