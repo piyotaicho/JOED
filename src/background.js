@@ -23,7 +23,8 @@ if (!instanceLock) {
 const backupGeneration = 5
 
 // VITEで置換される
-const isDevelopment = import.meta.env?.DEV === true
+const isDevelopment = import.meta.env?.MODE === 'development' || false
+
 let win = null
 let session = null
 const appConfig = {
@@ -71,14 +72,11 @@ async function createWindow() {
       webgl: false,
       devTools: isDevelopment,
       preload: path.join(import.meta.dirname, '../dist/preload.cjs')
-      // app.isPackaged
-      //   ? path.join(import.meta.dirname, '../dist-electron/preload.cjs')
-      //   : path.join(import.meta.dirname, 'preload.js')
     }
   })
 
-  // 開発環境での適切なロード方法を決定
-  if (isDevelopment) {
+  // 開発環境での適切なindex.htmlのロード方法を決定
+  if (isDevelopment && process.env?.VITE_DEV_SERVER_URL) {
     // electron-viteが設定する開発サーバーURL
     const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173'
     console.info('Loading from dev server:', devServerUrl)

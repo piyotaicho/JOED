@@ -8,7 +8,8 @@ const { contextBridge, ipcRenderer } = require('electron')
 contextBridge.exposeInMainWorld('Versions',
   {
     ApplicationName: () => process.env.VITE_APP_NAME,
-    ApplicationVersion: () => process.env.VITE_APP_VERSION,
+    // APP_VERSIONの中継(Viteのdefineで埋め込み)
+    ApplicationVersion: () => __APP_VERSION__ || 'undefined',
     // 以下はElectron環境でのみ有効
     Platform: () => process.platform,
     Electron: () => process.versions.electron,
