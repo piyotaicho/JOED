@@ -12,10 +12,11 @@ const packageJson = JSON.parse(
 )
 const { version, description } = packageJson
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   define: {
     __APP_VERSION__: JSON.stringify(version),
-    __APP_DESCRIPTION__: JSON.stringify(description)
+    __APP_DESCRIPTION__: JSON.stringify(description),
+    __APP_ELECTRON__: JSON.stringify('true')
   },
   ssr: {
     noExternal: true,
@@ -40,12 +41,12 @@ export default defineConfig({
         ...builtinModules.map(m => `node:${m}`)
       ]
     },
-    minify: false,
-    sourcemap: false
+    minify: mode === 'production',
+    sourcemap: mode !== 'production'
   },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src')
     }
   }
-})
+}))

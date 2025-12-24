@@ -15,7 +15,7 @@ const { version, description } = packageJson
 
 export default defineConfig(() => {
   return {
-    // メインプロセス設定は bundle の問題があり vite.main.bundle.config.ts に分離
+    // メインプロセス設定は不具合のため分離
     // プリロードスクリプト設定
     preload: {
       build: {
@@ -25,10 +25,20 @@ export default defineConfig(() => {
           output: {
             dir: resolve(__dirname, 'dist'),
             entryFileNames: 'preload.cjs',
-            format: 'cjs'
+            format: 'cjs' as const
           },
           external: ['electron']
         }
+      },
+      define: {
+        __APP_VERSION__: JSON.stringify(version),
+        __APP_COPYRIGHT__: JSON.stringify(
+          description.includes('(C)')
+            ? description.substring(description.indexOf('(C)') + 3).trim()
+            : '2020- P4mohnet and JSGOE'
+        ),
+        __APP_ELECTRON__: JSON.stringify('true'),
+        'process.env': {}
       }
     },
 
@@ -39,7 +49,7 @@ export default defineConfig(() => {
         emptyOutDir: false,
         outDir: 'dist',
         rollupOptions: {
-          input: resolve(__dirname, 'index.html')
+          input: './index.html'
         }
       },
       plugins: [
@@ -64,6 +74,7 @@ export default defineConfig(() => {
             ? description.substring(description.indexOf('(C)') + 3).trim()
             : '2020- P4mohnet and JSGOE'
         ),
+        __APP_ELECTRON__: JSON.stringify('true'),
         'process.env': {}
       }
     }

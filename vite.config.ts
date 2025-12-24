@@ -1,20 +1,15 @@
+/**
+ * viteで生成するweb専用版の設定ファイル (electron版とは別)
+ */
 import { fileURLToPath, URL } from 'node:url'
 
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 import { version, description } from './package.json'
 
 export default defineConfig(({ mode }) => {
-  // 環境変数を読み込み
-  const env = loadEnv(mode, process.cwd(), '')
-  const isElectron = env.VITE_APP_ELECTRON !== undefined
-
-  if (isElectron) {
-    console.log('Building bundles for Electron environment.')
-  }
-
   return {
     base: './',
     plugins: [
@@ -24,37 +19,30 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
-        'depmodules': fileURLToPath(new URL(
-          isElectron
-            ? './src/modules/electron'
-            : './src/modules/serve',
-          import.meta.url)),
-        // viteのビルドではnedbのブラウザ版を自動で認識できずnodeがデフォルトとなるため、個別に指定
-        ...isElectron
-          ? {}
-          : {
-            util: 'util/',
-            events: 'events/',
-            process: 'process/browser',
-            './customUtils.js': fileURLToPath(
-              new URL(
-                './node_modules/@seald-io/nedb/browser-version/lib/customUtils.js',
-                import.meta.url
-              )
-            ),
-            './storage.js': fileURLToPath(
-              new URL(
-                './node_modules/@seald-io/nedb/browser-version/lib/storage.browser.js',
-                import.meta.url
-              )
-            ),
-            './byline': fileURLToPath(
-              new URL(
-                './node_modules/@seald-io/nedb/browser-version/lib/byline.js',
-                import.meta.url
-              )
-            )
-          }
+        // ラッパーはブラウザ版を指定
+        'depmodules': fileURLToPath(new URL('./src/modules/serve', import.meta.url)),
+        util: 'util/',
+        events: 'events/',
+        process: 'process/browser',
+        // nedbエンジンはのブラウザ版を使うように指定
+        './customUtils.js': fileURLToPath(
+          new URL(
+            './node_modules/@seald-io/nedb/browser-version/lib/customUtils.js',
+            import.meta.url
+          )
+        ),
+        './storage.js': fileURLToPath(
+          new URL(
+            './node_modules/@seald-io/nedb/browser-version/lib/storage.browser.js',
+            import.meta.url
+          )
+        ),
+        './byline': fileURLToPath(
+          new URL(
+            './node_modules/@seald-io/nedb/browser-version/lib/byline.js',
+            import.meta.url
+          )
+        ),
       },
     },
     optimizeDeps: {
@@ -69,12 +57,17 @@ export default defineConfig(({ mode }) => {
           ? description.substring(description.indexOf('(C)') + 3).trim()
           : '2020- P4mohnet and JSGOE'
       ),
+      __APP_ELECTRON__: JSON.stringify('false'),
       'process.env': {}
     },
     build: {
+      emptyOutDir: true,
+      outDir: 'dist',
       rolldownOptions: {
         input: './index.html'
       },
+      minify: mode === 'production',
+      sourcemap: mode !== 'production'
     },
     test: {
       globals: true,
