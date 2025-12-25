@@ -37,12 +37,13 @@ const appConfig = {
   databaseInstance: undefined,
   enableLocking: false
 }
+let enableAdvancedSettings = undefined
 
 // 初期設定
 // デフォルト path の documents を userData でオーバーライド
 app.setPath('documents', app.getPath('userData'))
 
-// コマンドラインオプションの解析設定
+// コマンドラインオプションの解析と設定の反映
 parseCommandLineOptions()
 
 // 初期設定をファイルから取得
@@ -79,7 +80,7 @@ async function createWindow() {
   if (isDevelopment && process.env?.VITE_DEV_SERVER_URL) {
     // electron-viteが設定する開発サーバーURL
     const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173'
-    console.info('Loading from dev server:', devServerUrl)
+    console.info('[DEV] Loading from dev server:', devServerUrl)
     await win.loadURL(devServerUrl)
   } else {
     // Production build - load packaged files
@@ -231,6 +232,12 @@ function parseCommandLineOptions() {
       dialog.showErrorBox('JOED5', '設定ファイルに指定されたパスが不正です.')
       app.exit(-1)
     }
+  }
+
+  // enable/disable-advanced-settings : 高度な設定の利用可否を設定する (これはconfigで保存される)
+  if (app.commandLine.hasSwitch('disable-advanced-settings') ||
+      app.commandLine.hasSwitch('enable-advanced-settings')) {
+    enableAdvancedSettings = app.commandLine.hasSwitch('disable-advanced-settings') ? false : true
   }
 
   // refresh : ワークディレクトリをリフレッシュする
@@ -512,7 +519,7 @@ function createDatabaseInstance() {
   } catch (error) {
     // データベースファイルが作成できないのは致命的エラーなのでダイアログを出して終了する
     if (isDevelopment) {
-      console.warn('[Unable to create database file] ' + error?.message)
+      console.warn('[DEV] Unable to create database file: ' + error?.message)
     }
     dialog.showMessageBoxSync({
       title: 'JOED5',
@@ -752,9 +759,18 @@ function registerIPChandlers() {
   // LoadConfig
   // @Object.Key : String
   // @Object.DefaultConfig : Object
-  ipcMain.handle('LoadConfig', (_, payload) =>
-    appConfig.electronStore.get(payload.Key, payload.DefaultConfig)
-  )
+  ipcMain.handle('LoadConfig', (_, payload) => {
+    const config = appConfig.electronStore.get(payload.Key, payload.DefaultConfig)
+
+    // Configを取得する場合、高度な設定の利用可否がコマンドラインオプションで与えられていた場合それを反映
+    if (payload.Key === 'Config' && enableAdvancedSettings !== undefined) {
+      if (config?.Settings === undefined) {
+        config.Settings = {}
+      }
+      config.Settings.EnableAdvancedSettings = enableAdvancedSettings
+    }
+    return config
+  })
 
   // SaveConfig
   // @Object.Key : String

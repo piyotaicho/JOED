@@ -19,6 +19,7 @@ export default {
       Approach: '{}',
       // 表示設定
       ShowStartupDialog: true,
+      EnableAdvancedSettings: true,
       View: {
         Filters: [],
         Sort: {
@@ -120,6 +121,11 @@ export default {
     // 起動時のメッセージダイアログ表示の有無
     ShowStartupDialog(state) {
       return state.StartupDialogStatus
+    },
+
+    // 高度な設定の利用可否
+    EnableAdvancedSettings(state) {
+      return state.settings.EnableAdvancedSettings
     },
 
     // 表示設定の保存値
