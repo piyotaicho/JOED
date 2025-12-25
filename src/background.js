@@ -1,17 +1,17 @@
-// eslint-disable-next-line no-unused-vars
-/* global __static */
-'use strict'
 
-import { app, protocol, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron'
-import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
-import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
+'use strict'
+import path from 'path'
+import fs from 'fs'
+import os from 'os'
+import { app, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron'
+
+import ElectronStore from 'electron-store'
+import DB from '@seald-io/nedb'
 import xxhash from 'xxhashjs'
 
-const path = require('path')
-const fs = require('fs')
-
-const ElectronStore = require('electron-store')
-const DB = require('@seald-io/nedb')
+// Viteのdefineで置き換えられる定数
+const version = __APP_VERSION__
+const description = __APP_DESCRIPTION__
 
 // 重複起動の抑制
 const instanceLock = app.requestSingleInstanceLock()
@@ -20,7 +20,11 @@ if (!instanceLock) {
 }
 
 // バックエンドの変数
-const isDevelopment = process.env.NODE_ENV !== 'production'
+const backupGeneration = 5
+
+// VITEで置換される
+const isDevelopment = import.meta.env?.MODE === 'development' || false
+
 let win = null
 let session = null
 const appConfig = {
@@ -33,16 +37,13 @@ const appConfig = {
   databaseInstance: undefined,
   enableLocking: false
 }
-
-protocol.registerSchemesAsPrivileged([
-  { scheme: 'app', privileges: { secure: true, standard: true } }
-])
+let enableAdvancedSettings = undefined
 
 // 初期設定
 // デフォルト path の documents を userData でオーバーライド
 app.setPath('documents', app.getPath('userData'))
 
-// コマンドラインオプションの解析設定
+// コマンドラインオプションの解析と設定の反映
 parseCommandLineOptions()
 
 // 初期設定をファイルから取得
@@ -53,8 +54,7 @@ registerAppEvents()
 registerIPChandlers()
 registerMenu()
 
-// CreateBrowserWindow
-async function createWindow () {
+async function createWindow() {
   win = new BrowserWindow({
     width: 960,
     minWidth: 960,
@@ -66,27 +66,26 @@ async function createWindow () {
     icon: './build/Windows.ico',
     backgroundColor: '#dddddd',
     webPreferences: {
-      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
+      nodeIntegration: false,
       contextIsolation: true,
       spellcheck: false,
       enableWebSQL: false,
       webgl: false,
       devTools: isDevelopment,
-      preload: path.resolve(__dirname, 'preload.js')
+      preload: path.join(app.getAppPath(), 'dist', 'preload.cjs')
     }
   })
 
-  if (process.env.WEBPACK_DEV_SERVER_URL) {
-    // Load the url of the dev server if in development mode
-    await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
-      .then(_ => {
-        if (!process.env.IS_TEST) {
-          win.webContents.openDevTools()
-        }
-      })
+  // 開発環境での適切なindex.htmlのロード方法を決定
+  if (isDevelopment && process.env?.VITE_DEV_SERVER_URL) {
+    // electron-viteが設定する開発サーバーURL
+    const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173'
+    console.info('[DEV] Loading from dev server:', devServerUrl)
+    await win.loadURL(devServerUrl)
   } else {
-    createProtocol('app')
-    await win.loadURL('app://./index.html')
+    // Production build - load packaged files
+    const indexPath = path.join(app.getAppPath(), 'dist', 'index.html')
+    await win.loadFile(indexPath)
   }
 
   session = win.webContents.session
@@ -108,7 +107,7 @@ async function createWindow () {
 //
 // イベントの登録
 //
-function registerAppEvents () {
+function registerAppEvents() {
   // ready: reateWindow
   app.on('ready', async () => {
     if (instanceLock) {
@@ -119,15 +118,9 @@ function registerAppEvents () {
       appConfig.databaseInstance = createDatabaseInstance()
 
       // ウインドウの作成
-      if (isDevelopment && !process.env.IS_TEST) {
-        // Install Vue Devtools
-        try {
-          await installExtension(VUEJS_DEVTOOLS)
-        } catch (e) {
-          console.error('Vue Devtools failed to install:', e.toString())
-        }
-      }
-      createWindow()
+      await createWindow()
+    } else {
+      app.quit()
     }
   })
 
@@ -184,7 +177,7 @@ function registerAppEvents () {
 //
 // コマンドラインオプションの処理
 //
-function parseCommandLineOptions () {
+function parseCommandLineOptions() {
   // --datadir : データの保存ディレクトリの設定 setPath(documents)の指定
   if (app.commandLine.hasSwitch('datadir')) {
     const datadirarg = app.commandLine.getSwitchValue('datadir')
@@ -241,6 +234,12 @@ function parseCommandLineOptions () {
     }
   }
 
+  // enable/disable-advanced-settings : 高度な設定の利用可否を設定する (これはconfigで保存される)
+  if (app.commandLine.hasSwitch('disable-advanced-settings') ||
+      app.commandLine.hasSwitch('enable-advanced-settings')) {
+    enableAdvancedSettings = app.commandLine.hasSwitch('disable-advanced-settings') ? false : true
+  }
+
   // refresh : ワークディレクトリをリフレッシュする
   if (app.commandLine.hasSwitch('refresh')) {
     const libdir = app.getPath('userData')
@@ -268,7 +267,7 @@ function parseCommandLineOptions () {
   }
 }
 
-function parseCommandLineDirectives () {
+function parseCommandLineDirectives() {
   // drop-database : データベースファイルの削除 (=all でバックアップも削除, =lock で消し忘れたロックファイルのみ削除)
   if (app.commandLine.hasSwitch('drop-database')) {
     const DBfilename = path.join(app.getPath('documents'), 'joed.nedb')
@@ -282,9 +281,9 @@ function parseCommandLineDirectives () {
 
     try {
       if (app.commandLine.getSwitchValue('drop-database').toLowerCase() === 'all') {
-        fs.unlinkSync(DBfilename + '.3')
-        fs.unlinkSync(DBfilename + '.2')
-        fs.unlinkSync(DBfilename + '.1')
+        for (let i = 1; i <= backupGeneration; i++) {
+          fs.unlinkSync(DBfilename + `.${i}`)
+        }
       }
     } catch { }
 
@@ -303,27 +302,27 @@ function parseCommandLineDirectives () {
 //
 // メニューの設定
 //
-function registerMenu () {
+function registerMenu() {
   const MenuTemplate = [
     // アプリケーションメニュー
     ...(
       process.platform === 'darwin'
         ? [{
-            label: app.getName(),
-            submenu: [
-              { label: app.getName() + 'について', role: 'about' },
-              { type: 'separator' },
-              { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
-              { type: 'separator' },
-              { label: 'サービス', role: 'services', submenu: [] },
-              { type: 'separator' },
-              { label: app.getName() + 'を隠す', accelerator: 'Command+H', role: 'hide' },
-              { label: '他を隠す', accelerator: 'Command+Alt+H', role: 'hideothers' },
-              { label: '全てを表示', role: 'unhide' },
-              { type: 'separator' },
-              { label: '終了', accelerator: 'Command+Q', role: 'quit' }
-            ]
-          }]
+          label: 'JOED5',
+          submenu: [
+            { label: 'JOED5について', role: 'about' },
+            { type: 'separator' },
+            { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+            { type: 'separator' },
+            { label: 'サービス', role: 'services', submenu: [] },
+            { type: 'separator' },
+            { label: 'JOED5を隠す', accelerator: 'Command+H', role: 'hide' },
+            { label: '他を隠す', accelerator: 'Command+Alt+H', role: 'hideothers' },
+            { label: '全てを表示', role: 'unhide' },
+            { type: 'separator' },
+            { label: '終了', accelerator: 'Command+Q', role: 'quit' }
+          ]
+        }]
         : []
     ),
     // 通常のメニュー
@@ -331,64 +330,69 @@ function registerMenu () {
       label: 'ファイル',
       submenu: [
         { label: '新規症例の登録', id: 'list-new', enabled: false, accelerator: 'CmdORCtrl+N', click: (item, focusedWindow) => RendererRoute('new', focusedWindow) },
+        { label: '症例の削除', id: 'list-delete', enabled: false, accelerator: 'CmdORCtrl+X', click: (item, focusedWindow) => RendererRoute('list.delete', focusedWindow) },
         { type: 'separator' },
         { label: 'データの読み込み', id: 'list-import', enabled: false, click: (item, focusedWindow) => RendererRoute('import', focusedWindow) },
         { label: 'データの書き出し', id: 'list-export', enabled: false, click: (item, focusedWindow) => RendererRoute('export', focusedWindow) },
         ...(process.platform === 'darwin'
-          ? []
+          ? [
+            { type: 'separator' },
+            { label: 'リスト表示の設定', id: 'list-settings', enabled: false, click: (item, focusedWindow) => RendererRoute('list.drawer', focusedWindow) },
+          ]
           : [
-              { type: 'separator' },
-              { label: '設定', id: 'setup', enabled: false, accelerator: 'Ctrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
-              { label: '終了', accelerator: 'Alt+F4', role: 'quit' }
-            ])
+            { type: 'separator' },
+            { label: '設定', id: 'setup', enabled: false, accelerator: 'Ctrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+            { label: 'リスト表示の設定', id: 'list-settings', enabled: false, click: (item, focusedWindow) => RendererRoute('list.drawer', focusedWindow) },
+            { label: '終了', accelerator: 'Alt+F4', role: 'quit' }
+          ])
       ]
     },
     // macosでは編集メニューがないとコピーアンドペーストができない
     ...(
       process.platform === 'darwin'
         ? [
-            {
-              label: '編集',
-              submenu: [
-                { label: '取り消す', role: 'undo', accelerator: 'Command+Z' },
-                { label: 'やり直す', role: 'redo', accelerator: 'Command+Shift+Z' },
-                { type: 'separator' },
-                { label: 'カット', role: 'cut', accelerator: 'Command+X' },
-                { label: 'コピー', role: 'copy', accelerator: 'Command+C' },
-                { label: 'ペースト', role: 'paste', accelerator: 'Command+V' },
-                { label: 'すべてを選択', role: 'selectALL', accelerator: 'Command+A' }
-              ]
-            }
-          ]
+          {
+            label: '編集',
+            submenu: [
+              { label: '取り消す', role: 'undo', accelerator: 'Command+Z' },
+              { label: 'やり直す', role: 'redo', accelerator: 'Command+Shift+Z' },
+              { type: 'separator' },
+              { label: 'カット', role: 'cut', accelerator: 'Command+X' },
+              { label: 'コピー', role: 'copy', accelerator: 'Command+C' },
+              { label: 'ペースト', role: 'paste', accelerator: 'Command+V' },
+              { label: 'すべてを選択', role: 'selectALL', accelerator: 'Command+A' }
+            ]
+          }
+        ]
         : []
     ),
     ...(
       process.platform === 'win32'
         ? [{
-            label: 'ヘルプ',
-            submenu: [
-              { label: app.getName() + 'について', role: 'about' }
-            ]
-          }]
+          label: 'ヘルプ',
+          submenu: [
+            { label: 'JOED5について', role: 'about' }
+          ]
+        }]
         : []
     ),
     ...(
       isDevelopment
         ? [{
-            label: '開発支援',
-            submenu: [
-              {
-                label: 'リロード',
-                accelerator: '',
-                click: (item, focusedWindow) => { focusedWindow.webContents.onbeforeunload = null; focusedWindow.reload() }
-              },
-              {
-                label: '開発者ツール',
-                accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
-                click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools()
-              }
-            ]
-          }]
+          label: '開発支援',
+          submenu: [
+            {
+              label: 'リロード',
+              accelerator: '',
+              click: (item, focusedWindow) => { focusedWindow.webContents.onbeforeunload = null; focusedWindow.reload() }
+            },
+            {
+              label: '開発者ツール',
+              accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
+              click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools()
+            }
+          ]
+        }]
         : []
     )
   ]
@@ -399,8 +403,10 @@ function registerMenu () {
 
   app.setAboutPanelOptions({
     applicationName: app.getName(),
-    applicationVersion: process.env.VUE_APP_VERSION,
-    copyright: ['Copyright', process.env.VUE_APP_COPYRIGHT].join(' '),
+    applicationVersion: version,
+    copyright: description.includes('(C)')
+      ? description.substring(description.indexOf('(C)') + 3).trim()
+      : '2020- P4mohnet and JSGOE',
     credits: '@piyotaicho https://github.com/piyotaicho/JOED/',
     iconPath: '../public/icon.png'
   })
@@ -411,12 +417,12 @@ function registerMenu () {
 //
 
 // main -> renderer : メニューからrouterの切り替え要求 (App.vueで処理)
-function RendererRoute (routename, targetwindow) {
+function RendererRoute(routename, targetwindow) {
   targetwindow.webContents.send('update-router', routename)
 }
 
 // router毎のメニュー操作
-function switchMenu (payload) {
+function switchMenu(payload) {
   const menu = Menu.getApplicationMenu()
   switch (payload) {
     case 'login':
@@ -425,28 +431,36 @@ function switchMenu (payload) {
     case 'procedure':
     case 'AE':
       menu.getMenuItemById('list-new').enabled = false
+      menu.getMenuItemById('list-delete').enabled = false
       menu.getMenuItemById('list-import').enabled = false
       menu.getMenuItemById('list-export').enabled = false
       menu.getMenuItemById('setup').enabled = false
+      menu.getMenuItemById('list-settings').enabled = false
       break
     case 'list':
       menu.getMenuItemById('list-new').enabled = true
+      menu.getMenuItemById('list-delete').enabled = true
       menu.getMenuItemById('list-import').enabled = true
       menu.getMenuItemById('list-export').enabled = true
       menu.getMenuItemById('setup').enabled = true
+      menu.getMenuItemById('list-settings').enabled = true
       break
     case 'utility':
     case 'setup':
       menu.getMenuItemById('list-new').enabled = false
+      menu.getMenuItemById('list-delete').enabled = false
       menu.getMenuItemById('list-import').enabled = true
       menu.getMenuItemById('list-export').enabled = true
       menu.getMenuItemById('setup').enabled = true
+      menu.getMenuItemById('list-settings').enabled = false
       break
     default:
       menu.getMenuItemById('list-new').enabled = false
+      menu.getMenuItemById('list-delete').enabled = false
       menu.getMenuItemById('list-import').enabled = false
       menu.getMenuItemById('list-export').enabled = false
       menu.getMenuItemById('setup').enabled = false
+      menu.getMenuItemById('list-settings').enabled = false
   }
 }
 
@@ -456,14 +470,14 @@ function switchMenu (payload) {
 
 // データベースロックファイル制御
 //
-function createLockfile () {
+function createLockfile() {
   if (appConfig.enableLocking) {
     const fd = fs.openSync(path.join(app.getPath('documents'), 'joed.nedb.lock'), 'wx')
     fs.closeSync(fd)
   }
 }
 
-function removeLockfile () {
+function removeLockfile() {
   if (appConfig.enableLocking) {
     try {
       fs.unlinkSync(path.join(app.getPath('documents'), 'joed.nedb.lock'))
@@ -473,22 +487,20 @@ function removeLockfile () {
 
 // データベースインスタンスの作成
 //
-function createDatabaseInstance () {
+function createDatabaseInstance() {
   // appPath documents はデフォルトで userData にオーバーライドされている.
   const DBfilename = path.join(app.getPath('documents'), 'joed.nedb')
 
   // ロックの確認
   try {
     createLockfile()
-  } catch (error) {
+  } catch {
     dialog.showMessageBoxSync({ title: 'JOED5', type: 'info', message: '他のユーザがデータベースファイルを使用中のため起動を中止します.' })
     app.exit(-1)
   }
 
-  // データベースファイルのバックアップを作る(5世代まで)
+  // データベースファイルのバックアップを作る
   // 原則としてバックアップ作成に関わるエラーは全て無視する.
-  const backupGeneration = 5
-
   for (let i = (backupGeneration - 1); i > 0; i--) {
     try {
       fs.copyFileSync(DBfilename + `.${i}`, DBfilename + `.${i + 1}`)
@@ -506,7 +518,9 @@ function createDatabaseInstance () {
     })
   } catch (error) {
     // データベースファイルが作成できないのは致命的エラーなのでダイアログを出して終了する
-    isDevelopment && console.log(error)
+    if (isDevelopment) {
+      console.warn('[DEV] Unable to create database file: ' + error?.message)
+    }
     dialog.showMessageBoxSync({
       title: 'JOED5',
       type: 'error',
@@ -519,10 +533,42 @@ function createDatabaseInstance () {
   }
 }
 
+/**
+ * クエリ中の $regex を RexExpオブジェクトでの呼び出しに変換する
+ * @param {*} obj
+ */
+function unescapeRegexInObject(obj) {
+  // $regex: string の指定があるかチェック なければそのまま返す
+  if (!JSON.stringify(obj).includes('"$regex":"/')) {
+    return obj
+  }
+
+  if (obj === null && typeof obj !== 'object') {
+    return obj
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(item => unescapeRegexInObject(item))
+  }
+  if (typeof obj === 'object') {
+    const newobj = {}
+    for (const key in obj) {
+      if (key === '$regex' && typeof obj[key] === 'string') {
+        // 文字列からRegExpオブジェクトに変換
+        const regexBody = obj[key].substring(1, obj[key].lastIndexOf('/'))
+        const regexFlags = obj[key].substring(obj[key].lastIndexOf('/') + 1)
+        newobj[key] = new RegExp(regexBody, regexFlags)
+      } else {
+        newobj[key] = unescapeRegexInObject(obj[key])
+      }
+    }
+    return newobj
+  }
+  return obj
+}
 //
 // IPCとデータベースのAPIラッパー
 //
-function registerIPChandlers () {
+function registerIPChandlers() {
   // Insert
   // @Object.Document : Object
   ipcMain.handle('Insert', (_, payload) => {
@@ -546,7 +592,7 @@ function registerIPChandlers () {
   // @Object.Limit : String, Number
   ipcMain.handle('Find', (_, payload) => {
     return new Promise((resolve, reject) => {
-      const query = payload.Query ? payload.Query : {}
+      const query = payload.Query ? unescapeRegexInObject(payload.Query) : {}
       const projection = payload.Projection ? payload.Projection : {}
       const sort = payload.Sort ? payload.Sort : {}
       const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
@@ -575,7 +621,7 @@ function registerIPChandlers () {
   // @Object.Skip : String, Number
   ipcMain.handle('FindOne', (_, payload) => {
     return new Promise((resolve, reject) => {
-      const query = payload.Query ? payload.Query : {}
+      const query = payload.Query ? unescapeRegexInObject(payload.Query) : {}
       const projection = payload.Projection ? payload.Projection : {}
       const sort = payload.Sort ? payload.Sort : {}
       const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
@@ -639,7 +685,7 @@ function registerIPChandlers () {
   // @Object.Query : Object
   ipcMain.handle('Count', (_, payload) => {
     return new Promise((resolve, reject) => {
-      const query = payload.Query ? payload.Query : {}
+      const query = payload.Query ? unescapeRegexInObject(payload.Query) : {}
       appConfig.databaseInstance
         .count(query, (error, count) => {
           if (error) {
@@ -657,7 +703,7 @@ function registerIPChandlers () {
   // @Object.Options : Object
   ipcMain.handle('Update', (_, payload) => {
     return new Promise((resolve, reject) => {
-      const query = payload.Query ? payload.Query : {}
+      const query = payload.Query ? unescapeRegexInObject(payload.Query) : {}
       const update = payload.Update ? payload.Update : {}
       const options = payload.Options ? payload.Options : {}
       appConfig.databaseInstance
@@ -676,7 +722,7 @@ function registerIPChandlers () {
   // @Object.Options : Object
   ipcMain.handle('Remove', (_, payload) => {
     return new Promise((resolve, reject) => {
-      const query = payload.Query ? payload.Query : {}
+      const query = payload.Query ? unescapeRegexInObject(payload.Query) : {}
       const options = payload.Options ? payload.Options : {}
       appConfig.databaseInstance
         .remove(query, options, (error, numrows) => {
@@ -689,6 +735,23 @@ function registerIPChandlers () {
     })
   })
 
+  // Drop
+  // @Boolean.RemoveBackupFiles : Boolean
+  ipcMain.handle('DropDatabase', async (_, removeBackupFiles) => {
+    // データベースを全削除する
+    await appConfig.databaseInstance.dropDatabaseAsync()
+    // バックアップファイルも削除する
+    if (removeBackupFiles) {
+      const DBfilename = path.join(app.getPath('documents'), 'joed.nedb')
+
+      for (let i = 1; i <= backupGeneration; i++) {
+        try {
+          fs.unlinkSync(DBfilename + `.${i}`)
+        } catch { }
+      }
+    }
+  })
+
   //
   // アプリケーション設定 electron-store
   //
@@ -696,9 +759,18 @@ function registerIPChandlers () {
   // LoadConfig
   // @Object.Key : String
   // @Object.DefaultConfig : Object
-  ipcMain.handle('LoadConfig', (_, payload) =>
-    appConfig.electronStore.get(payload.Key, payload.DefaultConfig)
-  )
+  ipcMain.handle('LoadConfig', (_, payload) => {
+    const config = appConfig.electronStore.get(payload.Key, payload.DefaultConfig)
+
+    // Configを取得する場合、高度な設定の利用可否がコマンドラインオプションで与えられていた場合それを反映
+    if (payload.Key === 'Config' && enableAdvancedSettings !== undefined) {
+      if (config?.Settings === undefined) {
+        config.Settings = {}
+      }
+      config.Settings.EnableAdvancedSettings = enableAdvancedSettings
+    }
+    return config
+  })
 
   // SaveConfig
   // @Object.Key : String
@@ -707,13 +779,25 @@ function registerIPChandlers () {
     appConfig.electronStore.set(payload.Key, payload.Config)
   )
 
-  //
+  // GetSystemInfo
+  // @no params
+  ipcMain.handle('GetSystemInfo', () => {
+    const ostype = os.type()
+    const osversion = os.release()
+    const osarch = os.arch()
+
+    return `${ostype} ${osversion} (${osarch})`
+  })
+
   // Routerからのメニュー制御
-  //
   ipcMain.on('SwitchMenu', (_, payload) => switchMenu(payload))
 
-  //
   // Renderが指定する外部リンクをシステムで開く
-  //
   ipcMain.on('OpenURL', (_, target) => shell.openExternal(target))
+
+  // 再起動
+  ipcMain.on('RelaunchApp', () => {
+    app.relaunch()
+    app.exit(0)
+  })
 }

@@ -1,41 +1,31 @@
 <script setup>
 import { computed } from 'vue'
-import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
 
 const props = defineProps({
   item: {
-    type: String,
+    type: [Object, String],
     required: true
-  },
-  value: {}
-})
-
-const emit = defineEmits(['update:value'])
-
-const parsedItem = computed(() => {
-  try {
-    return JSON.parse(props.item)
-  } catch {
-    return ''
   }
 })
+const modelValue = defineModel()
 
-const itemlabel = computed(() => (typeof parsedItem.value === 'object')
-  ? parsedItem.value.Text
-  : parsedItem.value
+const itemlabel = computed(() => (typeof props.item === 'object')
+  ? (props.item?.Text || '')
+  : props.item
 )
 
-const itemvalue = computed(() => (typeof parsedItem.value === 'object')
-  ? parsedItem.value.Value
-  : parsedItem.value
+const itemvalue = computed(() => (typeof props.item === 'object')
+  ? (props.item?.Value || '')
+  : props.item
 )
 
 const checkboxvalue = computed({
-  get: () => props.value,
-  set: (newvalue) => emit('update:value', newvalue)
+  get: () => modelValue.value,
+  set: (newvalue) => { modelValue.value = newvalue }
 })
 </script>
 
 <template>
-  <LabeledCheckbox :container.sync="checkboxvalue" :value="itemvalue">{{itemlabel}}</LabeledCheckbox>
+  <LabeledCheckbox v-model="checkboxvalue" :value="itemvalue">{{itemlabel}}</LabeledCheckbox>
 </template>

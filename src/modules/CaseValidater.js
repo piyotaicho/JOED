@@ -1,5 +1,6 @@
 import DaignosisMaster from '@/modules/Masters/DiagnosisMaster'
 import ProcedureMaster from '@/modules/Masters/ProcedureMaster'
+import ApproachMaster from '@/modules/Masters/ApproachMaster'
 import AEmaster from '@/modules/Masters/AE'
 
 import { procedureTimeFormat } from '@/modules/ProcedureTimes'
@@ -32,25 +33,24 @@ export const CategoriesOfProcedure = ['腹腔鏡', '腹腔鏡悪性', 'ロボッ
 //
 // return string 症例区分
 export async function ValidateCase (item = {}, temporary = false) {
-  // 一時保存でも患者IDと手術日は最低限の必須入力項目
-  await CheckBasicInformations(item)
-  const year = item.DateOfProcedure.substring(0, 4)
-  if (!temporary) {
+  const year = item.DateOfProcedure ? item.DateOfProcedure.substring(0, 4) : undefined
+  if (temporary) {
+    // 一時保存でも患者IDと手術日は最低限の必須入力項目
+    // 可能であればカテゴリーを取得
+    await CheckBasicInformations(item)
+    return await CheckCategoryMatch(item)
+  } else {
     const results = await allSettled([
-      CheckProcedureTime(item),
+      CheckBasicInformations(item),
       ValidateAdditionalInformations(item),
-      CheckCategoryMatch(item, year),
+      CheckProcedureTime(item),
+      CheckCategoryMatch(item, year), // [3] returns category
       ValidateDiagnoses(item, year),
       ValidateProcedures(item, year),
-      ValidateAEs(item, year)
+      ValidateAEs(item, year),
+      ValidateApproach(item, year),
     ])
-    return results[2]
-  } else {
-    try {
-      return await CheckCategoryMatch(item, year)
-    } catch {
-      return undefined
-    }
+    return results[3]
   }
 }
 
@@ -100,6 +100,7 @@ export async function ValidateAdditionalInformations (item) {
 // 主たる術後診断・実施術式のカテゴリの一致の検証
 //
 export async function CheckCategoryMatch (item, year) {
+  // 判定はあくまで主たる診断・術式
   const categoryOfDiagnosis = item?.Diagnoses?.[0]?.Chain?.[0]
   const categoryOfProcedure = item?.Procedures?.[0]?.Chain?.[0]
   // Diagnoses, Proceduresが未設定については別でチェックされる
@@ -216,6 +217,7 @@ export async function CheckDupsInProcedures (item) {
 }
 
 // 実施手術名の重複確認と年次ツリーとの整合性検証
+// 実施手術のアプローチの整合性検証
 //
 export async function ValidateProcedures (item, year) {
   if (!(item?.Procedures?.length > 0)) {
@@ -272,12 +274,50 @@ export async function ValidateProcedures (item, year) {
                 }
               }
             }
+          } else {
+            // Descriptionの入力がマスタに定義されていない
+            if (record?.Description !== undefined && record.Description.length > 0) {
+              reject(Error('実施手術 ' + record.Text + ' に不要な詳細情報が入力されています.'))
+            }
           }
         }
         resolve()
       }
     }))
   )
+}
+
+// アプローチ入力の整合性確認
+export async function ValidateApproach (item, year) {
+  const approach = new ApproachMaster(year)
+  if (Object.keys(approach).length > 0) {
+    // 実施手術のカテゴリを取得
+    const categories = new Set(
+      item.Procedures
+        .map(record => approach.categorymap[record?.Chain?.[0] || ''])
+        .filter(value => value !== undefined)
+    )
+
+    if (categories.size > 0) {
+      // アプローチ入力が必要なカテゴリあり
+
+      if (item?.Approach === undefined || Object.keys(item.Approach).length === 0) {
+        // 入力無しへの対応、アプローチの入力必須は2026年以降
+        if (year >= 2026) {
+          throw Error('実施手術アプローチの入力がありません.')
+        }
+      } else {
+        // カテゴリ毎の未入力をチェック
+        const difference = categories.difference(new Set(Object.keys(item.Approach))).values()
+        if (difference.size > 0) {
+          throw Error(`実施手術カテゴリー ${difference.toArray().join(',')} のアプローチの入力がありません.`)
+        } else {
+          // 入力がされていたらチェックする
+          approach.check(item.Approach)
+        }
+      }
+    }
+  }
 }
 
 // 合併症の重複と整合性確認
@@ -344,11 +384,11 @@ function allSettled (promises) {
   return Promise.allSettled(promises)
     .then(results => {
       const messages = results
-        .filter(result => result?.reason)
-        .map(result => result.reason.message)
-        .join('\n')
-      if (messages !== '') {
-        throw Error(messages)
+        .filter(result => result.status === 'rejected')
+        .map(result => result.reason?.message)
+        .filter(message => message !== undefined)
+      if (messages.length > 0) {
+        throw Error(messages.join('\n'))
       }
       return results.map(result => result?.value)
     })

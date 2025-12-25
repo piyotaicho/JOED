@@ -19,8 +19,9 @@
 import { computed, ref } from 'vue'
 
 const props = defineProps({
-  container: {},
+  // チェックボックスで設定される値
   value: {
+    type: [Boolean, String, Number],
     default: true
   },
   disabled: {
@@ -32,13 +33,14 @@ const props = defineProps({
     default: 0
   }
 })
-const emit = defineEmits(['update:container'])
+
+const modelValue = defineModel()
 
 const inputElement = ref()
 
 const checkboxValue = computed({
-  get: () => props.container,
-  set: (newValue) => emit('update:container', newValue)
+  get: () => modelValue.value,
+  set: (newValue) => { modelValue.value = newValue }
 })
 
 const changeState = () => {
@@ -48,7 +50,7 @@ const changeState = () => {
 
 <style lang="sass">
 label.LabeledCheckbox
-  padding: 0.1rem 0.7rem 0rem 0rem
+  padding: 0.1rem 0.7rem 0.1rem 0rem
   margin: 0 0 0 0.3rem
   white-space: nowrap
 
@@ -68,7 +70,7 @@ input.LabeledCheckbox[type="checkbox"]
     left: 0.4rem
     height: 0.8rem
     width: 0.8rem
-    transform: translateY(-0.55rem)
+    transform: translateY(-0.45rem)
   &:checked + span::before
     border-color: var(--color-primary)
     background: var(--color-primary)
@@ -82,5 +84,5 @@ input.LabeledCheckbox[type="checkbox"]
     left: 0.7rem
     height: 0.25rem
     width: 0.48rem
-    transform: rotate(-50deg) translate(0.2rem, -0.4rem)
+    transform: translate(-0.14rem, -0.25rem) rotate(-50deg)
 </style>

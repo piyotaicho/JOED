@@ -39,7 +39,7 @@ body
   margin: 0
 
 html
-  font-family: sans-serif
+  font-family: "Yu Gothic", "游ゴシック", YuGothic, Meiryo, sans-serif
   font-weight: 400
   background-color: $system-background
   font-size: 14px
@@ -53,7 +53,7 @@ button
   font-size: 1rem
   height: 2.8rem
 
-input[type="text"],[type="number"],[type="password"]
+input:not(.el-input__inner)[type="text"],[type="search"],[type="number"],[type="password"]
   font-family: inherit
   font-size: 1rem
   user-select: text
@@ -119,27 +119,35 @@ option:checked
 
 // ブロックの幅指定
 .w10
-  width: 10%
+  width: 10% !important
 .w20
-  width: 20%
+  width: 20% !important
+.w25
+  width: 25% !important
 .w30
-  width: 30%
+  width: 30% !important
+.w35
+  width: 35% !important
 .w40
-  width: 40%
+  width: 40% !important
 .w45
-  width: 45%
+  width: 45% !important
 .w50
-  width: 50%
+  width: 50% !important
 .w55
-  width: 55%
+  width: 55% !important
 .w60
-  width: 60%
+  width: 60% !important
+.w65
+  width: 65% !important
 .w70
-  width: 70%
+  width: 70% !important
+.w75
+  width: 75% !important
 .w80
-  width: 80%
+  width: 80% !important
 .w90
-  width: 90%
+  width: 90% !important
 
 // 機能画面
 div.utility
@@ -148,21 +156,21 @@ div.utility
 div.utility-switches
   display: flex
   flex-direction: column
-  margin-bottom: 1rem
-  div
+  > div
     display: flex
     flex-direction: row
     margin: 0.4rem 0
     div.label
-      padding-top: 0.25rem
-      width: 30%
+      padding-top: 0.64rem
+      width: 50%
       font-size: 1.1rem
       font-weight: bold
       color: $--color-text-regular
     div.field
-      width: 70%
-      font-size: 0.5rem
+      width: 50%
+      font-size: 1.1rem
       color: $--color-text-primary
+      margin-top: 0.4rem
   &.wide-label
     div div.label
       width: 50%

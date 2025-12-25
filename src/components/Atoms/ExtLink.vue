@@ -6,12 +6,17 @@ const props = defineProps({
   }
 })
 
+// Electron環境かどうかViteのdefineで埋め込みを判定
+const isElectron = __APP_ELECTRON__ === 'true'
+
 const followUrl = () => {
   // webpackのコンパイルで条件分岐
-  if (process.env.VUE_APP_ELECTRON) {
-    window.API.OpenURL(this.url)
+  if (isElectron) {
+    // RPC経由でメインプロセスにURLオープンを依頼
+    window.API.OpenURL(props.url)
   } else {
-    window.open(this.url, '_blank')
+    // 通常のブラウザ環境ではwindow.openで新規タブを開く
+    window.open(props.url, '_blank')
   }
 }
 </script>

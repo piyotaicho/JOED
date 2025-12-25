@@ -377,7 +377,7 @@ export default class AEmaster {
             .flat(2)
             .map(item => (typeof item === 'object') ? item.Value : item)
           for (const item of AE[propertyName]) {
-            if (items.indexOf(item) === -1) {
+            if (!items.includes(item)) {
               foundErrors.push(`${this.Components[component].Title} の選択内容(${item})がマスタにありません.`)
             }
           }

@@ -13,17 +13,20 @@
       @dragged="itemDragged">
       <template #title>
         <div class="sourceTitle">
-          <span>CSVファイルのフィールド</span>
-          <el-switch v-model="paneMode"
-            inactive-value="csv"
-            active-value="functions"></el-switch>
-          <span>生成値</span>
+          <div>
+            <InputSwitchField
+              v-model="paneMode"
+              title=""
+              :options="[{ text: 'CSVファイルのフィールド', value: 'csv' }, { text: '生成値', value: 'functions' }]"
+              />
+          </div>
 
           <div class="record_control" v-show="paneMode === 'csv'">
-            <span></span>
-            <span @click="moveCursor('prev')">◀</span>
-            <span @click="moveCursor('home')">インデックス</span>
-            <span @click="moveCursor('next')">▶</span>
+            <el-button-group>
+              <el-button size="small" @click="moveCursor('prev')" :icon="ArrowLeft" round/>
+              <el-button size="small" @click="moveCursor('home')" :icon="Document" round/>
+              <el-button size="small" @click="moveCursor('next')" :icon="ArrowRight" round/>
+            </el-button-group>
           </div>
         </div>
       </template>
@@ -33,9 +36,11 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import QueryPane from '@/components/Molecules/QueryPane'
+import QueryPane from '@/components/Molecules/QueryPane.vue'
+import InputSwitchField from '../Molecules/InputSwitchField.vue'
 import { prompt } from '@/modules/Popups'
 import { fieldNames, generatorFunctions } from '@/modules/ImportCSV.js'
+import { ArrowLeft, ArrowRight, Document } from '@element-plus/icons-vue'
 
 const props = defineProps({
   csv: {
@@ -188,18 +193,9 @@ div.QueryBuilder
   overflow-y: hidden
 
 div.sourceTitle
-  display: inline-flex
+  display: flex
   flex-direction: row
   justify-content: space-between
-  span
-    display: flexbox
-    padding-right: 1rem
-  div
-    padding-right: 1rem
-
-div.record_control
-  display: inline-block
-  :hover
-    color: var(--color-primary)
-    cursor: pointer
+  height: 1.2rem
+  margin-bottom: 0.4rem
 </style>

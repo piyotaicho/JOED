@@ -142,10 +142,10 @@ export default class Master {
   static parseItem (item, $attribute = 'Text', year = '') {
     if (typeof item === 'object') {
       if (year !== '') {
-        if (item.ValidTo && year > item.ValidTo) {
+        if (item?.ValidTo && year > item.ValidTo) {
           return undefined
         }
-        if (item.ValidFrom && year < item.ValidFrom) {
+        if (item?.ValidFrom && year < item.ValidFrom) {
           return undefined
         }
       }

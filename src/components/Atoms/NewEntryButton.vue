@@ -5,10 +5,13 @@
       @keydown.enter="cclickButton"
       @keydown.space="cclickButton"
       :accesskey="props.accesskey">
+      <Plus />
     </div>
 </template>
 
 <script setup>
+import { Plus } from '@element-plus/icons-vue'
+
 const props = defineProps({
   tabindex: {
     type: [String, Number],
@@ -26,6 +29,7 @@ const cclickButton = (event) => emit('click', event)
 <style lang="sass">
 div.new-entry-button
   position: absolute
+  cursor: pointer
   right: 5px
   bottom: 5px
   width: 30px
@@ -34,13 +38,6 @@ div.new-entry-button
   padding: 1px
   border-radius: 5px
   background: var(--background-color-list)
-  &::after
-    content: '\e6d9'
-    font-family: 'element-icons'
-    color: var(--color-primary)
-    font-size: 25px
-    padding-top: 6px
-    padding-left: 3px
   &:hover
     border-color: var(--color-text-regular)
     &::after

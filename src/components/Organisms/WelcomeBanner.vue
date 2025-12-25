@@ -1,9 +1,9 @@
 <script setup>
 import { ref } from 'vue'
 import { useStore } from '@/store'
-import CloseButton from '@/components/Atoms/CloseButton'
-import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
-import TheWrapper from '@/components/Atoms/TheWrapper'
+import CloseButton from '@/components/Atoms/CloseButton.vue'
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
+import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 
 const store = useStore()
 
@@ -22,15 +22,13 @@ function closeDialog () {
       <div id="welcome-banner-title">JOED5へようこそ</div>
       <div id="welcome-banner-text">
         症例・合併症登録にご協力頂きありがとうございます.<br/>
-        症例登録は、右上の<span class="welcome-banner-elementIcon">&#xe6d9;</span>ボタンを押して開始して下さい.<br/>
-        リストのソートなど各種機能は左上の<span class="welcome-banner-elementIcon">&#xe798;</span>ボタンからご利用いただけます.<br/>
-        初期設定やファイルの入出力はメニューから利用して下さい.<br/>
         <br />
-        お問い合わせは学会の症例登録ページからおねがいいたします.<br />
+        ソフトウエアは適宜更新されますので、定期的に確認と最新版へのアップデートをお願いいたします.<br />
+        なお、ソフトウエアならびに登録に関する質問は症例登録ページの問い合わせフォームから受け付けております.<br />
       </div>
 
       <div id="welcome-banner-control">
-        <LabeledCheckbox :container.sync="isShowStartupDialog">
+        <LabeledCheckbox v-model="isShowStartupDialog">
           次回起動時もこのメッセージを表示する
         </LabeledCheckbox>
       </div>
@@ -84,8 +82,4 @@ function closeDialog () {
   padding-right: 1.2rem
   color: #252525 // $--color-text-regular
 
-.welcome-banner-elementIcon
-  font-family: 'element-icons'
-  padding-left: 0.12rem
-  padding-right: 0.12rem
 </style>

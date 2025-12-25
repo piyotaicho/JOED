@@ -1,7 +1,7 @@
 <script setup>
 import { watch, ref, toRef } from 'vue'
-import ReportViewer from '@/components/Atoms/Reports'
-import { phraseTitledCSV } from '@/modules/CSV'
+import ReportViewer from '@/components/Atoms/Reports.vue'
+import { parseTitledCSV } from '@/modules/CSV'
 import { ValidateRecords, CreateDocument } from '@/modules/ImportMergeV4.js'
 import * as Popups from '@/modules/Popups'
 
@@ -35,7 +35,7 @@ const ProcessStream = async () => {
     Processing.value = true
     // mergeファイル(quoted, titled CSV)の読み込み
     // 不正なCSVファイル(フィールド数が違うなど)では例外を発生する.
-    const records = phraseTitledCSV(stream.value)
+    const records = parseTitledCSV(stream.value)
 
     // CSVのフォーマット確認
     LogMessages.value.push(
@@ -52,7 +52,7 @@ const ProcessStream = async () => {
     for (const record of records) {
       try {
         ImportedDocuments.push(CreateDocument(record))
-      } catch (error) {
+      } catch {
         if (!(await Popups.confirm('指定されたファイル中に不適切なレコードがあります.\n残りの処理を続行しますか?'))) {
           throw new Error('不適切なレコード\n', record.map(field => '"' + field + '"').join(','))
         }
@@ -71,9 +71,9 @@ const ProcessStream = async () => {
 <template>
   <div>
     <div>
-      症例登録システムver.4で入力し出力したmergeファイルから症例データを読み込むことが出来ます.<br/>
-      症例登録システムver.4にインポートして出力したデータは利用できません.上記ファイル種別で CSVファイル を使用してください.<br/>
-      また,システムの大幅な変更に伴い以下の制限がありますがご了承ください.<br/>
+      1999年登録まで利用していた症例登録システムver.4で入力し出力したmergeファイルから症例データを読み込むことが出来ます.<br/>
+      （症例登録システムver.4にインポートしてから出力したデータは利用できません.CSV入力を使用してください.）<br/>
+      以下の制限がありますがご了承ください.<br/>
       <ul>
         <li>この処理で読み込まれたデータについては, 全て編集と確認の操作が必要になります.</li>
         <li>合併症については「合併症なし」以外は自動での読み込みが出来ません. 個々に入力を御願いします.</li>

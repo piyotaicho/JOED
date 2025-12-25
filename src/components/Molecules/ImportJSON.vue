@@ -1,6 +1,6 @@
 <script setup>
 import { watch, ref, toRef } from 'vue'
-import ReportViewer from '@/components/Atoms/Reports'
+import ReportViewer from '@/components/Atoms/Reports.vue'
 import { ValidateRecords, CreateDocument } from '@/modules/ImportJSON'
 import * as Popups from '@/modules/Popups'
 
@@ -74,8 +74,6 @@ const ProcessStream = async () => {
         const newdocument = CreateDocument(record)
         ImportedDocuments.push(newdocument)
       } catch (error) {
-        console.warn(`importing JSON - ${error.message}.`)
-
         if (!(await Popups.confirmYesNo('指定されたファイル中に不適切なレコードが認められました.\n残りの処理を続行しますか?'))) {
           throw new Error('不適切なレコードにより変換を中止しました.')
         }

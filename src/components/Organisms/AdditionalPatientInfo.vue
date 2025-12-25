@@ -1,24 +1,14 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-// vue2.7 + compositionAPI store hack
+import { computed, useTemplateRef } from 'vue'
 import { useStore } from '@/store'
-import InputSwitchField from '../Molecules/InputSwitchField.vue'
-import InputTextField from '@/components/Molecules/InputTextField'
+import { InfoFilled } from '@element-plus/icons-vue'
+import InputSwitchField from '@/components/Molecules/InputSwitchField.vue'
+import InputTextField from '@/components/Molecules/InputTextField.vue'
+import { sw } from 'element-plus/es/locales.mjs'
 
-// vue2.7 + compositionAPI store hack
 const store = useStore()
 
-// Properties
 const props = defineProps({
-  Denial: {
-    type: Boolean
-  },
-  JSOGId: {
-    type: String
-  },
-  NCDId: {
-    type: String
-  },
   DateOfProcedure: {
     type: String
   },
@@ -27,22 +17,26 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:denial', 'update:JSOGId', 'update:NCDId'])
-
-const switchField = ref()
-onMounted(() => {
-  // コンポーネント内へスタイルシートを適応仕切れないので適宜対応
-  const el = switchField.value.$el.getElementsByClassName('field')[0]
-  el.style.paddingTop = '0.33rem'
+const Denial = defineModel('Denial', {
+  default: false
 })
 
-const Denial = computed({
-  get: () => props?.Denial || false,
-  set: (newValue) => emit('update:denial', newValue)
+const JSOGId = defineModel('JSOGId', {
+  default: ''
 })
+
+const NCDId = defineModel('NCDId', {
+  default: ''
+})
+
+const switchField = useTemplateRef('switchField')
+
+// 編集フラグ
+const editJSOGId = computed(() => store.getters['system/EditJSOGId'])
+const editNCDId = computed(() => store.getters['system/EditNCDId'])
 
 const hashString = computed(() => {
-  if (props?.Denial && props.DateOfProcedure && props.PatientId) {
+  if (Denial.value && props.DateOfProcedure !== '' && props.PatientId !== '') {
     return store.getters['system/generateHash'](
       JSON.stringify({
         DateOfProcedure: props.DateOfProcedure,
@@ -51,20 +45,10 @@ const hashString = computed(() => {
       props.DateOfProcedure.substring(0, 4) <= '2021'
     )
   } else {
-    return undefined
+    return '手術日と患者IDの入力が必須です'
   }
 })
-const editJSOGId = computed(() => store.getters['system/EditJSOGId'])
-const JSOGId = computed({
-  get: () => props?.JSOGId || '',
-  set: (newValue) => emit('update:JSOGId', newValue)
-})
 
-const editNCDId = computed(() => store.getters['system/EditNCDId'])
-const NCDId = computed({
-  get: () => props?.NCDId || '',
-  set: (newValue) => emit('update:NCDId', newValue)
-})
 
 const tooltip = computed(() => {
   let message = ''
@@ -93,43 +77,47 @@ const iconColor = computed(() => {
 
 const focusInput = () => {
   // スイッチへフォーカスする
-  const inputElement = switchField.value.$el.getElementsByTagName('input')[0]
-  inputElement.focus()
+  const inputElement = switchField.value.getElementsByTagName('input')[0]
+  if (inputElement !== null) {
+    inputElement.focus()
+  }
 }
 </script>
 
 <template>
   <div>
-    <el-popover placement="bottom" width="400" trigger="click" @after-enter="focusInput" :tabindex="-1">
-      <!-- popover content-->
-      <div class="additional-patient-info-panel">
-          <InputSwitchField
-            :value.sync="Denial"
-            title="登録拒否"
-            :options="['なし', 'あり', false, true, 'var(--color-primary)', 'var(--color-danger)']"
-            style="display: flex; flex-direction: row; height: 2.4rem; div.field { border: 1px solid red; };"
-            ref="switchField"
-          />
-        <div v-if="Denial">
-          <InputTextField title="レコード識別子" :value="hashString" readonly/>
-        </div>
-        <div v-if="editJSOGId || JSOGId !== ''">
-          <InputTextField title="腫瘍登録番号" :value.sync="JSOGId" placeholder="腫瘍登録患者No."/>
-        </div>
-        <div v-if="editNCDId || NCDId !== ''">
-          <InputTextField title="NCD症例識別コード" :value.sync="NCDId" placeholder="NCD症例識別コード"/>
-        </div>
-      </div>
+    <el-popover placement="bottom" width="400" trigger="click" @after-enter="focusInput">
       <!-- display button -->
-      <div slot="reference" class="additonal-patient-info-button">
-        <div v-if="tooltip === ''">
-          <i class="el-icon-info" :style="iconColor"></i>
+      <template #reference>
+        <div class="additonal-patient-info-button">
+          <template v-if="tooltip === ''">
+            <el-icon :style="{borderRadius: '50%', ...iconColor}" tabindex="0"><InfoFilled /></el-icon>
+          </template>
+          <template v-else>
+            <el-tooltip class="item" effect="dark" placement="right" :content="tooltip">
+              <el-icon :style="{borderRadius: '50%', ...iconColor} " tabindex="0"><InfoFilled /></el-icon>
+            </el-tooltip>
+          </template>
         </div>
-        <div v-else>
-          <el-tooltip class="item" effect="dark" placement="right" :content="tooltip">
-            <i class="el-icon-info" :style="iconColor"></i>
-          </el-tooltip>
-        </div>
+      </template>
+      <!-- popover content-->
+      <div class="additional-patient-info-panel" ref="switchField">
+        <InputSwitchField
+          title="登録拒否"
+          v-model="Denial"
+          :options="[{ text: 'なし', value: false, color: 'var(--color-primary)' }, { text: 'あり', value: true, color: 'var(--color-danger)' }]"
+          style="display: flex; flex-direction: row;"
+        />
+
+        <template v-if="Denial">
+          <InputTextField title="レコード識別子" :modelValue="hashString" readonly/>
+        </template>
+        <template v-if="editJSOGId || JSOGId !== ''">
+          <InputTextField title="腫瘍登録番号" v-model="JSOGId" placeholder="腫瘍登録患者No."/>
+        </template>
+        <template v-if="editNCDId || NCDId !== ''">
+          <InputTextField title="NCD症例識別コード" v-model="NCDId" placeholder="NCD症例識別コード"/>
+        </template>
       </div>
     </el-popover>
   </div>
@@ -137,11 +125,10 @@ const focusInput = () => {
 
 <style lang="sass">
 div.additonal-patient-info-button
-  display: flex
+  display: block
   justify-content: center
   align-content: center
-  font-size: 1.3rem
-
+  font-size: 1.2rem
 div.additional-patient-info-panel
   display: flex
   flex-direction: column

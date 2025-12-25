@@ -47,7 +47,7 @@ export function parseCSV (container) {
   return (rows)
 }
 
-export function phraseTitledCSV (container) {
+export function parseTitledCSV (container) {
   const doc = parseCSV(container)
 
   const header = doc.slice(0, 1).flat()
@@ -60,4 +60,37 @@ export function phraseTitledCSV (container) {
     }
     return record
   })
+}
+
+export function generateCSV (rows) {
+  const lines = []
+  for (const row of rows) {
+    const fields = []
+    for (const field of row) {
+      if (field.indexOf(',') >= 0 || field.indexOf('"') >= 0 || field.indexOf('\n') >= 0 || field.indexOf('\r') >= 0) {
+        // クオートが必要
+        fields.push('"' + field.replace(/"/g, '""') + '"')
+      } else {
+        fields.push(field)
+      }
+    }
+    lines.push(fields.join(','))
+  }
+  return lines.join('\r\n')
+}
+
+export function generateCSVFromObjects (objects, columns) {
+  const rows = []
+  // ヘッダー行
+  rows.push(columns.map(col => col.header))
+
+  // データ行
+  for (const object of objects) {
+    const row = []
+    for (const col of columns) {
+      row.push(object[col.key] !== undefined ? String(object[col.key]) : '')
+    }
+    rows.push(row)
+  }
+  return generateCSV(rows)
 }

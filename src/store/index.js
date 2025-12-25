@@ -1,25 +1,27 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import { createStore } from 'vuex'
+// データベースアクセスモジュールは環境依存のため分離(viteでパスが解決される)
 import * as NedbAccess from 'depmodules/NedbAccess'
 import system from '@/store/modules/system'
 import password from '@/store/modules/passwordauth'
 import { parseProcedureTime } from '@/modules/ProcedureTimes'
-Vue.use(Vuex)
 
-const store = new Vuex.Store({
+// 内部定数
+const numberLoadAtAtime = 20 // 一度にロードするデータの数
+
+// ストア
+const store = createStore({
   modules: {
     system, password
   },
   state: {
+    DataStore: [], // インメモリのデータベースレプリケーション
+
     DocumentIds: {
       List: [], // queryされたuidの全リスト
       TotalCount: 0, // 全登録数
       Range: 0, // 表示対象のuidの数
       Identifier: 0 // 表示クエリ変更のシリアル値
     },
-    LoadAtOnce: 20, // 一度にロードするデータの数
-
-    DataStore: [], // インメモリのデータベースレプリケーション
 
     // 以下データベースリストのクエリの待避
     Filters: [],
@@ -28,26 +30,17 @@ const store = new Vuex.Store({
     },
     Search: {
       IgnoreQuery: false,
-      Filter: {},
+      Filter: [],
       Preserve: ''
-    }
+    },
+
+    // 複数選択モードでエクスポート用に選択されたDocumentIdリスト
+    Selected: [],
   },
   getters: {
     // 現在queryで設定されているドキュメントの DocumentId を配列で返す.
     Uids (state) {
       return state.DocumentIds.List
-    },
-    // 現在表示されているドキュメントの DocumentId を配列で返す.
-    PagedUids (state) {
-      return state.DocumentIds.List.slice(0, state.DocumentIds.Range)
-    },
-    // 現在表示されているドキュメントの数
-    PagedUidsRange (state) {
-      return state.DocumentIds.Range
-    },
-    // 現在表示対象のドキュメントリストのシリアル値
-    DisplayIdentifier (state) {
-      return state.DocumentIds.Identifier
     },
     // 現在queryで設定されているドキュメントの数を返す.
     NumberOfCases (state) {
@@ -57,28 +50,39 @@ const store = new Vuex.Store({
     TotalNumberOfCases (state) {
       return state.DocumentIds.TotalCount
     },
+    // 現在queryで設定されているドキュメントの DocumentId を配列で返す.
+    PagedUids (state) {
+      return state.DocumentIds.List.slice(0, state.DocumentIds.Range)
+    },
+    // 現在表示対象となっているドキュメントの数
+    PagedUidsRange (state) {
+      return state.DocumentIds.Range
+    },
     // 指定された DocumentId の前後の DocumentId を返す.
     // 存在しないものは 0.
-    NextUids (state, getters) {
-      return function (currentUid) {
+    // @param {Number} currentUid
+    // @param {Number} offset 0:Self, -1:Prev, +1:Next
+    GetRelativeDocumentId (state, getters) {
+      return function (currentUid, offset) {
         const index = state.DocumentIds.List.indexOf(currentUid)
         if (currentUid === 0 || index === -1) {
-          return { Prev: 0, Next: 0 }
-        } else {
-          const listlength = state.DocumentIds.List.length
-          return {
-            Prev: index === 0 ? 0 : getters.Uids[index - 1],
-            Next: index === listlength - 1 ? 0 : getters.Uids[index + 1]
-          }
+          return 0
         }
+        const offsetedIndex = index + offset
+        if (offsetedIndex <= 0) {
+          return 0
+        }
+        if (offsetedIndex > state.DocumentIds.List.length) {
+          return 0
+        }
+        return getters.Uids[offsetedIndex]
       }
     },
     // DocumentId をもつドキュメントを取得する. ロードされていない場合は空のオブジェクトが返る.
-    // @param {Number or Object}
+    // @param {Number}
     CaseDocument (state) {
-      return function (payload) {
-        if (payload) {
-          const uid = payload || payload.DocumentId
+      return function (uid) {
+        if (Number.isInteger(uid) && uid > 0) {
           const DocumentIndex = state.DataStore.findIndex(item => item.DocumentId === uid)
           if (DocumentIndex !== -1) {
             return state.DataStore[DocumentIndex]
@@ -95,59 +99,101 @@ const store = new Vuex.Store({
         Search: state.Search
       }
     },
+    // 表示設定が規定から変更されているかを取得
+    ViewSettingsChanged (state) {
+      const defaultFilters = state.system.settings.View.Filters || []
+      const defaultSort = state.system.settings.View.Sort || { DocumentId: -1 }
+
+      // Filtersの比較
+      if (state.Filters.length !== defaultFilters.length) {
+        return true
+      }
+      for (let i = 0; i < state.Filters.length; i++) {
+        const filterA = state.Filters[i]
+        const filterB = defaultFilters[i]
+        if (filterA.Field !== filterB.Field || filterA.Value !== filterB.Value) {
+          return true
+        }
+      }
+
+      // Sortの比較
+      const sortKeysA = Object.keys(state.Sort)
+      const sortKeysB = Object.keys(defaultSort)
+      if (sortKeysA.length !== sortKeysB.length) {
+        return true
+      }
+      for (const key of sortKeysA) {
+        if (state.Sort[key] !== defaultSort[key]) {
+          return true
+        }
+      }
+
+      return false
+    },
     // 検索が有効かを取得
     SearchActivated (state) {
       return Object.keys(state.Search.Filter).length > 0
     },
     // 現在のView設定からのクエリを作成する
     ViewQuery (state) {
-      const filters = (state.Filters && [...state.Filters]) || []
-      const sort = (state.Sort && { ...state.Sort }) || { DocumentId: -1 }
       const query = {}
 
-      if (Object.keys(state.Search.Filter).length > 0) {
+      // フィルタの初期値を設定
+      const filters = (state.Filters && [...state.Filters]) || []
+      const sort = (state.Sort && { ...state.Sort }) || { DocumentId: -1 }
+
+      // 検索が有効ならば検索条件にあわせてフィルタを置換・追加
+      if (state.Search.Filter.length > 0) {
         if (state.Search.IgnoreQuery) {
-          filters.splice(0, filters.length, state.Search.Filter)
+          filters.splice(0, filters.length, ...state.Search.Filter)
         } else {
-          filters.push(state.Search.Filter)
+          filters.push(...state.Search.Filter)
         }
       }
 
+      // フィルタ条件のクエリへの追加
       for (const filter of filters) {
-        const key = filter.Field
-        const value = filter.Value
+        const field = filter?.Field
+        const value = filter?.Value
 
-        if (query[key] === undefined) {
-          query[key] = value
+        if (field === undefined || value === undefined) {
+          continue
+        }
+
+        if (query[field] === undefined) {
+          // 指定フィールドへのフィルタ未定義ならば $eq として値を直接追加
+          query[field] = value
         } else {
-          if (query[key].$in) {
-            query[key].$in.push(value)
+          // 指定フィールドへのフィルタ既定義 -> $in: [] 条件に変換
+          if (query[field]?.$in) {
+            query[field].$in.push(value)
           } else {
-            query[key] = { $in: [query[key], value] }
+            query[field] = { $in: [query[field], value] }
           }
         }
       }
 
-      // DocumentId > 0 は DocumentIdの指定が無い限り必ず入るのでハードコード
+      // DocumentIdの指定が無い限り DocumentId > 0 は必須条件
       if (!query.DocumentId) {
         query.DocumentId = { $gt: 0 }
       }
 
+      // DateOfProcedureの正規表現変換
       if (query.DateOfProcedure) {
-        let regexp = ''
-        if (query.DateOfProcedure.$in) {
-          regexp = query.DateOfProcedure.$in.join('|')
-        } else {
-          regexp = query.DateOfProcedure
-        }
-        regexp = '^(' + regexp + ')-'
-        query.DateOfProcedure = { $regex: new RegExp(regexp) }
+        const datepart = query.DateOfProcedure.$in
+          ? query.DateOfProcedure.$in.join('|')
+          : query.DateOfProcedure
+        query.DateOfProcedure = { $regex: new RegExp( `^(${datepart})-` ) }
       }
 
       return {
         Query: query,
         Sort: sort
       }
+    },
+    // エクスポート用に選択されたDocumentIdリストを取得
+    GetSelectedUidsForExport (state) {
+      return state.Selected
     }
   },
 
@@ -156,8 +202,8 @@ const store = new Vuex.Store({
     //
     // @param {Object} DocumentIds
     SetDocumentIds (state, payload) {
-      Vue.set(state.DocumentIds, 'List', payload.DocumentIds)
-      Vue.set(state.DocumentIds, 'Identifier', state.DocumentIds.Identifier + 1)
+      state.DocumentIds.List = payload.DocumentIds
+      state.DocumentIds.Identifier = state.DocumentIds.Identifier + 1
     },
     // DataStoreにデータベースをキャッシュする.
     //
@@ -165,9 +211,9 @@ const store = new Vuex.Store({
     SetDatastore (state, payload) {
       const foundIndex = state.DataStore.findIndex(item => item.DocumentId === payload.DocumentId)
       if (foundIndex === -1) {
-        Vue.set(state.DataStore, state.DataStore.length, payload)
+        state.DataStore.push(payload)
       } else {
-        Vue.set(state.DataStore, foundIndex, payload)
+        state.DataStore.splice(foundIndex, 1, payload)
       }
     },
     // キャッシュDataStoreから指定のドキュメントを破棄.
@@ -176,24 +222,24 @@ const store = new Vuex.Store({
     RemoveDatastore (state, payload) {
       const foundIndex = state.DataStore.findIndex(item => item.DocumentId === payload.DocumentId)
       if (foundIndex !== -1) {
-        Vue.delete(state.DataStore, foundIndex)
+        state.DataStore.splice(foundIndex, 1)
       }
     },
     // 総症例数
     //
     // @Param {Number}
     SetTotalDocumentCount (state, payload) {
-      Vue.set(state.DocumentIds, 'TotalCount', payload)
+      state.DocumentIds.TotalCount = payload
     },
     // 表示対象数をクリア
     //
     ClearDocumentListRange (state) {
-      Vue.set(state.DocumentIds, 'Range', Math.min(state.LoadAtOnce, state.DocumentIds.List.length))
+      state.DocumentIds.Range = Math.min(numberLoadAtAtime, state.DocumentIds.List.length)
     },
     // 表示対象数を増やす
     //
     IncrementDocumentListRange (state) {
-      Vue.set(state.DocumentIds, 'Range', Math.min(state.DocumentIds.Range + state.LoadAtOnce, state.DocumentIds.List.length))
+      state.DocumentIds.Range = Math.min(state.DocumentIds.Range +  numberLoadAtAtime, state.DocumentIds.List.length)
     },
 
     // Filtersを設定
@@ -201,7 +247,7 @@ const store = new Vuex.Store({
     // @param {Object}
     SetFilters (state, payload) {
       const newFilters = Array.isArray(payload) ? payload : state.system.settings.View.Filters
-      Vue.set(state, 'Filters', newFilters)
+      state.Filters = newFilters
     },
 
     // Searchを設定
@@ -209,13 +255,13 @@ const store = new Vuex.Store({
     // @param {Object}
     SetSearch (state, payload = {}) {
       if (payload.Filter !== undefined) {
-        Vue.set(state.Search, 'Filter', payload.Filter)
+        state.Search.Filter = payload.Filter
       }
       if (payload.IgnoreQuery !== undefined) {
-        Vue.set(state.Search, 'IgnoreQuery', !!payload.IgnoreQuery)
+        state.Search.IgnoreQuery = !!payload.IgnoreQuery
       }
       if (payload.Preserve !== undefined) {
-        Vue.set(state.Search, 'Preserve', payload.Preserve)
+        state.Search.Preserve = payload.Preserve
       }
     },
 
@@ -223,14 +269,23 @@ const store = new Vuex.Store({
     //
     // @param {Object}
     SetSort (state, payload = {}) {
-      const keyvalue = Object.entries(payload)[0]
-      Vue.set(state, 'Sort',
-        (keyvalue && keyvalue.length === 2)
-          ? {
-              [keyvalue[0]]: keyvalue[1]
-            }
-          : state.system.settings.View.Sort
-      )
+      const [field, value] = Object.entries(payload).flat()
+      if (field !== undefined && value !== undefined) {
+        state.Sort = { [field]: value }
+      } else {
+        state.Sort = state.system.settings.View.Sort
+      }
+    },
+
+    // エクスポート用に選択されたDocumentIdリストを設定
+    //
+    // @param {Array} DocumentIdの配列
+    SetSelectedUidsForExport (state, payload) {
+      if (Array.isArray(payload)) {
+        state.Selected.splice(0, state.Selected.length, ...payload)
+      } else {
+        state.Selected.splice(0)
+      }
     }
   },
 
@@ -238,43 +293,59 @@ const store = new Vuex.Store({
     // データベース操作 - moduleのフォルダで実行環境を分離する作戦
     // Insert document
     // @Param {Object} Document
-    dbInsert (context, payload) {
+    dbInsert (_, payload) {
       return NedbAccess.Insert(payload)
     },
     // Find documents
     // @Param {Object} Query, Projection, Sort,
     // @Param {Number} Skip, Limit
-    dbFind (context, payload) {
+    dbFind (_, payload) {
       return NedbAccess.Find(payload)
     },
-    // Find a first document
+    // Find a document
     // @Param {Object} Query, Projection, Sort,
     // @Param {Number} Skip
-    dbFindOne (context, payload) {
+    dbFindOne (_, payload) {
       return NedbAccess.FindOne(payload)
     },
     // Find a document by hash
     // @Param {String} Hash
     // @Param {Number} SALT
-    dbFindOneByHash (context, payload) {
+    dbFindOneByHash (_, payload) {
       return NedbAccess.FindOneByHash(payload)
     },
     // Count matched documents
     // @Param {Object} Query
-    dbCount (context, payload) {
+    dbCount (_, payload) {
       return NedbAccess.Count(payload)
     },
     // Update documents
     // @Param {Object} Query, Update, Options
-    dbUpdate (context, payload) {
+    dbUpdate (_, payload) {
       return NedbAccess.Update(payload)
     },
     // Remove documents
     // @Param {Object} Query, Options
-    dbRemove (context, payload) {
+    dbRemove (_, payload) {
       return NedbAccess.Remove(payload)
     },
+    // Dump database documents
+    dbDump () {
+      return NedbAccess.Dump()
+    },
+    // Drop database
+    // @Param (boolean) removeBackupFiles - バックアップファイルも削除する
+    dbDrop ({state}, payload) {
+      NedbAccess.Drop(payload)
 
+      // stateのDataStoreもクリアする
+      state.DataStore.splice(0, state.DataStore.length)
+      state.DocumentIds.List.splice(0, state.DocumentIds.List.length)
+      state.DocumentIds.TotalCount = 0
+      state.DocumentIds.Range = 0
+      state.DocumentIds.Identifier = 0
+      state.Selected.splice(0, state.Selected.length)
+    },
     // DocumentIdリストの更新. データベースの操作後は必ず実行する.
     //
     //
@@ -336,10 +407,7 @@ const store = new Vuex.Store({
         context.commit('SetTotalDocumentCount',
           await context.dispatch('dbCount', { Query: { DocumentId: { $gt: 0 } } })
         )
-      } catch (error) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.error(error)
-        }
+      } catch {
         throw new Error('データベースエラー(FIND)です.')
       }
     },
@@ -364,10 +432,7 @@ const store = new Vuex.Store({
           context.commit('SetDatastore',
             await context.dispatch('dbFindOne', { Query: { DocumentId: payload.DocumentId }, Projection: { _id: 0 } })
           )
-        } catch (error) {
-          if (process.env.NODE_ENV !== 'production') {
-            console.error(error)
-          }
+        } catch {
           throw new Error('データベースエラー(FINDONE)です.')
         }
       }
@@ -391,10 +456,7 @@ const store = new Vuex.Store({
         if (error.message === 'DUP') {
           throw new Error(`同一の日付(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
         } else {
-          if (process.env.NODE_ENV !== 'production') {
-            console.error(error)
-          }
-          throw new Error('データベースエラー(INSERT/UPDATE)です.')
+          throw new Error('データベースエラー(COUNT)です.')
         }
       }
 
@@ -441,11 +503,7 @@ const store = new Vuex.Store({
 
         // レコード操作をしたら必ずキャッシュをリロード
         await context.dispatch('ReloadDocumentList')
-      } catch (error) {
-        // Insertに失敗
-        if (process.env.NODE_ENV !== 'production') {
-          console.error(error)
-        }
+      } catch {
         throw new Error('データベースエラー(INSERT)です.')
       }
     },
@@ -458,6 +516,7 @@ const store = new Vuex.Store({
       if (payload.DocumentId <= 0) {
         throw new Error('内部IDの指定に問題があります.')
       }
+
       try {
         // 重複入力の確認
         const documents = await context.dispatch('dbFind', {
@@ -469,17 +528,14 @@ const store = new Vuex.Store({
         })
         for (const document of documents) {
           if (document.DocumentId !== payload.DocumentId) {
-            throw new Error('同一の日付に同一IDの症例は登録できません.')
+            throw new Error('DUP')
           }
         }
       } catch (error) {
         if (error.message === 'DUP') {
           throw new Error(`同一の日付(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
         } else {
-          if (process.env.NODE_ENV !== 'production') {
-            console.error(error)
-          }
-          throw new Error('データベースエラー(UPDATE)です.')
+          throw new Error('データベースエラー(FIND)です.')
         }
       }
 
@@ -495,10 +551,7 @@ const store = new Vuex.Store({
 
         // レコード操作をしたら必ずキャッシュをリロード
         await context.dispatch('ReloadDocumentList')
-      } catch (error) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.error(error)
-        }
+      } catch {
         throw new Error('データベースエラー(UPDATE)です.')
       }
     },
@@ -531,10 +584,7 @@ const store = new Vuex.Store({
 
         // レコード操作をしたら必ずキャッシュをリロード
         await context.dispatch('ReloadDocumentList')
-      } catch (error) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.error(error)
-        }
+      } catch {
         throw new Error('データベースエラー(REMOVE)です.')
       }
     },
@@ -542,17 +592,21 @@ const store = new Vuex.Store({
     // 症例データのもつ DateOfProcedure から年次と症例数を集計したobjectを返す
     //
     async GetYears (context) {
-      const documents = await context.dispatch('dbFind',
-        {
-          Query: { DocumentId: { $gt: 0 } },
-          Projection: { DateOfProcedure: 1, _id: 0 }
-        })
-      const CountByYear = {}
-      for (const document of documents) {
-        const year = document.DateOfProcedure.substring(0, 4)
-        CountByYear[year] = (CountByYear[year] === undefined) ? 1 : CountByYear[year] + 1
+      try {
+        const documents = await context.dispatch('dbFind',
+          {
+            Query: { DocumentId: { $gt: 0 } },
+            Projection: { DateOfProcedure: 1, _id: 0 }
+          })
+        const CountByYear = {}
+        for (const document of documents) {
+          const year = document.DateOfProcedure.substring(0, 4)
+          CountByYear[year] = (CountByYear[year] === undefined) ? 1 : CountByYear[year] + 1
+        }
+        return CountByYear
+      } catch {
+        throw new Error('データベースエラー(FIND)です.')
       }
-      return CountByYear
     }
   }
 })

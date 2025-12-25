@@ -1,7 +1,8 @@
 <script setup>
-import { onMounted, ref, computed, nextTick } from 'vue'
+import { onMounted, ref, reactive, computed, nextTick } from 'vue'
 import { useStore } from '@/store'
-import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
+import InputSwitchField from '../Molecules/InputSwitchField.vue'
 import { CategoriesOfProcedure } from '@/modules/CaseValidater'
 import * as Popups from '@/modules/Popups'
 
@@ -9,7 +10,7 @@ const store = useStore()
 
 const emit = defineEmits(['changed'])
 
-const data = ref({
+const setting = reactive({
   // カテゴリ: CaterogyTranslation から作成される
   Categories: {},
   // 年次: created()で非同期にロードされる
@@ -21,26 +22,43 @@ const data = ref({
     登録拒否: { Field: 'Denial', Value: true }
   },
   Sort: {
-    Item: 'DocumentId',
+    Field: 'DocumentId',
+    // ソート Ascending: 1, Descending: -1
     Order: -1
   }
 })
 
+// 選択の内容配列
 const FilterItems = ref([])
 
-// 選択肢項目オブジェクトの初期化
-function initData () {
-  // カテゴリをインポート
+/**
+ * 表示設定の選択肢設定と
+ * 現在の表示設定をstoreからインポート
+ */
+onMounted(async () => {
+  // カテゴリを設定
   CategoriesOfProcedure.forEach(categorylabel => {
-    data.value.Categories[categorylabel] = { Field: 'TypeOfProcedure', Value: categorylabel }
+    setting.Categories[categorylabel] = { Field: 'TypeOfProcedure', Value: categorylabel }
   })
-}
 
-// onCreated: オブジェクト生成時の初期設定
-initData()
+  // 年次を設定
+  await store.dispatch('GetYears')
+    .then((CountByYear) => {
+      Object.keys(CountByYear).forEach(year => {
+        setting.Years[year + '年'] = { Field: 'DateOfProcedure', Value: year }
+      })
+    })
+    .catch(async () => {
+      await Popups.alert('データベースエラーにより年次リストの取得に失敗しました.')
+      setting.Years = {}
+    })
 
-// onMounted: 既存の設定の反映
-onMounted(async () => await ImportSettings())
+  await nextTick()
+
+  // 現在の表示設定をインポート
+  ReflectSettings()
+  await nextTick()
+})
 
 const isFilterItemsEmpty = computed({
   get: () => FilterItems.value.length === 0,
@@ -53,36 +71,45 @@ const isFilterItemsEmpty = computed({
 })
 
 /**
- * 現在の表示設定をstoreからインポート
+ * 現在の表示設定をstoreに保存
  */
-const ImportSettings = async () => {
-  // 年次データを更新
-  await store.dispatch('GetYears')
-    .then((CountByYear) => {
-      Object.keys(CountByYear).forEach(year => {
-        data.value.Years[year + '年'] = { Field: 'DateOfProcedure', Value: year }
-      })
-    })
+const Apply = async () => {
+  const FilterObjects = FilterItems.value
+    .map(filter => setting.Categories[filter] || setting.Years[filter] || setting.Conditions[filter])
+    .filter(filter => filter)
 
-  // 現在の表示設定をインポート
+  store.commit('SetFilters', FilterObjects)
+  store.commit('SetSort', { [setting.Sort.Field]: setting.Sort.Order })
+  await DisableSearch()
+  emit('changed')
+}
+
+/**
+ * storeの表示設定を反映
+ */
+const ReflectSettings = () => {
   const view = store.getters.ViewSettings
 
   if (view) {
-    if (view.Sort && Object.entries(view.Sort).length > 0) {
-      [data.value.Sort.Item, data.value.Sort.Order] = Object.entries(view.Sort)[0]
+    // ソート設定の取得
+    const [field, order] = Object.entries(view.Sort || {}).flat()
+    if (field !== undefined && order !== undefined ) {
+      setting.Sort.Field = field
+      setting.Sort.Order = order
     }
 
+    // フィルタの設定値を取得して配列に反映
     FilterItems.value.splice(0)
     if (view.Filters) {
       const newFilters = view.Filters.map(filter => {
         switch (filter.Field) {
-          case 'TypeOfProcedure':
+          case 'TypeOfProcedure': // カテゴリ
             return filter.Value
-          case 'DateOfProcedure':
+          case 'DateOfProcedure': // 年次
             return filter.Value + '年'
-          default:
-            for (const condition in data.value.Conditions) {
-              if (data.value.Conditions[condition].Field === filter.Field) {
+          default:  // その他：合併症あり・読み込み症例・情報あり・登録拒否
+            for (const condition in setting.Conditions) {
+              if (setting.Conditions[condition].Field === filter.Field) {
                 return condition
               }
             }
@@ -95,23 +122,9 @@ const ImportSettings = async () => {
 }
 
 /**
- * 現在の表示設定をstoreに保存
- */
-const Apply = async () => {
-  const FilterObjects = FilterItems.value
-    .map(filter => data.value.Categories[filter] || data.value.Years[filter] || data.value.Conditions[filter])
-    .filter(filter => filter)
-
-  store.commit('SetFilters', FilterObjects)
-  store.commit('SetSort', { [data.value.Sort.Item]: data.value.Sort.Order })
-  await DisableSearch()
-  emit('changed')
-}
-
-/**
  * 現在の表示設定を規定として保存
  */
-const Store = async () => {
+const StoreDefault = async () => {
   try {
     await store.dispatch('system/SaveCurrentView')
     await Popups.information('現在の表示設定を規定として保存しました.\n環境設定から初期設定にリセットできます.')
@@ -122,12 +135,12 @@ const Store = async () => {
 /**
  * storeに保存された規定の表示設定に戻す
  */
-const Revert = async () => {
+const RevertToDefault = async () => {
   store.commit('SetFilters', {})
   store.commit('SetSort', {})
   await DisableSearch()
   emit('changed')
-  ImportSettings()
+  ReflectSettings()
   nextTick()
 }
 
@@ -136,7 +149,7 @@ const Revert = async () => {
  */
 const DisableSearch = async () => {
   if (store.getters.SearchActivated) {
-    if (await Popups.confirmYesNo('検索が実行されています.\n検索を解除しますか?')) {
+    if (await Popups.confirmYesNo('検索が実行されています.\n検索を解除して表示の設定を更新しますか?')) {
       store.commit('SetSearch', {
         Filter: {}
       })
@@ -150,7 +163,7 @@ const DisableSearch = async () => {
     <div class="subtitle">表示の順番</div>
     <div class="menu-item-content">
       <div>
-        <select v-model="data.Sort.Item">
+        <select v-model="setting.Sort.Field">
           <option value="DocumentId">登録順</option>
           <option value="DateOfProcedure">手術日</option>
           <option value="ProcedureTime">手術時間</option>
@@ -161,26 +174,24 @@ const DisableSearch = async () => {
       </div>
 
       <div>
-        <el-switch
-          v-model="data.Sort.Order"
-          active-text="昇順"
-          :active-value="1"
-          active-color="var(--color-primary)"
-          inactive-text="降順"
-          :inactive-value="-1"
-          inactive-color="var(--color-primary)" />
+        <InputSwitchField
+          v-model="setting.Sort.Order"
+          title=""
+          :options="[{ text: '降順', value: -1 }, { text: '昇順', value: 1}]"
+          style="padding-top: 0.13rem;"
+        />
       </div>
     </div>
 
     <div class="subtitle">表示する内容</div>
     <div class="menu-item-content" id="display-item-selection">
-      <div><LabeledCheckbox :container.sync="isFilterItemsEmpty">全て表示する</LabeledCheckbox></div>
+      <div><LabeledCheckbox v-model="isFilterItemsEmpty">全て表示する</LabeledCheckbox></div>
 
       <div>
         <div>カテゴリ</div>
         <div>
-          <template v-for="(value, category) in data.Categories">
-            <LabeledCheckbox :container.sync="FilterItems" :value="category" :key="category"></LabeledCheckbox>
+          <template v-for="(value, category) in setting.Categories" :key="category">
+            <LabeledCheckbox v-model="FilterItems" :value="category" />
           </template>
         </div>
       </div>
@@ -188,8 +199,8 @@ const DisableSearch = async () => {
       <div>
         <div>年次</div>
         <div>
-          <template v-for="(value, year) in data.Years">
-            <LabeledCheckbox :container.sync="FilterItems" :value="year" :key="year"></LabeledCheckbox>
+          <template v-for="(value, year) in setting.Years" :key="year">
+            <LabeledCheckbox v-model="FilterItems" :value="year" />
           </template>
         </div>
       </div>
@@ -197,8 +208,8 @@ const DisableSearch = async () => {
       <div>
         <div>情報</div>
         <div>
-          <template v-for="(value, condition) in data.Conditions">
-            <LabeledCheckbox :container.sync="FilterItems" :value="condition" :key="condition" ></LabeledCheckbox>
+          <template v-for="(value, condition) in setting.Conditions" :key="condition">
+            <LabeledCheckbox v-model="FilterItems" :value="condition" />
           </template>
         </div>
       </div>
@@ -209,12 +220,12 @@ const DisableSearch = async () => {
         設定
         <template v-slot:dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item @click.native="Store()">現在の表示設定を規定として保存</el-dropdown-item>
+            <el-dropdown-item @click="RevertToDefault()">規定の設定に戻す</el-dropdown-item>
+            <el-dropdown-item divided />
+            <el-dropdown-item @click="StoreDefault()">現在の表示設定を規定として保存</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
-
-      <el-button type="success" style="margin-left: 0.715rem;" @click="Revert()">規定の設定に戻す</el-button>
     </div>
   </div>
 </template>

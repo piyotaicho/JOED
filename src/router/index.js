@@ -1,10 +1,7 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import Store from '@/store/index'
 
-import ViewLogin from '@/views/VLogin'
-
-Vue.use(VueRouter)
+import ViewLogin from '@/views/VLogin.vue'
 
 const routes = [
   {
@@ -15,62 +12,86 @@ const routes = [
   {
     name: 'list',
     path: '/list',
-    component: () => import('@/views/VList'),
+    component: () => import('@/views/VList.vue'), // VList,
     meta: { requireLogin: true }
   },
   {
     name: 'edit',
     path: '/edit/:uid',
-    component: () => import('@/views/VEdit'),
+    component: () => import('@/views/VEdit.vue'), // VEdit,
     props: true,
     meta: { requireLogin: true },
     children: [
       {
         name: 'diagnosis',
         path: 'diagnosis',
-        component: () => import('@/views/VEditDiagnosis'),
-        props: true
+        component: () => import('@/views/VEditDiagnosis.vue'),
+        props: route => ({
+          index: parseInt(route.query.index),
+          value: route.query.value,
+          year: route.query.year
+        })
       },
       {
         name: 'procedure',
         path: 'procedure',
-        component: () => import('@/views/VEditProcedure'),
-        props: true
+        component: () => import('@/views/VEditProcedure.vue'),
+        props: route => ({
+          index: parseInt(route.query.index),
+          value: route.query.value,
+          year: route.query.year
+        })
+      },
+      {
+        name: 'approach',
+        path: 'approach',
+        component: () => import('@/views/VEditApproach.vue'),
+        props: route => ({
+          value: route.query.value,
+          year: route.query.year,
+          procedureTypes: route.query?.procedureTypes || '[]'
+        })
       },
       {
         name: 'AE',
         path: 'AE',
-        component: () => import('@/views/VEditAE'),
-        props: true
+        component: () => import('@/views/VEditAE.vue'),
+        props: route => ({
+          index: parseInt(route.query.index),
+          value: route.query.value,
+          year: route.query.year
+        })
       }
     ]
   },
   {
     name: 'utilities',
     path: '/utilities',
-    component: () => import('@/views/VUtilities'), // ViewUtilites,
+    component: () => import('@/views/VUtilities.vue'),
     meta: { requireLogin: true },
     children: [
       {
         name: 'export',
-        path: 'export'
+        path: 'export',
+        component: () => import('@/views/VUtilities.vue'),
       },
       {
         name: 'import',
-        path: 'import'
+        path: 'import',
+        component: () => import('@/views/VUtilities.vue'),
       }
     ]
   },
   {
     name: 'settings',
     path: '/settings',
-    component: () => import('@/views/VSettings'), // VSettings,
+    component: () => import('@/views/VSettings.vue'),
     meta: { requireLogin: true }
   }
 ]
 
-const router = new VueRouter({
-  mode: 'hash',
+const router = createRouter({
+  history: createWebHashHistory(),
   routes
 })
 

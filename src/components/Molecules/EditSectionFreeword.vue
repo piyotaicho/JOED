@@ -1,69 +1,68 @@
 <script setup>
-import { ref, onMounted, computed, nextTick } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
+import { DArrowLeft, DArrowRight, Search } from '@element-plus/icons-vue'
 
 const props = defineProps({
-  value: {
-    type: String
-  },
   disabled: {
     type: Boolean,
     default: true
   }
 })
-const emit = defineEmits(['update:value', 'click-search'])
+const modelValue = defineModel({
+  type: String
+})
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const emit = defineEmits(['search'])
 
-const expandInput = ref(false)
+// element refs
 const inputElement = ref()
 
+// reactive states
+const expandInput = ref(false)
+
 onMounted(() => {
-  if (props.value !== '') {
+  if (modelValue.value !== '') {
     expandInput.value = true
   }
 })
 
-const typedValue = computed({
-  get: () => props.value,
-  set: (value) => emit('update:value', value)
-})
-
-const toggle = () => {
+const Toggle = () => {
   expandInput.value = !expandInput.value
   if (expandInput.value) {
     nextTick(() => inputElement.value.focus())
   }
 }
 
-const open = async () => {
+const Open = async () => {
   expandInput.value = true
   await nextTick()
   inputElement.value.focus()
 }
-const search = () => emit('click-search')
 
-defineExpose({ open })
+defineExpose({ Open })
 </script>
 
 <template>
   <div class="flex-content inputbox">
     <div class="w20"></div>
     <div class="w20 subtitle">
-      <div class="invisible-button" @click="toggle">
+      <div class="invisible-button" @click="Toggle">
         <span>自由入力</span>
         <span style="padding-left: 1rem;">
-          <i :class="[expandInput ? 'el-icon-d-arrow-left' : 'el-icon-d-arrow-right']"/>
+          <el-icon><component :is="expandInput ? DArrowLeft : DArrowRight" /></el-icon>
         </span>
       </div>
     </div>
     <div class="w40" v-show="expandInput">
         <input type="text"
-          v-model="typedValue"
+          v-model="modelValue"
           :disabled="props.disabled"
           placeholder="カテゴリ選択後に入力・検索可能になります"
           ref="inputElement"
         />
     </div>
     <div class="w20" v-show="expandInput">
-      <el-button type="primary" @click="search" icon="el-icon-search" :disabled="props.disabled">候補を検索</el-button>
+      <el-button type="primary" @click="$emit('search')" :icon="Search" :disabled="props.disabled">候補を検索</el-button>
     </div>
   </div>
 </template>

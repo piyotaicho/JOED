@@ -4,20 +4,19 @@
 
 ## 構成
 
-- vue2 + vuex + router
+- vue3 + vuex + router
 - electron
 
 追加パッケージ
 
 - nedb (seald/nedb)
-- Element
-- Vue.Draggable
-- Vuejs Datepicker
-- Vue infinite loading
-- js-xxhash
-- Difflib.js
-- encoding.js
 - electron store
+- ElementPlus
+- Vue.draggable.next
+- Vue Datepicker
+- js-xxhash
+- Fuse.js
+- encoding.js
 
 ## 配布
 リリースから最新版バイナリをダウンロードしてください.
@@ -44,7 +43,21 @@ Windowsではデータをユーザのデータフォルダに格納するので�
 allでバックアップも削除.
 lockでは何らかの原因でロックがかかったままになった場合, ロックファイルを削除してロックを解除.(--unlockに移動)
 
+#### --enable-advanced-settings, --disable-advanced-settings
+高度な設定画面のボタン有効・無効を設定. 設定画面からは変更できない仕様で、このオプションをつけて起動して設定保存で永続化される.
+
 ## 変更履歴
+- 2025.12.25 macOSでのビルドに関する諸問題を解決. コマンドラインオプション追加. ユーザ環境に考慮してElectron36にダウングレードしてビルド.リリース作成.
+- 2025-12-19 [2.0.2179]リファクタリング.機能面でのリリースバージョン.
+- 2025-12-16 フロントエンドからのデータベース削除・復旧を実装.
+- 2025-12-03 マスタ更新.
+- 2025-11-30 リスト検索を2項目まで増加, CSV出力を実装.
+- 2025-11-18 全ての新規機能の修正、動作を確認.βテストへ.
+- 2025-11-13 マスタ修正と検索を修正.
+- 2025-11-09 メモの入力を実装.
+- 2025-11-06 属性表示のデザイン修正.
+- 2025-11-02 Electron/nsisインストーラービルドスクリプトの移行完了.
+- 2025-10-30 ビルド環境のVue3(JS),Viteへの移行を完了. アプローチ法の入力を実装.
 - 2025-01-19 [1.5.1845]症例編集画面で削除ボタンで削除後にリストに戻らない現象を修正.
 - 2025-01-13 [1.5.1839]ロボット支援下単純子宮全摘出術のチェックに問題があったため修正, 関連するルーチンでもチェック問題を回避するよう対処.
 - 2025-01-05 [Version 1.5.1831] 各種リファクタリング, ドキュメント更新. 正式リリース.
@@ -88,7 +101,7 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |NumberOfCases              |integer| |登録手術数（サードパーティーからの書き出しに対するエラーチェック用）|
 |NumberOfDenial             |integer| |登録拒否数|
 |Version                    |string | |提出データ作成時のソフトウエアのバージョン|
-|Plathome                   |string | |使用環境 plathome (arch)|
+|Platform                   |string | |JOEDソフトウエア利用環境を示す文字列|
 |hash                       |string | |症例データ部分だけのハッシュ値|
 
 ### 症例データベースオブジェクト:Case
@@ -108,9 +121,11 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |PresentAE                  |boolean| |X|X|合併症の登録があればtrue =(AE.length>0)
 |Diagnoses                  |array  | |X|X|診断オブジェクト - Diagnosis
 |Procedures                 |array  | |X|X|術式オブジェクト - Procedure
+|Approach                   |object | |X|X|アプローチ法オブジェクト - Approach
 |AEs                        |array  | | |X|合併症オブジェクト - AE
 |Imported                   |boolean| | | |読み込まれたデータで欠損などが明らかなもの
 |Notification               |string | | | |データチェックによる確認内容（エラーを含む）の内容
+|Note                       |string | | | |自由メモ入力
 
 ### オブジェクト:Diagnosis
 インポートの際にはDiagnosisItemsから検索して適当なChainを割り付ける.
@@ -133,6 +148,12 @@ Validationは診断・実施術式・合併症のマスタを参照するので�
 |AdditionalProcedure        |object | | | |併施術式 - これも同じ構造を取る(提出データでは別のProcedureオブジェクトとなる)
 |Ditto                      |array  | | | |重複確認の対象となる術式名
 |UserTyped                  |boolean| | |X|手入力情報|
+
+### オブジェクト:Approach
+|名称                        |タイプ  |フォーマット規則|必須項目|エクスポート対象|解説|
+|:--------------------------|:-----:|:--:|:--:|:--:|:--|
+|(PropertyName)             |string | |X|X|アプローチのカテゴリー(腹腔鏡,ロボット,子宮鏡)
+|(Value)                    |array  | |X|X|カテゴリーに応じたアプローチの内容
 
 ### オブジェクト:AE
 |名称                        |タイプ  |フォーマット規則|必須項目|エクスポート対象|解説|

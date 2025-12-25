@@ -1,6 +1,6 @@
 import institutes from './institutes.json'
 
-export const LastUpdate = '2024-12-28'
+export const LastUpdate = '2025-12-01'
 
 export const ListOfInstitutions = institutes
 
@@ -16,3 +16,5 @@ export const ListOfPrefectures = [
   '佐賀県', '長崎県', '熊本県', '大分県', '宮崎県',
   '鹿児島県', '沖縄県'
 ]
+
+export const InvalidIDs = () => ListOfInstitutions.filter(item => item?.invalid).map(item => item.ID)

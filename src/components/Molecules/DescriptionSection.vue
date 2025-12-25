@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick } from 'vue'
-import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox'
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
 
 const props = defineProps({
   title: {
@@ -12,14 +12,11 @@ const props = defineProps({
   },
   options: {
     type: Array
-  },
-  value: {
-    type: Array
   }
 })
-
-const emit = defineEmits(['update:value'])
-
+const modelValue = defineModel({
+  type: Array
+})
 const title = computed(() => props?.title || '')
 
 const selectionMode = computed(() => props?.selectionMode || 'one')
@@ -27,12 +24,12 @@ const selectionMode = computed(() => props?.selectionMode || 'one')
 const options = computed(() => props?.options || [])
 
 const value = computed({
-  get: () => props.value || [],
+  get: () => modelValue.value || [],
   set: (value) => {
     const newvalueArray = []
     // 単一のvalue / selectから
     if (value === undefined || typeof value === 'string') {
-      if (value && options.value.indexOf(value) !== -1) {
+      if (value && options.value.includes(value)) {
         newvalueArray.splice(0, 0, value)
       }
     }
@@ -40,14 +37,13 @@ const value = computed({
     if (Array.isArray(value)) {
       // Optionsからvalueに該当するものをピックアップ > Optionsの順番を維持して保持
       const filtedValue = options.value.filter(
-        (option) => value.indexOf(option) !== -1
+        option => value.includes(option)
       )
       if (filtedValue.length > 0 || selectionMode.value === 'anyornone') {
         newvalueArray.splice(0, 0, ...filtedValue)
       }
     }
-
-    emit('update:value', newvalueArray)
+    modelValue.value = newvalueArray
   }
 })
 
@@ -110,9 +106,9 @@ const escapedItemCaption = (str) => str.replace(/\[.+\]/g, '').replace(/\$$/, ''
     </div>
     <div class="w40 selectionbox">
       <template v-if="isMultipleSelection">
-        <template v-for="item of selectionItems">
-          <div :key="item">
-            <LabeledCheckbox :container.sync="selectedArrayValue" :value="item" :key="item">
+        <template v-for="item of selectionItems" :key="item">
+          <div>
+            <LabeledCheckbox v-model="selectedArrayValue" :value="item">
               {{ escapedItemCaption(item) }}
             </LabeledCheckbox>
           </div>
@@ -120,9 +116,11 @@ const escapedItemCaption = (str) => str.replace(/\[.+\]/g, '').replace(/\$$/, ''
       </template>
       <template v-else>
         <select v-model="selectedSingleValue">
-          <option v-for="item of selectionItems" :key="item" :value="item">
-            {{ escapedItemCaption(item) }}
-          </option>
+          <template v-for="item of selectionItems" :key="item" >
+            <option :value="item">
+              {{ escapedItemCaption(item) }}
+            </option>
+          </template>
         </select>
       </template>
     </div>

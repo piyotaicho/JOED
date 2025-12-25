@@ -20,22 +20,14 @@ function KeyboardEventhandler (event) {
   ) {
     switch (event.code) {
       case 'KeyU':
-        emitDiscard()
+        emit('discard')
         break
       case 'Enter':
         event.preventDefault()
-        emitCommit()
+        emit('commit')
         break
     }
   }
-}
-
-function emitDiscard () {
-  emit('discard')
-}
-
-function emitCommit () {
-  emit('commit')
 }
 </script>
 
@@ -44,8 +36,8 @@ function emitCommit () {
     <slot></slot>
     <div class="content-bottom">
       <div class="controls">
-        <el-button type="primary" @click="emitDiscard">取り消し</el-button>
-        <el-button type="primary" @click="emitCommit">登録</el-button>
+        <el-button type="primary" @click="$emit('discard')">取り消し</el-button>
+        <el-button type="primary" @click="$emit('commit')">登録</el-button>
       </div>
     </div>
   </div>

@@ -1,14 +1,19 @@
 <script setup>
 import { computed } from 'vue'
+import { Select } from '@element-plus/icons-vue'
 
 const props = defineProps({
   category: {
     type: String,
-    required: true
+    required: true,
   },
   notification: {
-    type: String
-  }
+    type: String,
+  },
+  checked: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const boxColorStyle = computed(() => {
@@ -18,12 +23,14 @@ const boxColorStyle = computed(() => {
     ロボット: '#00F063',
     ロボット悪性: '#00F063',
     子宮鏡: '#00BBFF',
-    卵管鏡: '#FFD000'
+    卵管鏡: '#FFD000',
   }
   return { backgroundColor: colorTable[props.category] || '#DDDDDD' }
 })
 
-const notificationClass = computed(() => (props?.notification || props.notification !== '') ? ['has-notification'] : [''])
+const notificationClass = computed(() =>
+  props?.notification || props.notification !== '' ? ['has-notification'] : [''],
+)
 
 const malignancyClass = computed(() => {
   switch (props.category) {
@@ -39,29 +46,30 @@ const malignancyClass = computed(() => {
 <template>
   <div class="casecategory" :class="notificationClass" :style="boxColorStyle">
     <div :class="malignancyClass"></div>
+    <el-icon style="padding-top: 0.3rem;" v-if="checked"><Select /></el-icon>
   </div>
 </template>
 
-<style lang='sass'>
+<style lang="sass">
 div.casecategory
   position: relative
   border: var(--color-primary) 2px solid
   margin: auto
   width: 1.7rem
   height: 1.7rem
+  text-align: center
+  vertical-align: middle
 
 div.has-notification::after
   position: absolute
   content: ""
-  background: transparent
-  left: 0
-  top: 0
-  width: 0
-  height: 0
-  border-top: 0.37rem solid var(--color-warning)
-  border-left: 0.37rem solid var(--color-warning)
-  border-right: 0.37rem solid transparent
-  border-bottom: 0.37rem solid transparent
+  top: -0.4rem
+  right: -0.4rem
+  width: 0.75rem
+  height: 0.75rem
+  background-color: var(--color-danger)
+  border-radius: 50%
+  z-index: 1
 
 div.category-malignancy::after
   position: absolute
@@ -71,8 +79,8 @@ div.category-malignancy::after
   bottom: 0
   width: 0
   height: 0
-  border-top: 0.37rem solid transparent
-  border-left: 0.37rem solid transparent
-  border-right: 0.37rem solid var(--color-danger)
-  border-bottom: 0.37rem solid var(--color-danger)
+  border-top: 0.5rem solid transparent
+  border-left: 0.5rem solid transparent
+  border-right: 0.5rem solid var(--color-primary)
+  border-bottom: 0.5rem solid var(--color-primary)
 </style>

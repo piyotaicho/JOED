@@ -1,25 +1,15 @@
 <script setup>
-import { computed } from 'vue'
-import SectionBlock from '@/components/Molecules/SectionBlock'
-import SectionItem from '@/components/SectionItem'
+import SectionBlock from '@/components/Molecules/SectionBlock.vue'
+import SectionItem from '@/components/Molecules/SectionItem.vue'
 import { confirmYesNo } from '@/modules/Popups'
 
-const props = defineProps({
-  container: {
-    type: Array,
-    required: true
-  }
-})
-const emit = defineEmits(['addnewitem', 'edititem', 'removeitem', 'update:container'])
+const items = defineModel({ type: Array, required: true })
 
-const items = computed({
-  get: () => props.container,
-  set: (value) => emit('update:container', value)
-})
+const emit = defineEmits(['additem', 'edititem', 'removeitem'])
 
-const addNewItem = () => emit('addnewitem')
+const addItem = () => emit('additem')
 
-const editItem = (index, item) => emit('edititem', { ItemIndex: index, ItemValue: item })
+const editItem = (index, value) => emit('edititem', { index, value })
 
 const removeItem = (index) => emit('removeitem', index)
 
@@ -35,16 +25,19 @@ const additionalProcedure = (item) => JSON.stringify((JSON.parse(item || '')?.Ad
 
 <template>
   <SectionBlock title="実施手術"
-    :container.sync="items"
-    @addnewitem="addNewItem">
+    v-model="items"
+    @add="addItem">
+    <template #beforeitemlist>
+      <slot></slot>
+    </template>
     <template #default="slotprops">
-      <template v-if="hasAdditionalProcedure(slotprops.item)">
-        <SectionItem :item="slotprops.item" @remove="removeAdditionalItemEntry(slotprops.index)" @edit="editItem(slotprops.index, slotprops.item)" editable/>
-        <SectionItem :item="additionalProcedure(slotprops.item)" @remove="removeAdditionalItemEntry(slotprops.index)"/>
+      <template v-if="!hasAdditionalProcedure(slotprops.item)">
+        <SectionItem :value="slotprops.item" @remove="removeItem(slotprops.index)" @edit="editItem(slotprops.index, slotprops.item)" editable/>
       </template>
       <template v-else>
-        <SectionItem :item="slotprops.item" @remove="removeItem(slotprops.index)" @edit="editItem(slotprops.index, slotprops.item)" editable/>
+        <SectionItem :value="slotprops.item" @remove="removeAdditionalItemEntry(slotprops.index)" @edit="editItem(slotprops.index, slotprops.item)" editable/>
+        <SectionItem :value="additionalProcedure(slotprops.item)" @remove="removeAdditionalItemEntry(slotprops.index)"/>
       </template>
     </template>
-  </SectionBLock>
+  </SectionBlock>
 </template>

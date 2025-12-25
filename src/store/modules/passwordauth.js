@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import { LoadPassword, SavePassword } from 'depmodules/config'
 import HHX from 'xxhashjs'
 
@@ -10,10 +9,10 @@ export default {
   },
   mutations: {
     AuthenticationStatus (state, payload) {
-      Vue.set(state, 'Authenticated', payload)
+      state.Authenticated = payload
     },
     PasswordRequirement (state, payload) {
-      Vue.set(state, 'PasswordRequired', payload)
+      state.PasswordRequired = payload
     }
   },
   getters: {

@@ -19,8 +19,8 @@ const click = () => emit('click')
 <style lang="sass">
 div.closebutton
   position: absolute
-  right: 1rem
-  top: 1rem
+  right: 0.4rem
+  top: 0.4rem
   width: 1rem
   height: 1rem
   box-sizing: border-box

@@ -1,9 +1,9 @@
 // Unlink unused files in electron distribution
 // called by electronBuilder - afterpack
-exports.default = async function (context) {
+module.exports = async (context) => {
   if (process.platform === 'win32') {
-    const fs = require('fs')
-    const path = require('path')
+    const fs = await import('fs')
+    const path = await import('path')
 
     // unlink ununsed locales, other than 'en-US'
     const localeDir = path.resolve(context.appOutDir, './locales')

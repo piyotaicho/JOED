@@ -2,24 +2,30 @@
 <script setup>
 import { reactive, ref, watch, computed, nextTick } from 'vue'
 import { useStore } from '@/store'
-import InputSwitchField from '@/components/Molecules/InputSwitchField'
-import SelectYear from '@/components/Molecules/SelectYear'
-import TheWrapper from '@/components/Atoms/TheWrapper'
+import { useRouter } from 'vue-router'
+import InputSwitchField from '@/components/Molecules/InputSwitchField.vue'
+import SelectYear from '@/components/Molecules/SelectYear.vue'
+import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 import ViewerOverlay from '@/components/Molecules/ViewerOverlay.vue'
 import CaseDocumentHandler from '@/modules/DbItemHandler'
 import * as Popups from '@/modules/Popups'
 import HHX from 'xxhashjs'
-import { ValidateCase } from '@/modules/CaseValidater'
+import { generateCSVFromObjects } from '@/modules/CSV.js'
+import { ValidateCase, InstituteIDFormat } from '@/modules/CaseValidater'
+import Encoding from 'encoding-japanese'
+import { InvalidIDs } from '@/modules/Masters/InstituteList'
 
 const store = useStore()
+const router = useRouter()
 
 const setting = reactive({
   year: '',
   backup: false,
-  validate: true
+  validate: true,
+  csv: false,
 })
 
-const jsonText = ref('')
+const outputText = ref('')
 
 const status = reactive({
   processing: false,
@@ -35,7 +41,7 @@ watch(
   (newValue, oldValue) => {
     if (oldValue !== newValue) {
       status.processStep = undefined
-      jsonText.value = ''
+      outputText.value = ''
       if (setting.year === 'ALL') {
         setting.year = ''
       }
@@ -48,27 +54,65 @@ watch(
   () => setting.year,
   () => {
     status.processStep = undefined
-    jsonText.value = ''
+    outputText.value = ''
   },
   { immediate: true }
 )
 
-const exportAsBackup = computed({
-  get: () => setting.backup,
+const exportType = computed({
+  get: () => {
+    if (setting.csv) {
+      return 'CSV'
+    }
+    if (setting.backup) {
+      return 'dump'
+    }
+    return 'registration'
+  },
   set: async (newvalue) => {
-    if (newvalue && await Popups.confirm('不用意に全てのフィールドのデータを出力するのは,個人情報保護の観点からお薦め出来ません.\nそれでも出力しますか?')) {
-      setting.backup = true
+    if (
+      (newvalue === 'dump' || newvalue === 'CSV') &&
+      await Popups.confirm('不用意に患者情報を含むフィールドを出力するのは,個人情報保護の観点からお薦め出来ません.\nそれでも出力しますか?')
+    ) {
+      if (newvalue === 'CSV') {
+        setting.csv = true
+        setting.backup = false
+        setting.validate = false
+      } else {
+        setting.csv = false
+        setting.backup = true
+      }
     } else {
+      setting.csv = false
       setting.backup = false
+      setting.validate = true
     }
   }
 })
 
-const readyToExport = computed(() => jsonText.value.length > 4)
+const csvOptionalExportTargets = computed(() => {
+  const listSelection = store.getters['GetSelectedUidsForExport'] || []
+  const viewCaseCount = store.getters['NumberOfCases'] || 0
 
+  if (setting.csv) {
+    return listSelection.length > 0 ?
+      [
+        { value: 'VIEW', text: `表示中の全項目 (${viewCaseCount}件)` },
+        { value: 'SELECTED', text: `選択中の項目 (${listSelection.length}件)` }
+      ] :
+      [
+        { value: 'VIEW', text: `表示中の全項目 (${viewCaseCount}件)` }
+      ]
+  }
+  return []
+})
+
+const readyToExport = computed(() => outputText.value.length > 4)
+
+// エクスポート処理
 const Process = async () => {
   if (setting.year === '') {
-    await Popups.error('年次が選択されていません.')
+    await Popups.error('年次が選択されていません.', 'エクスポートエラー')
     return
   }
 
@@ -79,7 +123,7 @@ const Process = async () => {
   status.progressCheckConsistency = 0
   status.progressCreateData = 0
   status.showPreview = false
-  jsonText.value = ''
+  outputText.value = ''
 
   try {
     await CheckSystemConfiguration()
@@ -94,11 +138,14 @@ const Process = async () => {
     const { exportItems, countOfDenial } = await CreateExportData(documentIds)
     status.processStep++
 
-    jsonText.value = await CreateHeader(exportItems, countOfDenial)
+    outputText.value = await FinaliseExportData(exportItems, countOfDenial)
     status.processStep++
   } catch (error) {
     await nextTick()
-    Popups.error(error.message)
+    const errorMessage = error.message.trim()
+    if (errorMessage) {
+      await Popups.error(errorMessage, 'エクスポートエラー')
+    }
   } finally {
     status.processing = false
   }
@@ -112,13 +159,20 @@ const Download = async () => {
   if (!setting.backup ||
     (
       await Popups.confirmYesNo('保存されるデータにはID番号・氏名・年齢などの個人情報が含まれている可能性があります.\n処理を続行しますか?') &&
-      await Popups.confirm('出力されたファイルの取り扱いは厳重行ってください.')
+      await Popups.confirm('出力されたファイルの取り扱いは厳重に行ってください.')
     )
   ) {
     // ブラウザの機能でダウンロードさせる.
     const temporaryElementA = document.createElement('A')
-    temporaryElementA.href = URL.createObjectURL(new Blob([jsonText.value]), { type: 'application/json' })
-    temporaryElementA.download = 'joed-export-data.json'
+    if (!setting.csv) {
+      // JSONデータを設定
+      temporaryElementA.href = URL.createObjectURL(new Blob([outputText.value]), { type: 'application/json' })
+      temporaryElementA.download = 'joed-export-data.json'
+    } else {
+      // SHIFT-JISのCSVデータを設定
+      temporaryElementA.href = URL.createObjectURL(new Blob([new Uint8Array(Encoding.convert(outputText.value, { to: 'SJIS', type: 'array' }))]), { type: 'text/csv;charset=shift_jis;' })
+      temporaryElementA.download = 'joed-export-data.csv'
+    }
     temporaryElementA.style.display = 'none'
     document.body.appendChild(temporaryElementA)
     temporaryElementA.click()
@@ -129,14 +183,31 @@ const Download = async () => {
 // Step 1 - 施設名とIDが設定されているかを確認
 //
 const CheckSystemConfiguration = async () => {
-  // バックアップデータでエラーチェックなしの場合 このチェックはスキップ
-  if (setting.backup && !setting.validate) {
+  // CSV, バックアップデータでエラーチェックなしの場合 このチェックはスキップ
+  if ((setting.backup || setting.csv) && !setting.validate) {
     return
   }
 
   // 施設コードは必須
-  if (!store.getters['system/InstitutionID']) {
-    throw new Error('施設情報が未設定です.')
+  try {
+    if (!store.getters['system/InstitutionID']) {
+      throw new Error('施設情報が未設定です.')
+    }
+
+    // 施設コードのフォーマットチェック
+    if (store.getters['system/InstitutionID'].match(InstituteIDFormat) === null) {
+      throw new Error('不正な施設コードが設定されています.')
+    }
+
+    // 無効な施設コードのチェック
+    if (InvalidIDs().includes(store.getters['system/InstitutionID'])) {
+      throw new Error('利用できない施設コードが設定されています.')
+    }
+  } catch (error) {
+    if (await Popups.confirmYesNo(`${error.message}\n設定画面へ移動しますか?`, '施設情報設定エラー')) {
+      router.push({ name: 'settings' })
+    }
+    throw new Error()
   }
 }
 
@@ -144,8 +215,8 @@ const CheckSystemConfiguration = async () => {
 //
 // インポートデータ( Imported )で特になんの問題も無くインポートできたもの以外には Notification がある
 const CheckImportedRecords = async () => {
-  // バックアップデータでエラーチェックなしでは チェックをスキップする
-  if (setting.backup && !setting.validate) {
+  // バックアップデータ, CSVでエラーチェックなしでは チェックをスキップする
+  if ((setting.backup || setting.csv) && !setting.validate) {
     return
   }
 
@@ -164,7 +235,7 @@ const CheckImportedRecords = async () => {
   })
 
   if (count > 0) {
-    throw new Error('要確認の症例が ' + count + ' 症例あります.\n確認を御願いします.')
+    throw new Error('登録内容の確認が必要な症例が ' + count + ' 症例あります.\n確認を御願いします.')
   }
 }
 
@@ -177,25 +248,35 @@ const CheckConsistency = async () => {
   status.progressCheckConsistency = 0
 
   // 対象の有無と重複のチェック
-  const querydocuments = (
-    await store.dispatch('dbFind',
-      {
-        Query: setting.year === 'ALL'
-          ? {
-              DocumentId: { $gt: 0 }
-            }
-          : {
-              DocumentId: { $gt: 0 },
-              DateOfProcedure: { $regex: new RegExp('^' + setting.year + '-') }
-            },
-        Projection: { DocumentId: 1, PatientId: 1, DateOfProcedure: 1, _id: 0 }
-      }) ||
-    []
-  )
-  if (querydocuments.length === 0) {
+  const queryParamaters = {
+    Query: {
+      DocumentId: { $gt: 0 }
+    },
+    Projection: { DocumentId: 1, PatientId: 1, DateOfProcedure: 1, _id: 0 }
+  }
+  if (setting.year !== 'ALL') {
+    if (setting.year === 'VIEW') {
+      const listSelection = store.getters['GetSelectedUidsForExport'] || []
+      if (listSelection.length > 0) {
+        queryParamaters.Query.DocumentId = { $in: listSelection }
+      }
+    } else if (setting.year === 'SELECTED') {
+      const listSelection = store.getters['GetSelectedUidsForExport'] || []
+      if (listSelection.length > 0) {
+        queryParamaters.Query.DocumentId = { $in: listSelection }
+      } else {
+        throw new Error('選択中の症例がありません.')
+      }
+    } else {
+      queryParamaters.Query.DateOfProcedure = { $regex: new RegExp('^' + setting.year + '-') }
+    }
+  }
+  const queriedDocuments = await store.dispatch('dbFind', queryParamaters) || []
+
+  if (queriedDocuments.length === 0) {
     throw new Error('エクスポートの対象がありません.')
   } else {
-    const dupcheck = querydocuments
+    const dupcheck = queriedDocuments
       .map(item => item.DateOfProcedure + ' ~ ' + item.PatientId)
       .filter((item, index, self) => self.indexOf(item) !== index)
 
@@ -204,10 +285,10 @@ const CheckConsistency = async () => {
     }
   }
 
-  const documentIds = querydocuments.map(item => item.DocumentId)
+  const documentIds = queriedDocuments.map(item => item.DocumentId)
 
-  // バックアップデータでエラーチェックなしでは これ以上のチェックをスキップする
-  if (setting.backup && !setting.validate) {
+  // バックアップデータ, CSVでエラーチェックなしでは これ以上のチェックをスキップする
+  if ((setting.backup || setting.csv) && !setting.validate) {
     return documentIds
   }
 
@@ -263,7 +344,7 @@ const CreateExportData = async (documentIds) => {
       }
     )
 
-    if (setting.backup) {
+    if (setting.backup || setting.csv) {
       // 生データの出力
       exportItems.push(exportdocument)
     } else {
@@ -300,22 +381,22 @@ const CreateExportData = async (documentIds) => {
   return { exportItems, countOfDenial }
 }
 
-// Step 5 - データヘッダの作成
+// Step 5 - データファイルデータの作成～ヘッダの付与とテキスト化
 //
-const CreateHeader = async (exportItem, countOfDenial) => {
-  if (!setting.backup) {
+const FinaliseExportData = async (exportItem, countOfDenial) => {
+  // バックアップ、CSVデータではヘッダは不要
+  if (!(setting.backup || setting.csv)) {
     const length = exportItem.length
 
     if (length > 0) {
       const TimeStamp = Date.now()
       const Encoder = new TextEncoder()
 
-      const jsonText = JSON.stringify(exportItem, ' ', 2)
+      const outputText = JSON.stringify(exportItem, ' ', 2)
       // ヘッダが保持するドキュメント部分のハッシュ値
       const hash = HHX.h64(
-        Encoder.encode(jsonText).buffer,
+        Encoder.encode(outputText).buffer,
         TimeStamp.toString()).toString(16)
-
       exportItem.unshift({
         InstitutionName: store.getters['system/InstitutionName'],
         InstitutionID: store.getters['system/InstitutionID'],
@@ -324,47 +405,91 @@ const CreateHeader = async (exportItem, countOfDenial) => {
         NumberOfCases: exportItem.length,
         NumberOfDenial: countOfDenial,
         Version: store.getters['system/ApplicationVersion'],
-        Plathome: store.getters['system/Plathome'],
+        Platform: store.getters['system/Platform'],
         hash
       })
     }
   }
-  return JSON.stringify(exportItem, ' ', 2)
+
+  // CSV以外はJSONテキストに変換して返す
+  if (!setting.csv) {
+    return JSON.stringify(exportItem, ' ', 2)
+  }
+
+  // CSVデータに変換する項目を指定
+  const csvHeader = [
+    { header: '患者ID', key: 'PatientId' },
+    { header: '患者名', key: 'Name' },
+    { header: '年齢', key: 'Age' },
+    { header: '手術日', key: 'DateOfProcedure' },
+    { header: '区分', key: 'TypeOfProcedure' },
+    { header: '主たる診断', key: 'Diagnosis' },
+    { header: '主たる実施手術', key: 'Procedure' },
+    { header: '合併症の有無', key: 'PresentAE' },
+    { header: 'メモ', key: 'Note' }
+  ]
+
+  // CSV用出力に抽出と成形
+  const csvObjects = exportItem.map(item => {
+    return {
+      PatientId: item.PatientId,
+      Name: item?.Name,
+      Age: item?.Age,
+      DateOfProcedure: item.DateOfProcedure,
+      TypeOfProcedure: item?.TypeOfProcedure,
+      Diagnosis: item.Diagnoses?.[0]?.Text,
+      Procedure: item.Procedures?.[0]?.Text,
+      PresentAE: item.PresentAE ? 'あり' : 'なし',
+      Note: item.Note || ''
+    }
+  })
+
+  // CSVデータに変換して返す
+  return generateCSVFromObjects(csvObjects, csvHeader)
 }
 </script>
 
 <template>
   <div class="utility">
     <div class="utility-switches">
-      <InputSwitchField
-        :value.sync="exportAsBackup"
-        title="出力する様式"
-        :options="{ 学会提出データ: false, バックアップデータ: true }"
-      />
+      <div>
+        <div class="label w30">出力の形式</div>
+        <div class="field w70">
+          <select v-model="exportType">
+            <option value="registration">学会提出データ</option>
+            <option value="dump">バックアップデータ</option>
+            <option value="CSV">CSVデータ</option>
+          </select>
+        </div>
+      </div>
 
       <div>
-        <div class="label">出力する年次</div>
+        <div class="label w30">出力する年次</div>
         <SelectYear
-          class="field"
-          :value.sync="setting.year"
-          :selection-all="exportAsBackup"
+          class="field w70"
+          v-model="setting.year"
+          :selection-all="exportType === 'dump' || exportType === 'CSV'"
+          :optional-values="csvOptionalExportTargets"
         />
       </div>
 
       <InputSwitchField
-        :value.sync="setting.validate"
-        :disabled="!exportAsBackup"
+        v-model="setting.validate"
+        :disabled="exportType === 'registration'"
         title="データのエラーチェック"
-        :options="{ 行う: true, 行わない: false }"
+        :options="[{ text: '行う', value: true }, { text: '行わない', value: false }]"
+        :class-override="['label w30', 'field w70']"
       />
 
       <div>
-        <el-button
-          type="primary"
-          @click="Process()"
-          :disabled="!setting.year || status.processing"
-          >出力データの作成</el-button
-        >
+        <div class="label w30"></div>
+        <div class="field w70">
+          <el-button
+            type="primary"
+            @click="Process()"
+            :disabled="!setting.year || status.processing"
+            >出力データの作成</el-button>
+        </div>
       </div>
     </div>
 
@@ -372,7 +497,7 @@ const CreateHeader = async (exportItem, countOfDenial) => {
       <div class="progress-views" v-show="status.processStep !== undefined">
         <el-steps
           :active="status.processStep"
-          process-status="warning"
+          process-status="wait"
           finish-status="success"
           direction="vertical"
           space="42px"
@@ -411,7 +536,7 @@ const CreateHeader = async (exportItem, countOfDenial) => {
 
     <TheWrapper prevent-close v-if="status.processing" />
     <template v-if="status.showPreview">
-      <ViewerOverlay @click="status.showPreview = false">{{ jsonText }}</ViewerOverlay>
+      <ViewerOverlay @click="status.showPreview = false">{{ outputText }}</ViewerOverlay>
     </template>
   </div>
 </template>

@@ -1,9 +1,9 @@
 <script setup>
+import { Loading, EditPen } from '@element-plus/icons-vue'
 import { onMounted, ref, computed } from 'vue'
 import { useStore } from '@/store'
-import { useRouter } from 'vue-router/composables'
-import CategoryIdentifier from '@/components/Atoms/CaseCategoryIdentifier'
-import * as Popups from '@/modules/Popups'
+import { useRouter } from 'vue-router'
+import CategoryIdentifier from '@/components/Atoms/CaseCategoryIdentifier.vue'
 import CaseDocumentHandler from '@/modules/DbItemHandler'
 
 const store = useStore()
@@ -11,115 +11,145 @@ const router = useRouter()
 
 const props = defineProps({
   uid: {
-    required: true
-  }
+    required: true,
+  },
+  selected: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-const Loading = ref(true)
+const emit = defineEmits(['select', 'multiselect', 'remove', 'blur'])
 
+// 情報取得中フラグ
+const fetching = ref(true)
+
+// ドキュメントuidを数値化(propsは文字列として受け取るため)
 const uid = computed(() => Number(props.uid))
 
 onMounted(() => {
   if (uid.value > 0) {
     store
-      .dispatch('FetchDocument', { DocumentId: Number(uid.value) })
-      .then(_ => {
-        Loading.value = false
+      .dispatch('FetchDocument', { DocumentId: uid.value })
+      .then(() => {
+        fetching.value = false
       })
-      .catch(e => e)
+      .catch((e) => e)
   }
 })
 
-const ItemDocument = computed(() => Loading.value ? {} : store.getters.CaseDocument(uid.value))
+const currentDocument = computed(() => (fetching.value ? {} : store.getters.CaseDocument(uid.value)))
 
-const Category = computed(() => Loading.value ? '' : ItemDocument.value.TypeOfProcedure)
+// ドキュメントの各種フィールド
+const Category = computed(() => (fetching.value ? '' : currentDocument.value?.TypeOfProcedure || ''))
+const Id = computed(() => (fetching.value ? '' : currentDocument.value?.PatientId || ''))
+const Name = computed(() => (fetching.value ? 'データを取得中' : currentDocument.value?.Name || ''))
+const DateOfProcedure = computed(() => (fetching.value ? '' : currentDocument.value?.DateOfProcedure))
+const Age = computed(() =>
+  fetching.value ? '' : (currentDocument.value?.Age ? '( ' + currentDocument.value.Age + '歳 )' : '')
+)
+const Denial = computed(() => (!fetching.value && currentDocument.value?.Denial === true))
 
-const DateOfProcedure = computed(() => Loading.value ? '' : ItemDocument.value.DateOfProcedure)
+const Diagnosis = computed(() =>
+  fetching.value ? '' : CaseDocumentHandler.ItemValue((currentDocument.value?.Diagnoses || [''])[0]),
+)
+const Procedure = computed(() =>
+  fetching.value ? '' : CaseDocumentHandler.ItemValue((currentDocument.value?.Procedures || [''])[0]),
+)
+const PresentAE = computed(() => !fetching.value && (currentDocument.value?.PresentAE === true))
 
-const PersonalInformation = computed(() => {
-  return Loading.value
-    ? {
-        Id: '',
-        Name: 'データを取得中',
-        Age: '',
-        Denial: undefined
-      }
-    : {
-        Id: ItemDocument.value.PatientId,
-        Name: ItemDocument.value.Name || '',
-        Age: ItemDocument.value.Age ? '( ' + Number(ItemDocument.value.Age) + '歳 )' : '',
-        Denial: ItemDocument.value.Denial
-      }
-})
-
-const Diagnosis = computed(() => Loading.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value.Diagnoses[0]))
-
-const Procedure = computed(() => Loading.value ? '' : CaseDocumentHandler.ItemValue(ItemDocument.value.Procedures[0]))
-
-const PresentAE = computed(() => !Loading.value && ItemDocument.value.PresentAE)
-
-const Notification = computed(() => Loading.value ? '' : (ItemDocument.value?.Notification || ''))
+const Notification = computed(() => (fetching.value ? '' : currentDocument.value?.Notification || ''))
 
 const MoveToEditView = () => {
-  if (!Loading.value) {
+  if (!fetching.value) {
     router.push({ name: 'edit', params: { uid: uid.value } })
   }
 }
 
 const RemoveDocumentKeypress = (event) => {
   if (!event.repeat) {
-    if (store.getters['system/Platform'] === 'darwin'
-      ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) // macOS - command
-      : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) // Windows - Ctrl
+    if (
+      store.getters['system/Platform'] === 'darwin'
+        ? event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey // macOS - command
+        : event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey // Windows - Ctrl
     ) {
-      RemoveDocument()
+      emit('remove')
+      // RemoveDocument()
     }
   }
 }
 
-const RemoveDocument = async () => {
-  if (await Popups.confirm('この症例を削除します.よろしいですか?')) {
-    Loading.value = true
-    store.dispatch('RemoveDocument', { DocumentId: uid.value })
+// マウスでの選択 - ctrlキー押下時はMultiSelect
+const Select = (event) => {
+  if ( store.getters['system/Platform'] === 'darwin'
+    ? event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey // macOS - command
+    : event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey // Windows - Ctrl
+    ) {
+    // Ctrl or commandキー押下時はMultiSelect
+    emit('multiselect', { uid: uid.value, selected: !props.selected })
+  } else {
+    // それ以外はSingleSelect
+    emit('select', uid.value)
   }
+}
+
+// フォーカスを失ったことを通知するイベント
+const onBlur = () => {
+  emit('blur', uid.value)
 }
 </script>
 
 <template>
-  <div class="caseitem" :id="'doc' + uid.toString(10)" tabindex="0"
-  @keypress.enter="MoveToEditView()"
-  @keydown.o="MoveToEditView()"
-  @dblclick="MoveToEditView()"
-  @keydown.x="RemoveDocumentKeypress($event)">
+  <div
+    class="caseitem"
+    :id="'doc' + uid.toString(10)"
+    tabindex="0"
+    @keypress.enter="MoveToEditView()"
+    @keydown.o="MoveToEditView()"
+    @dblclick="MoveToEditView()"
+    @click="Select($event)"
+    @keydown.x="RemoveDocumentKeypress($event)"
+    @blur="onBlur()"
+  >
     <div class="caseitem-icon">
-      <CategoryIdentifier :category="Category" :notification="Notification"/>
+      <CategoryIdentifier :category="Category" :notification="Notification" :checked="selected" />
     </div>
     <div class="caseitem-description">
       <div class="caseitem-row">
-        <span class="w20"> {{DateOfProcedure}} </span>
-        <template v-if="PersonalInformation.Denial === true">
-          <el-tooltip placement="top-start" :open-delay="700" content="この症例には登録拒否が設定されています">
-            <span class="w20 caution-font"> {{PersonalInformation.Id}} </span>
+        <span class="w20"> {{ DateOfProcedure }} </span>
+        <template v-if="Denial === true">
+          <el-tooltip
+            placement="top-start"
+            :open-delay="700"
+            content="この症例には登録拒否が設定されています"
+          >
+            <span class="w20 caution-font"> {{ Id }} </span>
           </el-tooltip>
         </template>
         <template v-else>
-          <span class="w20"> {{PersonalInformation.Id}} </span>
+          <span class="w20"> {{ Id }} </span>
         </template>
-        <span class="w30 truncatable"> {{PersonalInformation.Name}} </span>
-        <span class="w10"> {{PersonalInformation.Age}} </span>
+        <span class="w30 truncatable"> {{ Name }} </span>
+        <span class="w10"> {{ Age }} </span>
         <span class="w20"></span>
       </div>
       <div class="caseitem-row">
-        <span class="w40 truncatable"> {{Diagnosis}} </span>
-        <span class="w40 truncatable"> {{Procedure}} </span>
+        <span class="w40 truncatable"> {{ Diagnosis }} </span>
+        <span class="w40 truncatable"> {{ Procedure }} </span>
         <span class="w20 caution-badge" v-show="PresentAE"> 合併症あり </span>
       </div>
     </div>
     <div class="caseitem-controller">
-        <i class="el-icon-loading button-font" v-if="Loading"/>
-        <i class="el-icon-edit button-font"
-         v-if="!Loading"
-        @click="MoveToEditView()"/>
+      <template v-if="fetching">
+        <div><el-icon class="button-font">
+          <Loading />
+        </el-icon></div>
+      </template>
+      <template v-else>
+        <div><el-icon class="button-font" @click="MoveToEditView()">
+          <EditPen />
+        </el-icon></div>
+      </template>
     </div>
   </div>
 </template>
@@ -139,6 +169,8 @@ div.caseitem
   flex-direction: row
   &:focus
     background: var(--color-text-placeholder)
+  +.selected
+    background: var(--color-text-placeholder)
 div.caseitem-icon
   width: 60px
   display: flex
@@ -156,7 +188,10 @@ div.caseitem-controller
   display: flex
   flex-direction: column
   justify-content: space-around
-  text-align: center
+  div
+    display: inline-flex
+    flex-direction: row
+    justify-content: center
 .caution-badge
   border-radius: 1rem
   margin: 0.07rem

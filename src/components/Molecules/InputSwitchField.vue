@@ -1,77 +1,105 @@
 <script setup>
-import { computed } from 'vue'
+import { reactive, computed } from 'vue'
 
 const props = defineProps({
-  value: {
-    required: true
-  },
   title: {
     default: 'スイッチ'
   },
   options: {
-    type: [Array, Object]
+    type: [Array]
   },
   required: {
     default: false
+  },
+  classOverride: {
+    type: Array,
+    default: () => ['label', 'field']
   }
 })
-const emit = defineEmits(['update:value'])
 
-// プロパティから構成(non reactive)
-let texts = ['FALSE', 'TRUE']
-let values = [false, true]
-let colors = ['var(--color-primary)', 'var(--color-primary)']
+const modelValue = defineModel({
+  type: [String, Number, Boolean],
+  required: true,
+  default: false
+})
 
-const created = () => {
-  if (toString.call(props.options) === '[object Object]') {
-    const keys = Object.keys(props.options)
-    for (let index = 0; index < 2; index++) {
-      texts[index] = keys[index]
-      if (toString.call(props.options[keys[index]] !== '[object Object]')) {
-        values[index] = props.options[keys[index]]
-      } else {
-        values[index] = props.options[keys[index]]?.value
-        if (props.options[keys[index]]?.color) {
-          colors[index] = props.options[keys[index]]?.color
-        }
+const switchParams = reactive({
+  inactive: {
+    text: 'FALSE',
+    value: false,
+    color: 'var(--color-primary)'
+  },
+  active: {
+    text: 'TRUE',
+    value: true,
+    color: 'var(--color-primary)'
+  }
+})
+
+// DOMの初期化パラメータの設定
+// options: [ inactive, active ]
+//  inactive/active: String, Number, Boolean, Object
+//  Objectの場合は {value: 値, text: 表示, color: 色} の形で指定
+if (props.options !== undefined && props.options !== null) {
+  if (props.options.length < 2) {
+    throw new Error('InputSwitchField: optionsプロパティは最低2要素必要です')
+  }
+
+  const parseOption = (option) => {
+    if (Object.prototype.toString.call(option) === '[object Object]') {
+      return {
+        ...option?.value !== undefined ? {value: option.value} : {},
+        ...option?.text !== undefined ? {text: option.text} :
+          option?.value !== undefined
+            ? {text: typeof option.value === 'boolean' ? (option.value ? 'TRUE' : 'FALSE') : String(option.value)}
+            : {},
+        ...option?.color !== undefined ? {color: option.color} : {}
+      }
+    } else {
+      return {
+        text: typeof option === 'boolean' ? (option ? 'TRUE' : 'FALSE') : String(option),
+        value: option
       }
     }
-  } else {
-    switch (true) {
-      case props.options.length === 6:
-        colors = [...props.options].splice(4, 2)
-      // eslint-disable-next-line no-fallthrough
-      case props.options.length === 4:
-        values = [...props.options].splice(2, 2)
-      // eslint-disable-next-line no-fallthrough
-      case props.options.length === 2:
-        texts = [...props.options].splice(0, 2)
-    }
+  }
+
+  const inactiveOption = parseOption(props.options[0])
+  const activeOption = parseOption(props.options[1])
+
+  switchParams.inactive = {
+    ...switchParams.inactive,
+    ...inactiveOption
+  }
+  switchParams.active = {
+    ...switchParams.active,
+    ...activeOption
   }
 }
-created()
 
-// 算出プロパティ
-const selectedValue = computed({
-  get: () => props.value,
-  set: (newvalue) => emit('update:value', newvalue)
+const isChecked = computed(() => {
+  return modelValue.value === switchParams.active.value
 })
 </script>
 
 <template>
   <div>
-    <div class="label"><span>{{title}}</span></div>
-    <div class="field">
-      <el-switch
-        v-model="selectedValue"
-        :inactive-text="texts[0]"
-        :inactive-value="values[0]"
-        :inactive-color="colors[0]"
-        :active-text="texts[1]"
-        :active-value="values[1]"
-        :active-color="colors[1]"
-        v-bind="$attrs"
-      />
+    <div :class="classOverride[0]"><span>{{title}}</span></div>
+    <div :class="classOverride[1]">
+      <div style="display: flex; flex-direction: row;">
+        <div style="padding: 0.35rem 0.8rem; font-size: 14px;" v-if="switchParams.inactive.text !== ''">
+          <span :style="{fontWeight: isChecked ? 'normal' : 'bold'}">{{switchParams.inactive.text}}</span>
+        </div>
+        <el-switch
+          v-model="modelValue"
+          :inactive-value="switchParams.inactive.value"
+          :active-value="switchParams.active.value"
+          :style="`--el-switch-on-color: ${switchParams.active.color}; --el-switch-off-color: ${switchParams.inactive.color};`"
+          v-bind="$attrs"
+        />
+        <div style="padding: 0.35rem 0.8rem; font-size: 14px;" v-if="switchParams.active.text !== ''">
+          <span :style="{fontWeight: isChecked ? 'bold' : 'normal'}">{{switchParams.active.text}}</span>
+        </div>
+      </div>
     </div>
 </div>
 </template>

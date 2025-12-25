@@ -1,27 +1,24 @@
 <template>
   <TheWrapper alpha="10">
     <EditSection @commit="CommitChanges" @discard="GoBack">
-      <ThreePaneSelections
-        Pane3Title="実施手術の候補"
-        :Pane1.sync="category"
-        :Pane1Items="Categories"
-        @pane1change="CategoryIsChanged()"
-        :Pane2.sync="target"
-        :Pane2Items="TargetOrgans"
-        @pane2change="SetCandidateItemsBySelection()"
-        :Pane3.sync="selectedItemText"
-        :Pane3Items="candidates"
-        @pane3change="OnCandidateSelected()"
-        @pane3dblclick="CommitChanges()"
-        ref="paneSection"
-      />
+      <div class="flex-content" ref="panes">
+        <div class="w20 selectionbox">
+          <SelectPane title="カテゴリ" v-model="category" :items="categorySelections" />
+        </div>
+        <div class="w20 selectionbox">
+          <SelectPane title="対象臓器" v-model="target" :items="targetSelections" />
+        </div>
+        <div class="w60 selectionbox">
+          <SelectPane title="実施手術の候補" v-model="selectedItem" :items="candidates" @dblclick="CommitChanges()" @keypress-enter="CommitChanges()" />
+        </div>
+      </div>
 
       <!-- 追加情報セクション -->
       <DescriptionSection
+        v-model="description.Value"
         :title="description.Title"
         :selectionMode="description.SelectionMode"
         :options="description.Options"
-        :value.sync="description.Value"
         v-if="description.Title !== ''"
       />
 
@@ -45,14 +42,14 @@
           :title="additionalProcedure.Title"
           :selectionMode="additionalProcedure.SelectionMode"
           :options="additionalProcedure.Options"
-          :value.sync="additionalProcedure.Value"
+          v-model="additionalProcedure.Value"
          />
       </template>
 
       <FreewordSection
-        :value.sync="freewordText"
+        v-model="freewordText"
         :disabled="!UserEditingAllowed"
-        @click-search="SetCandidateItemsByFreeword"
+        @search="SetCandidateItemsByFreeword"
         ref="freewordSection"
       />
     </EditSection>
@@ -60,27 +57,26 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, nextTick, onMounted } from 'vue'
-import { useRouter } from 'vue-router/composables'
+import { ref, useTemplateRef, reactive, computed, watch, nextTick, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import Master from '@/modules/Masters/ProcedureMaster'
 import * as Popups from '@/modules/Popups'
 
-import TheWrapper from '@/components/Atoms/TheWrapper'
-import EditSection from '@/components/Molecules/EditSection'
-import ThreePaneSelections from '@/components/Molecules/ThreePaneSelections'
-import DescriptionSection from '@/components/Molecules/DescriptionSection'
-import FreewordSection from '@/components/Molecules/EditSectionFreeword'
+import TheWrapper from '@/components/Atoms/TheWrapper.vue'
+import EditSection from '@/components/Molecules/EditSection.vue'
+import SelectPane from '@/components/Molecules/SelectPane.vue'
+import DescriptionSection from '@/components/Molecules/DescriptionSection.vue'
+import FreewordSection from '@/components/Molecules/EditSectionFreeword.vue'
 
 const ProceduresMaster = new Master()
 
 const router = useRouter()
-
 const props = defineProps({
-  ItemIndex: {
+  index: {
     type: Number,
     default: -1
   },
-  ItemValue: {
+  value: {
     type: String
   },
   year: {
@@ -89,13 +85,20 @@ const props = defineProps({
   }
 })
 const emit = defineEmits(['data-upsert'])
-const paneSection = ref()
+
+// Element refs
+const panes = useTemplateRef('panes')
 const freewordSection = ref()
 
+// Reactive states
 const category = ref('')
+const categorySelections = computed(() => ProceduresMaster.Categories())
+
 const target = ref('')
+const targetSelections = computed(() => ProceduresMaster.Targets(category.value))
+
 const candidates = ref([])
-const selectedItemText = ref('')
+const selectedItem = ref('')
 const freewordText = ref('')
 
 const description = reactive({
@@ -113,49 +116,154 @@ const additionalProcedure = reactive({
   Value: []
 })
 
-const Categories = computed(() => ProceduresMaster.Categories())
+const UserEditingAllowed = computed(() => !!category.value && !selectedItem.value)
 
-const TargetOrgans = computed(() => ProceduresMaster.Targets(category.value))
+onMounted(async () => {
+  const selectElements = panes.value.getElementsByTagName('SELECT')
 
-const UserEditingAllowed = computed(() => !!category.value && !selectedItemText.value)
+  if (props.index < 0) {
+    // 新規編集の場合はカテゴリにフォーカスする
+    if (selectElements && selectElements.length >= 1) {
+      selectElements[0].focus()
+    }
+    return
+  }
+
+  // 再編集 valueから情報を展開する
+  const item = JSON.parse(props.value || '{}')
+
+  // カテゴリ・対象の解釈
+  if (item?.Chain && Array.isArray(item.Chain)) {
+    if (item?.Chain[0] !== undefined) {
+      category.value = item.Chain[0]
+      await nextTick()
+      if (item.Chain[1] !== undefined) {
+        target.value = item.Chain[1]
+        await nextTick()
+      }
+    }
+  }
+
+  // カテゴリとあれば対象に応じた選択リストの生成
+  await SetCandidateItemsBySelection()
+
+  // 入力値の解釈
+  const text = item?.Text || ''
+
+  if (text !== '') {
+    if (candidates.value.includes(text)) {
+    // 選択肢に該当項目がある場合選択する
+      selectedItem.value = text
+      freewordText.value = ''
+      await nextTick()
+      if (selectElements && selectElements.length >= 3) {
+        selectElements[2].focus()
+      }
+    } else {
+      // 選択肢に入力されている項目がなければ自由入力に展開して自由入力欄を開く
+      selectedItem.value = ''
+      freewordText.value = text
+      await nextTick()
+      freewordSection.value.Open()
+    }
+  }
+
+  // 術式の選択である場合DOMの初期化を行う
+  if (selectedItem.value !== '') {
+    // 選択肢に応じたDOM構成を展開
+    await OnCandidateSelected()
+
+    // 付随情報の入力の必要性があればvalueから展開する
+    if (description.Title !== '') {
+      if (item?.Description && item.Description.length > 0) {
+        description.Value.splice(0)
+        description.Value.splice(0, 0, ...item.Description)
+      }
+    }
+
+    // 付随手術の入力の必要性があればvalueから展開する
+    if (additionalProcedure.Text !== '') {
+      additionalProcedure.Value.splice(0)
+      if (item?.AdditionalProcedure?.Description &&
+        item.AdditionalProcedure.Description.length > 0) {
+        additionalProcedure.Value.splice(0, 0,
+          ...item.AdditionalProcedure.Description
+        )
+      } else {
+        // 既存入力が無い場合、デフォルト設定があれば設定
+        const defaultValue =
+          additionalProcedure.Options.filter(
+            (item) => item.slice(-1) === '$'
+          )[0]
+        if (defaultValue) {
+          additionalProcedure.Value.splice(0, 0, defaultValue)
+        }
+      }
+    }
+    // リアクティブの発火と選択枝にフォーカス
+    await nextTick()
+    panes.value?.getElementsByTagName('select')[2].focus()
+  }
+  // 自由入力がある場合は自由入力セクションを開く
+  if (freewordText.value !== '') {
+    freewordSection.value.Open()
+  }
+})
+
+watch(category, async () => {
+  // カテゴリが変更されたら現在の入力は全部クリア
+  // (自由入力欄の内容は残す)
+  selectedItem.value = ''
+  target.value = ''
+  await nextTick()
+
+  // targetSelectionが一つだけの時はそれを選択
+  if (targetSelections.value.length === 1) {
+    target.value = targetSelections.value[0]
+    await nextTick()
+  }
+  SetCandidateItemsBySelection()
+})
+
+watch(target, () => {
+  if (target.value !== '') {
+    SetCandidateItemsBySelection()
+  }
+})
+
+watch(selectedItem, async () => {
+  if (selectedItem.value !== '') {
+    await OnCandidateSelected()
+  } else {
+    // 選択がクリアされた場合は付随情報もクリア
+    await ClearSelectedEntry()
+  }
+  await nextTick()
+})
 
 const ClearSelectedEntry = async () => {
-  selectedItemText.value = ''
-  setDescription(undefined)
+  // selectedItem.value = '' が前提(watcherで対応)
+  // descriptionのクリア
+  SetDescription(undefined)
+
+  // additionalProcedureのクリア
   additionalProcedure.Title = ''
-  setDescription(
+  SetDescription(
     undefined,
     additionalProcedure
   )
-}
-
-const CategoryIsChanged = async () => {
-  freewordText.value = ''
-  candidates.value.splice(0)
-  await ClearSelectedEntry()
-
-  // 対象臓器が1つだけのときはそれを選択する
-  if (TargetOrgans.value.length === 1) {
-    target.value = TargetOrgans.value[0]
-    await nextTick()
-
-    SetCandidateItemsBySelection()
-  } else {
-    target.value = ''
-    await nextTick()
-  }
 }
 
 const SetCandidateItemsBySelection = async () => {
   candidates.value = ProceduresMaster.Items(
     category.value, target.value, props.year
   ).map(item => item.Text)
-
-  await ClearSelectedEntry()
+  selectedItem.value = ''
+  await nextTick()
 }
 
 const SetCandidateItemsByFreeword = async () => {
-  if (UserEditingAllowed.value && freewordText.value) {
+  if (freewordText.value && UserEditingAllowed.value) {
     const matches = ProceduresMaster.Matches(
       freewordText.value,
       category.value,
@@ -169,46 +277,48 @@ const SetCandidateItemsByFreeword = async () => {
 }
 
 const OnCandidateSelected = async () => {
-  if (selectedItemText.value) {
+  if (selectedItem.value) {
+    // 選択肢から入力に応じたマスタ情報を取得
     const masterItem = ProceduresMaster.getItem(
-      selectedItemText.value,
+      selectedItem.value,
       category.value,
       target.value,
       props.year
     )
-    await setDescription(masterItem)
-    await setAdditionalProcedure(masterItem)
+    await SetDescription(masterItem)
+    await SetAdditionalProcedure(masterItem)
   }
 }
 
-const setDescription = async (item, descriptionObj = description, splicedefault = true) => {
+const SetDescription = async (item, descriptionObj = description, splicedefault = true) => {
   // descriptionの設定を削除
   descriptionObj.Value.splice(0)
   descriptionObj.Options.splice(0)
 
-  if (Master.getDescriptionObject(item) === undefined) {
-    // descriptionの設定を初期化
+  const masterItem = Master.getDescriptionObject(item)
+  if (item === undefined || masterItem === undefined) {
+    // descriptionObjectの設定を初期化
     descriptionObj.Title = ''
     descriptionObj.SelectionMode = 'one'
-
-    await nextTick()
     return
   }
 
   // descriptionの設定をマスタからコピー
-  descriptionObj.Title = Master.getDescriptionTitle(item)
-  descriptionObj.SelectionMode = Master.getDescriptionSelectionMode(item)
+  descriptionObj.Title = masterItem?.Text || ''
+  descriptionObj.SelectionMode = masterItem?.Selection || 'one'
+  descriptionObj.Options.splice(0, 0, ...(masterItem?.Values || []))
 
-  // 単独入力不可項目の対応
+  // 単独入力不可項目の対応 - デフォルト項目は除外する
   if (splicedefault) {
-    descriptionObj.Options.splice(0, 0, ...Master.getDescriptionOptions(item).filter(option => option.slice(-1) !== '$'))
-  } else {
-    descriptionObj.Options.splice(0, 0, ...Master.getDescriptionOptions(item))
+    const spliceIndex = descriptionObj.Options.findIndex(option => option.slice(-1) === '$')
+    if (spliceIndex !== -1) {
+      descriptionObj.Options.splice(spliceIndex, 1)
+    }
   }
   await nextTick()
 }
 
-const setAdditionalProcedure = async (item) => {
+const SetAdditionalProcedure = async (item) => {
   const procedureTitle = Master.getAdditioninalProcedure(item)
   if (procedureTitle) {
     // Textに術式名を保存し付随種々の情報を展開
@@ -220,7 +330,7 @@ const setAdditionalProcedure = async (item) => {
       target.value,
       props.year
     )
-    await setDescription(
+    await SetDescription(
       additionalItem,
       additionalProcedure,
       false
@@ -228,7 +338,7 @@ const setAdditionalProcedure = async (item) => {
   } else {
     additionalProcedure.Text = ''
 
-    await setDescription(
+    await SetDescription(
       undefined,
       additionalProcedure
     )
@@ -237,16 +347,18 @@ const setAdditionalProcedure = async (item) => {
 
 const CommitChanges = async () => {
   const temporaryItem = {}
+  // 選択チェーンの構築
+  temporaryItem.Chain = [
+    category.value,
+    ...(target.value !== '' ? [target.value] : [])
+  ]
 
-  if (selectedItemText.value !== '') {
-    // 選択された内容が最優先
+  // Text以下の設定
+  if (selectedItem.value !== '') {
+    // 選択された内容が保存される
 
     // 選択内容を保存
-    temporaryItem.Text = selectedItemText.value
-    temporaryItem.Chain = [
-      category.value,
-      ...(target.value !== '' ? [target.value] : [])
-    ]
+    temporaryItem.Text = selectedItem.value
 
     // 選択枝の重複確認情報があればマスタから引用して保存
     const ditto = Master.getDittos(
@@ -266,7 +378,7 @@ const CommitChanges = async () => {
       // 選択枝にないものと単独保存対象外設定された項目(デフォルト)を除外
       const descriptionValue = description.Value
         .filter(item => item.slice(-1) !== '$')
-        .filter(item => description.Options.indexOf(item) !== -1)
+        .filter(item => description.Options.includes(item))
 
       if (
         descriptionValue.length === 0 &&
@@ -298,7 +410,7 @@ const CommitChanges = async () => {
       const descriptionValue =
         additionalProcedure.Value
           .filter(item => item.slice(-1) !== '$')
-          .filter(item => additionalProcedure.Options.indexOf(item) !== -1)
+          .filter(item => additionalProcedure.Options.includes(item))
 
       if (descriptionValue.length > 0) {
         temporaryItem.AdditionalProcedure = {
@@ -322,7 +434,7 @@ const CommitChanges = async () => {
         return
       }
       // 候補に入力と同じものがある場合は何が何でも選択させる.
-      if (candidates.value.indexOf(freewordText.value.trim()) !== -1) {
+      if (candidates.value.includes(freewordText.value.trim())) {
         await Popups.information(
           '自由入力の内容が候補にありますので選択してください.'
         )
@@ -339,89 +451,15 @@ const CommitChanges = async () => {
 
       // ユーザ手入力の場合は選択が掛かっていないので最低限の情報のみかつフラグを必ず立てる
       temporaryItem.Text = freewordText.value.trim()
-      temporaryItem.Chain = [category.value]
       temporaryItem.UserTyped = true
     }
   }
   // 新しいレコードが作成されていたら登録, そうでなければなにもしない.
   if (temporaryItem.Text) {
-    emit('data-upsert', 'Procedures', props.ItemIndex, JSON.stringify(temporaryItem))
+    emit('data-upsert', 'Procedures', props.index, JSON.stringify(temporaryItem))
     GoBack()
   }
 }
 
 const GoBack = () => router.replace('./')
-
-onMounted(async () => {
-  const item = JSON.parse(props.ItemValue || '{}')
-  if (props.ItemIndex > -1) {
-    // ItemIndex != -1 の場合は新規ではなく再編集になるのでItemValueから最低限必要な情報を展開する
-
-    // カテゴリ・対象の解釈
-    const dummyChain = [...(item?.Chain || []), ' ', ' ']
-    category.value = dummyChain[0]
-    target.value = dummyChain[1]
-    await nextTick()
-
-    // カテゴリとあれば対象に応じた選択リストの生成
-    await SetCandidateItemsBySelection()
-
-    // 入力値の解釈
-    const text = item?.Text || ''
-
-    if (text !== '') {
-      if (candidates.value.includes(text)) {
-      // 選択肢に該当項目がある場合選択する
-        selectedItemText.value = text
-        freewordText.value = ''
-      } else {
-        // 選択肢に入力されている項目がなければ自由入力に展開する
-        selectedItemText.value = ''
-        freewordText.value = text
-      }
-      nextTick()
-    }
-  }
-
-  // 再編集で術式の選択がある場合DOMの初期化が必要
-  if (selectedItemText.value !== '') {
-    // 選択肢に応じたDOM構成を展開
-    await OnCandidateSelected()
-
-    // 付随情報の入力の必要性があればItemValueから展開する
-    if (description.Title !== '') {
-      if (item?.Description && item.Description.length > 0) {
-        description.Value.splice(0)
-        description.Value.splice(0, 0, ...item.Description)
-      }
-    }
-
-    // 付随手術の入力の必要性があればItemValueから展開する
-    if (additionalProcedure.Text !== '') {
-      additionalProcedure.Value.splice(0)
-      if (item?.AdditionalProcedure?.Description &&
-        item.AdditionalProcedure.Description.length > 0) {
-        additionalProcedure.Value.splice(0, 0,
-          ...item.AdditionalProcedure.Description
-        )
-      } else {
-        // 既存入力が無い場合、デフォルト設定があれば設定
-        const defaultValue =
-          additionalProcedure.Options.filter(
-            (item) => item.slice(-1) === '$'
-          )[0]
-        if (defaultValue) {
-          additionalProcedure.Value.splice(0, 0, defaultValue)
-        }
-      }
-    }
-    // リアクティブの発火と選択枝にフォーカス
-    await nextTick()
-    paneSection.value.$el.getElementsByTagName('select')[2].focus()
-  }
-  // 自由入力にフォーカス
-  if (freewordText.value !== '') {
-    freewordSection.value.open()
-  }
-})
 </script>

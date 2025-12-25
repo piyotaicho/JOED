@@ -1,8 +1,8 @@
 <script setup>
 import { onMounted, computed, ref } from 'vue'
 import { useStore } from '@/store'
-import { useRouter } from 'vue-router/composables'
-import LargeIcon from '@/components/Atoms/LargeIcon'
+import { useRouter } from 'vue-router'
+import LargeIcon from '@/components/Atoms/LargeIcon.vue'
 
 const store = useStore()
 const router = useRouter()
@@ -28,10 +28,10 @@ onMounted(async () => {
 
 async function performAuthentication () {
   await store.dispatch('password/Authenticate', { PasswordString: password.value })
-    .then(_ => {
+    .then(() => {
       router.push({ name: 'list' })
     })
-    .catch(_ => { loginFailed.value = true })
+    .catch(() => { loginFailed.value = true })
 }
 </script>
 
@@ -47,7 +47,7 @@ async function performAuthentication () {
           パスワード :
           <el-badge value="パスワードが違います" :hidden="!loginFailed">
             <input type="password" v-model="password" id="password-entry-box"
-              @keyup.13="performAuthentication" :disabled="disablePasswordField" />
+              @keyup.enter="performAuthentication" :disabled="disablePasswordField" />
           </el-badge>
         </label>
       </div>

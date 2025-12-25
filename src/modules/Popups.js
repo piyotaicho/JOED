@@ -1,5 +1,5 @@
 // elementダイアログ
-import { MessageBox } from 'element-ui'
+import { ElMessageBox as MessageBox } from 'element-plus'
 
 // messageに改行があったらelementを返す
 function escapeMessage (message) {
@@ -26,57 +26,60 @@ function escapeMessage (message) {
   }
 }
 
-export function alert (message) {
+export function alert (message, title = undefined) {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return MessageBox.alert(text, {
+    title: title,
     iconClass: 'el-icon-message-solid',
     showClose: false,
     dangerouslyUseHTMLString
   })
 }
 
-export function error (message) {
+export function error (message, title = undefined) {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return MessageBox.alert(text, {
+    title: title,
     iconClass: 'el-icon-error',
     showClose: false,
     dangerouslyUseHTMLString
   })
 }
 
-export function information (message) {
+export function information (message, title = '通知') {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return MessageBox.alert(text, {
-    title: '通知',
+    title: title,
     iconClass: 'el-icon-info',
     closeOnClickModal: false,
     showClose: false,
+    lockScroll: false,
     dangerouslyUseHTMLString
   })
 }
 
-export async function confirm (message, caller = null) {
+export async function confirm (message, title = '確認') {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return await MessageBox.confirm(text, {
-    title: '確認',
+    title: title,
     iconClass: 'el-icon-question',
     showClose: false,
     closeOnPressEscape: true,
     dangerouslyUseHTMLString
-  }).then(_ => true, _ => false)
+  }).then(() => true, () => false)
 }
 
-export async function confirmYesNo (message) {
+export async function confirmYesNo (message, title = '確認') {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return await MessageBox.confirm(text, {
-    title: '確認',
+    title: title,
     iconClass: 'el-icon-question',
     showClose: false,
     closeOnPressEscape: false,
     cancelButtonText: 'いいえ',
     confirmButtonText: 'はい',
     dangerouslyUseHTMLString
-  }).then(_ => true, _ => false)
+  }).then(() => true, () => false)
 }
 
 export async function confirmAnyOk (message, anyText = 'cancel') {
@@ -88,7 +91,7 @@ export async function confirmAnyOk (message, anyText = 'cancel') {
     cancelButtonText: anyText,
     confirmButtonText: 'OK',
     dangerouslyUseHTMLString
-  }).then(_ => true, _ => false)
+  }).then(() => true, () => false)
 }
 
 export async function prompt (message, rule = undefined) {
@@ -106,5 +109,5 @@ export async function prompt (message, rule = undefined) {
   }
 
   return await MessageBox.prompt(text, options)
-    .then(value => value.value, _ => null)
+    .then(value => value.value, () => null)
 }

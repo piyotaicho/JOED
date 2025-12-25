@@ -3,94 +3,123 @@
     <div class="edit-dialog" ref="editDialog">
       <div class="edit-top">
         <SectionPatientInfo
-          :DateOfProcedure.sync="CaseData.DateOfProcedure"
-          :PatientId.sync="CaseData.PatientId"
-          :Name.sync="CaseData.Name"
-          :Age.sync="CaseData.Age"
-          :Denial.sync="CaseData.Denial"
-          :ProcedureTime.sync="CaseData.ProcedureTime"
-          :JSOGId.sync="CaseData.JSOGId"
-          :NCDId.sync="CaseData.NCDId"
+          v-model:DateOfProcedure="CaseData.DateOfProcedure"
+          v-model:PatientId="CaseData.PatientId"
+          v-model:Name="CaseData.Name"
+          v-model:Age="CaseData.Age"
+          v-model:Denial="CaseData.Denial"
+          v-model:ProcedureTime="CaseData.ProcedureTime"
+          v-model:JSOGId.sync="CaseData.JSOGId"
+          v-model:NCDId.sync="CaseData.NCDId"
         />
       </div>
 
       <SectionDiagnoses
-        :container.sync="CaseData.Diagnoses"
-        @addnewitem="EditSection('diagnosis')"
+        v-model="CaseData.Diagnoses"
+        @additem="EditSection('diagnosis')"
         @edititem="EditSection('diagnosis', $event)"
         @removeitem="RemoveListItem('Diagnoses', $event)"
       />
 
       <SectionProcedures
-        :container.sync="CaseData.Procedures"
-        @addnewitem="EditSection('procedure')"
+        v-model="CaseData.Procedures"
+        @additem="EditSection('procedure')"
         @edititem="EditSection('procedure', $event)"
         @removeitem="RemoveListItem('Procedures', $event)"
-      />
+      >
+        <ApproachItems :value="CaseData.Approach" :year="CaseData.DateOfProcedure.substring(0, 4)" :procedureCategories="categories" @click="EditSection('approach')"/>
+      </SectionProcedures>
 
       <SectionAEs
-        ref="sectionAEs"
-        :container="CaseData.AEs"
-        :optionValue.sync="isNoAEs"
-        @addnewitem="EditSection('AE')"
+        v-model="CaseData.AEs"
+        @additem="EditSection('AE')"
         @edititem="EditSection('AE', $event)"
         @removeitem="RemoveListItem('AEs', $event)"
-      />
+      >
+        <LabeledCheckbox v-model="isNoAEs" id="noAEcheckbox">合併症なし</LabeledCheckbox>
+      </SectionAEs>
+
+      <SectionBox title="メモ" v-show="editingNote">
+        <div style="margin: 1px 28px 0px 42px;">
+          <textarea
+            v-model.trim="CaseData.Note"
+            style="font-size: 1rem; min-width: 100%; max-width: 100%; min-height: 6rem; padding: 0.28rem; line-height: 1.5rem;"
+          />
+        </div>
+      </SectionBox>
 
       <!-- Navigations -->
-      <el-button icon="el-icon-caret-left" size="medium" circle id="MovePrev"
+      <el-button
+        :icon="CaretLeft"
+        circle
+        id="MovePrev"
         tabindex="-1"
         v-if="isEditingExistingItem"
         :disabled="!prevUid"
         @click.exact="CancelEditing('prev')"
-        @click.shift="CommitCase('prev')" />
-      <el-button icon="el-icon-caret-right" size="medium" circle id="MoveNext"
+        @click.shift="CommitCase('prev')"
+      />
+      <el-button
+        :icon="CaretRight"
+        circle
+        id="MoveNext"
         tabindex="-1"
         v-if="isEditingExistingItem"
         :disabled="!nextUid"
         @click.exact="CancelEditing('next')"
-        @click.shift="CommitCase('next')" />
+        @click.shift="CommitCase('next')"
+      />
 
       <!--Controls -->
       <div class="edit-controls">
         <div class="edit-controls-left">
-          <el-button type="warning" icon="el-icon-warning"
-
+          <el-button
+            :type="CaseData.Note.trim() !== '' ? 'primary' : 'default'"
+            :icon="Memo"
+            style="padding-left: 8px; padding-right: 8px;" @click="ToggleEditingNote()"
+          />
+          <el-button
+            type="warning"
+            :icon="WarningFilled"
             @click="ShowNotification"
-            v-if="CaseData.Notification">
+            v-if="CaseData.Notification"
+          >
             入力内容の確認が必要です.
           </el-button>
         </div>
         <div class="edit-controls-right">
           <div>
-            <el-button type="primary" icon="el-icon-arrow-left"
-
-              @click="CancelEditing()">
-              戻る
-            </el-button>
+            <el-button type="primary" :icon="ArrowLeft" @click="CancelEditing()"> 戻る </el-button>
           </div>
           <div>
-            <el-dropdown split-button type="primary"
-              @click.exact="CommitCase()" @click.shift="CommitCase('temporary')"
-              @command="CommitCase">
-              編集内容を保存 <i class="el-icon-loading" v-show="processing"/>
+            <el-dropdown
+              split-button
+              type="primary"
+              @click.exact="CommitCase()"
+              @click.shift="CommitCase('temporary')"
+              @command="CommitCase"
+            >
+              編集内容を保存 <Loading v-show="processing" />
 
               <template v-slot:dropdown>
                 <el-dropdown-menu>
+                  <el-dropdown-item command="temporary">一時保存</el-dropdown-item>
                   <template v-if="isEditingExistingItem">
-                    <el-dropdown-item command="next" :disabled="!nextUid">保存して次へ</el-dropdown-item>
-                    <el-dropdown-item command="prev" :disabled="!prevUid">保存して前へ</el-dropdown-item>
+                    <el-dropdown-item command="next" :disabled="!nextUid"
+                      >保存して次へ</el-dropdown-item
+                    >
+                    <el-dropdown-item command="prev" :disabled="!prevUid"
+                      >保存して前へ</el-dropdown-item
+                    >
                   </template>
-                  <el-dropdown-item command="new">保存して新規作成</el-dropdown-item>
+                  <el-dropdown-item command="new" divided>保存して新規作成</el-dropdown-item>
                   <el-dropdown-item command="temporarynew">一時保存して新規作成</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
-
             </el-dropdown>
           </div>
           <div v-if="isEditingExistingItem">
-            <el-button type="danger" icon="el-icon-delete" ref="RemoveButton"
-              @click="RemoveCase()">
+            <el-button type="danger" :icon="Delete" ref="RemoveButton" @click="RemoveCase()">
               削除
             </el-button>
           </div>
@@ -103,19 +132,23 @@
       <router-view @data-upsert="EditListItem"></router-view>
     </div>
 
-    <TheWrapper v-if="processing"/>
+    <TheWrapper v-if="processing" />
   </div>
 </template>
 
 <script setup>
-import { reactive, ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { CaretLeft, CaretRight, WarningFilled, ArrowLeft, Memo, Delete, Loading } from '@element-plus/icons-vue'
+import { reactive, ref, computed, onMounted, onBeforeUnmount, nextTick, useTemplateRef } from 'vue'
 import { useStore } from '@/store'
-import { onBeforeRouteUpdate, useRouter } from 'vue-router/composables'
-import SectionPatientInfo from '../components/SectionPatientInfo.vue'
-import SectionDiagnoses from '@/components/SectionDiagnoses'
-import SectionProcedures from '@/components/SectionProcedures'
-import SectionAEs from '@/components/SectionAEs'
-import TheWrapper from '@/components/Atoms/TheWrapper'
+import { onBeforeRouteUpdate, useRouter } from 'vue-router'
+import SectionPatientInfo from '@/components/SectionPatientInfo.vue'
+import SectionDiagnoses from '@/components/SectionDiagnoses.vue'
+import SectionProcedures from '@/components/SectionProcedures.vue'
+import SectionBox from '@/components/Atoms/SectionBox.vue'
+import ApproachItems from '@/components/Molecules/ApproachItems.vue'
+import SectionAEs from '@/components/SectionAEs.vue'
+import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
+import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 
 import { ZenToHan } from '@/modules/ZenHanChars'
 import * as Popups from '@/modules/Popups'
@@ -126,10 +159,10 @@ const router = useRouter()
 
 const props = defineProps({
   uid: {
-    type: [Number, String],
+    type: String,
     required: true,
-    default: 0
-  }
+    default: '0',
+  },
 })
 
 const CaseData = reactive({
@@ -144,55 +177,67 @@ const CaseData = reactive({
   PresentAE: true,
   Diagnoses: [],
   Procedures: [],
+  Approach: {},
   AEs: [],
   Notification: '',
-  Denial: false
+  Note: '',
+  Denial: false,
 })
 
 const prevUid = ref(0)
 const nextUid = ref(0)
 const processing = ref(true)
 const editingSection = ref(false)
+const editingNote = ref(false)
 
-const editDialog = ref()
-const sectionAEs = ref()
+const editDialog = useTemplateRef('editDialog')
 
 let preserve = ''
 let preservedElement
 
-// Reactiveでない状態(created)で既存データの読み込みをする.
+// Reactiveでない状態(a.k.a.created)で既存データの読み込みをする.
 //
 // @prop {uid} DocumentId
-function created () {
+function onCreated() {
+  // uid '0','00'は新規作成 - uid > 0 は既存データ編集
   const uid = Number(props.uid)
   if (uid > 0) {
-    store.dispatch('FetchDocument', { DocumentId: uid })
-      .then(_ => {
-        const storedDocument = store.getters.CaseDocument(uid)
-        if (storedDocument !== undefined) {
-          for (const key in CaseData) {
-            if (storedDocument[key] !== undefined) {
-              if (Array.isArray(storedDocument[key])) {
-                CaseData[key] = storedDocument[key].map(item => JSON.stringify(item))
-              } else {
-                CaseData[key] = storedDocument[key]
-              }
+    store.dispatch('FetchDocument', { DocumentId: uid }).then(() => {
+      const storedDocument = store.getters.CaseDocument(uid)
+      if (storedDocument !== undefined) {
+        for (const key in CaseData) {
+          if (storedDocument[key] !== undefined) {
+            // Arrayのアイテムはrouterへのハンドリングをよくするため事前にJSON文字列化して格納する
+            if (Array.isArray(storedDocument[key])) {
+              CaseData[key] = storedDocument[key].map((item) => JSON.stringify(item))
+            } else {
+              CaseData[key] = storedDocument[key]
             }
           }
         }
-        preserve = JSON.stringify(CaseData)
+      }
 
-        processing.value = false
-        prevUid.value = store.getters.NextUids(uid).Prev
-        nextUid.value = store.getters.NextUids(uid).Next
-      })
+      // メモ自動表示設定を設定から反映
+      if (CaseData?.Note !== undefined && CaseData.Note.trim() !== '') {
+        if (store.getters['system/ShowNote']) {
+          editingNote.value = true
+        }
+      }
+      processing.value = false
+      preserve = JSON.stringify(CaseData)
+
+      // ナビゲーションボタンの動作設定
+      prevUid.value = store.getters.GetRelativeDocumentId(uid, -1)
+      nextUid.value = store.getters.GetRelativeDocumentId(uid, +1)
+    })
   } else {
     processing.value = false
     preserve = JSON.stringify(CaseData)
   }
 }
-created()
+onCreated()
 
+// ライフサイクルフック - キーボードイベント登録と削除
 onMounted(() => {
   document.addEventListener('keydown', keyboardEventListener, true)
   window.addEventListener('beforeunload', BeforeUnloadLister)
@@ -203,26 +248,32 @@ onBeforeUnmount(() => {
   document.removeEventListener('keydown', keyboardEventListener, true)
 })
 
-onBeforeRouteUpdate((to, _from, next) => {
-  const goSection = to.name !== 'edit'
-  editingSection.value = goSection
-  if (goSection) {
+onBeforeRouteUpdate((to) => {
+  // 現在の編集状態を確認 - editはセクション編集中ではない
+  editingSection.value = to.name !== 'edit'
+
+  if (editingSection.value) {
     preservedElement = document.activeElement
   } else {
     try {
       preservedElement.focus()
     } catch {}
   }
-  next()
 })
 
+//
 const uid = computed(() => Number(props.uid))
+
+const categories = computed(() => {
+  const procedureTypes = CaseData.Procedures.map(item => JSON.parse(item)?.Chain).filter(item => item !== undefined && Array.isArray(item)).map(item => item[0])
+  return procedureTypes
+})
 
 const isNoAEs = computed({
   get: () => !CaseData.PresentAE,
   set: (newvalue) => {
     CaseData.PresentAE = !newvalue
-  }
+  },
 })
 
 const isEditingExistingItem = computed(() => uid.value > 0)
@@ -231,41 +282,65 @@ const BackToList = (currentUid) => {
   if (currentUid === 0) {
     router.push({ name: 'list' })
   } else {
-    router.push({ name: 'list', hash: (`#doc${currentUid}`) })
+    router.push({ name: 'list', hash: `#doc${currentUid}` })
   }
 }
 
 const editAnother = (targetUid) => {
   if (targetUid > 0) {
-    router.push({ name: 'edit', params: { uid: targetUid } })
+    router.push({ name: 'edit', params: { uid: targetUid.toString() } })
   }
   // HACK:
-  // 新規(uid = '0')→新規(uid = '0')ではApp.vueで定義したRouterKeyが重複するための quick hack.
-  // uid = '00' も uid > 0 がjavascriptの型変換ではfalseで新規扱いになるのでそれを利用する.
+  // routerではprops(pramas)がstgringで渡されることを利用する.
+  // 新規レコードを連続で作成する場合(uid = '0')→新規(uid = '0')となりはRouterKeyが重複する
+  // これを '0' ←→ '00' でスイッチして回避する.
   if (targetUid === 0) {
-    router.push({ name: 'edit', params: { uid: (props.uid.toString() === '00') ? '0' : '00' } })
+    router.push({ name: 'edit', params: { uid: props.uid === '00' ? '0' : '00' } })
   }
 }
 
-const EditSection = (target, params = {}) => {
+const EditSection = (target, payload) => {
   if (editingSection.value) return
+  const {index, value} = payload || {}
 
-  const index = params.ItemIndex !== undefined ? params.ItemIndex : -1
-  const jsonValue = params.ItemValue || '{}'
-  const editingYear = CaseData.DateOfProcedure.substring(0, 4)
-
-  router.push({
-    name: target,
-    params: {
-      ItemIndex: index,
-      ItemValue: jsonValue,
-      year: editingYear
-    }
-  })
+  if (target !== 'approach') {
+    router.push({
+      name: target,
+      query: {
+        index: index !== undefined ? index : -1,
+        value: value || '{}',
+        year: CaseData.DateOfProcedure.substring(0, 4),
+      },
+    })
+  } else {
+    router.push({
+      name: target,
+      query: {
+        value: JSON.stringify(CaseData.Approach),
+        procedureTypes: JSON.stringify(
+          CaseData.Procedures.map(item => JSON.parse(item)?.Chain[0]).map(item => item)
+        ),
+        year: CaseData.DateOfProcedure.substring(0, 4),
+      },
+    })
+  }
 }
 
 const ShowNotification = () => {
   Popups.information(CaseData.Notification)
+}
+
+const ToggleEditingNote = () => {
+  editingNote.value = !editingNote.value
+  // ノートの編集が開いたらtextareaをフォーカスする
+  nextTick().then(() => {
+    if (editingNote.value) {
+      const textareas = editDialog.value.getElementsByTagName('textarea')
+      if (textareas?.length > 0) {
+        textareas[0].focus()
+      }
+    }
+  })
 }
 
 const EditListItem = (target, index, value) => {
@@ -282,7 +357,7 @@ const RemoveListItem = (target, index) => {
 }
 
 const UpdateList = (target, index, value) => {
-  if (['Diagnoses', 'Procedures', 'AEs'].indexOf(target) >= 0) {
+  if (['Diagnoses', 'Procedures', 'AEs'].includes(target)) {
     const isEmptyValue = typeof value === 'undefined' || (typeof value === 'string' && value === '')
     if (index >= 0) {
       if (CaseData[target][index] !== undefined) {
@@ -300,13 +375,15 @@ const UpdateList = (target, index, value) => {
         CaseData[target].push(value)
       }
     }
+  } else if (target === 'Approach') {
+    // アプローチではindexは無視
+    CaseData.Approach = JSON.parse(value || '{}')
   }
 }
 
 const RemoveCase = async () => {
-  if (uid.value > 0 && await Popups.confirm('この症例を削除します.よろしいですか?')) {
-    store.dispatch('RemoveDocument', { DocumentId: uid.value })
-      .then(_ => BackToList(0))
+  if (uid.value > 0 && (await Popups.confirm('この症例を削除します.よろしいですか?'))) {
+    store.dispatch('RemoveDocument', { DocumentId: uid.value }).then(() => BackToList(0))
   }
 }
 
@@ -332,7 +409,7 @@ const CommitCase = async (to = '') => {
           BackToList(uid.value)
       }
     })
-    .catch(e => {
+    .catch((e) => {
       Popups.alert(e.message)
     })
 }
@@ -342,7 +419,10 @@ const CancelEditing = async (to = '') => {
     return
   }
 
-  if (preserve === JSON.stringify(CaseData) || await Popups.confirm('項目が編集中です.移動しますか?')) {
+  if (
+    preserve === JSON.stringify(CaseData) ||
+    (await Popups.confirm('項目が編集中です.移動しますか?'))
+  ) {
     switch (to) {
       case 'prev':
         if (prevUid.value !== 0) editAnother(prevUid.value)
@@ -363,11 +443,16 @@ const StoreCase = async (temporary = false) => {
     // データベース登録に用いるレコードドキュメントを生成
     const newDocument = {}
     for (const key in CaseData) {
-      // ArrayはObject[]なのでJSON文字列化する
+      // Arrayで保存されているDiganoses, ProceduresはJSON文字列の配列なので元に戻す
       if (Array.isArray(CaseData[key])) {
-        newDocument[key] = CaseData[key].map(item => JSON.parse(item))
+        newDocument[key] = CaseData[key].map((item) => JSON.parse(item))
       } else {
-        newDocument[key] = CaseData[key]
+        if (typeof CaseData[key] === 'object' && CaseData[key] !== null) {
+          // オブジェクト(Approachのみ)は生のオブジェクトに変換
+          newDocument[key] = JSON.parse(JSON.stringify(CaseData[key]))
+        } else {
+          newDocument[key] = CaseData[key]
+        }
       }
     }
 
@@ -386,16 +471,13 @@ const StoreCase = async (temporary = false) => {
     // 患者名 : 前後トリムのみ
     newDocument.Name = newDocument.Name.trim()
     // 患者ID : 半角文字に置換・空白文字を除去
-    newDocument.PatientId = ZenToHan(newDocument.PatientId.trim())
-      .replace(/\s/g, '')
+    newDocument.PatientId = ZenToHan(newDocument.PatientId.trim()).replace(/\s/g, '')
 
     // 腫瘍登録番号 : 半角文字に置換・大文字変換・空白文字の除去
     if (newDocument.JSOGId.trim() === '') {
       delete newDocument.JSOGId
     } else {
-      newDocument.JSOGId = ZenToHan(newDocument.JSOGId)
-        .toUpperCase()
-        .replace(/\s/g, '')
+      newDocument.JSOGId = ZenToHan(newDocument.JSOGId).toUpperCase().replace(/\s/g, '')
     }
 
     // NCD登録番号 : 半角文字に置換・数値とハイフン以外を除去
@@ -414,6 +496,26 @@ const StoreCase = async (temporary = false) => {
       }
     }
 
+    // Approachが不要ならば削除
+    for (const category in newDocument.Approach) {
+      if (
+        !Array.isArray(newDocument.Approach[category]) ||
+        newDocument.Approach[category].length === 0
+      ) {
+        delete newDocument.Approach[category]
+      }
+    }
+
+    // Noteが不要ならば削除
+    if (newDocument.Note === undefined || newDocument.Note.trim() === '') {
+      delete newDocument.Note
+    }
+
+    // Noteの大きさは10kbytesまでに制限
+    if (newDocument.Note !== undefined && newDocument.Note.length > 10000) {
+      throw new Error('メモの内容は10,000文字以内にしてください.')
+    }
+
     // データの検証と区分の取得
     const typeofprocedure = await ValidateCase(newDocument, temporary)
 
@@ -428,14 +530,37 @@ const StoreCase = async (temporary = false) => {
   }
 }
 
+/**
+ * キーボードイベントハンドラー
+ *
+ * CTRL/COMMAND +
+ * 0 : フォーカスを最初の入力欄へ移動
+ * 1 : 診断追加登録
+ * 2 : 実施手術追加登録
+ * 3 : 合併症追加登録
+ * J : 次の症例へ移動 (編集中解除)
+ * K : 前の症例へ移動 (編集中解除)
+ * U : 編集中解除 (変更破棄)
+ * N : 新規症例作成
+ * S or Enter : 編集内容保存
+ * X : 症例削除
+ *
+ * SHIFT + CTRL/COMMAND +
+ * 2 : アプローチ編集
+ * 3 : 合併症なしチェックボックス切替
+ * J : 次の症例へ移動 (編集中保存)
+ * K : 前の症例へ移動 (編集中保存)
+ * S : 一時保存
+ */
 const keyboardEventListener = async (event) => {
   if (editingSection.value || event.repeat) {
     return
   }
 
-  if (store.getters['system/Platform'] === 'darwin'
-    ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) // macOS - command
-    : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) // Windows - Ctrl
+  if (
+    store.getters['system/Platform'] === 'darwin'
+      ? event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey // macOS - command
+      : event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey // Windows - Ctrl
   ) {
     switch (event.code) {
       case 'Digit0':
@@ -471,13 +596,19 @@ const keyboardEventListener = async (event) => {
         await RemoveCase()
         break
     }
-  } else if (store.getters['system/Platform'] === 'darwin'
-    ? (event.metaKey && event.shiftKey && !event.ctrlKey && !event.altKey) // macOS - command + shift
-    : (event.ctrlKey && event.shiftKey && !event.metaKey && !event.altKey) // Windows - Ctrl + Shift
+  } else if (
+    store.getters['system/Platform'] === 'darwin'
+      ? event.metaKey && event.shiftKey && !event.ctrlKey && !event.altKey // macOS - command + shift
+      : event.ctrlKey && event.shiftKey && !event.metaKey && !event.altKey // Windows - Ctrl + Shift
   ) {
     switch (event.code) {
+      case 'Digit2':
+        if (CaseData.Procedures.length > 0) {
+          EditSection('approach')
+        }
+        break
       case 'Digit3':
-        document.getElementById('noAEcheckbox').click()
+        editDialog.value.getElementById('noAEcheckbox').click()
         break
       case 'KeyJ':
         await CommitCase('next')
@@ -501,13 +632,12 @@ const BeforeUnloadLister = (event) => {
   if (preserve !== JSON.stringify(this.CaseData)) {
     event.preventDefault()
     event.returnValue = ''
-    Popups.confirmYesNo('項目が編集中ですが閉じますか?')
-      .then(result => {
-        if (result) {
-          window.removeEventListener('beforeunload', this.BeforeUnloadLister)
-          window.close()
-        }
-      })
+    Popups.confirmYesNo('項目が編集中ですが閉じますか?').then((result) => {
+      if (result) {
+        window.removeEventListener('beforeunload', this.BeforeUnloadLister)
+        window.close()
+      }
+    })
     return false
   }
 }

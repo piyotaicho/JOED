@@ -31,12 +31,10 @@ export function CreateDocument (record) {
     DiagnosesAndProceduresPrimary(CaseData, record)
     DiagnosesAndProceduresSecondary(CaseData, record)
     AEs(CaseData, record)
-  } catch (error) {
-    console.warn(error.message)
-  }
+  } catch {}
 
   // 2019年マスターからの単純置換(2020～のみ)
-  Migrate2019to2020(CaseData)
+  MigrateFrom2019(CaseData)
 
   return CaseData
 }
@@ -148,7 +146,7 @@ function DiagnosesAndProceduresPrimary (CaseData, record) {
   // 主たる術式からカテゴリを設定
   try {
     CaseData.TypeOfProcedure = CaseData.Procedures[0].Chain[0]
-  } catch (e) {
+  } catch {
     throw new Error('実施術式カテゴリの抽出に失敗しました.')
   }
 }
@@ -276,8 +274,9 @@ function handleUserTyped (category, item, typeditem) {
       }
 }
 
-export function Migrate2019to2020 (CaseData) {
-  if (CaseData.DateOfProcedure.substring(0, 4) > '2019') {
+export function MigrateFrom2019 (CaseData) {
+  const dataYear = CaseData.DateOfProcedure.substring(0, 4)
+  if (dataYear > '2019') {
     // 術後診断の置換
     const DiagnosisReplacer = {
       '子宮内膜症(チョコレート嚢胞含む)': '子宮内膜症(子宮内膜症性嚢胞含む)',
@@ -287,7 +286,12 @@ export function Migrate2019to2020 (CaseData) {
       予防的内性器摘出術適応: '予防的内性器摘出術の適応',
       '卵巣癌(卵管癌・腹膜癌含む)': '卵巣癌(卵管癌,腹膜癌含む)',
       子宮体部前癌病変: '子宮内膜増殖症・異型増殖症',
-      帝王切開瘢痕部症候群: '帝王切開瘢痕症候群'
+      帝王切開瘢痕部症候群: '帝王切開瘢痕症候群',
+      ...(dataYear >= '2021'
+        ? {
+          '機能性不妊症(腹腔内検査)': '機能性不妊症(腹腔内検査,SecondLookを含む)',
+        } : {}
+      )
     }
     for (let index = 0; index < CaseData.Diagnoses.length; index++) {
       if (CaseData.Diagnoses[index].UserTyped) {
@@ -314,7 +318,9 @@ export function Migrate2019to2020 (CaseData) {
       }
       if (ProcedureReplacer[CaseData.Procedures[index].Text]) {
         if (CaseData.Procedures[index].Text === '卵管鏡下卵管形成術(単独)') {
-          CaseData.Procedures[index].Description = '卵管鏡単独'
+          if (dataYear <= '2021') {
+            CaseData.Procedures[index].Description = '卵管鏡単独'
+          }
         }
         if (CaseData.Procedures[index].Text === '卵管鏡下卵管形成術(腹腔鏡併用)') {
           CaseData.Procedures[index].Description = '腹腔鏡併用'
