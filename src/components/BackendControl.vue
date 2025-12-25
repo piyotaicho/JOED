@@ -8,6 +8,8 @@ import { relaunchApp } from 'depmodules/config'
 
 const store = useStore()
 
+const enableAdvancedSettings = store.getters['system/EnableAdvancedSettings']
+
 const removeBackupFiles = ref(false)
 
 const backupDatabase = async () => {
@@ -111,7 +113,7 @@ const dropDatabase = async () => {
           システム設定・データベースのバックアップ取得
         </div>
         <div class="field w40">
-          <el-button type="primary" @click="backupDatabase">実行</el-button>
+          <el-button type="primary" @click="backupDatabase" :disabled="!enableAdvancedSettings">実行</el-button>
         </div>
       </div>
 
@@ -120,7 +122,7 @@ const dropDatabase = async () => {
           システム設定・データベースをバックアップから復元
         </div>
         <div class="field w40">
-          <el-button type="danger" @click="restoreDatabase" :disabled="store.getters['TotalNumberOfCases'] > 0">実行</el-button>
+          <el-button type="danger" @click="restoreDatabase" :disabled="!enableAdvancedSettings || store.getters['TotalNumberOfCases'] > 0">実行</el-button>
         </div>
       </div>
 
@@ -135,14 +137,15 @@ const dropDatabase = async () => {
           データベースの完全削除
         </div>
         <div class="field w40">
-          <el-button type="danger" @click="dropDatabase">実行</el-button>
+          <el-button type="danger" @click="dropDatabase" :disabled="!enableAdvancedSettings">実行</el-button>
         </div>
       </div>
       <InputSwitchField
         title="バックアップファイルの削除設定"
         v-model="removeBackupFiles"
         :options="[{ text: '残す' }, { text: '削除する' }]"
-        :class-override="['label w60', 'field w40']"/>
+        :class-override="['label w60', 'field w40']"
+        :disabled="!enableAdvancedSettings"/>
 
     </div>
   </div>

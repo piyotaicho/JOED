@@ -22,16 +22,8 @@ const data = reactive({
   showNote: true,
   revertView: false
 })
-const preserve = ref('')
-
 const categorySelections = ref({})
 const categorySelectionOfOneOf = ref({})
-
-const changed = computed(() => preserve.value !== (
-  JSON.stringify(data) +
-  JSON.stringify(categorySelectionOfOneOf.value) +
-  JSON.stringify(categorySelections.value)
-))
 
 // 初期値をstoreから取得
 data.showStartupDialog = store.getters['system/ShowStartupDialog']
@@ -71,10 +63,6 @@ const initValues = () => {
   } catch {
     // 不正なJSONの場合は初期化する内容は無い
   }
-
-  preserve.value = JSON.stringify(data) +
-    JSON.stringify(categorySelectionOfOneOf.value) +
-    JSON.stringify(categorySelections.value)
 }
 initValues()
 
@@ -107,9 +95,6 @@ const commitSettings = async () => {
   })
 
   await store.dispatch('system/SavePreferences')
-  preserve.value = JSON.stringify(data) +
-    JSON.stringify(categorySelectionOfOneOf.value) +
-    JSON.stringify(categorySelections.value)
 
   Popups.information('設定が変更されました.')
 }
@@ -189,7 +174,7 @@ const commitSettings = async () => {
       <div>
         <div class="label"></div>
         <div class="field">
-          <el-button type="primary" :disabled="!changed" @click="commitSettings">上記設定を保存</el-button>
+          <el-button type="primary" @click="commitSettings">上記設定を保存</el-button>
         </div>
       </div>
     </div>

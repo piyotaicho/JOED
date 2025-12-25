@@ -12,8 +12,6 @@ const data = reactive({
   InstitutionName: '',
   InstitutionID: '',
   JSOGoncologyboardID: '',
-   // 変更の検知用
-  Preserve: '[]'
 })
 
 const instituteList = ref([])
@@ -26,29 +24,12 @@ data.InstitutionName = settings?.InstitutionName || ''
 data.InstitutionID = settings?.InstitutionID || ''
 data.JSOGoncologyboardID = settings?.JSOGoncologyboardID || ''
 
-function preserve () {
-  data.Preserve = JSON.stringify(
-    [
-      data.InstitutionName,
-      data.InstitutionID,
-      data.JSOGoncologyboardID
-    ])
-}
-preserve()
-
 const enableCommit = computed(() => {
   const InstitutionName = data.InstitutionName || ''
   const InstitutionID = data.InstitutionID || ''
-  const JSOGoncologyboardID = data.JSOGoncologyboardID || ''
 
   return InstitutionName !== '' &&
-    InstitutionID !== '' &&
-    data.Preserve !== JSON.stringify(
-      [
-        InstitutionName,
-        InstitutionID,
-        JSOGoncologyboardID
-      ])
+    InstitutionID !== ''
 })
 
 // 施設リストをマスタから生成する
