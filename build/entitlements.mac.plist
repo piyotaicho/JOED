@@ -10,8 +10,11 @@
     <!-- https://github.com/electron-userland/electron-builder/issues/3940 -->
     <key>com.apple.security.cs.disable-library-validation</key>
     <true/>
-    <!-- user file access read-write -->
-    <key>com.apple.security.files.user-selected.read-write</key>
+    <!-- Disable app sandbox to allow asar resources to load properly -->
+    <key>com.apple.security.app-sandbox</key>
+    <false/>
+    <!-- Allow unrestricted file access for bundled resources -->
+    <key>com.apple.security.files.all.read-write</key>
     <true/>
   </dict>
 </plist>
