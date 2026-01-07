@@ -2,7 +2,8 @@
 node_modules
 /dist
 /dist-electron
-/dist_electron
+/document/*.html
+/document/*.pdf
 
 # Yarn
 /.yarn
