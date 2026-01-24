@@ -36,9 +36,14 @@ export async function ValidateCase (item = {}, temporary = false) {
   const year = item.DateOfProcedure ? item.DateOfProcedure.substring(0, 4) : undefined
   if (temporary) {
     // 一時保存でも患者IDと手術日は最低限の必須入力項目
-    // 可能であればカテゴリーを取得
     await CheckBasicInformations(item)
-    return await CheckCategoryMatch(item)
+    // 可能であればカテゴリーを取得(エラーならundefinedを返す)
+    let category = undefined
+    try {
+      category = await CheckCategoryMatch(item, year)
+    } finally {
+      return category
+    }
   } else {
     const results = await allSettled([
       CheckBasicInformations(item),
