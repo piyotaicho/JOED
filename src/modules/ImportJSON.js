@@ -1,4 +1,5 @@
 import { parseProcedureTime, encodeProcedureTime } from '@/modules/ProcedureTimes'
+import { CheckCategoryMatch } from './CaseValidater'
 
 let year = ''
 let internalcounter = 1
@@ -32,7 +33,8 @@ export function ValidateRecords (records) {
       // 症例レコードの数をカウントアップ
       numberofCase++
     } else {
-      // 提出データに準ずる必要条件を満たしているパターン
+      // 提出データに準ずる最低条件を満たしているパターン
+      // ApproachやTypeOfProcedureのないパターンもあるため、これらは条件に入れない
       if (
         record.ProcedureTime &&
         record.PresentAE !== undefined &&
@@ -58,7 +60,7 @@ export function ValidateRecords (records) {
   }
 }
 
-export function CreateDocument (record) {
+export async function CreateDocument (record) {
   const CaseData = {
   }
 
@@ -68,7 +70,7 @@ export function CreateDocument (record) {
   BasicInformation(CaseData, record)
 
   ProcedureTime(CaseData, record)
-  DiagnosesAndProcedures(CaseData, record)
+  await DiagnosesAndProcedures(CaseData, record)
   AEs(CaseData, record)
 
   // Notificationのインポートはインポート警告のあとに追加する
@@ -136,18 +138,27 @@ function ProcedureTime (CaseData, record) {
   }
 }
 
-function DiagnosesAndProcedures (CaseData, record) {
+async function DiagnosesAndProcedures (CaseData, record) {
   try {
     CaseData.Diagnoses = []
-    Object.assign(CaseData.Diagnoses, record.Diagnoses)
+    if (record?.Diagnoses) {
+      CaseData.Diagnoses = JSON.parse(JSON.stringify(record.Diagnoses))
+    }
 
     CaseData.Procedures = []
-    Object.assign(CaseData.Procedures, record.Procedures)
+    if (record?.Procedures) {
+      CaseData.Procedures = JSON.parse(JSON.stringify(record.Procedures))
+    }
+
+    CaseData.Approach = {}
+    if (record?.Approach) {
+      CaseData.Approach = JSON.parse(JSON.stringify(record.Approach))
+    }
 
     if (record?.TypeOfProcedure) {
       CaseData.TypeOfProcedure = record.TypeOfProcedure
     } else {
-      CaseData.TypeOfProcedure = CaseData.Procedures[0].Chain[0]
+      CaseData.TypeOfProcedure = await CheckCategoryMatch(CaseData, Number(CaseData.DateOfProcedure.substring(0, 4)))
     }
   } catch {
     CaseData.Imported = true

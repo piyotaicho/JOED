@@ -71,9 +71,9 @@ const ProcessStream = async () => {
     // レコード毎にドキュメントの検証
     for (const record of records) {
       try {
-        const newdocument = CreateDocument(record)
+        const newdocument = await CreateDocument(record)
         ImportedDocuments.push(newdocument)
-      } catch (error) {
+      } catch {
         if (!(await Popups.confirmYesNo('指定されたファイル中に不適切なレコードが認められました.\n残りの処理を続行しますか?'))) {
           throw new Error('不適切なレコードにより変換を中止しました.')
         }
