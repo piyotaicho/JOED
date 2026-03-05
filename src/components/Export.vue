@@ -94,7 +94,7 @@ const csvOptionalExportTargets = computed(() => {
   const listSelection = store.getters['GetSelectedUidsForExport'] || []
   const viewCaseCount = store.getters['NumberOfCases'] || 0
 
-  if (setting.csv) {
+  if (setting.csv || setting.backup) {
     return listSelection.length > 0 ?
       [
         { value: 'VIEW', text: `表示中の全項目 (${viewCaseCount}件)` },
