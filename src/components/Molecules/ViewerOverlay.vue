@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 
 const props = defineProps({

@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { computed, ref } from 'vue'
 import { ProcedureTimeSelections, encodeProcedureTime } from '@/modules/ProcedureTimes'
 

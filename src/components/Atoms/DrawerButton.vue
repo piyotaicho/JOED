@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { Operation } from '@element-plus/icons-vue'
 const props = defineProps({
   tabindex: {

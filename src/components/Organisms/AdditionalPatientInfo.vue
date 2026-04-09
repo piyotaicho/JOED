@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { computed, useTemplateRef } from 'vue'
 import { useStore } from '@/store'
 import { InfoFilled } from '@element-plus/icons-vue'

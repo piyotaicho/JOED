@@ -136,7 +136,8 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { CaretLeft, CaretRight, WarningFilled, ArrowLeft, Memo, Delete, Loading } from '@element-plus/icons-vue'
 import { reactive, ref, computed, onMounted, onBeforeUnmount, nextTick, useTemplateRef } from 'vue'
 import { useStore } from '@/store'

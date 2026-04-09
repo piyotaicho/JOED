@@ -34,12 +34,13 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { ref, computed } from 'vue'
 import QueryPane from '@/components/Molecules/QueryPane.vue'
 import InputSwitchField from '../Molecules/InputSwitchField.vue'
 import { prompt } from '@/modules/Popups'
-import { fieldNames, generatorFunctions } from '@/modules/ImportCSV.js'
+import { fieldNames, generatorFunctions } from '@/modules/ImportCSV'
 import { ArrowLeft, ArrowRight, Document } from '@element-plus/icons-vue'
 
 const props = defineProps({

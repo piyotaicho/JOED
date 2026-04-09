@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { encodeProcedureTime, parseProcedureTime } from '@/modules/ProcedureTimes'
 import { DateFormat, DateFormatPattern } from '@/modules/CaseValidater'
 import { MigrateFrom2019 } from '@/modules/ImportMergeV4'

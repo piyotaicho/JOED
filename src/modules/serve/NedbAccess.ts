@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ブラウザのファイルシステムへのNeDBラッパー
 // seald/nedbになって*AsyncができたのでPromise+callbackから移行
 // データベースインスタンスは公開不要なのでインターフェースを簡素化した

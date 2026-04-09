@@ -1,3 +1,4 @@
+// @ts-nocheck
 import HHX from 'xxhashjs'
 
 export function LoadConfig (storecontext) {

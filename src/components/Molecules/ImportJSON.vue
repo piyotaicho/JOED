@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { watch, ref, toRef } from 'vue'
 import ReportViewer from '@/components/Atoms/Reports.vue'
 import { ValidateRecords, CreateDocument } from '@/modules/ImportJSON'

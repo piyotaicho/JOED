@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { computed } from 'vue'
 import CaseDocumentHandler from '@/modules/DbItemHandler'
 import { Edit, Delete, DCaret } from '@element-plus/icons-vue'

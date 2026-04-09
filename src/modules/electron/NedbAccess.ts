@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Electron IPCinvoke経由でのNeDBへのラッパー
 // 全てのinvokeはPromiseなのでasyncで覆う
 

@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import SectionBox from '../Atoms/SectionBox.vue'
 import NewEntryButton from '@/components/Atoms/NewEntryButton.vue'
 import SectionItem from '@/components/Molecules/SectionItem.vue'

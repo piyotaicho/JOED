@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import ListItem from '@/components/Molecules/QueryPaneListItem.vue'
 
 const props = defineProps({

@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { computed, reactive } from 'vue'
 import { useStore } from '@/store'
 import InputSwitchField from '@/components/Molecules/InputSwitchField.vue'

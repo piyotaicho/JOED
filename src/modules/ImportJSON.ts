@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { parseProcedureTime, encodeProcedureTime } from '@/modules/ProcedureTimes'
 import { CheckCategoryMatch } from './CaseValidater'
 

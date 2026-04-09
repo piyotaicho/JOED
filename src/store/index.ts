@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createStore } from 'vuex'
 // データベースアクセスモジュールは環境依存のため分離(viteでパスが解決される)
 import * as NedbAccess from 'depmodules/NedbAccess'

@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { reactive, ref, computed } from 'vue'
 import { useStore } from '@/store'
 import { ArrowDown } from '@element-plus/icons-vue'

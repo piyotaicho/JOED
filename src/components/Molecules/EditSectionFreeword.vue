@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { ref, onMounted, nextTick } from 'vue'
 import { DArrowLeft, DArrowRight, Search } from '@element-plus/icons-vue'
 

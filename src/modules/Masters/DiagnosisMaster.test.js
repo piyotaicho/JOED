@@ -1,5 +1,5 @@
 import {test, assert, expect} from 'vitest'
-import Master from '@/modules/Masters/DiagnosisMaster.js'
+import Master from '@/modules/Masters/DiagnosisMaster'
 
 const master = new Master()
 

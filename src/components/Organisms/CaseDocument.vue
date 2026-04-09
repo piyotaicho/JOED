@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { Loading, EditPen } from '@element-plus/icons-vue'
 import { onMounted, ref, computed } from 'vue'
 import { useStore } from '@/store'

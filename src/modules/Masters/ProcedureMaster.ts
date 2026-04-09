@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Master from '@/modules/Masters/Master'
 import Fuse from 'fuse.js'
 import { ZenToHan } from '@/modules/ZenHanChars'

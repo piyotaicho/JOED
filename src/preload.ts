@@ -1,3 +1,4 @@
+// @ts-nocheck
 // preload script for electron context isolation
 /* eslint-env node */
 /* eslint-disable @typescript-eslint/no-require-imports */
@@ -26,6 +27,9 @@ contextBridge.exposeInMainWorld('API',
     Insert: async (payload) => await ipcRenderer.invoke('Insert', payload),
     Find: async (payload) => await ipcRenderer.invoke('Find', payload),
     FindOne: async (payload) => await ipcRenderer.invoke('FindOne', payload),
+    // MIGRATION PROBLEM
+    // IPCチャネル名が 'FineOneByHash' になっている(typo由来)ため互換維持で残置。
+    // main側が将来 'FindOneByHash' に統一された場合、ここも同時変更が必要。
     FindOneByHash: async (payload) => await ipcRenderer.invoke('FineOneByHash', payload),
     Count: async (payload) => await ipcRenderer.invoke('Count', payload),
     Update: async (payload) => await ipcRenderer.invoke('Update', payload),

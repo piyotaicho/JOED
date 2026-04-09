@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import InputDate from '@/components/Molecules/InputDate.vue'
 import InputTextField from '@/components/Molecules/InputTextField.vue'
 import InputNumberField from '@/components/Molecules/InputNumberField.vue'

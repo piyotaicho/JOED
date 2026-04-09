@@ -1,3 +1,4 @@
+// @ts-nocheck
 export const LastUpdate = '2022-11-27'
 const defaultReference = '2022'
 

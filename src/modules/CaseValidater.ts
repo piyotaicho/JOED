@@ -1,3 +1,4 @@
+// @ts-nocheck
 import DaignosisMaster from '@/modules/Masters/DiagnosisMaster'
 import ProcedureMaster from '@/modules/Masters/ProcedureMaster'
 import ApproachMaster from '@/modules/Masters/ApproachMaster'

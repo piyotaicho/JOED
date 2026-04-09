@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import SectionBlock from '@/components/Molecules/SectionBlock.vue'
 
 const items = defineModel({ type: Array, required: true })

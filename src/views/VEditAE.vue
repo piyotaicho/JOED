@@ -80,7 +80,8 @@
   </TheWrapper>
 </template>
 
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { reactive, ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import TheWrapper from '@/components/Atoms/TheWrapper.vue'

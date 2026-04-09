@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { onMounted, computed, ref } from 'vue'
 import { useStore } from '@/store'
 import { useRouter } from 'vue-router'

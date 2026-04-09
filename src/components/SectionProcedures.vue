@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import SectionBlock from '@/components/Molecules/SectionBlock.vue'
 import SectionItem from '@/components/Molecules/SectionItem.vue'
 import { confirmYesNo } from '@/modules/Popups'

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { LoadPassword, SavePassword } from 'depmodules/config'
 import HHX from 'xxhashjs'
 

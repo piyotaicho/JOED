@@ -1,3 +1,4 @@
+// @ts-nocheck
 // IPC経由でelectron storeの設定ファイルへアクセスする
 import HHX from 'xxhashjs'
 

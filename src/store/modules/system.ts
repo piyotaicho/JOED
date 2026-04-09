@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { version as VueVersionString } from 'vue'
 import HHX from 'xxhashjs'
 import { LoadConfig, SaveConfig, GetSystemInfo } from 'depmodules/config'

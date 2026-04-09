@@ -16,7 +16,8 @@
   </el-tooltip>
 </template>
 
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { computed } from 'vue'
 import DescriptionOfAE from '@/components/Molecules/DescriptionOfAE.vue'
 import { Edit, Delete } from '@element-plus/icons-vue'

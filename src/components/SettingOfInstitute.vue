@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { reactive, ref, computed } from 'vue'
 import { useStore } from '@/store'
 import InputTextField from '@/components/Molecules/InputTextField.vue'

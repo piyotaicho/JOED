@@ -1,5 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { useStore } from '@/store'
 import ExtLink from '@/components/Atoms/ExtLink.vue'
 

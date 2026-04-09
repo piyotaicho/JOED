@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { onMounted, useTemplateRef, computed } from 'vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import { ja } from 'date-fns/locale'

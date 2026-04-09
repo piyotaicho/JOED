@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Master from '@/modules/Masters/Master'
 import Fuse from 'fuse.js'
 import { ZenToHan } from '@/modules/ZenHanChars'
@@ -551,7 +552,7 @@ export default class DiagnosisMaster extends Master {
       defaultReference)
   }
 
-  static getCodes(item) {
+  static getCodes(item: import('@/types/frontend').MasterItemRaw): unknown {
     return this.parseItem(item, 'Code')
   }
 
@@ -563,7 +564,7 @@ export default class DiagnosisMaster extends Master {
   // @param{String|Number}
   //
   // @return {array}
-  Matches(text, category = '', target = '', year = this.YearofMaster) {
+  Matches(text: string, category: string = '', target: string = '', year: string = (this as unknown as { YearofMaster: string }).YearofMaster): string[] {
     if (text === undefined || text === '') {
       return []
     }
@@ -606,9 +607,9 @@ export default class DiagnosisMaster extends Master {
 // @param{String}
 //
 // return String
-function regulateExpression(str = '') {
+function regulateExpression(str: string = ''): string {
   // 型変換と余白の削除
-  let searchstring = str.toString().trim()
+  let searchstring: string = str.toString().trim()
   if (searchstring === '') {
     return ''
   }

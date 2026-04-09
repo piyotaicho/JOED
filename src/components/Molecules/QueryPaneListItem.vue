@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { ref, computed } from 'vue'
 import CloseButton from '@/components/Atoms/CloseButton.vue'
 

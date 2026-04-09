@@ -1,3 +1,4 @@
+// @ts-nocheck
 import ProcedureTimeSelections from '@/modules/ProcedureTimes'
 import { ConvertCharacters } from '@/modules/ImportCSV'
 

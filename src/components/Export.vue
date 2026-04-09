@@ -1,5 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { reactive, ref, watch, computed, nextTick } from 'vue'
 import { useStore } from '@/store'
 import { useRouter } from 'vue-router'
@@ -10,7 +11,7 @@ import ViewerOverlay from '@/components/Molecules/ViewerOverlay.vue'
 import CaseDocumentHandler from '@/modules/DbItemHandler'
 import * as Popups from '@/modules/Popups'
 import HHX from 'xxhashjs'
-import { generateCSVFromObjects } from '@/modules/CSV.js'
+import { generateCSVFromObjects } from '@/modules/CSV'
 import { ValidateCase, InstituteIDFormat } from '@/modules/CaseValidater'
 import Encoding from 'encoding-japanese'
 import { InvalidIDs } from '@/modules/Masters/InstituteList'

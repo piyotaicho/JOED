@@ -1,8 +1,9 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { watch, ref, toRef } from 'vue'
 import ReportViewer from '@/components/Atoms/Reports.vue'
 import { parseTitledCSV } from '@/modules/CSV'
-import { ValidateRecords, CreateDocument } from '@/modules/ImportMergeV4.js'
+import { ValidateRecords, CreateDocument } from '@/modules/ImportMergeV4'
 import * as Popups from '@/modules/Popups'
 
 const props = defineProps({

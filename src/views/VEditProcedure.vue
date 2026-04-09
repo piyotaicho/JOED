@@ -56,7 +56,8 @@
   </TheWrapper>
 </template>
 
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { ref, useTemplateRef, reactive, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Master from '@/modules/Masters/ProcedureMaster'

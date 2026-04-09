@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import EditAESelectValue from './EditAESelectValue.vue'
 
 const props = defineProps({

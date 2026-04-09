@@ -1,10 +1,16 @@
+// @ts-nocheck
 // elementダイアログ
 import { ElMessageBox as MessageBox } from 'element-plus'
 
+interface EscapedMessage {
+  text: string
+  dangerouslyUseHTMLString: boolean
+}
+
 // messageに改行があったらelementを返す
-function escapeMessage (message) {
+function escapeMessage(message: string): EscapedMessage {
   const matchRegexp = /['"&<> \n]/g
-  const escapePatterns = {
+  const escapePatterns: Record<string, string> = {
     '\'': '&#39;',
     '"': '&quot;',
     '&': '&amp;',
@@ -26,7 +32,7 @@ function escapeMessage (message) {
   }
 }
 
-export function alert (message, title = undefined) {
+export function alert(message: string, title?: string): Promise<void> {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return MessageBox.alert(text, {
     title: title,
@@ -36,7 +42,7 @@ export function alert (message, title = undefined) {
   })
 }
 
-export function error (message, title = undefined) {
+export function error(message: string, title?: string): Promise<void> {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return MessageBox.alert(text, {
     title: title,
@@ -46,7 +52,7 @@ export function error (message, title = undefined) {
   })
 }
 
-export function information (message, title = '通知') {
+export function information(message: string, title: string = '通知'): Promise<void> {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return MessageBox.alert(text, {
     title: title,
@@ -58,7 +64,7 @@ export function information (message, title = '通知') {
   })
 }
 
-export async function confirm (message, title = '確認') {
+export async function confirm(message: string, title: string = '確認'): Promise<boolean> {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return await MessageBox.confirm(text, {
     title: title,
@@ -69,7 +75,7 @@ export async function confirm (message, title = '確認') {
   }).then(() => true, () => false)
 }
 
-export async function confirmYesNo (message, title = '確認') {
+export async function confirmYesNo(message: string, title: string = '確認'): Promise<boolean> {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return await MessageBox.confirm(text, {
     title: title,
@@ -82,7 +88,7 @@ export async function confirmYesNo (message, title = '確認') {
   }).then(() => true, () => false)
 }
 
-export async function confirmAnyOk (message, anyText = 'cancel') {
+export async function confirmAnyOk(message: string, anyText: string = 'cancel'): Promise<boolean> {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return await MessageBox.confirm(text, {
     iconClass: 'el-icon-message-solid',
@@ -94,7 +100,7 @@ export async function confirmAnyOk (message, anyText = 'cancel') {
   }).then(() => true, () => false)
 }
 
-export async function prompt (message, rule = undefined) {
+export async function prompt(message: string, rule?: string): Promise<string | null> {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   const options = {
     title: '入力',

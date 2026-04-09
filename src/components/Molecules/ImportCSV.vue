@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { shallowRef, reactive, computed, watch, nextTick, triggerRef } from 'vue'
 import { useStore } from '@/store'
 import { QuestionFilled } from '@element-plus/icons-vue'
@@ -6,7 +7,7 @@ import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
 import QueryBuilder from '@/components/Organisms/QueryBuilder.vue'
 import ReportViewer from '@/components/Atoms/Reports.vue'
 import { parseCSV } from '@/modules/CSV'
-import { CreateDocument, Migrate } from '@/modules/ImportCSV.js'
+import { CreateDocument, Migrate } from '@/modules/ImportCSV'
 import * as Popups from '@/modules/Popups'
 
 const store = useStore()

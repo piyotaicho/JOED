@@ -17,7 +17,8 @@
   </template>
 </template>
 
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { computed, watch } from 'vue'
 import ApproachMaster from '@/modules/Masters/ApproachMaster'
 

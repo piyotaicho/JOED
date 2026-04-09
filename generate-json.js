@@ -1,5 +1,5 @@
 
-import ProcedureMaster from './src/modules/Masters/ProcedureMaster.js';
+import ProcedureMaster from './src/modules/Masters/ProcedureMaster.ts';
 import fs from 'fs';
 
 // ProcedureMasterのインスタンスを作成するために必要なダミーデータ

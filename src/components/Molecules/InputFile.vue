@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { ref } from 'vue'
 import Encoding from 'encoding-japanese'
 

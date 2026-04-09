@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createRouter, createWebHashHistory } from 'vue-router'
 import Store from '@/store/index'
 

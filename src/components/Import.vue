@@ -1,5 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import * as Popups from '@/modules/Popups'
 import InputFile from '@/components/Molecules/InputFile.vue'
 import ImportJSON from '@/components/Molecules/ImportJSON.vue'

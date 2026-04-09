@@ -15,7 +15,8 @@
   </label>
 </template>
 
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 import { computed, ref } from 'vue'
 
 const props = defineProps({

@@ -1,5 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck
 
 import CloseButton from '@/components/Atoms/CloseButton.vue'
 import DiagnosisMaster from '@/modules/Masters/DiagnosisMaster'

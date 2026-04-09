@@ -21,7 +21,7 @@ export default defineConfig(() => {
       build: {
         emptyOutDir: false,
         rollupOptions: {
-          input: resolve(__dirname, 'src/preload.js'),
+          input: resolve(__dirname, 'src/preload.ts'),
           output: {
             dir: resolve(__dirname, 'dist'),
             entryFileNames: 'preload.cjs',

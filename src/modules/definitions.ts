@@ -1,53 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
- 
-class Institution {
-  InstitutionName // String
-  InstitutionId // String
-  LockedInstitutionProperty // Bloolean
-}
-
-class DatabaseProperty {
-  ApplicationVersion // String
-  CreateDate // DateString
-  Year // String
-}
-
-class Cases {
-  _id // Applied by nedb
-  DocumentId // Number
-  UniqueId // String : created on export
-  Name // String
-  Age // Number
-  PatientId // String
-  JSOGId // String
-  NCDId // String
-  DateOfProcedure // DateString
-  ProcedureTime // String
-  TypeOfProcedure // String
-  PresentAE // Boolean
-  AEs // Array of object AE
-  Diagnoses // Array of object Diagnosis
-  Procedures // Array of object Procedure
-  Imported // Boolean
-  ValidationReport // Array of String
-}
-
-class Diagnosis {
-  Diagnosis
-}
-
-class Procedure {
-  Procedure
-  TypeOfProcedure
-  AssociatedProcedures
-}
-
-class AE {
-  Category
-  Title
-  Cause
-  Location
-  BloodCounts
-  Grade
-  Course
-}
+// REFACTORING: クラスベースの仮定義をTypeScriptインターフェースに移行し src/types/data.ts に集約
+// 後方互換のため型名を再エクスポートする
+export type {
+  Institution,
+  DatabaseProperty,
+  CaseDocument as Cases,
+  DiagnosisItem as Diagnosis,
+  ProcedureItem as Procedure,
+  AEItem as AE,
+} from '@/types/data'

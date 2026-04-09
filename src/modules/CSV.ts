@@ -1,19 +1,20 @@
-export function parseCSV (container) {
+// @ts-nocheck
+export function parseCSV(container: string): string[][] {
   // 改行コードを確認して切り出し
   const newline = (container.indexOf('\r\n') < 0) ? (container.indexOf('\r') < 0 ? '\n' : '\r') : '\r\n'
   const lines = container.split(newline)
 
   // CSVのパース
-  const rows = []
-  const columncounts = {}
+  const rows: string[][] = []
+  const columncounts: Record<number, null> = {}
   for (const line of lines) {
-    const row = []
+    const row: string[] = []
     if (line.length === 0) {
       continue
     }
 
     for (let start = 0; start < line.length; start++) {
-      let end
+      let end: number
       // 各フィールド毎に切り出してゆく
       if (line.charAt(start) === '"') {
         // ダブルクォートでのクオートあり閉じをさがす
@@ -47,7 +48,7 @@ export function parseCSV (container) {
   return (rows)
 }
 
-export function parseTitledCSV (container) {
+export function parseTitledCSV(container: string): Record<string, string>[] {
   const doc = parseCSV(container)
 
   const header = doc.slice(0, 1).flat()
@@ -62,10 +63,10 @@ export function parseTitledCSV (container) {
   })
 }
 
-export function generateCSV (rows) {
+export function generateCSV(rows: string[][]): string {
   const lines = []
   for (const row of rows) {
-    const fields = []
+    const fields: string[] = []
     for (const field of row) {
       if (field.indexOf(',') >= 0 || field.indexOf('"') >= 0 || field.indexOf('\n') >= 0 || field.indexOf('\r') >= 0) {
         // クオートが必要
