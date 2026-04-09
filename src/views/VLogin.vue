@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { onMounted, computed, ref } from 'vue'
 import { useStore } from '@/store'
 import { useRouter } from 'vue-router'
@@ -8,7 +7,7 @@ import LargeIcon from '@/components/Atoms/LargeIcon.vue'
 const store = useStore()
 const router = useRouter()
 
-const tilte = computed(() => [
+const tilte = computed<[string, string]>(() => [
   '日本産科婦人科内視鏡学会',
   '症例登録システム ' +
   store.getters['system/ApplicationName'] +

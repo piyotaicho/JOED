@@ -137,7 +137,6 @@
 </template>
 
 <script setup lang="ts">
-// @ts-nocheck
 import { CaretLeft, CaretRight, WarningFilled, ArrowLeft, Memo, Delete, Loading } from '@element-plus/icons-vue'
 import { reactive, ref, computed, onMounted, onBeforeUnmount, nextTick, useTemplateRef } from 'vue'
 import { useStore } from '@/store'
@@ -158,6 +157,27 @@ import { ValidateCase } from '@/modules/CaseValidater'
 const store = useStore()
 const router = useRouter()
 
+type JsonText = string
+
+interface EditCaseData {
+  Name: string
+  Age: number | undefined
+  PatientId: string
+  JSOGId: string
+  NCDId: string
+  DateOfProcedure: string
+  ProcedureTime: string
+  TypeOfProcedure: string
+  PresentAE: boolean
+  Diagnoses: JsonText[]
+  Procedures: JsonText[]
+  Approach: Record<string, unknown>
+  AEs: JsonText[]
+  Notification: string
+  Note: string
+  Denial: boolean
+}
+
 const props = defineProps({
   uid: {
     type: String,
@@ -166,7 +186,7 @@ const props = defineProps({
   },
 })
 
-const CaseData = reactive({
+const CaseData = reactive<EditCaseData>({
   Name: '',
   Age: undefined,
   PatientId: '',
@@ -191,10 +211,10 @@ const processing = ref(true)
 const editingSection = ref(false)
 const editingNote = ref(false)
 
-const editDialog = useTemplateRef('editDialog')
+const editDialog = useTemplateRef<HTMLDivElement>('editDialog')
 
 let preserve = ''
-let preservedElement
+let preservedElement: HTMLElement | null = null
 
 // Reactiveでない状態(a.k.a.created)で既存データの読み込みをする.
 //
@@ -204,15 +224,16 @@ function onCreated() {
   const uid = Number(props.uid)
   if (uid > 0) {
     store.dispatch('FetchDocument', { DocumentId: uid }).then(() => {
-      const storedDocument = store.getters.CaseDocument(uid)
+      const storedDocument = store.getters.CaseDocument(uid) as Record<string, unknown> | undefined
       if (storedDocument !== undefined) {
-        for (const key in CaseData) {
+        const caseDataRecord = CaseData as unknown as Record<string, unknown>
+        for (const key in caseDataRecord) {
           if (storedDocument[key] !== undefined) {
             // Arrayのアイテムはrouterへのハンドリングをよくするため事前にJSON文字列化して格納する
             if (Array.isArray(storedDocument[key])) {
-              CaseData[key] = storedDocument[key].map((item) => JSON.stringify(item))
+              caseDataRecord[key] = (storedDocument[key] as unknown[]).map((item) => JSON.stringify(item))
             } else {
-              CaseData[key] = storedDocument[key]
+              caseDataRecord[key] = storedDocument[key]
             }
           }
         }
@@ -254,10 +275,10 @@ onBeforeRouteUpdate((to) => {
   editingSection.value = to.name !== 'edit'
 
   if (editingSection.value) {
-    preservedElement = document.activeElement
+    preservedElement = document.activeElement as HTMLElement | null
   } else {
     try {
-      preservedElement.focus()
+      preservedElement?.focus()
     } catch {}
   }
 })
@@ -279,7 +300,7 @@ const isNoAEs = computed({
 
 const isEditingExistingItem = computed(() => uid.value > 0)
 
-const BackToList = (currentUid) => {
+const BackToList = (currentUid: number) => {
   if (currentUid === 0) {
     router.push({ name: 'list' })
   } else {
@@ -287,7 +308,7 @@ const BackToList = (currentUid) => {
   }
 }
 
-const editAnother = (targetUid) => {
+const editAnother = (targetUid: number) => {
   if (targetUid > 0) {
     router.push({ name: 'edit', params: { uid: targetUid.toString() } })
   }
@@ -300,7 +321,7 @@ const editAnother = (targetUid) => {
   }
 }
 
-const EditSection = (target, payload) => {
+const EditSection = (target: 'diagnosis' | 'procedure' | 'AE' | 'approach', payload?: { index?: number; value?: string }) => {
   if (editingSection.value) return
   const {index, value} = payload || {}
 
@@ -335,45 +356,47 @@ const ToggleEditingNote = () => {
   editingNote.value = !editingNote.value
   // ノートの編集が開いたらtextareaをフォーカスする
   nextTick().then(() => {
-    if (editingNote.value) {
+    if (editingNote.value && editDialog.value) {
       const textareas = editDialog.value.getElementsByTagName('textarea')
-      if (textareas?.length > 0) {
-        textareas[0].focus()
+      if (textareas.length > 0) {
+        textareas.item(0)?.focus()
       }
     }
   })
 }
 
-const EditListItem = (target, index, value) => {
+const EditListItem = (target: string, index: number, value: string | undefined) => {
   UpdateList(target, index, value)
   if (target === 'AEs') {
     CaseData.PresentAE = CaseData.AEs.length > 0
   }
 }
 
-const RemoveListItem = (target, index) => {
+const RemoveListItem = (target: string, index: number) => {
   if (editingSection.value) return
 
   UpdateList(target, index, undefined)
 }
 
-const UpdateList = (target, index, value) => {
+const UpdateList = (target: string, index: number, value: string | undefined) => {
   if (['Diagnoses', 'Procedures', 'AEs'].includes(target)) {
+    const listTarget = target as 'Diagnoses' | 'Procedures' | 'AEs'
+    const list = CaseData[listTarget]
     const isEmptyValue = typeof value === 'undefined' || (typeof value === 'string' && value === '')
     if (index >= 0) {
-      if (CaseData[target][index] !== undefined) {
+      if (list[index] !== undefined) {
         // 空データが与えられた場合は当該インデックスを削除
         if (isEmptyValue) {
-          CaseData[target].splice(index, 1)
+          list.splice(index, 1)
         } else {
           // 実データが与えられた場合は当該インデックスの内容を置換する
-          CaseData[target].splice(index, 1, value)
+          list.splice(index, 1, value)
         }
       }
     } else {
       // インデックスがundefinedもしくは-1の場合は新規項目としてリストに追加する
       if (!isEmptyValue) {
-        CaseData[target].push(value)
+        list.push(value)
       }
     }
   } else if (target === 'Approach') {
@@ -442,17 +465,18 @@ const StoreCase = async (temporary = false) => {
     processing.value = true
 
     // データベース登録に用いるレコードドキュメントを生成
-    const newDocument = {}
-    for (const key in CaseData) {
+    const newDocument: Record<string, any> = {}
+    const caseDataRecord = CaseData as unknown as Record<string, unknown>
+    for (const key in caseDataRecord) {
       // Arrayで保存されているDiganoses, ProceduresはJSON文字列の配列なので元に戻す
-      if (Array.isArray(CaseData[key])) {
-        newDocument[key] = CaseData[key].map((item) => JSON.parse(item))
+      if (Array.isArray(caseDataRecord[key])) {
+        newDocument[key] = (caseDataRecord[key] as unknown[]).map((item) => JSON.parse(String(item)))
       } else {
-        if (typeof CaseData[key] === 'object' && CaseData[key] !== null) {
+        if (typeof caseDataRecord[key] === 'object' && caseDataRecord[key] !== null) {
           // オブジェクト(Approachのみ)は生のオブジェクトに変換
-          newDocument[key] = JSON.parse(JSON.stringify(CaseData[key]))
+          newDocument[key] = JSON.parse(JSON.stringify(caseDataRecord[key]))
         } else {
-          newDocument[key] = CaseData[key]
+          newDocument[key] = caseDataRecord[key]
         }
       }
     }
@@ -553,7 +577,7 @@ const StoreCase = async (temporary = false) => {
  * K : 前の症例へ移動 (編集中保存)
  * S : 一時保存
  */
-const keyboardEventListener = async (event) => {
+const keyboardEventListener = async (event: KeyboardEvent) => {
   if (editingSection.value || event.repeat) {
     return
   }
@@ -565,7 +589,7 @@ const keyboardEventListener = async (event) => {
   ) {
     switch (event.code) {
       case 'Digit0':
-        editDialog.value.getElementsByTagName('input')[0].focus()
+        editDialog.value?.getElementsByTagName('input')?.[0]?.focus()
         break
       case 'Digit1':
         EditSection('diagnosis')
@@ -609,7 +633,7 @@ const keyboardEventListener = async (event) => {
         }
         break
       case 'Digit3':
-        editDialog.value.getElementById('noAEcheckbox').click()
+        document.getElementById('noAEcheckbox')?.click()
         break
       case 'KeyJ':
         await CommitCase('next')
@@ -624,18 +648,18 @@ const keyboardEventListener = async (event) => {
   }
 }
 
-const BeforeUnloadLister = (event) => {
+const BeforeUnloadLister = (event: BeforeUnloadEvent) => {
   if (processing.value) {
     event.preventDefault()
     event.returnValue = ''
     return false
   }
-  if (preserve !== JSON.stringify(this.CaseData)) {
+  if (preserve !== JSON.stringify(CaseData)) {
     event.preventDefault()
     event.returnValue = ''
     Popups.confirmYesNo('項目が編集中ですが閉じますか?').then((result) => {
       if (result) {
-        window.removeEventListener('beforeunload', this.BeforeUnloadLister)
+        window.removeEventListener('beforeunload', BeforeUnloadLister)
         window.close()
       }
     })

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useStore } from '@/store'
 import { useRouter } from 'vue-router'
+import type { TabsPaneContext } from 'element-plus'
 import { DArrowLeft } from '@element-plus/icons-vue'
 import SettingOfInstutute from '@/components/SettingOfInstitute.vue'
 import SettingOfAuthentication from '@/components/SettingOfAuthentication.vue'
@@ -23,7 +23,7 @@ const secretIndex = ref(0)
 onMounted(() => document.addEventListener('keydown', keyEventLister, true))
 onBeforeUnmount(() => document.removeEventListener('keydown', keyEventLister, true))
 
-const keyEventLister = (event) => {
+const keyEventLister = (event: KeyboardEvent) => {
   // シークレットキーシーケンスのチェック
   if (event.code === secretCode[secretIndex.value]) {
     secretIndex.value++
@@ -41,12 +41,12 @@ const keyEventLister = (event) => {
     : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) // Windows - Ctrl
   ) {
     if (event.code === 'KeyU') {
-      TabClick({ index: 0 })
+      router.push({ name: 'list' })
     }
   }
 }
 
-const TabClick = (tab) => {
+const TabClick = (tab: TabsPaneContext) => {
   if (Number(tab.index) === 0) {
     router.push({ name: 'list' })
   }

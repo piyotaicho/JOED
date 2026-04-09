@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { onMounted, nextTick, ref, computed, watch } from 'vue'
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useStore } from '@/store'
@@ -16,10 +15,10 @@ const route = useRoute()
 const router = useRouter()
 
 // リスト項目一覧
-const uids = computed(() => store.getters.PagedUids)
+const uids = computed<number[]>(() => store.getters.PagedUids)
 
 // スクロールコンテナへの参照
-const scrollContainer = ref(null)
+const scrollContainer = ref<HTMLElement | null>(null)
 
 // 表示状態フラグ
 const showStartupDialog = computed(() => store.getters['system/ShowStartupDialog'])
@@ -31,8 +30,8 @@ const noMore = computed(() => store.getters.PagedUidsRange >= store.getters.Numb
 
 // 選択モード
 const multiSelectMode = ref(false)
-const selectedUids = ref([])
-const blurredUid = ref(null)
+const selectedUids = ref<number[]>([])
+const blurredUid = ref<number | null>(null)
 
 // uidsのリスト内容が変更されたら選択をクリアし、スクロールバーチェック
 watch(uids, () => {
@@ -106,14 +105,14 @@ const createNewEntry = () => {
 }
 
 // リスト項目へのフォーカス移動
-const moveFocus = (offset) => {
-  const currentid = document.activeElement.id
+const moveFocus = (offset: number) => {
+  const currentid = (document.activeElement as HTMLElement | null)?.id ?? ''
   if (!drawerOpened.value && !showStartupDialog.value && currentid !== '') {
     const moveto = uids.value[
       uids.value.indexOf(Number(currentid.substring(3))) + offset
     ]
     if (moveto) {
-      document.getElementById('doc' + moveto).focus()
+      document.getElementById('doc' + moveto)?.focus()
       // フォーカス移動時はmultiSelectModeは変化させない
       if (!multiSelectMode.value) {
         // singleSelectの場合は移動先を選択
@@ -169,7 +168,7 @@ const remove = async () => {
 }
 
 // SingleSelectのハンドラー
-const onSingleSelect = (uid) => {
+const onSingleSelect = (uid: number) => {
   // 単一選択時は常に複数選択を解除し、指定されたuidのみを選択
   selectedUids.value.splice(0)
   selectedUids.value.push(uid)
@@ -178,7 +177,7 @@ const onSingleSelect = (uid) => {
 }
 
 // MultiSelectのハンドラー
-const onMultiSelect =  ({ uid, selected }) => {
+const onMultiSelect = ({ uid, selected }: { uid: number; selected: boolean }) => {
   if (selected) {
     if (blurredUid.value !== null && selectedUids.value.length === 0) {
       selectedUids.value.push(blurredUid.value)
@@ -199,7 +198,7 @@ const onMultiSelect =  ({ uid, selected }) => {
 }
 
 // フォーカスを失った際の選択解除ハンドラー
-const onBlur = (uid) => {
+const onBlur = (uid: number) => {
   // singleSelectの場合で選択されていた時のみ選択解除
   if (!multiSelectMode.value) {
     if (selectedUids.value.includes(uid)) {
@@ -221,7 +220,7 @@ const onBlur = (uid) => {
 
 // ESCキーでの選択解除
 const handleEscapeKey = () => {
-  const currentid = document.activeElement.id
+  const currentid = (document.activeElement as HTMLElement | null)?.id ?? ''
   if (!drawerOpened.value && !showStartupDialog.value && currentid !== '' && currentid.startsWith('doc')) {
     const uid = Number(currentid.substring(3))
     // 現在フォーカスのあるCaseDocumentがあれば[uid]、なければ[]
@@ -236,7 +235,7 @@ const handleEscapeKey = () => {
 
 // SPACEキーでの選択切り替え
 const handleSpaceKey = () => {
-  const currentid = document.activeElement.id
+  const currentid = (document.activeElement as HTMLElement | null)?.id ?? ''
   if (!drawerOpened.value && !showStartupDialog.value && currentid !== '' && currentid.startsWith('doc')) {
     const uid = Number(currentid.substring(3))
 
@@ -275,10 +274,12 @@ onBeforeRouteLeave((to) => {
 })
 
 // ネイティブスクロールイベントでの無限スクロール実装
-const handleScroll = (event) => {
+const handleScroll = (event: Event) => {
   if (fetching.value || noMore.value) return
 
-  const { scrollTop, scrollHeight, clientHeight } = event.target
+  const target = event.target as HTMLElement | null
+  if (!target) return
+  const { scrollTop, scrollHeight, clientHeight } = target
   // スクロール位置が下から200px以内に来たらloadMore
   if (scrollHeight - scrollTop - clientHeight < 200) {
     loadMore()

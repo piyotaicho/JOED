@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute, onBeforeRouteUpdate } from 'vue-router'
 import { useStore } from '@/store'
@@ -11,27 +10,27 @@ const store = useStore()
 const router = useRouter()
 const route = useRoute()
 
-const selectedTabName = ref(route.name || '')
+const selectedTabName = ref<string>(String(route.name || ''))
 
 onMounted(() => document.addEventListener('keydown', keyEventLister, true))
 onBeforeUnmount(() => document.removeEventListener('keydown', keyEventLister, true))
 onBeforeRouteUpdate((to, from, next) => {
   if (to.name !== from.name) {
-    selectedTabName.value = to.name
+    selectedTabName.value = String(to.name || '')
     next()
   }
 })
 
 const selectedTab = computed({
   get: () => selectedTabName.value,
-  set: (newRouteName) => {
+  set: (newRouteName: string) => {
     router.push({ name: newRouteName })
       .then(() => { selectedTabName.value = newRouteName })
       .catch(() => {})
   }
 })
 
-function keyEventLister (event) {
+function keyEventLister (event: KeyboardEvent) {
   if (store.getters['system/Platform'] === 'darwin'
     ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) // macOS - command
     : (event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) // Windows - Ctrl
