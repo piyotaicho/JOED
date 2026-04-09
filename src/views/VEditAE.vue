@@ -36,10 +36,10 @@
           <!-- その他のチェックボックスコンポーネント -->
           <template v-else>
             <div class="w20 subtitle">
-              <span>{{master.Components[component].Title}}</span>
+              <span>{{master.Components[component]?.Title}}</span>
             </div>
             <div class="w80 AEcheckboxes">
-              <EditAESelect v-model="AE[master.Components[component].Element]" :items="master.Components[component].Items" />
+              <EditAESelect v-model="AE[master.Components[component]?.Element || '']" :items="master.Components[component]?.Items || []" />
             </div>
           </template>
         </div>
@@ -81,7 +81,6 @@
 </template>
 
 <script setup lang="ts">
-// @ts-nocheck
 import { reactive, ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import TheWrapper from '@/components/Atoms/TheWrapper.vue'
@@ -111,17 +110,17 @@ const props = defineProps({
 const emit = defineEmits(['data-upsert'])
 
 // マスタは non-reactive (props.yearがこのコンポーネント実行中に変わることはない)
-const master = new AEmaster(props.year)
+const master = new AEmaster(props.year ? String(props.year) : undefined)
 
 // フォーム入力項目
 const Category = ref('')
-const AE = reactive({
-  Title: [],
-  Cause: [],
-  Location: [],
+const AE = reactive<Record<string, any>>({
+  Title: [] as string[],
+  Cause: [] as string[],
+  Location: [] as string[],
   BloodCount: '',
   Grade: '',
-  Course: []
+  Course: [] as string[]
 })
 // 出血量不明フラグ
 const inaccurateBloodCount = ref(false)
@@ -129,7 +128,7 @@ const inaccurateBloodCount = ref(false)
 const firstelement = ref()
 
 // 規定値から省かれた値があるときに通知する為のフラグ
-let irregularvalue = false
+let irregularvalue: boolean = false
 
 // 規定値が与えられた場合mount前に値を展開する
 if (props.value) {
@@ -156,6 +155,7 @@ if (props.value) {
       // マスタから選択肢を抽出
       const masteritems = components
         .map(component => master.Components[component])
+        .filter((component): component is any => component !== undefined)
         .filter(component => component.Element === key)
         .map(component => component.Items)
         .flat(3)
@@ -232,7 +232,7 @@ const components = computed(() => {
   }
 })
 
-const showByGrading = computed(() => (value) => {
+const showByGrading = computed(() => (value: any) => {
   return AE.Grade ? Number(AE.Grade[0]) >= (value || undefined) : !value
 })
 
@@ -270,7 +270,7 @@ const CommitChanges = async () => {
   }
 
   // ドキュメントの雛型を作成
-  const documentAEItem = { Category: Category.value }
+  const documentAEItem: Record<string, any> = { Category: Category.value }
   for (const key in AE) {
     if (Array.isArray(AE[key])
       ? AE[key].length > 0
@@ -282,9 +282,9 @@ const CommitChanges = async () => {
 
   // エラーチェック
   try {
-    master.validate(documentAEItem)
-  } catch (e) {
-    alert(e.message)
+    master.validate(documentAEItem as any)
+  } catch (e: any) {
+    alert(e?.message || '入力内容を確認してください.')
     return
   }
 

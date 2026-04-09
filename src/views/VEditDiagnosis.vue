@@ -24,7 +24,6 @@
 </template>
 
 <script setup lang="ts">
-// @ts-nocheck
 import { ref, useTemplateRef, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Master from '@/modules/Masters/DiagnosisMaster'
@@ -53,7 +52,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['data-upsert'])
 const panes = useTemplateRef('panes')
-const freewordSection = ref()
+const freewordSection = ref<any>()
 
 // 選択肢の設定
 const category = ref('')
@@ -63,18 +62,18 @@ const target = ref('')
 const targetSelections = computed(() => DiagnosesMaster.Targets(category.value))
 
 const selectedItem = ref('')
-const candidates = ref([])
+const candidates = ref<string[]>([])
 const UserEditingAllowed = computed(() => !!category.value && !selectedItem.value)
 const freewordText = ref('')
 
 // 初期化処理
 onMounted(async () => {
-  const selectElements = panes.value.getElementsByTagName('SELECT')
+  const selectElements = ((panes.value as any)?.getElementsByTagName('SELECT') || []) as HTMLSelectElement[]
 
   if (props.index < 0) {
     // 新規編集の場合はカテゴリにフォーカスする
     if (selectElements && selectElements.length >= 1) {
-      selectElements[0].focus()
+      selectElements[0]?.focus()
     }
     return
   }
@@ -106,7 +105,7 @@ onMounted(async () => {
     freewordText.value = ''
     await nextTick()
     if (selectElements && selectElements.length >= 3) {
-      selectElements[2].focus()
+      selectElements[2]?.focus()
     }
   } else {
     // 選択肢に入力されている項目がなければ自由入力に展開して自由入力欄を開く
@@ -126,7 +125,7 @@ watch(category, async () => {
 
   // targetSelectionが一つだけの時はそれを選択
   if (targetSelections.value.length === 1) {
-    target.value = targetSelections.value[0]
+    target.value = targetSelections.value[0] || ''
     await nextTick()
   }
   SetCandidateItemsBySelection()
@@ -141,7 +140,7 @@ watch(target, () => {
 const SetCandidateItemsBySelection = async () => {
   candidates.value = DiagnosesMaster.Items(
     category.value, target.value, props.year
-  ).map(item => item.Text)
+  ).map(item => typeof item === 'string' ? item : item.Text)
   selectedItem.value = ''
   await nextTick()
 }
@@ -160,7 +159,7 @@ const SetCandidateItemsByFreeword = async () => {
 }
 
 const CommitChanges = async () => {
-  const temporaryItem = {}
+  const temporaryItem: Record<string, any> = {}
   // 選択チェーンの構築
   temporaryItem.Chain = [category.value, ...(target.value !== '' ? [target.value] : [])]
 

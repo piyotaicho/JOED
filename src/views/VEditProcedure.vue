@@ -57,7 +57,6 @@
 </template>
 
 <script setup lang="ts">
-// @ts-nocheck
 import { ref, useTemplateRef, reactive, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Master from '@/modules/Masters/ProcedureMaster'
@@ -89,7 +88,7 @@ const emit = defineEmits(['data-upsert'])
 
 // Element refs
 const panes = useTemplateRef('panes')
-const freewordSection = ref()
+const freewordSection = ref<any>()
 
 // Reactive states
 const category = ref('')
@@ -98,34 +97,34 @@ const categorySelections = computed(() => ProceduresMaster.Categories())
 const target = ref('')
 const targetSelections = computed(() => ProceduresMaster.Targets(category.value))
 
-const candidates = ref([])
+const candidates = ref<string[]>([])
 const selectedItem = ref('')
 const freewordText = ref('')
 
-const description = reactive({
+const description = reactive<any>({
   Title: '',
-  Options: [],
+  Options: [] as string[],
   SelectionMode: 'one',
-  Value: []
+  Value: [] as string[]
 })
 
-const additionalProcedure = reactive({
+const additionalProcedure = reactive<any>({
   Text: '',
   Title: '',
-  Options: [],
+  Options: [] as string[],
   SelectionMode: 'one',
-  Value: []
+  Value: [] as string[]
 })
 
 const UserEditingAllowed = computed(() => !!category.value && !selectedItem.value)
 
 onMounted(async () => {
-  const selectElements = panes.value.getElementsByTagName('SELECT')
+  const selectElements = ((panes.value as any)?.getElementsByTagName('SELECT') || []) as HTMLSelectElement[]
 
   if (props.index < 0) {
     // 新規編集の場合はカテゴリにフォーカスする
     if (selectElements && selectElements.length >= 1) {
-      selectElements[0].focus()
+      selectElements[0]?.focus()
     }
     return
   }
@@ -158,7 +157,7 @@ onMounted(async () => {
       freewordText.value = ''
       await nextTick()
       if (selectElements && selectElements.length >= 3) {
-        selectElements[2].focus()
+        selectElements[2]?.focus()
       }
     } else {
       // 選択肢に入力されている項目がなければ自由入力に展開して自由入力欄を開く
@@ -194,7 +193,7 @@ onMounted(async () => {
         // 既存入力が無い場合、デフォルト設定があれば設定
         const defaultValue =
           additionalProcedure.Options.filter(
-            (item) => item.slice(-1) === '$'
+            (item: string) => item.slice(-1) === '$'
           )[0]
         if (defaultValue) {
           additionalProcedure.Value.splice(0, 0, defaultValue)
@@ -203,7 +202,7 @@ onMounted(async () => {
     }
     // リアクティブの発火と選択枝にフォーカス
     await nextTick()
-    panes.value?.getElementsByTagName('select')[2].focus()
+    panes.value?.getElementsByTagName('select')[2]?.focus()
   }
   // 自由入力がある場合は自由入力セクションを開く
   if (freewordText.value !== '') {
@@ -220,7 +219,7 @@ watch(category, async () => {
 
   // targetSelectionが一つだけの時はそれを選択
   if (targetSelections.value.length === 1) {
-    target.value = targetSelections.value[0]
+    target.value = targetSelections.value[0] || ''
     await nextTick()
   }
   SetCandidateItemsBySelection()
@@ -258,7 +257,7 @@ const ClearSelectedEntry = async () => {
 const SetCandidateItemsBySelection = async () => {
   candidates.value = ProceduresMaster.Items(
     category.value, target.value, props.year
-  ).map(item => item.Text)
+  ).map(item => typeof item === 'string' ? item : item.Text)
   selectedItem.value = ''
   await nextTick()
 }
@@ -291,7 +290,7 @@ const OnCandidateSelected = async () => {
   }
 }
 
-const SetDescription = async (item, descriptionObj = description, splicedefault = true) => {
+const SetDescription = async (item: any, descriptionObj: any = description, splicedefault = true) => {
   // descriptionの設定を削除
   descriptionObj.Value.splice(0)
   descriptionObj.Options.splice(0)
@@ -311,7 +310,7 @@ const SetDescription = async (item, descriptionObj = description, splicedefault 
 
   // 単独入力不可項目の対応 - デフォルト項目は除外する
   if (splicedefault) {
-    const spliceIndex = descriptionObj.Options.findIndex(option => option.slice(-1) === '$')
+    const spliceIndex = descriptionObj.Options.findIndex((option: string) => option.slice(-1) === '$')
     if (spliceIndex !== -1) {
       descriptionObj.Options.splice(spliceIndex, 1)
     }
@@ -319,8 +318,8 @@ const SetDescription = async (item, descriptionObj = description, splicedefault 
   await nextTick()
 }
 
-const SetAdditionalProcedure = async (item) => {
-  const procedureTitle = Master.getAdditioninalProcedure(item)
+const SetAdditionalProcedure = async (item: any) => {
+  const procedureTitle = Master.getAdditioninalProcedure(item) as string | undefined
   if (procedureTitle) {
     // Textに術式名を保存し付随種々の情報を展開
     additionalProcedure.Text = procedureTitle
@@ -347,7 +346,7 @@ const SetAdditionalProcedure = async (item) => {
 }
 
 const CommitChanges = async () => {
-  const temporaryItem = {}
+  const temporaryItem: Record<string, any> = {}
   // 選択チェーンの構築
   temporaryItem.Chain = [
     category.value,
@@ -371,15 +370,15 @@ const CommitChanges = async () => {
       )
     )
     if (ditto) {
-      temporaryItem.Ditto = [...ditto]
+      temporaryItem.Ditto = Array.isArray(ditto) ? [...ditto] : []
     }
 
     // 術式付随情報があれば保存
     if (description.Title !== '') {
       // 選択枝にないものと単独保存対象外設定された項目(デフォルト)を除外
       const descriptionValue = description.Value
-        .filter(item => item.slice(-1) !== '$')
-        .filter(item => description.Options.includes(item))
+        .filter((item: string) => item.slice(-1) !== '$')
+        .filter((item: string) => description.Options.includes(item))
 
       if (
         descriptionValue.length === 0 &&
@@ -410,8 +409,8 @@ const CommitChanges = async () => {
       // 保存対象外設定された項目(デフォルト)を除外
       const descriptionValue =
         additionalProcedure.Value
-          .filter(item => item.slice(-1) !== '$')
-          .filter(item => additionalProcedure.Options.includes(item))
+          .filter((item: string) => item.slice(-1) !== '$')
+          .filter((item: string) => additionalProcedure.Options.includes(item))
 
       if (descriptionValue.length > 0) {
         temporaryItem.AdditionalProcedure = {

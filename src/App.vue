@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { ref, computed } from 'vue'
 import { useStore } from './store'
 import { useRoute, useRouter } from 'vue-router'
@@ -7,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router'
 const store = useStore()
 const route = useRoute()
 const router = useRouter()
-const routerViewRef = ref(null)
+const routerViewRef = ref<any>(null)
 
 // 設定とデータリストを取得
 store.dispatch('system/LoadPreferences')
@@ -22,7 +21,7 @@ store.dispatch('system/LoadPreferences')
 
 // 実行環境情報を取得
 store.dispatch('system/getPlatformInfo')
-  .catch((e) => {
+  .catch((_e: any) => {
     store.commit('system/SetPlatform', 'failed to get platform info')
   })
 
@@ -70,7 +69,7 @@ if (window?.API) {
 // 同一uidからのroutingに対するquick-hack どんな環境でも動作する
 const routeKey = computed(() => {
   const path = route.path.split('/')
-  return (path.length > 2 && /^\d+$/.test(path[2]))
+  return (path.length > 2 && /^\d+$/.test(path[2] || ''))
     ? path[1] + '/' + path[2]
     : (path[1] || '/')
 })
