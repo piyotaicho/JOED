@@ -16,13 +16,15 @@
 </template>
 
 <script setup lang="ts">
-// @ts-nocheck
 import { computed, ref } from 'vue'
+import type { PropType } from 'vue'
+
+type CheckValue = boolean | string | number
 
 const props = defineProps({
   // チェックボックスで設定される値
   value: {
-    type: [Boolean, String, Number],
+    type: [Boolean, String, Number] as PropType<CheckValue>,
     default: true
   },
   disabled: {
@@ -35,17 +37,17 @@ const props = defineProps({
   }
 })
 
-const modelValue = defineModel()
+const modelValue = defineModel<CheckValue | CheckValue[] | undefined>()
 
-const inputElement = ref()
+const inputElement = ref<HTMLInputElement | null>(null)
 
 const checkboxValue = computed({
   get: () => modelValue.value,
-  set: (newValue) => { modelValue.value = newValue }
+  set: (newValue: CheckValue | CheckValue[] | undefined) => { modelValue.value = newValue }
 })
 
-const changeState = () => {
-  inputElement.value.click()
+const changeState = (): void => {
+  inputElement.value?.click()
 }
 </script>
 

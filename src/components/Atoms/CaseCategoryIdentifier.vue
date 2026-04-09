@@ -1,7 +1,8 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { computed } from 'vue'
 import { Select } from '@element-plus/icons-vue'
+
+type CategoryColor = Record<string, string>
 
 const props = defineProps({
   category: {
@@ -18,7 +19,7 @@ const props = defineProps({
 })
 
 const boxColorStyle = computed(() => {
-  const colorTable = {
+  const colorTable: CategoryColor = {
     腹腔鏡: '#8CF700',
     腹腔鏡悪性: '#8CF700',
     ロボット: '#00F063',
@@ -30,7 +31,7 @@ const boxColorStyle = computed(() => {
 })
 
 const notificationClass = computed(() =>
-  props?.notification || props.notification !== '' ? ['has-notification'] : [''],
+  props.notification && props.notification !== '' ? ['has-notification'] : [''],
 )
 
 const malignancyClass = computed(() => {

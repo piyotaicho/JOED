@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// @ts-nocheck
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
+import type { PropType } from 'vue'
 
 const props = defineProps({
   // value: {
@@ -12,7 +12,7 @@ const props = defineProps({
     default: '項目',
   },
   items: {
-    type: Array,
+    type: Array as PropType<Array<string | number>>,
     default: () => [],
     required: true,
   },
@@ -26,20 +26,25 @@ const props = defineProps({
   },
 })
 
-const modelValue = defineModel({
+const modelValue = defineModel<string | null>({
   type: String,
   default: null
 })
-const emit = defineEmits(['dblclick', 'keypress-enter'])
+const emit = defineEmits<{
+  (e: 'dblclick', value: string | null): void
+  (e: 'keypress-enter', value: string | null): void
+}>()
 
-const selectElement = ref()
+const selectElement = ref<HTMLSelectElement | null>(null)
 
-const dblClick = (value) => emit('dblclick', value)
+const dblClick = (): void => emit('dblclick', modelValue.value)
 
-const enter = (value) => emit('keypress-enter', value)
+const enter = (): void => emit('keypress-enter', modelValue.value)
 
-const clearSelection = () => {
-  selectElement.value.selectedIndex = -1
+const clearSelection = (): void => {
+  if (selectElement.value) {
+    selectElement.value.selectedIndex = -1
+  }
 }
 
 defineExpose({
@@ -60,7 +65,7 @@ defineExpose({
       :disabled="disabled"
     >
       <option v-if="props.items.length === 0" disabled :value="null"></option>
-      <template v-for="(item, key, index) in props.items" :key="index">
+      <template v-for="(item, index) in props.items" :key="index">
         <option :value="item">{{ item }}</option>
       </template>
     </select>

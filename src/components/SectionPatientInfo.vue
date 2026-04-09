@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import InputDate from '@/components/Molecules/InputDate.vue'
 import InputTextField from '@/components/Molecules/InputTextField.vue'
 import InputNumberField from '@/components/Molecules/InputNumberField.vue'
@@ -7,34 +6,41 @@ import InputProcedureTime from '@/components/Molecules/InputProcedureTime.vue'
 import AdditionalPatientInfo from './Organisms/AdditionalPatientInfo.vue'
 
 const DateOfProcedure = defineModel('DateOfProcedure', {
+  type: String,
   required: true,
   default: '',
 })
 
 const PatientId = defineModel('PatientId', {
+  type: String,
   required: true,
   default: '',
 })
 
 const Name = defineModel('Name', {
+  type: String,
   default: '',
 })
 
-const Age = defineModel('Age')
+const Age = defineModel<string | undefined>('Age')
 
 const ProcedureTime = defineModel('ProcedureTime', {
+  type: String,
   default: '',
 })
 
 const Denial = defineModel('Denial', {
+  type: Boolean,
   default: false,
 })
 
 const JSOGId = defineModel('JSOGId', {
+  type: String,
   default: '',
 })
 
 const NCDId = defineModel('NCDId', {
+  type: String,
   default: '',
 })
 </script>

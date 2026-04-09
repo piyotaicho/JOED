@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 
 const props = defineProps({
@@ -9,10 +8,13 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['click', 'buttonClick'])
+const emit = defineEmits<{
+  (e: 'click'): void
+  (e: 'buttonClick'): void
+}>()
 
-const onClick = () => emit('click')
-const onButtonClick = () => emit('buttonClick')
+const onClick = (): void => emit('click')
+const onButtonClick = (): void => emit('buttonClick')
 </script>
 
 <template>

@@ -1,13 +1,26 @@
-// @ts-nocheck
 // Electron IPCinvoke経由でのNeDBへのラッパー
 // 全てのinvokeはPromiseなのでasyncで覆う
+
+type DbDocument = Record<string, unknown>
+type DbQuery = Record<string, unknown>
+type DbProjection = Record<string, 0 | 1>
+type DbSort = Record<string, 1 | -1>
+type DbOptions = Record<string, unknown>
+
+type InsertPayload = { Document?: DbDocument }
+type FindPayload = { Query?: DbQuery; Projection?: DbProjection; Sort?: DbSort; Skip?: number | string; Limit?: number | string }
+type FindOnePayload = { Query?: DbQuery; Projection?: DbProjection; Sort?: DbSort; Skip?: number | string }
+type FindOneByHashPayload = { Hash?: string; SALT?: number | string }
+type CountPayload = { Query?: DbQuery }
+type UpdatePayload = { Query?: DbQuery; Update?: DbDocument; Options?: DbOptions }
+type RemovePayload = { Query?: DbQuery; Options?: DbOptions }
 
 /**
  * ドキュメントオブジェクトを挿入する
  * @param {*} payload.Document
  * @returns newdocument
  */
-export async function Insert (payload) {
+export async function Insert (payload: InsertPayload): Promise<DbDocument | undefined> {
   // 空ドキュメントは登録出来ない
   if (!payload?.Document || Object.keys(payload.Document).length === 0) {
     return undefined
@@ -26,13 +39,13 @@ export async function Insert (payload) {
  * @param {*} payload.Limit
  * @returns
  */
-export async function Find (payload) {
+export async function Find (payload: FindPayload): Promise<DbDocument[]> {
   return window.API.Find({
-    Query: escapeProxyObject(payload?.Query || {}),
+    Query: toDbQuery(payload?.Query || {}),
     Projection: JSON.parse(JSON.stringify(payload?.Projection || {})),
     Sort: JSON.parse(JSON.stringify(payload?.Sort || {})),
-    Skip: payload?.Skip ? Number.parseInt(payload.Skip) : 0,
-    Limit: payload?.Limit ? Number.parseInt(payload.Limit) : 0
+    Skip: payload?.Skip ? Number.parseInt(String(payload.Skip)) : 0,
+    Limit: payload?.Limit ? Number.parseInt(String(payload.Limit)) : 0
   })
 }
 
@@ -45,12 +58,12 @@ export async function Find (payload) {
  * @param {*} payload.Limit
  * @returns
  */
-export async function FindOne (payload) {
+export async function FindOne (payload: FindOnePayload): Promise<DbDocument | null> {
   return window.API.FindOne({
-    Query: escapeProxyObject(payload?.Query || {}),
+    Query: toDbQuery(payload?.Query || {}),
     Projection: JSON.parse(JSON.stringify(payload?.Projection || {})),
     Sort: JSON.parse(JSON.stringify(payload?.Sort || {})),
-    Skip: payload?.Skip ? Number.parseInt(payload.Skip) : 0
+    Skip: payload?.Skip ? Number.parseInt(String(payload.Skip)) : 0
   })
 }
 
@@ -60,7 +73,7 @@ export async function FindOne (payload) {
  * @param {Number} payload.SALT
  * @returns
  */
-export async function FindOneByHash (payload) {
+export async function FindOneByHash (payload: FindOneByHashPayload): Promise<number | null | undefined> {
   if (!payload?.Hash || !payload?.SALT) {
     return null
   }
@@ -75,9 +88,9 @@ export async function FindOneByHash (payload) {
  * @param {*} payload.Query
  * @returns
  */
-export async function Count (payload) {
+export async function Count (payload: CountPayload): Promise<number> {
   return window.API.Count({
-    Query: escapeProxyObject(payload?.Query || {}),
+    Query: toDbQuery(payload?.Query || {}),
   })
 }
 
@@ -88,7 +101,7 @@ export async function Count (payload) {
  * @param {*} payload.Options
  * @returns
  */
-export async function Update (payload) {
+export async function Update (payload: UpdatePayload): Promise<number> {
   // 安全のためQueryとUpdateの指定は必須
   if (!payload?.Query || Object.keys(payload.Query).length === 0 ||
       !payload?.Update || Object.keys(payload.Update).length === 0) {
@@ -97,12 +110,12 @@ export async function Update (payload) {
 
   if (!payload?.Options) {
     return window.API.Update({
-      Query: escapeProxyObject(payload.Query),
+      Query: toDbQuery(payload.Query),
       Update: JSON.parse(JSON.stringify(payload.Update))
     })
   } else {
     return window.API.Update({
-      Query: escapeProxyObject(payload.Query),
+      Query: toDbQuery(payload.Query),
       Update: JSON.parse(JSON.stringify(payload.Update)),
       Options: JSON.parse(JSON.stringify(payload?.Options || {}))
     })
@@ -115,7 +128,7 @@ export async function Update (payload) {
  * @param {*} payload.Options
  * @returns
  */
-export async function Remove (payload) {
+export async function Remove (payload: RemovePayload): Promise<number> {
   // 安全のためQueryの指定は必須
   if (!payload?.Query || Object.keys(payload.Query).length === 0) {
     return 0
@@ -123,11 +136,11 @@ export async function Remove (payload) {
 
   if (!payload?.Options) {
     return window.API.Remove({
-      Query: escapeProxyObject(payload.Query)
+      Query: toDbQuery(payload.Query)
     })
   } else {
     return window.API.Remove({
-      Query: escapeProxyObject(payload.Query),
+      Query: toDbQuery(payload.Query),
       Options: payload?.Options ? JSON.parse(JSON.stringify(payload.Options)) : {}
     })
   }
@@ -156,29 +169,35 @@ export async function Drop (removeBackupFiles = false) {
  * (backend側で元に戻す)
  * @param {*} obj
  */
-function escapeProxyObject (obj) {
+function escapeProxyObject (obj: unknown): unknown {
   // $regex: RegExp の指定があるかチェック なければjsonから生オブジェクトに変換して返す
   const jsonstr = JSON.stringify(obj)
   if (!jsonstr.includes('"$regex":{}')) {
     return JSON.parse(jsonstr)
   }
 
-  if (obj === null && typeof obj !== 'object') {
+  if (obj === null || typeof obj !== 'object') {
     return obj
   }
   if (Array.isArray(obj)) {
     return obj.map(item => escapeProxyObject(item))
   }
   if (typeof obj === 'object') {
-    const newobj = {}
-    for (const key in obj) {
-      if (key === '$regex' && obj[key] instanceof RegExp) {
-        newobj[key] = obj[key].toString()
+    const source = obj as Record<string, unknown>
+    const newobj: Record<string, unknown> = {}
+    for (const key in source) {
+      if (key === '$regex' && source[key] instanceof RegExp) {
+        newobj[key] = source[key].toString()
       } else {
-        newobj[key] = escapeProxyObject(obj[key])
+        newobj[key] = escapeProxyObject(source[key])
       }
     }
     return newobj
   }
   return obj
+}
+
+const toDbQuery = (obj: unknown): DbQuery => {
+  const escaped = escapeProxyObject(obj)
+  return (escaped && typeof escaped === 'object') ? (escaped as DbQuery) : {}
 }

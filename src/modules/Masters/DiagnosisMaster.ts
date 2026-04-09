@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Master from '@/modules/Masters/Master'
 import Fuse from 'fuse.js'
 import { ZenToHan } from '@/modules/ZenHanChars'
@@ -578,13 +577,14 @@ export default class DiagnosisMaster extends Master {
     // マスタから年次・カテゴリ・対象に応じたフラットな配列を取得
     const masterItems = this.Items(category, target, year)
       .map(item => {
+        const obj = typeof item === 'string' ? { Text: item } as import('@/types/frontend').MasterItemObject : item
         return {
-          Text: item.Text,
-          Code: item?.Code || [],
-          history: item?.history || []
+          Text: obj.Text,
+          Code: (obj['Code'] as string[] | undefined) ?? [],
+          history: (obj['history'] as string[] | undefined) ?? []
         }
       })
-    let results = []
+    let results: string[] = []
 
     // Fuse.jsを利用して曖昧検索を行う
     const fuzzyMatch = new Fuse(masterItems, { keys: ['Text', 'Code', 'history'], threshold: 0.45 })
@@ -623,7 +623,7 @@ function regulateExpression(str: string = ''): string {
 
   // 置換1 - 文字列の全置換
   // 表記の統一を行う
-  const ruleset1 = {
+  const ruleset1: Record<string, string> = {
     // 接頭辞の除去
     '^([右左両片]側?性?|傍|(亜?急|慢|([特原続]発)|難治)性|[再多]発性?|部分|(不|完|不完)全|(高度)?変性|巨大|有茎性)': '',
     // 接尾辞の除去
@@ -642,11 +642,11 @@ function regulateExpression(str: string = ''): string {
 
   for (const rule in ruleset1) {
     const regex = new RegExp(rule, 'g')
-    searchstring = searchstring.replace(regex, ruleset1[rule])
+    searchstring = searchstring.replace(regex, ruleset1[rule] ?? '')
   }
 
   // 置換2 - 一般的な入力内容に相当する内容に置換する
-  const ruleset2 = {
+  const ruleset2: Record<string, string> = {
     // 病名の置換～病名
     チョコレート: 'N809',
     '卵巣((成熟)?(嚢胞性)?奇形腫|(デルモイド|皮様)(腫瘍|嚢胞|嚢腫)?)': 'D27',
@@ -700,7 +700,7 @@ function regulateExpression(str: string = ''): string {
   for (const rule in ruleset2) {
     const regex = new RegExp(rule, 'i')
     if (regex.test(searchstring)) {
-      searchstring = ruleset2[rule]
+      searchstring = ruleset2[rule] ?? searchstring
     }
   }
 

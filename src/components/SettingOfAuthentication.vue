@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useStore } from '@/store'
 import InputTextField from '@/components/Molecules/InputTextField.vue'
@@ -51,8 +50,8 @@ async function commit () {
     password.current = ''
     password.new = ''
     password.verify = ''
-  } catch (error) {
-    Popups.alert(error.message)
+  } catch (error: unknown) {
+    await Popups.alert(error instanceof Error ? error.message : String(error))
   }
 }
 </script>

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { computed } from 'vue'
 import CaseDocumentHandler from '@/modules/DbItemHandler'
 import { Edit, Delete, DCaret } from '@element-plus/icons-vue'
@@ -18,25 +17,39 @@ const props = defineProps({
     default: false
   }
 })
-const emit = defineEmits(['remove', 'edit'])
+const emit = defineEmits<{
+  (e: 'remove'): void
+  (e: 'edit'): void
+}>()
 
-const value = computed(() => JSON.parse(props.value || '""'))
+type ItemValue = {
+  Description?: string[]
+  [key: string]: unknown
+}
+
+const value = computed<ItemValue>(() => {
+  try {
+    return JSON.parse(props.value || '""') as ItemValue
+  } catch {
+    return {} as ItemValue
+  }
+})
 
 const title = computed(() => CaseDocumentHandler.ItemValue(value.value))
 const description = computed(() => {
   if (value.value?.Description) {
     return (Array.isArray(value.value.Description) && value.value.Description.length > 1)
-      ? value.value.Description.map(item => item.replace(/[[\]]/g, '')).join(', ')
-      : value.value.Description[0].replace(/[[\]]/g, '')
+      ? value.value.Description.map((item) => item.replace(/[[\]]/g, '')).join(', ')
+      : (value.value.Description[0] || '').replace(/[[\]]/g, '')
   }
   return ''
 })
 
-function removeItem () {
+function removeItem (): void {
   emit('remove')
 }
 
-function editItem () {
+function editItem (): void {
   if (props.editable || false) {
     emit('edit')
   }

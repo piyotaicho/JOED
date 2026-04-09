@@ -1,10 +1,11 @@
-// @ts-nocheck
 import DaignosisMaster from '@/modules/Masters/DiagnosisMaster'
 import ProcedureMaster from '@/modules/Masters/ProcedureMaster'
 import ApproachMaster from '@/modules/Masters/ApproachMaster'
 import AEmaster from '@/modules/Masters/AE'
 
 import { procedureTimeFormat } from '@/modules/ProcedureTimes'
+
+type CaseLike = Record<string, any>
 
 // 日付の表記
 export const DateFormatPattern = '^20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$'
@@ -33,13 +34,13 @@ export const CategoriesOfProcedure = ['腹腔鏡', '腹腔鏡悪性', 'ロボッ
 // @Param Object １症例分のドキュメントオブジェクト
 //
 // return string 症例区分
-export async function ValidateCase (item = {}, temporary = false) {
+export async function ValidateCase (item: CaseLike = {}, temporary = false): Promise<string | undefined> {
   const year = item.DateOfProcedure ? item.DateOfProcedure.substring(0, 4) : undefined
   if (temporary) {
     // 一時保存でも患者IDと手術日は最低限の必須入力項目
     await CheckBasicInformations(item)
     // 可能であればカテゴリーを取得(エラーならundefinedを返す)
-    let category = undefined
+    let category: string | undefined = undefined
     try {
       category = await CheckCategoryMatch(item, year)
     } finally {
@@ -56,16 +57,16 @@ export async function ValidateCase (item = {}, temporary = false) {
       ValidateAEs(item, year),
       ValidateApproach(item, year),
     ])
-    return results[3]
+    return results[3] as string | undefined
   }
 }
 
 // 必須基本情報の有無
 //
-export async function CheckBasicInformations (item) {
+export async function CheckBasicInformations (item: CaseLike): Promise<void> {
   if (
     !item.PatientId ||
-    !DateFormat.test(item.DateOfProcedure)
+    !DateFormat.test(item.DateOfProcedure ?? '')
   ) {
     throw Error('患者ID・手術日は最低限の必須入力項目です.')
   }
@@ -73,22 +74,22 @@ export async function CheckBasicInformations (item) {
 
 // 手術時間の入力を確認
 //
-export async function CheckProcedureTime (item) {
+export async function CheckProcedureTime (item: CaseLike): Promise<void> {
   if (!item.ProcedureTime) {
     throw Error('手術時間は必須入力項目です.')
   }
 
   if (!(
-    procedureTimeFormat.test(item.ProcedureTime) ||
-    /^(\d+:)?\d+$/.test(item.ProcedureTime) // 実時間入力
+    procedureTimeFormat.test(item.ProcedureTime!) ||
+    /^(\d+:)?\d+$/.test(item.ProcedureTime!) // 実時間入力
   )) {
     throw Error('手術時間の入力様式に問題があります.')
   }
 }
 // 補足登録情報の検証
 //
-export async function ValidateAdditionalInformations (item) {
-  const errorMessages = []
+export async function ValidateAdditionalInformations (item: CaseLike): Promise<void> {
+  const errorMessages: string[] = []
   if (item.Age && (item.Age <= 0 || item.Age > 129)) {
     errorMessages.push('年齢の入力内容を確認してください.')
   }
@@ -105,15 +106,15 @@ export async function ValidateAdditionalInformations (item) {
 
 // 主たる術後診断・実施術式のカテゴリの一致の検証
 //
-export async function CheckCategoryMatch (item, year) {
+export async function CheckCategoryMatch (item: CaseLike, year: string | undefined): Promise<string> {
   // 判定はあくまで主たる診断・術式
   const categoryOfDiagnosis = item?.Diagnoses?.[0]?.Chain?.[0]
   const categoryOfProcedure = item?.Procedures?.[0]?.Chain?.[0]
   // Diagnoses, Proceduresが未設定については別でチェックされる
   if (categoryOfDiagnosis && categoryOfProcedure) {
-    if (year <= 2020) {
+    if (year && year <= '2020') {
       // 2020年以前の対応表 - 術式のカテゴリを優先
-      const translation = {
+      const translation: Record<string, string> = {
         腹腔鏡: '腹腔鏡',
         腹腔鏡悪性: '腹腔鏡悪性',
         ロボット: '腹腔鏡',
@@ -173,8 +174,8 @@ export async function CheckCategoryMatch (item, year) {
 
 // 術後診断の重複の有無
 //
-export async function CheckDupsInDiagnoses (item) {
-  const itemTexts = item.Diagnoses.map(item => item.Text)
+export async function CheckDupsInDiagnoses (item: CaseLike): Promise<void> {
+  const itemTexts = item.Diagnoses!.map((item: any) => item.Text)
   if (itemTexts.length > (new Set(itemTexts)).size) {
     throw Error('手術診断に重複があります.')
   }
@@ -182,7 +183,7 @@ export async function CheckDupsInDiagnoses (item) {
 
 // 術後診断の重複確認と年次ツリーとの整合性検証
 //
-export async function ValidateDiagnoses (item, year) {
+export async function ValidateDiagnoses (item: CaseLike, year: string | undefined): Promise<void> {
   if (!(item?.Diagnoses?.length > 0)) {
     throw Error('手術診断の入力がありません.')
   }
@@ -191,7 +192,7 @@ export async function ValidateDiagnoses (item, year) {
 
   const master = new DaignosisMaster()
   await allSettled(
-    item.Diagnoses.map(record => new Promise((resolve, reject) => {
+    item.Diagnoses!.map((record: any) => new Promise<void>((resolve, reject) => {
       if (!record.Text) {
         reject(Error('空白の手術診断レコードです.'))
       } else {
@@ -209,9 +210,9 @@ export async function ValidateDiagnoses (item, year) {
 
 // 実施手術の重複の有無
 //
-export async function CheckDupsInProcedures (item) {
-  const itemTexts = item.Procedures
-    .map(item => [
+export async function CheckDupsInProcedures (item: CaseLike): Promise<void> {
+  const itemTexts = item.Procedures!
+    .map((item: any) => [
       item.Text,
       (item.AdditionalProcedure ? item.AdditionalProcedure.Text : []),
       (item.Ditto ? Array.from(new Set(item.Ditto)) : [])
@@ -225,7 +226,7 @@ export async function CheckDupsInProcedures (item) {
 // 実施手術名の重複確認と年次ツリーとの整合性検証
 // 実施手術のアプローチの整合性検証
 //
-export async function ValidateProcedures (item, year) {
+export async function ValidateProcedures (item: CaseLike, year: string | undefined): Promise<void> {
   if (!(item?.Procedures?.length > 0)) {
     throw Error('実施手術の入力がありません.')
   }
@@ -234,7 +235,7 @@ export async function ValidateProcedures (item, year) {
 
   const master = new ProcedureMaster()
   await allSettled(
-    item.Procedures.map(record => new Promise((resolve, reject) => {
+    item.Procedures!.map((record: any) => new Promise<void>((resolve, reject) => {
       if (!record.Text) {
         reject(Error('空白の実施手術レコードです.'))
       } else {
@@ -269,10 +270,10 @@ export async function ValidateProcedures (item, year) {
 
                 // 入力内容の確認
                 const intersection = record.Description.filter(
-                  description =>
-                    itemDescription.Values
+                  (description: string) =>
+                    (itemDescription.Values || [])
                       .findIndex(
-                        item => (item.slice(-1) === '$' ? item.slice(0, -1) : item) === description
+                        (item: string) => (item.slice(-1) === '$' ? item.slice(0, -1) : item) === description
                       ) !== -1
                 )
                 if (record.Description.length !== intersection.length) {
@@ -294,14 +295,14 @@ export async function ValidateProcedures (item, year) {
 }
 
 // アプローチ入力の整合性確認
-export async function ValidateApproach (item, year) {
+export async function ValidateApproach (item: CaseLike, year: string | undefined): Promise<void> {
   const approach = new ApproachMaster(year)
   if (Object.keys(approach).length > 0) {
     // 実施手術のカテゴリを取得
-    const categories = new Set(
-      item.Procedures
-        .map(record => approach.categorymap[record?.Chain?.[0] || ''])
-        .filter(value => value !== undefined)
+    const categories = new Set<string>(
+      item.Procedures!
+        .map((record: any) => approach.categorymap[record?.Chain?.[0] || ''])
+        .filter((value: string | undefined): value is string => value !== undefined)
     )
 
     if (categories.size > 0) {
@@ -309,14 +310,14 @@ export async function ValidateApproach (item, year) {
 
       if (item?.Approach === undefined || Object.keys(item.Approach).length === 0) {
         // 入力無しへの対応、アプローチの入力必須は2026年以降
-        if (year >= 2026) {
+        if ((year ?? '0') >= '2026') {
           throw Error('実施手術アプローチの入力がありません.')
         }
       } else {
         // カテゴリ毎の未入力をチェック
-        const difference = categories.difference(new Set(Object.keys(item.Approach))).values()
-        if (difference.size > 0) {
-          throw Error(`実施手術カテゴリー ${difference.toArray().join(',')} のアプローチの入力がありません.`)
+        const missing = Array.from(categories).filter(category => !Object.keys(item.Approach).includes(category))
+        if (missing.length > 0) {
+          throw Error(`実施手術カテゴリー ${missing.join(',')} のアプローチの入力がありません.`)
         } else {
           // 入力がされていたらチェックする
           approach.check(item.Approach)
@@ -328,7 +329,7 @@ export async function ValidateApproach (item, year) {
 
 // 合併症の重複と整合性確認
 //
-export async function ValidateAEs (item, year) {
+export async function ValidateAEs (item: CaseLike, year: string | undefined): Promise<void> {
   if (item?.PresentAE === undefined && item?.AEs?.length === undefined) {
     throw Error('合併症の入力がありません.')
   }
@@ -347,9 +348,9 @@ export async function ValidateAEs (item, year) {
 
   // 重複確認～BloodCount,Grade,Courseを除いた部分で評価
   // 出血の重複を回避
-  const checkValues = item?.AEs
+  const checkValues = item.AEs!
     .map(
-      record => record.Category === '出血'
+      (record: any) => record.Category === '出血'
         ? record.Category
         : [
             record.Category,
@@ -361,12 +362,12 @@ export async function ValidateAEs (item, year) {
 
   // 2項目以上の登録がなければ重複は無い
   if (checkValues.length > 1) {
-    const dupValues = (Array.from(new Set(checkValues))).reduce(
-      (originalValues, value) => {
+    const dupValues = (Array.from(new Set(checkValues)) as string[]).reduce(
+      (originalValues: string[], value: string) => {
         originalValues.splice(originalValues.indexOf(value), 1)
         return originalValues
       },
-      [...checkValues]
+      [...checkValues] as string[]
     )
     if (dupValues.length > 0) {
       throw Error(`合併症の登録に ${dupValues.map(value => (value.split(','))[0]).join(', ')} の重複があります.`)
@@ -379,14 +380,14 @@ export async function ValidateAEs (item, year) {
 
   // 登録内容の整合性確認
   const Master = new AEmaster(year)
-  await allSettled(item?.AEs.map(record => Master.validate(record)))
+  await allSettled(item.AEs!.map((record: any) => Promise.resolve(Master.validate(record))))
 }
 
 // Promise.allSettledのラッパー
 // エラーメッセージを連結してthrowする
 //
 // @param{Array} promiseの配列オブジェクト
-function allSettled (promises) {
+function allSettled (promises: Array<Promise<any>>): Promise<any[]> {
   return Promise.allSettled(promises)
     .then(results => {
       const messages = results
@@ -396,6 +397,8 @@ function allSettled (promises) {
       if (messages.length > 0) {
         throw Error(messages.join('\n'))
       }
-      return results.map(result => result?.value)
+      return results
+        .filter(result => result.status === 'fulfilled')
+        .map((result: any) => result.value)
     })
 }

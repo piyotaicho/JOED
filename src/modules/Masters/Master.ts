@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { MasterItemRaw, MasterItemObject, MasterTree } from '@/types/frontend'
 
 /*
@@ -27,7 +26,7 @@ export default class Master {
   }
 
   Year(): string {
-    return this.YearofMaster
+    return (this as unknown as { YearofMaster: string }).YearofMaster
   }
 
   /*
@@ -83,7 +82,7 @@ export default class Master {
   // return: array of string
   Targets(category: string = ''): string[] {
     if (category) {
-      const categoryObject = this[category]
+      const categoryObject = (this as unknown as Record<string, Record<string, MasterItemRaw[]> | undefined>)[category]
       // 不正なカテゴリが指定された場合は空白のarray
       return categoryObject ? Object.keys(categoryObject) : []
     } else {
@@ -106,15 +105,17 @@ export default class Master {
       year = '2019'
     }
 
-    const temporaryArray = []
+    const temporaryArray: MasterItemRaw[] = []
 
     if (!category) {
       return temporaryArray
     }
 
     for (const targetname of (target ? [target] : this.Targets(category))) {
+      const self = this as unknown as Record<string, Record<string, MasterItemRaw[]>>
+      const categoryEntries = self[category] || {}
       temporaryArray.push(
-        ...this[category][targetname]
+        ...(categoryEntries[targetname] || [])
           .filter(item => Master.parseItem(item, 'Text', year))
       )
     }
@@ -130,7 +131,7 @@ export default class Master {
   // return: object 見つからない場合は空白オブジェクト
   getItem(text: string = '', category: string = '', target?: string, year: string = (this as unknown as { YearofMaster: string }).YearofMaster): MasterItemRaw {
     const itemFound = this.Items(category, target, year).find(item => Master.parseItem(item, 'Text', year) === text)
-    return itemFound !== undefined ? itemFound : {}
+    return itemFound !== undefined ? itemFound : ({} as MasterItemRaw)
   }
 
   // アイテムobject のプロパティを取得

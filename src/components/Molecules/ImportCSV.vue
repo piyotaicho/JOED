@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { shallowRef, reactive, computed, watch, nextTick, triggerRef } from 'vue'
 import { useStore } from '@/store'
 import { QuestionFilled } from '@element-plus/icons-vue'
@@ -22,18 +21,22 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['store', 'done'])
+const emit = defineEmits<{
+  (e: 'store'): void
+  (e: 'done', documents: Record<string, unknown>[]): void
+}>()
 
 const data = reactive({
   Processing: -1,
-  LogMessages: [],
+  ProcessStep: 0,
+  LogMessages: [] as string[],
   CsvHeader: true,
   PerformMigration: false,
-  CsvArray: []
+  CsvArray: [] as string[][]
 })
 
 // RuleSetの更新は必ずメソッドを経由するのでshallowRefでdeep対応する
-const RuleSet = shallowRef({})
+const RuleSet = shallowRef<Record<string, unknown>>({})
 
 const rulesetJson = computed(() => JSON.stringify(RuleSet.value))
 
@@ -60,8 +63,8 @@ const resetState = async () => {
 
   try {
     data.CsvArray.splice(0, 0, ...parseCSV(props.stream))
-  } catch (error) {
-    Popups.alert(error.message)
+  } catch (error: unknown) {
+    await Popups.alert(error instanceof Error ? error.message : String(error))
   }
 
   // ファイルを再ロード 編集中のルールを破棄するか確認
@@ -84,7 +87,7 @@ const resetState = async () => {
 
 const convertStream = async () => {
   data.LogMessages.splice(0)
-  const ImportedDocuments = []
+  const ImportedDocuments: Record<string, unknown>[] = []
   try {
     // ルールセットの確認
     if (RuleSet.value['手術日 (必須)'] && RuleSet.value['ID (必須)']) {
@@ -116,15 +119,16 @@ const convertStream = async () => {
     ) {
       const record = data.CsvArray[index]
       try {
-        const newdocument = CreateDocument(record, RuleSet.value)
+        const newdocument = (CreateDocument as any)(record, RuleSet.value)
         if (data.PerformMigration) {
           // 2019以前の登録で使用されていたルールのうち単純置換のものを置換する
           // ただしDateOfProcedure > 2019に限る
           Migrate(newdocument)
         }
         ImportedDocuments.push(newdocument)
-      } catch (error) {
-        if (!(await Popups.confirmYesNo(error.message + '\n残りの処理を続行しますか?'))) {
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error)
+        if (!(await Popups.confirmYesNo(message + '\n残りの処理を続行しますか?'))) {
           throw new Error(`${index + 1}行目の不適切なフィールドにより変換を中止しました.`)
         }
       }
@@ -134,12 +138,12 @@ const convertStream = async () => {
     data.ProcessStep++
     // 作成したドキュメントを親に送る
     emit('done', ImportedDocuments)
-  } catch (error) {
-    Popups.alert(error.message)
+  } catch (error: unknown) {
+    await Popups.alert(error instanceof Error ? error.message : String(error))
   }
 }
 
-const updateRuleset = async (rule) => {
+const updateRuleset = async (rule: Record<string, unknown>) => {
   for (const key in RuleSet.value) {
     delete RuleSet.value[key]
   }
@@ -149,12 +153,12 @@ const updateRuleset = async (rule) => {
   triggerRef(RuleSet)
 }
 
-const setRuleSetProperty = async (key, value) => {
+const setRuleSetProperty = async (key: string, value: unknown) => {
   RuleSet.value[key] = value
   triggerRef(RuleSet)
 }
 
-const deleteRuleSetProperty = async (key) => {
+const deleteRuleSetProperty = async (key: string) => {
   delete RuleSet.value[key]
   triggerRef(RuleSet)
 }

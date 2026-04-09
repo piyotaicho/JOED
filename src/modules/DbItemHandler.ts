@@ -1,5 +1,6 @@
-// @ts-nocheck
-import type { CaseDocument, DiagnosisItem, ProcedureItem, ExportCaseRecord } from '@/types/data'
+import type { CaseDocument, DiagnosisItem, ProcedureItem, ExportCaseRecord, ProcedureDescription } from '@/types/data'
+
+type ItemWithText = { Text: string; Description?: ProcedureDescription }
 
 export default class CaseDocumentHandler {
   // 症例データの項目に対する操作
@@ -31,7 +32,11 @@ export default class CaseDocumentHandler {
     } else {
       if (--_depthcount) {
         for (const key in item) {
-          const value = this.ItemValue(item[key], _propertyName, _depthcount)
+          const nested = item[key]
+          if (!nested || typeof nested !== 'object') {
+            continue
+          }
+          const value = this.ItemValue(nested as Record<string, unknown>, _propertyName, _depthcount)
           if (value) {
             return value
           }
@@ -48,11 +53,13 @@ export default class CaseDocumentHandler {
    * @returns [chain[0], chain[1], Text]
    */
   static ItemChain(item: DiagnosisItem | ProcedureItem = {} as DiagnosisItem, _propertyName: string = 'Text'): [string, string, unknown] | undefined {
-    if (item.Chain && item[_propertyName]) {
+    const record = item as unknown as Record<string, unknown>
+    if (item.Chain && record[_propertyName]) {
+      const value = this.ItemValue(record, _propertyName)
       if (item.Chain.length === 2) {
-        return [...item.Chain, this.ItemValue(item, _propertyName)]
+        return [item.Chain[0], item.Chain[1] || '', value]
       } else {
-        return [item.Chain[0], '', this.ItemValue(item, _propertyName)]
+        return [item.Chain[0], '', value]
       }
     }
     return undefined
@@ -67,13 +74,13 @@ export default class CaseDocumentHandler {
   static FlattenItemList(
     itemList: Array<DiagnosisItem | ProcedureItem> = [],
     _flattenToString: boolean = false
-  ): Array<{ Text: string; Description?: unknown } | string> {
-    const temporaryArray: Array<{ Text: string; Description?: unknown } | string> = []
-    for (const item in itemList) {
-      if (item.Description) {
+  ): Array<ItemWithText | string> {
+    const temporaryArray: Array<ItemWithText | string> = []
+    for (const item of itemList) {
+      if ('Description' in item && item.Description) {
         temporaryArray.push({
           Text: item.Text,
-          Description: item.Desccription
+          Description: item.Description
         })
       } else {
         if (_flattenToString) {
@@ -93,9 +100,9 @@ export default class CaseDocumentHandler {
    * @param {*} itemList
    * @returns
    */
-  static _flattenItem(itemList: Array<DiagnosisItem | ProcedureItem> = []): Array<{ Text: string; Description?: unknown }> {
-    function _extract(item: DiagnosisItem | ProcedureItem): { Text: string; Description?: unknown } {
-      return (item.Description)
+  static _flattenItem(itemList: Array<DiagnosisItem | ProcedureItem> = []): Array<ItemWithText> {
+    function _extract(item: DiagnosisItem | ProcedureItem): ItemWithText {
+      return ('Description' in item && item.Description)
         ? {
             Text: item.Text,
             Description: item.Description
@@ -105,11 +112,11 @@ export default class CaseDocumentHandler {
           }
     }
 
-    const temporaryArray = []
+    const temporaryArray: Array<ItemWithText> = []
 
     for (const item of itemList) {
       temporaryArray.push(_extract(item))
-      if (item.AdditionalProcedure) {
+      if ('AdditionalProcedure' in item && item.AdditionalProcedure) {
         temporaryArray.push(_extract(item.AdditionalProcedure))
       }
     }
@@ -121,10 +128,9 @@ export default class CaseDocumentHandler {
   //
   // @Param Object
   static ExportCase(caserecord: Partial<CaseDocument> = {}): ExportCaseRecord {
-    const temporaryItem: Partial<ExportCaseRecord> & Record<string, unknown> = {}
-
-    // 手術実施年を抽出
-    temporaryItem.YearOfProcedure = caserecord.DateOfProcedure.substring(0, 4)
+    const temporaryItem: ExportCaseRecord = {
+      YearOfProcedure: String(caserecord.DateOfProcedure || '').substring(0, 4)
+    }
 
     // ProcedureTimeをコピー
     temporaryItem.ProcedureTime = caserecord.ProcedureTime
@@ -133,8 +139,8 @@ export default class CaseDocumentHandler {
     temporaryItem.TypeOfProcedure = caserecord.TypeOfProcedure
 
     // 診断・実施手術を $.[*].Text, $.[*].Description に整形してコピー
-    temporaryItem.Diagnoses = this._flattenItem(caserecord.Diagnoses)
-    temporaryItem.Procedures = this._flattenItem(caserecord.Procedures)
+    temporaryItem.Diagnoses = this._flattenItem(caserecord.Diagnoses || [])
+    temporaryItem.Procedures = this._flattenItem(caserecord.Procedures || [])
 
     // Approachがあればコピー
     if (caserecord?.Approach !== undefined) {

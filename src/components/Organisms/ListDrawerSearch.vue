@@ -1,13 +1,30 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { computed, reactive } from 'vue'
 import { useStore } from '@/store'
 import InputSwitchField from '@/components/Molecules/InputSwitchField.vue'
 
-const store = useStore()
-const emit = defineEmits(['changed'])
+type SearchSettingsState = {
+  IgnoreQuery: boolean
+  Field: [string, string]
+  Search: [string, string]
+  UseRegexp: [boolean, boolean]
+}
 
-const settings = reactive({
+type QueryObject = Record<string, unknown>
+type SearchPreset = {
+  title: string
+  regexp?: boolean
+  multiple?: boolean
+  another?: boolean
+  createquery: (query: string, regexp?: boolean) => QueryObject
+}
+
+const store = useStore()
+const emit = defineEmits<{
+  (e: 'changed'): void
+}>()
+
+const settings = reactive<SearchSettingsState>({
   IgnoreQuery: false,
   Field: ['', ''],
   Search: ['', ''],
@@ -16,17 +33,19 @@ const settings = reactive({
 
 const OnCreated = () => {
   if (store.getters.ViewSettings.Search) {
-    const preservedSearch = JSON.parse(store.getters.ViewSettings.Search.Preserve || '{}')
+    const preservedSearch = JSON.parse(store.getters.ViewSettings.Search.Preserve || '{}') as Partial<SearchSettingsState>
 
-    for (const key in settings) {
+    for (const key of Object.keys(settings) as Array<keyof SearchSettingsState>) {
       if (preservedSearch[key] !== undefined) {
-        if (Array.isArray(settings[key])) {
+        if (Array.isArray(settings[key]) && Array.isArray(preservedSearch[key])) {
           // 配列の場合は要素ごとにコピー
           for (let i = 0; i < settings[key].length; i++) {
-            settings[key][i] = preservedSearch[key][i] || settings[key][i]
+            const oldValue = settings[key][i]
+            const newValue = (preservedSearch[key] as Array<string | boolean>)[i]
+            settings[key][i] = (newValue ?? oldValue) as never
           }
         } else {
-          settings[key] = preservedSearch[key]
+          settings[key] = preservedSearch[key] as never
         }
       }
     }
@@ -41,13 +60,13 @@ OnCreated()
  * @param multiline 複数行にまたがる検索を行うかどうか
  */
 const makeRegex = (str = '', regex = false, multiline = false) => {
-  let queryRegex
+  let queryRegex: RegExp
   if (regex) {
     // 正規表現のエラーがあったら空の正規表現を返す
     try {
       queryRegex = new RegExp(str, 'i' + (multiline ? 'm' : ''))
     } catch {
-      queryRegex = new RegExp()
+      queryRegex = new RegExp('')
     }
   } else {
     // 文字列の正規表現シンタックスをエスケープして文字列検索パターンを生成
@@ -57,13 +76,13 @@ const makeRegex = (str = '', regex = false, multiline = false) => {
 }
 
 // 検索設定
-const SearchSetting = {
+const SearchSetting: Record<string, SearchPreset> = {
   Id: {
     title: '患者ID',
     regexp: false,
     multiple: true,
     another: false,
-    createquery: (query) => {
+    createquery: (query: string) => {
       // 検索文字から区切り文字を消して、区切り文字を含んだ検索を可能にする
       // ハイフンに類似した文字
       //  U+002D ASCIIのハイフン
@@ -99,7 +118,7 @@ const SearchSetting = {
     title: '患者名',
     regexp: true,
     another: false,
-    createquery: (query, regexp) => {
+    createquery: (query: string, regexp?: boolean) => {
       return { Name: { $regex: makeRegex(query, regexp) } }
     }
   },
@@ -107,7 +126,7 @@ const SearchSetting = {
     title: '手術診断',
     regexp: true,
     another: true,
-    createquery: (query, regexp) => {
+    createquery: (query: string, regexp?: boolean) => {
       return {
         Diagnoses: {
           $elemMatch: {
@@ -121,7 +140,7 @@ const SearchSetting = {
     title: '手術診断 (主たる診断のみ)',
     regexp: true,
     another: true,
-    createquery: (query, regexp) => {
+    createquery: (query: string, regexp?: boolean) => {
       return {
         'Diagnoses.0.Text': { $regex: makeRegex(query, regexp) }
       }
@@ -131,7 +150,7 @@ const SearchSetting = {
     title: '実施手術',
     regexp: true,
     another: true,
-    createquery: (query, regexp) => {
+    createquery: (query: string, regexp?: boolean) => {
       return {
         $or: [
           {
@@ -156,7 +175,7 @@ const SearchSetting = {
     title: '実施手術 (主たる手術のみ)',
     regexp: true,
     another: true,
-    createquery: (query, regexp) => {
+    createquery: (query: string, regexp?: boolean) => {
       return {
         'Procedures.0.Text': { $regex: makeRegex(query, regexp) }
       }
@@ -166,7 +185,7 @@ const SearchSetting = {
     title: 'メモ',
     regexp: true,
     another: true,
-    createquery: (query, regexp) => {
+    createquery: (query: string, regexp?: boolean) => {
       return { Note: { $regex: makeRegex(query, regexp) } }
     }
   },
@@ -174,7 +193,7 @@ const SearchSetting = {
     title: 'メモ(行ごとに評価)',
     regexp: true,
     another: true,
-    createquery: (query, regexp) => {
+    createquery: (query: string, regexp?: boolean) => {
       return { Note: { $regex: makeRegex(query, regexp, true) } }
     }
   },
@@ -183,7 +202,7 @@ const SearchSetting = {
     regexp: false,
     multiple: false,
     another: false,
-    createquery: (query) => {
+    createquery: (query: string) => {
       if (query && query.trim().length > 0) {
         return { Hash: query.trim() }
       } else {
@@ -226,10 +245,10 @@ const SearchActivated = computed(() => store.getters.SearchActivated)
 
 // 複数検索が可能かどうか(検索条件1のみ)
 const MultipleQueryAccepted = computed(() => {
-  const preset = SearchSetting[settings.Field]
+  const preset = SearchSetting[settings.Field[0]]
 
   if (preset && preset?.multiple !== undefined) {
-    return SearchSetting[settings.Field].multiple
+    return preset.multiple === true
   } else {
     return false
   }
@@ -238,14 +257,14 @@ const MultipleQueryAccepted = computed(() => {
 const performQuery = () => {
   // 検索条件1は必須
   if (settings.Field[0] && settings.Search[0]) {
-    const filterQuery = []
+    const filterQuery: Array<{ Field: string; Value: unknown }> = []
     const [field, value] = Object.entries(
       SearchSetting[settings.Field[0]]?.createquery(settings.Search[0], settings.UseRegexp[0]) || {}
     ).flat()
 
     if (field !== undefined && value !== undefined) {
       filterQuery.push({
-        Field: field,
+        Field: String(field),
         Value: value
       })
 
@@ -257,7 +276,7 @@ const performQuery = () => {
 
         if (field2 !== undefined && value2 !== undefined) {
           filterQuery.push({
-            Field: field2,
+            Field: String(field2),
             Value: value2
           })
         }

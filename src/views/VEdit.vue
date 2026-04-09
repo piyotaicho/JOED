@@ -161,7 +161,7 @@ type JsonText = string
 
 interface EditCaseData {
   Name: string
-  Age: number | undefined
+  Age: string | undefined
   PatientId: string
   JSOGId: string
   NCDId: string

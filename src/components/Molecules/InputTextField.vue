@@ -1,5 +1,6 @@
 <script setup lang="ts">
-// @ts-nocheck
+import type { PropType } from 'vue'
+
 const props = defineProps({
   title: {
     type: String,
@@ -14,11 +15,11 @@ const props = defineProps({
     default: false
   },
   classOverride: {
-    type: Array,
+    type: Array as PropType<string[]>,
     default: () => ['label', 'field']
   }
 })
-const inputText = defineModel({ type: String, required: true })
+const inputText = defineModel<string>({ type: String, required: true })
 </script>
 
 <template>

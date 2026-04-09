@@ -1,8 +1,16 @@
-// @ts-nocheck
 export const LastUpdate = '2025-10-01'
 const defaultReference = '2025'
 
+type ApproachDirective = Record<string, string[]>
+type ApproachMasterSets = Record<string, string | ApproachDirective[] | Record<string, string>>
+
 export default class ApproachMaster {
+  declare readonly year: string
+  declare readonly title: string | undefined
+  declare readonly requirement: string
+  declare readonly categorymap: Record<string, string | undefined>
+  declare readonly colormap: Record<string, string | undefined>
+
   constructor (argYear = defaultReference) {
     Object.defineProperty(this, 'year', { value: argYear || defaultReference, enumerable: false, writable: false })
 
@@ -16,7 +24,7 @@ export default class ApproachMaster {
     // check - チェックボックス 複数選択可
     //
     // 各選択肢の最後に $ が付く場合、その選択肢はデフォルト値設定用には含めない
-    const approachMasterSets = year <= '2024' ? {
+    const approachMasterSets: ApproachMasterSets = year <= '2024' ? {
       'requirement$': 'none'
     } : {
       'title$': (
@@ -95,21 +103,21 @@ export default class ApproachMaster {
   }
 
   // マスタ年次を取得
-  getYear () {
+  getYear (): string {
     return this.year
   }
 
   /**
    * マスタに設定されたタイトル文字列を取得
    */
-  getTitle () {
+  getTitle (): string {
     return this?.title || ''
   }
 
   /**
    * カテゴリから必須かどうかを判断
    */
-  getRequirement (categories = []) {
+  getRequirement (categories: string[] = []): string {
     const mappedCategories = categories.map(category => this.mapCategory(category)).filter(category => category !== undefined)
     if (mappedCategories.length === 0) {
       return 'none'
@@ -121,7 +129,7 @@ export default class ApproachMaster {
   /**
    * カテゴリマップで置換
    */
-  mapCategory (category) {
+  mapCategory (category: string): string | undefined {
     if (!this?.categorymap) {
       return undefined
     }
@@ -131,31 +139,31 @@ export default class ApproachMaster {
   /**
    * カラーコードを取得
    */
-  getColorCode (category) {
+  getColorCode (category: string): string {
     if (this.colormap[category]) {
-      return this.colormap[category]
+      return this.colormap[category]!
     }
     const mappedCategory = this.mapCategory(category) || 'undefined'
-    return (this.colormap[mappedCategory] || this.colormap['undefined'])
+    return (this.colormap[mappedCategory] || this.colormap['undefined'])!
   }
 
   /**
    * 有効なカテゴリー一覧の和集合を取得
    */
-  getCategories (categories = []) {
+  getCategories (categories: string[] = []): string[] {
     if (categories === undefined || categories.length === 0) {
       return Object.keys(this)
     }
 
     const mappedCategories = categories
       .map(category => this.mapCategory(category))
-      .filter(category => category !== undefined)
+      .filter((category): category is string => category !== undefined)
       .reduce((acc, category) => {
         if (!acc.includes(category)) {
           acc.push(category)
         }
         return acc
-      }, [])
+      }, [] as string[])
     return Object.keys(this).filter(category => mappedCategories.includes(category))
   }
 
@@ -165,11 +173,14 @@ export default class ApproachMaster {
    * @param {*} argCategories - 取得するカテゴリ名の配列、もしくは単一のカテゴリ名。未指定の場合は全カテゴリ
    * @param {boolean} asDefaultValues - trueの場合、値の最後に $ が含まれるものは除外する(デフォルト値設定用)
    */
-  getTree (argCategories, asDefaultValues = false) {
-    const categories = new Set()
+  getTree (argCategories?: string | string[], asDefaultValues = false): Record<string, ApproachDirective[]> {
+    const categories = new Set<string>()
 
     if (typeof argCategories === 'string' && Object.keys(this?.categorymap || {}).includes(argCategories)) {
-      categories.add(this.mapCategory(argCategories))
+      const mapped = this.mapCategory(argCategories)
+      if (mapped !== undefined) {
+        categories.add(mapped)
+      }
     }
     if (typeof argCategories === 'object' && Array.isArray(argCategories)) {
       if (argCategories.length === 0) {
@@ -177,7 +188,10 @@ export default class ApproachMaster {
       } else {
         for (const category of argCategories) {
           if (Object.keys(this?.categorymap || {}).includes(category)) {
-            categories.add(this.mapCategory(category))
+            const mapped = this.mapCategory(category)
+            if (mapped !== undefined) {
+              categories.add(mapped)
+            }
           }
         }
       }
@@ -187,7 +201,7 @@ export default class ApproachMaster {
     }
 
     // 選択されたツリーを返す
-    const tree = {}
+    const tree: Record<string, ApproachDirective[]> = {}
     for (const category of Object.keys(this)) {
       if (!categories.has(category)) {
         continue
@@ -196,10 +210,11 @@ export default class ApproachMaster {
 
       // 値の最後に $ が含まれる場合はデフォルト値設定対象から除外
       // ツリーの値としては $ は除いたものを使用
-      for (const directive of this[category]) {
-        const directiveType = Object.keys(directive)[0]
-        const values = []
-        for (const value of directive[directiveType]) {
+      const categoryData = ((this as unknown as Record<string, ApproachDirective[] | undefined>)[category] || []) as ApproachDirective[]
+      for (const directive of categoryData) {
+        const directiveType = Object.keys(directive)[0] as string
+        const values: string[] = []
+        for (const value of (directive[directiveType] || [])) {
           if (value.slice(-1) === '$') {
             if (!asDefaultValues) {
               values.push(value.slice(0, -1))
@@ -221,7 +236,7 @@ export default class ApproachMaster {
    *
    * @param { *} selection
    */
-  check (selection = {}) {
+  check (selection: Record<string, string[]> = {}): void {
     for(const category in selection) {
       // 不正なカテゴリのチェック
       if (!Object.keys(this).includes(category)) {
@@ -229,21 +244,24 @@ export default class ApproachMaster {
       }
 
       // 不正な入力項目のチェック
-      const validItems = this[category]
-        .map(directive => directive[Object.keys(directive)[0]]
-        .map(item => ApproachMaster.asValue(item)))
+      const categoryData = ((this as unknown as Record<string, ApproachDirective[] | undefined>)[category] || []) as ApproachDirective[]
+      const validItems = categoryData
+        .map(directive => {
+          const key = Object.keys(directive)[0] as string
+          return (directive[key] || []).map(item => ApproachMaster.asValue(item))
+        })
         .flat()
-      const difference = Array.from((new Set(selection[category])).difference(new Set(validItems)))
+      const difference = (selection[category] || []).filter(item => !validItems.includes(item))
       if (difference.length > 0) {
         throw new Error(`${category}のアプローチに不正な入力 ${difference.join(',')} があります.`)
       }
 
       // 必須入力項目(oneOf)のチェック oneOfには $ 修飾子の項目はない
-      const selected = []
-      for (const directive of this[category]) {
-        if (directive?.oneOf) {
+      const selected: string[] = []
+      for (const directive of categoryData) {
+        if (directive?.['oneOf']) {
           if (selection[category]) {
-            selected.push(...selection[category].filter(item => directive.oneOf.map(item => ApproachMaster.asValue(item)).includes(item)))
+            selected.push(...(selection[category] || []).filter(item => (directive['oneOf'] || []).map((it: string) => ApproachMaster.asValue(it)).includes(item)))
           }
         }
       }
@@ -259,7 +277,7 @@ export default class ApproachMaster {
   /**
    * マスタ文字列から値に変換 (static)
    */
-  static asValue (value = '') {
+  static asValue (value: string = ''): string {
     if (value.slice(-1) === '$') {
       value = value.slice(0, -1)
     }
@@ -269,7 +287,7 @@ export default class ApproachMaster {
   /**
    * マスタ文字列から表示用文字列に変換 (static)
    */
-  static asLabel (value = '') {
+  static asLabel (value: string = ''): string {
     if (value.slice(-1) === '$') {
       value = value.slice(0, -1)
     }
@@ -279,15 +297,16 @@ export default class ApproachMaster {
   /**
    * 値から表示用文字列に変換
    */
-  valueToLabel (value = '', category = undefined) {
+  valueToLabel (value: string = '', category?: string | string[]): string | undefined {
     const tree = this.getTree(category)
     for (const treecategory in tree) {
-      const directives = tree[treecategory]
+      const directives = tree[treecategory] || []
       for (const directive of directives) {
-        const directiveType = Object.keys(directive)[0]
-        const foundIndex = directive[directiveType].findIndex(item => ApproachMaster.asValue(item) === value)
+        const directiveType = Object.keys(directive)[0] as string
+        const directiveValues = directive[directiveType] || []
+        const foundIndex = directiveValues.findIndex(item => ApproachMaster.asValue(item) === value)
         if (foundIndex !== -1) {
-          return ApproachMaster.asLabel(directive[directiveType][foundIndex])
+          return ApproachMaster.asLabel(directiveValues[foundIndex] || '')
         }
       }
     }

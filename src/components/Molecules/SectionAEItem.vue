@@ -17,10 +17,17 @@
 </template>
 
 <script setup lang="ts">
-// @ts-nocheck
 import { computed } from 'vue'
 import DescriptionOfAE from '@/components/Molecules/DescriptionOfAE.vue'
 import { Edit, Delete } from '@element-plus/icons-vue'
+
+type AEItem = {
+  Category?: string
+  Grade?: string | number
+  BloodCount?: string | number
+  Title?: string[]
+  Cause?: string[]
+}
 
 const props = defineProps({
   item: {
@@ -28,9 +35,18 @@ const props = defineProps({
     required: true
   }
 })
-const emit = defineEmits(['edit', 'remove'])
+const emit = defineEmits<{
+  (e: 'edit'): void
+  (e: 'remove'): void
+}>()
 
-const item = computed(() => JSON.parse(props.item))
+const item = computed<AEItem>(() => {
+  try {
+    return JSON.parse(props.item) as AEItem
+  } catch {
+    return {}
+  }
+})
 
 const label = computed(() => {
   if (item.value.Category === '出血') {
@@ -40,8 +56,7 @@ const label = computed(() => {
       return ' ' + item.value.BloodCount + 'ml'
     }
   } else {
-    const labelSource = []
-    let labelString = ''
+    const labelSource: string[] = []
     if (item.value.Title) {
       labelSource.push(...item.value.Title)
     } else if (item.value.Cause) {
@@ -50,8 +65,7 @@ const label = computed(() => {
       return ' '
     }
 
-    labelString = labelSource.join(', ')
-    return labelString
+    return labelSource.join(', ')
   }
 })
 

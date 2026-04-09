@@ -1,17 +1,12 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { Operation } from '@element-plus/icons-vue'
-const props = defineProps({
-  tabindex: {
-    type: String, Number
-  },
-  accesskey: {
-    type: String
-  }
-})
+const props = defineProps<{
+  tabindex?: string | number
+  accesskey?: string
+}>()
 const emit = defineEmits(['click'])
 
-const click = (event) => emit('click', event)
+const click = (event: MouseEvent | KeyboardEvent) => emit('click', event)
 
 </script>
 

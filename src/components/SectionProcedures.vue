@@ -1,27 +1,39 @@
 <script setup lang="ts">
-// @ts-nocheck
 import SectionBlock from '@/components/Molecules/SectionBlock.vue'
 import SectionItem from '@/components/Molecules/SectionItem.vue'
 import { confirmYesNo } from '@/modules/Popups'
 
-const items = defineModel({ type: Array, required: true })
+const items = defineModel<string[]>({
+  required: true,
+  default: () => [],
+})
 
-const emit = defineEmits(['additem', 'edititem', 'removeitem'])
+const emit = defineEmits<{
+  (e: 'additem'): void
+  (e: 'edititem', payload: { index: number; value: string }): void
+  (e: 'removeitem', index: number): void
+}>()
 
-const addItem = () => emit('additem')
+const addItem = (): void => emit('additem')
 
-const editItem = (index, value) => emit('edititem', { index, value })
+const editItem = (index: number, value: string): void => emit('edititem', { index, value })
 
-const removeItem = (index) => emit('removeitem', index)
+const removeItem = (index: number): void => emit('removeitem', index)
 
-const removeAdditionalItemEntry = async (index) => {
+const removeAdditionalItemEntry = async (index: number): Promise<void> => {
   if (await confirmYesNo('付随する手術も併せて削除されます.')) {
     removeItem(index)
   }
 }
 
-const hasAdditionalProcedure = (item) => item.toString().includes(',"AdditionalProcedure":{')
-const additionalProcedure = (item) => JSON.stringify((JSON.parse(item || '')?.AdditionalProcedure) || '')
+const hasAdditionalProcedure = (item: unknown): boolean => String(item ?? '').includes(',"AdditionalProcedure":{')
+const additionalProcedure = (item: unknown): string => {
+  try {
+    return JSON.stringify((JSON.parse(String(item || ''))?.AdditionalProcedure) || '')
+  } catch {
+    return ''
+  }
+}
 </script>
 
 <template>
@@ -33,10 +45,10 @@ const additionalProcedure = (item) => JSON.stringify((JSON.parse(item || '')?.Ad
     </template>
     <template #default="slotprops">
       <template v-if="!hasAdditionalProcedure(slotprops.item)">
-        <SectionItem :value="slotprops.item" @remove="removeItem(slotprops.index)" @edit="editItem(slotprops.index, slotprops.item)" editable/>
+        <SectionItem :value="String(slotprops.item ?? '')" @remove="removeItem(slotprops.index)" @edit="editItem(slotprops.index, String(slotprops.item ?? ''))" editable/>
       </template>
       <template v-else>
-        <SectionItem :value="slotprops.item" @remove="removeAdditionalItemEntry(slotprops.index)" @edit="editItem(slotprops.index, slotprops.item)" editable/>
+        <SectionItem :value="String(slotprops.item ?? '')" @remove="removeAdditionalItemEntry(slotprops.index)" @edit="editItem(slotprops.index, String(slotprops.item ?? ''))" editable/>
         <SectionItem :value="additionalProcedure(slotprops.item)" @remove="removeAdditionalItemEntry(slotprops.index)"/>
       </template>
     </template>

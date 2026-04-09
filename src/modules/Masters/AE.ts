@@ -1,9 +1,17 @@
-// @ts-nocheck
+import type { AECategoryDefinition, AEComponentDefinition, AEGradeDefinition, AECourseDefinition } from '@/types/frontend'
+import type { AEItem } from '@/types/data'
+
 export const LastUpdate = '2022-11-27'
 const defaultReference = '2022'
 
 export default class AEmaster {
-  constructor (year) {
+  declare readonly YearofMaster: string
+  declare readonly Category: AECategoryDefinition[]
+  declare readonly Components: Record<string, AEComponentDefinition>
+  declare readonly Grading: AEGradeDefinition[]
+  declare readonly Courses: AECourseDefinition[]
+
+  constructor (year?: string) {
     if (year === undefined || year === '') {
       year = defaultReference
     }
@@ -329,7 +337,7 @@ export default class AEmaster {
   }
 
   // マスタ共通メソッド デフォルト年次を取得
-  Year () {
+  Year (): string {
     return this.YearofMaster
   }
 
@@ -337,7 +345,7 @@ export default class AEmaster {
   // エラーの際は例外を発生.
   //
   // @param{object}
-  validate (AE = {}) {
+  validate (AE: AEItem = {} as AEItem): boolean {
     // 合併症の種類毎に入力を確認
     if (!AE.Category) {
       // データがそもそもおかしい
@@ -351,18 +359,24 @@ export default class AEmaster {
       throw Error(`入力された合併症カテゴリ(${AE.Category})に該当するカテゴリがマスタにありません.`)
     }
 
-    const foundErrors = []
+    const foundErrors: string[] = []
 
     // 合併症設計のコンポーネント毎に入力があるか検証
     const schemaComponents = categorySchema.Components
     const optionalComponents = categorySchema.Optional || []
 
     for (const component of schemaComponents) {
-      const propertyName = this.Components[component].Element
-      if (AE[propertyName] === undefined || AE[propertyName].length === 0) {
+      const componentDef = this.Components[component]
+      if (!componentDef) {
+        foundErrors.push(`コンポーネント定義(${component})がありません.`)
+        continue
+      }
+      const propertyName = componentDef.Element
+      const aeValue = (AE as unknown as Record<string, unknown>)[propertyName]
+      if (aeValue === undefined || (Array.isArray(aeValue) && aeValue.length === 0)) {
         // 該当するコンポーネントの入力なし
         if (!optionalComponents.includes(component)) {
-          foundErrors.push(`${this.Components[component].Title} の入力が不十分です.`)
+          foundErrors.push(`${componentDef.Title} の入力が不十分です.`)
         }
       } else {
         // 該当するコンポーネントの入力あり
@@ -370,16 +384,16 @@ export default class AEmaster {
           if (AE.Category !== '出血') {
             foundErrors.push('出血量が入力されています.')
           }
-          if (!/^(不明|([1-9]\d+|[5-9])\d{2})$/.test(AE?.BloodCount)) {
+          if (!/^(不明|([1-9]\d+|[5-9])\d{2})$/.test(String(AE?.BloodCount ?? ''))) {
             foundErrors.push('出血量の入力内容が不正です.')
           }
         } else {
-          const items = this.Components[component].Items
-            .flat(2)
+          const items = (componentDef.Items
+            .flat(2) as Array<string | { Value: string }>)
             .map(item => (typeof item === 'object') ? item.Value : item)
-          for (const item of AE[propertyName]) {
+          for (const item of (aeValue as string[])) {
             if (!items.includes(item)) {
-              foundErrors.push(`${this.Components[component].Title} の選択内容(${item})がマスタにありません.`)
+              foundErrors.push(`${componentDef.Title} の選択内容(${item})がマスタにありません.`)
             }
           }
         }
@@ -387,20 +401,22 @@ export default class AEmaster {
     }
 
     // グレードと転帰の確認 - 最高グレードに相当する転帰が選択されている
-    if (AE?.Grade && AE?.Course?.length > 0) {
+    const course = AE?.Course
+    const courseArray = Array.isArray(course) ? course : course ? [course] : []
+    if (AE?.Grade && courseArray.length > 0) {
       if (!/^([1245]|3[ab])$/i.test(AE.Grade)) {
         foundErrors.push('Gradeの指定が不正です.')
       }
 
-      const grade = Number(AE.Grade.toString()[0] | 0)
+      const grade = Number(AE.Grade.toString()[0] ?? '0')
       let min = 0
       let max = 0
-      for (const course of AE.Course) {
+      for (const course of courseArray) {
         const courseelement = this.Courses
           .find(element => element.Items.flat(2)
-            .findIndex(element => typeof element === 'string'
-              ? element === course
-              : element?.Value === course) !== -1)
+            .findIndex(el => typeof el === 'string'
+              ? el === course
+              : (el as { Value: string }).Value === course) !== -1)
         if (courseelement === undefined) {
           foundErrors.push(`転帰(${course})が合併症マスタにありません.`)
         } else {

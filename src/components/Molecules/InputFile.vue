@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { ref } from 'vue'
 import Encoding from 'encoding-japanese'
 
@@ -17,28 +16,41 @@ const props = defineProps({
     default: false
   }
 })
-const emit = defineEmits(['load'])
+const emit = defineEmits<{
+  (e: 'load', content: string): void
+}>()
 
-const inputfile = ref()
+const inputfile = ref<HTMLInputElement | null>(null)
 
-function openFileDialog () {
-  inputfile.value.click()
+function openFileDialog (): void {
+  inputfile.value?.click()
 }
 
-function selectionMade (event) {
-  const files = event.target.files || event.dataTransfer.files
+function selectionMade (event: Event): void {
+  const input = event.target as HTMLInputElement | null
+  const files = input?.files
+  if (!files || files.length === 0) {
+    return
+  }
+  const selectedFile = files.item(0)
+  if (!selectedFile) {
+    return
+  }
   const reader = new FileReader()
   reader.onload = () => {
+    if (!(reader.result instanceof ArrayBuffer)) {
+      return
+    }
     const dataArray = new Uint8Array(reader.result)
     emit('load',
-      Encoding.convert(dataArray, {
+      String(Encoding.convert(dataArray, {
         to: 'UNICODE',
         from: Encoding.detect(dataArray),
         type: 'string'
-      })
+      }))
     )
   }
-  reader.readAsArrayBuffer(files[0])
+  reader.readAsArrayBuffer(selectedFile)
 }
 </script>
 

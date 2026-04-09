@@ -1,7 +1,8 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { computed, nextTick } from 'vue'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
+
+type SelectionMode = 'one' | 'any' | 'anyornone'
 
 const props = defineProps({
   title: {
@@ -15,19 +16,17 @@ const props = defineProps({
     type: Array
   }
 })
-const modelValue = defineModel({
-  type: Array
-})
+const modelValue = defineModel<string[]>({ type: Array, default: () => [] })
 const title = computed(() => props?.title || '')
 
-const selectionMode = computed(() => props?.selectionMode || 'one')
+const selectionMode = computed<SelectionMode>(() => (props?.selectionMode as SelectionMode) || 'one')
 
-const options = computed(() => props?.options || [])
+const options = computed<string[]>(() => (props?.options as string[]) || [])
 
 const value = computed({
   get: () => modelValue.value || [],
-  set: (value) => {
-    const newvalueArray = []
+  set: (value: string[] | string | undefined) => {
+    const newvalueArray: string[] = []
     // 単一のvalue / selectから
     if (value === undefined || typeof value === 'string') {
       if (value && options.value.includes(value)) {
@@ -75,7 +74,7 @@ const selectionItems = computed(() => options.value)
 
 const selectedArrayValue = computed({
   get: () => value.value,
-  set: (newvalue) => { value.value = newvalue }
+  set: (newvalue: string[]) => { value.value = newvalue }
 })
 
 const selectedSingleValue = computed({
@@ -86,14 +85,14 @@ const selectedSingleValue = computed({
       return value.value[0]
     }
   },
-  set: (newvalue) => { value.value = newvalue }
+  set: (newvalue: string | undefined) => { value.value = newvalue }
 })
 
 /**
  * マスタの文字列から [] で囲まれた部分を削除、非保存値を示す ～$ を削除してラベルを作成する
  * @param {String} str
  */
-const escapedItemCaption = (str) => str.replace(/\[.+\]/g, '').replace(/\$$/, '')
+const escapedItemCaption = (str: string) => str.replace(/\[.+\]/g, '').replace(/\$$/, '')
 
 </script>
 

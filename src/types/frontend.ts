@@ -124,8 +124,9 @@ export interface AEGradeDefinition {
 
 export interface AECourseDefinition {
   Min: number
+  Max: number
   Title: string
-  Items: Array<string | { Text: string; Value: string }>
+  Items: Array<Array<string | { Text: string; Value: string }>>
 }
 
 // -------- アプローチマスタ型 --------

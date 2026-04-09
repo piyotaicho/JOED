@@ -1,16 +1,20 @@
 <script setup lang="ts">
-// @ts-nocheck
+import type { PropType } from 'vue'
+
 const props = defineProps({
   tabindex: {
-    type: [Number, String]
+    type: [Number, String] as PropType<number | string | undefined>
   },
   bordered: {
-    type: Boolean
+    type: Boolean,
+    default: false,
   }
 })
-const emit = defineEmits(['click'])
+const emit = defineEmits<{
+  (e: 'click'): void
+}>()
 
-const click = () => emit('click')
+const click = (): void => emit('click')
 </script>
 
 <template>

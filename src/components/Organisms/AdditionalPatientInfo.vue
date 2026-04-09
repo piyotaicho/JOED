@@ -1,11 +1,9 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { computed, useTemplateRef } from 'vue'
 import { useStore } from '@/store'
 import { InfoFilled } from '@element-plus/icons-vue'
 import InputSwitchField from '@/components/Molecules/InputSwitchField.vue'
 import InputTextField from '@/components/Molecules/InputTextField.vue'
-import { sw } from 'element-plus/es/locales.mjs'
 
 const store = useStore()
 
@@ -19,32 +17,36 @@ const props = defineProps({
 })
 
 const Denial = defineModel('Denial', {
+  type: Boolean,
   default: false
 })
 
 const JSOGId = defineModel('JSOGId', {
+  type: String,
   default: ''
 })
 
 const NCDId = defineModel('NCDId', {
+  type: String,
   default: ''
 })
 
-const switchField = useTemplateRef('switchField')
+const switchField = useTemplateRef<HTMLElement>('switchField')
 
 // 編集フラグ
 const editJSOGId = computed(() => store.getters['system/EditJSOGId'])
 const editNCDId = computed(() => store.getters['system/EditNCDId'])
 
 const hashString = computed(() => {
-  if (Denial.value && props.DateOfProcedure !== '' && props.PatientId !== '') {
-    return store.getters['system/generateHash'](
+  if (Denial.value && props.DateOfProcedure && props.PatientId) {
+    const generateHash = store.getters['system/generateHash'] as ((value: string, oldStyle: boolean) => string) | undefined
+    return generateHash?.(
       JSON.stringify({
         DateOfProcedure: props.DateOfProcedure,
         PatientId: props.PatientId
       }),
       props.DateOfProcedure.substring(0, 4) <= '2021'
-    )
+    ) || ''
   } else {
     return '手術日と患者IDの入力が必須です'
   }
@@ -57,11 +59,11 @@ const tooltip = computed(() => {
     message += '登録拒否症例です.'
   }
   if (JSOGId.value !== '' || NCDId.value !== '') {
-    message +=
-      [
-        ...JSOGId.value !== '' ? ['腫瘍登録番号'] : [],
-        ...NCDId.value !== '' ? ['NCD症例識別コード'] : []
-      ].join(',') + 'が入力されています.'
+    const targets = [
+      ...(JSOGId.value !== '' ? ['腫瘍登録番号'] : []),
+      ...(NCDId.value !== '' ? ['NCD症例識別コード'] : [])
+    ]
+    message += targets.join(',') + 'が入力されています.'
   }
   return message
 })
@@ -78,8 +80,8 @@ const iconColor = computed(() => {
 
 const focusInput = () => {
   // スイッチへフォーカスする
-  const inputElement = switchField.value.getElementsByTagName('input')[0]
-  if (inputElement !== null) {
+  const inputElement = switchField.value?.querySelector('input')
+  if (inputElement instanceof HTMLInputElement) {
     inputElement.focus()
   }
 }

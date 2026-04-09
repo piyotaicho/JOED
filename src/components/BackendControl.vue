@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { ref } from 'vue'
 import { useStore } from '@/store'
 import { alert as alertPopup, confirm, confirmYesNo, prompt } from '@/modules/Popups'
@@ -13,11 +12,11 @@ const enableAdvancedSettings = store.getters['system/EnableAdvancedSettings']
 
 const removeBackupFiles = ref(false)
 
-const backupDatabase = async () => {
+const backupDatabase = async (): Promise<void> => {
   // システム設定を取得
-  const settings = await store.dispatch('system/LoadPreferences')
+  const settings = await store.dispatch('system/LoadPreferences') as Record<string, unknown>
   // ドキュメントをデータベースからダンプ
-  const documents = await store.dispatch('dbDump')
+  const documents = (await store.dispatch('dbDump')) as Record<string, unknown>[]
 
   // バックアップJSON文字列を作成(整形なし)
   const outputText = JSON.stringify([
@@ -27,7 +26,7 @@ const backupDatabase = async () => {
 
   // ファイルとしてダウンロード
   if (await confirm('保存されるデータには要配慮個人情報が含まれています.\n出力されたファイルの取扱は厳重に行ってください.')) {
-    const temporaryElementA = document.createElement('A')
+    const temporaryElementA = document.createElement('a')
     temporaryElementA.href = URL.createObjectURL(new Blob([outputText], { type: 'application/json' }))
     temporaryElementA.download = `joed-whole-backup-${new Date().toISOString().slice(0,10)}.json`
     temporaryElementA.style.display = 'none'
@@ -37,7 +36,7 @@ const backupDatabase = async () => {
   }
 }
 
-const restoreDatabase = async () => {
+const restoreDatabase = async (): Promise<void> => {
   // データベースが空であることを確認
   if (store.getters['TotalNumberOfCases'] > 0) {
     await alertPopup('情報が既に存在しています.\n先にデータベースを初期化してください.')
@@ -45,18 +44,21 @@ const restoreDatabase = async () => {
   }
 
   // 一時的にファイル入力要素を作成
-  const temporaryElementInput = document.createElement('INPUT')
+  const temporaryElementInput = document.createElement('input')
   temporaryElementInput.type = 'file'
   temporaryElementInput.accept = 'application/json'
   temporaryElementInput.style.display = 'none'
   document.body.appendChild(temporaryElementInput)
   temporaryElementInput.onchange = async () => {
     try {
-      const file = temporaryElementInput.files[0]
+      const file = temporaryElementInput.files?.item(0)
+      if (!file) {
+        throw new Error('ファイルが選択されていません.')
+      }
       const text = await file.text()
-      const data = JSON.parse(text)
+      const data = JSON.parse(text) as Array<Record<string, unknown> & { Settings?: Record<string, unknown> }>
 
-      const settingIndex = data.findIndex(item => item.Settings)
+      const settingIndex = data.findIndex((item) => item.Settings)
       if (!Array.isArray(data) || data.length < 1 || settingIndex < 0) {
         throw new Error('不正なファイルです.')
       }
@@ -64,14 +66,17 @@ const restoreDatabase = async () => {
       if (await confirmYesNo('データベースの内容はバックアップファイルの内容で上書きされます.\nこの操作は元に戻せません.')) {
         const loading = ElLoading.service({ fullscreen: true, text: 'データベースを復元中...' })
         // システム設定を復元し保存
-        const settings = data.splice(settingIndex, 1)[0].Settings
+        const selectedSettings = data.splice(settingIndex, 1)[0]
+        const settings = selectedSettings?.Settings || {}
         store.commit('system/SetPreferences', settings)
         await store.dispatch('system/SavePreferences')
 
         // ドキュメントを復元
         let count = 1
         for (const document of data) {
-          loading.text = `データベースを復元中... (${count}/${data.length})`
+          if ('setText' in loading && typeof loading.setText === 'function') {
+            loading.setText(`データベースを復元中... (${count}/${data.length})`)
+          }
           await store.dispatch('dbInsert', {Document: document})
           count++
         }
@@ -81,8 +86,9 @@ const restoreDatabase = async () => {
         await alertPopup('データベースの復元が完了しました.\nアプリケーションをリロードします.')
         relaunchApp()
       }
-    } catch (error) {
-      await alertPopup(`処理を中止しました.\n${error.message}`)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error)
+      await alertPopup(`処理を中止しました.\n${message}`)
     } finally {
       document.body.removeChild(temporaryElementInput)
     }
@@ -90,7 +96,7 @@ const restoreDatabase = async () => {
   temporaryElementInput.click()
 }
 
-const dropDatabase = async () => {
+const dropDatabase = async (): Promise<void> => {
   const passphrase = ['DELETE', 'delete', '削除', 'バルス'][Math.floor(Math.random() * 4)]
 
   if (await confirmYesNo('この操作はデータベースの内容を完全に削除します.\nこの操作は元に戻せません.')) {

@@ -1,11 +1,10 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { onMounted, onBeforeUnmount, ref } from 'vue'
 
 const props = defineProps({
   alpha: {
     type: [String, Number],
-    validator(val) {
+    validator(val: string | number) {
       const num = Number(val)
       if (isNaN(num)) return false
       return num >= 0 && num <= 100
@@ -17,35 +16,46 @@ const props = defineProps({
     default: false,
   },
 })
-const emit = defineEmits(['click'])
+const emit = defineEmits<{
+  (e: 'click'): void
+}>()
 
-const wrapper = ref()
+const wrapper = ref<HTMLElement | null>(null)
 
 onMounted(() => {
   // スクロールバーを消す
-  document.getElementsByTagName('html')[0].style.overflowY = 'hidden'
+  const htmlElement = document.getElementsByTagName('html')[0]
+  if (htmlElement) {
+    htmlElement.style.overflowY = 'hidden'
+  }
 
   // Alphaの設定
-  if (props.alpha >= 0) {
-    wrapper.value.style.background = 'rgb(0 0 0 /' + String(Number(props.alpha) / 100) + ')'
+  const alphaValue = Number(props.alpha)
+  if (wrapper.value && alphaValue >= 0) {
+    wrapper.value.style.background = 'rgb(0 0 0 /' + String(alphaValue / 100) + ')'
   } else {
-    wrapper.value.style.background = 'transparent'
+    if (wrapper.value) {
+      wrapper.value.style.background = 'transparent'
+    }
   }
 
   // rootElementはドキュメントコレクションでArrayではないので、Array.prototypeで操作する
   const rootElement = document.getElementById('app')
-  const myelements = Array.prototype.filter.call(
-    wrapper.value.getElementsByTagName('*'),
-    element => element.tabIndex === 0
+  if (!rootElement || !wrapper.value) {
+    return
+  }
+
+  const myelements = Array.from(wrapper.value.getElementsByTagName('*')) as HTMLElement[]
+  const focusableInWrapper = myelements.filter(
+    (element) => element.tabIndex === 0
   )
-  if (myelements.length > 0) {
+  if (focusableInWrapper.length > 0) {
     // TheWrapper コンポーネントの内部以外のコントロールへの tabIndex を抑止する.
-    const documentelements = Array.prototype.filter.call(
-      rootElement.getElementsByTagName('*'),
-      element => element.tabIndex === 0
+    const documentelements = (Array.from(rootElement.getElementsByTagName('*')) as HTMLElement[]).filter(
+      (element) => element.tabIndex === 0
     )
-    documentelements.forEach(element => {
-      if (!Array.prototype.includes.call(myelements, element)) {
+    documentelements.forEach((element) => {
+      if (!focusableInWrapper.includes(element)) {
         element.tabIndex = -2
       }
     })
@@ -59,36 +69,37 @@ onMounted(() => {
 
   // beforeUnloadの抑止をつける
   if (props.preventClose) {
-    window.addEventListener('beforeunload', beforUnloadListener)
+    window.addEventListener('beforeunload', beforeUnloadListener)
   }
 })
 
 onBeforeUnmount(() => {
   // スクロールバーを戻す
-  document.getElementsByTagName('html')[0].style.overflowY = 'auto'
+  const htmlElement = document.getElementsByTagName('html')[0]
+  if (htmlElement) {
+    htmlElement.style.overflowY = 'auto'
+  }
 
   // beforeUnloadの抑止を終了
   if (props.preventClose) {
-    window.removeEventListener('beforeunload', beforUnloadListener)
+    window.removeEventListener('beforeunload', beforeUnloadListener)
   }
 
   // tabIndex の復帰
-  Array.prototype.filter.call(
-    document.getElementsByTagName('*'),
-    element => element.tabIndex === -2
-  )
-    .forEach(element => { element.tabIndex = 0 })
+  (Array.from(document.getElementsByTagName('*')) as HTMLElement[])
+    .filter((element) => element.tabIndex === -2)
+    .forEach((element) => { element.tabIndex = 0 })
 })
 
 // beforeUnloadの抑止用イベントリスナー
-const beforUnloadListener = (event) => {
+const beforeUnloadListener = (event: BeforeUnloadEvent): false => {
   event.preventDefault()
   event.returnValue = ''
   return false
 }
 
 // Slot外のクリックイベント
-function click() {
+function click(): void {
   emit('click')
 }
 </script>

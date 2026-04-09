@@ -1,8 +1,10 @@
-// @ts-nocheck
-import ProcedureTimeSelections from '@/modules/ProcedureTimes'
+import { encodeProcedureTime } from '@/modules/ProcedureTimes'
 import { ConvertCharacters } from '@/modules/ImportCSV'
 
-export function ValidateRecords (records) {
+type MergeRecord = Record<string, any>
+type CreatedCaseData = Record<string, any>
+
+export function ValidateRecords (records: MergeRecord[]): number {
   if (!Array.isArray(records)) {
     throw new Error('内部呼び出しのエラーです.')
   }
@@ -10,15 +12,16 @@ export function ValidateRecords (records) {
   if (length === 0) {
     throw new Error('ファイルに有効なレコードが含まれていません.')
   }
-  if (!(records[0]['合併症有無'] && records[0]['手術時間'] && records[0]['手術年'])) {
+  const firstRecord = records[0]
+  if (!firstRecord || !(firstRecord['合併症有無'] && firstRecord['手術時間'] && firstRecord['手術年'])) {
     throw new Error('指定されたファイルは 症例登録システムJOE-D version 4 で適切に入力・出力されたmergeファイル(.mer)ではありません.')
   }
   return length
 }
 
-export function CreateDocument (record) {
+export function CreateDocument (record: MergeRecord): CreatedCaseData {
   // インポートデータのフラグとメッセージ
-  const CaseData = {
+  const CaseData: CreatedCaseData = {
     Imported: true,
     Notification: '症例登録システムJOE-D version 4から読み込まれたデータです.確認と保存が必要です.\n'
   }
@@ -40,14 +43,14 @@ export function CreateDocument (record) {
   return CaseData
 }
 
-function DateOfProcedure (CaseData, record) {
+function DateOfProcedure (CaseData: CreatedCaseData, record: MergeRecord): void {
   if (record['手術日']) {
     try {
       CaseData.DateOfProcedure = '20' +
       record['手術日']
         .match(/^20([0-9]{2})[/-](0{0,1}[1-9]|1[0-2])[/-](0{0,1}[1-9]|[12][0-9]|3[01])$/)
         .splice(1, 3)
-        .map(item => ('0' + item).slice(-2))
+        .map((item: string) => ('0' + item).slice(-2))
         .join('-')
       return
     } catch {}
@@ -60,7 +63,7 @@ function DateOfProcedure (CaseData, record) {
   throw new Error('レコード中に手術日もしくは手術年の項目がありません.')
 }
 
-function BasicInformation (CaseData, record) {
+function BasicInformation (CaseData: CreatedCaseData, record: MergeRecord): void {
   // 非必須フィールドの設定
   if (record['氏名']) { CaseData.Name = record['氏名'] }
   if (record['年齢']) { CaseData.Age = record['年齢'] }
@@ -78,20 +81,20 @@ function BasicInformation (CaseData, record) {
   CaseData.PatientId = 'I-' + Number(new Date()).toString().slice(-8)
 }
 
-function ProcedureTime (CaseData, record) {
+function ProcedureTime (CaseData: CreatedCaseData, record: MergeRecord): void {
   if (record['手術時間']) {
     const timestrmatches = record['手術時間']
       .match(/\s*(\d+)(分{0,1}(以上|(未満|まで))){0,1}/)
     if (timestrmatches) {
       const timevalue = Number(timestrmatches[1]) - (timestrmatches[4] !== undefined ? 1 : 0)
-      CaseData.ProcedureTime = ProcedureTimeSelections(timevalue)
+      CaseData.ProcedureTime = encodeProcedureTime(timevalue)
       return
     }
   }
   throw new Error('手術時間の様式が不正です.')
 }
 
-function DiagnosesAndProceduresPrimary (CaseData, record) {
+function DiagnosesAndProceduresPrimary (CaseData: CreatedCaseData, record: MergeRecord): void {
   CaseData.Diagnoses = []
   CaseData.Procedures = []
 
@@ -152,7 +155,7 @@ function DiagnosesAndProceduresPrimary (CaseData, record) {
   }
 }
 
-function DiagnosesAndProceduresSecondary (CaseData, record) {
+function DiagnosesAndProceduresSecondary (CaseData: CreatedCaseData, record: MergeRecord): void {
   if (record['腹腔鏡併施手術_術後診断1']) {
     if (record['腹腔鏡併施手術_術後診断1'] !== record['腹腔鏡術後診断'] || record['腹腔鏡併施手術_術後診断1'] === 'その他') {
       CaseData.Diagnoses.push(handleUserTyped(
@@ -202,7 +205,7 @@ function DiagnosesAndProceduresSecondary (CaseData, record) {
   }
 }
 
-function AEs (CaseData, record) {
+function AEs (CaseData: CreatedCaseData, record: MergeRecord): void {
   if (record['合併症有無'] !== undefined) {
     if (record['合併症有無'] === 'なし') {
       CaseData.PresentAE = false
@@ -215,9 +218,9 @@ function AEs (CaseData, record) {
   }
 }
 
-function laparoProcedure (procedure = '', typedprocedure = '', typeofselection = '', lymphadnectomy, omentectomy) {
+function laparoProcedure (procedure = '', typedprocedure = '', typeofselection = '', lymphadnectomy?: string, omentectomy?: string): Record<string, any> | undefined {
   const category = procedure.includes('ロボット') ? 'ロボット' : '腹腔鏡'
-  const translation = {
+  const translation: { lymph: Record<string, string>; omentum: Record<string, string> } = {
     lymph: {
       'なし（SN生検－）': 'なし(センチネル生検なし)$',
       'なし(SN生検-)': 'なし(センチネル生検なし)$', // 半角ダッシュ
@@ -236,15 +239,15 @@ function laparoProcedure (procedure = '', typedprocedure = '', typeofselection =
   }
 
   if (procedure) {
-    const temporaryObject = {}
+    const temporaryObject: Record<string, any> = {}
     temporaryObject.Chain = [category + typeofselection]
     if (procedure === 'その他') {
       temporaryObject.Text = typedprocedure
       temporaryObject.UserTyped = true
     } else {
       temporaryObject.Text = ConvertCharacters(procedure)
-      const translatedlymph = translation.lymph[lymphadnectomy]
       if (lymphadnectomy) {
+        const translatedlymph = translation.lymph[lymphadnectomy]
         if (translatedlymph && translatedlymph.slice(-1) !== '$') {
           temporaryObject.AdditionalProcedure = {
             Text: category === 'ロボット' ? 'ロボット支援下リンパ節生検・郭清' : '腹腔鏡下リンパ節生検・郭清',
@@ -262,7 +265,7 @@ function laparoProcedure (procedure = '', typedprocedure = '', typeofselection =
   }
 }
 
-function handleUserTyped (category, item, typeditem) {
+function handleUserTyped (category: string, item: string, typeditem: string): Record<string, any> {
   return item.substring(0, 3) !== 'その他'
     ? {
         Chain: [category],
@@ -275,11 +278,11 @@ function handleUserTyped (category, item, typeditem) {
       }
 }
 
-export function MigrateFrom2019 (CaseData) {
+export function MigrateFrom2019 (CaseData: CreatedCaseData): void {
   const dataYear = CaseData.DateOfProcedure.substring(0, 4)
   if (dataYear > '2019') {
     // 術後診断の置換
-    const DiagnosisReplacer = {
+    const DiagnosisReplacer: Record<string, string> = {
       '子宮内膜症(チョコレート嚢胞含む)': '子宮内膜症(子宮内膜症性嚢胞含む)',
       付属器癒着: '子宮付属器癒着',
       '異所性妊娠(子宮外妊娠)': '異所性妊娠',
@@ -303,7 +306,7 @@ export function MigrateFrom2019 (CaseData) {
       }
     }
     // 実施手術の置換
-    const ProcedureReplacer = {
+    const ProcedureReplacer: Record<string, string> = {
       '子宮付属器嚢胞摘出術(チョコレート嚢胞)': '子宮付属器嚢胞摘出術(子宮内膜症性嚢胞)',
       '子宮付属器切除術(チョコレート嚢胞)': '子宮付属器切除術(子宮内膜症性嚢胞)',
       チョコレート嚢胞エタノール固定術: '卵巣嚢腫エタノール固定術(子宮内膜症性嚢胞含む)',

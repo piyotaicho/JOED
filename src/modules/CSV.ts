@@ -1,4 +1,3 @@
-// @ts-nocheck
 export function parseCSV(container: string): string[][] {
   // 改行コードを確認して切り出し
   const newline = (container.indexOf('\r\n') < 0) ? (container.indexOf('\r') < 0 ? '\n' : '\r') : '\r\n'
@@ -54,10 +53,14 @@ export function parseTitledCSV(container: string): Record<string, string>[] {
   const header = doc.slice(0, 1).flat()
 
   return doc.slice(1).map(line => {
-    const record = {}
+    const record: Record<string, string> = {}
     for (const index in line) {
-      // 余りに半角スペースだけのフィールドが目立つのでここで処理
-      record[header[index]] = line[index].trim()
+      const headerKey = header[Number(index)]
+      const value = line[Number(index)]
+      if (headerKey !== undefined && value !== undefined) {
+        // 余りに半角スペースだけのフィールドが目立つのでここで処理
+        record[String(headerKey)] = value.trim()
+      }
     }
     return record
   })
@@ -80,8 +83,11 @@ export function generateCSV(rows: string[][]): string {
   return lines.join('\r\n')
 }
 
-export function generateCSVFromObjects (objects, columns) {
-  const rows = []
+export function generateCSVFromObjects (
+  objects: Array<Record<string, unknown>>,
+  columns: Array<{ header: string; key: string }>
+): string {
+  const rows: string[][] = []
   // ヘッダー行
   rows.push(columns.map(col => col.header))
 

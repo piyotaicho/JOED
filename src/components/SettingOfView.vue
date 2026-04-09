@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { reactive, ref, computed } from 'vue'
 import { useStore } from '@/store'
 import { ArrowDown } from '@element-plus/icons-vue'
@@ -11,10 +10,13 @@ import * as Popups from '@/modules/Popups'
 
 const store = useStore()
 
+type MasterDirective = Record<string, string[]>
+type MasterTree = Record<string, MasterDirective[]>
+
 // マスターデータ取得(non-reactive)
 const master = new ApproachMaster()
 // マスターツリー取得(non-reactive) デフォルト設定用
-const masterTree = master.getTree(undefined, true)
+const masterTree = master.getTree(undefined, true) as MasterTree
 
 const data = reactive({
   showStartupDialog: false,
@@ -23,8 +25,8 @@ const data = reactive({
   showNote: true,
   revertView: false
 })
-const categorySelections = ref({})
-const categorySelectionOfOneOf = ref({})
+const categorySelections = ref<Record<string, string[]>>({})
+const categorySelectionOfOneOf = ref<Record<string, string>>({})
 
 // 初期値をstoreから取得
 data.showStartupDialog = store.getters['system/ShowStartupDialog']
@@ -33,22 +35,25 @@ data.editNCDId = store.getters['system/EditNCDId']
 data.showNote = store.getters['system/ShowNote']
 
 const initValues = () => {
-  for (const category of master.getCategories()) {
+  const categories = (master.getCategories() as string[])
+  for (const category of categories) {
     categorySelections.value[category] = []
     categorySelectionOfOneOf.value[category] = ''
   }
 
   try {
     // 規定のapproachを展開
-    const defaultApproach = JSON.parse(store.getters['system/Approach'])
+    const defaultApproach = JSON.parse(store.getters['system/Approach']) as Record<string, string[]>
     for (const category in defaultApproach) {
-      for (const item of defaultApproach[category]) {
-        const oneOfItems = (masterTree[category]
-          ?.filter(directive => Object.keys(directive)[0] === 'oneOf')[0]
+      const defaultItems = defaultApproach[category] || []
+      const directives = masterTree[category] || []
+      for (const item of defaultItems) {
+        const oneOfItems = (directives
+          ?.filter((directive: MasterDirective) => Object.keys(directive)[0] === 'oneOf')[0]
           ?.oneOf) || []
-        const otherItems = (masterTree[category]
-          ?.filter(directive => Object.keys(directive)[0] !== 'oneOf')
-          ?.map(directive => directive[Object.keys(directive)[0]])
+        const otherItems = (directives
+          ?.filter((directive: MasterDirective) => Object.keys(directive)[0] !== 'oneOf')
+          ?.map((directive: MasterDirective) => directive[Object.keys(directive)[0] || ''] || [])
           .flat(2)) || []
 
         if (oneOfItems.includes(item)) {
@@ -56,7 +61,7 @@ const initValues = () => {
           continue
         }
         if (otherItems.includes(item)) {
-          categorySelections.value[category].push(item)
+          ;(categorySelections.value[category] || (categorySelections.value[category] = [])).push(item)
           continue
         }
       }
@@ -74,15 +79,16 @@ const commitSettings = async () => {
   }
 
   // アプローチのオブジェクトを構築
-  const approach = {}
-  for (const category of master.getCategories()) {
+  const approach: Record<string, string[]> = {}
+  for (const category of (master.getCategories() as string[])) {
     if (categorySelectionOfOneOf.value[category]) {
       approach[category] = [categorySelectionOfOneOf.value[category]]
     } else {
       approach[category] = []
     }
-    if (categorySelections.value[category]?.length > 0) {
-      approach[category].push(...categorySelections.value[category])
+    const selectedItems = categorySelections.value[category] || []
+    if (selectedItems.length > 0) {
+      approach[category].push(...selectedItems)
     }
   }
 

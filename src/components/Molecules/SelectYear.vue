@@ -1,7 +1,18 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { ref, onMounted } from 'vue'
+import type { PropType } from 'vue'
 import { useStore } from '@/store'
+import * as Popups from '@/modules/Popups'
+
+type OptionalValue = {
+  value: string
+  text?: string
+}
+
+type YearSelection = {
+  year: string
+  count: number
+}
 
 const store = useStore()
 const props = defineProps({
@@ -10,24 +21,24 @@ const props = defineProps({
     default: true
   },
   optionalValues: {
-    type: Array,
+    type: Array as PropType<OptionalValue[]>,
     default: () => []
   }
 })
 
-const value = defineModel()
+const value = defineModel<string | undefined>()
 
-const selections = ref([])
+const selections = ref<YearSelection[]>([])
 
 onMounted(async () => {
   await store.dispatch('GetYears')
-    .then(CountByYear => {
+    .then((CountByYear: Record<string, number>) => {
       const years = Object.keys(CountByYear).sort().reverse()
       for (const year of years) {
         selections.value.push(
           {
             year,
-            count: CountByYear[year]
+            count: CountByYear[year] ?? 0
           }
         )
       }

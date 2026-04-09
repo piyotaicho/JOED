@@ -1,12 +1,12 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { ref, computed } from 'vue'
+import type { PropType } from 'vue'
 import CloseButton from '@/components/Atoms/CloseButton.vue'
 
 // props are NON-reactive
 const props = defineProps({
   item: {
-    type: [String, Number, Array, Object],
+    type: [String, Number, Array, Object] as PropType<unknown>,
     default: ''
   },
   draggable: {
@@ -19,45 +19,53 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['erase', 'dragged', 'dropped'])
+const emit = defineEmits<{
+  (e: 'erase'): void
+  (e: 'dragged', event: DragEvent): void
+  (e: 'dropped', event: DragEvent): void
+}>()
 
-const draggableItem = ref()
+const draggableItem = ref<HTMLElement | null>(null)
 
-const labels = computed(() => {
-  switch (typeof props.item) {
+const labels = computed<string[]>(() => {
+  const currentItem = props.item as unknown
+
+  switch (typeof currentItem) {
     case 'number':
     case 'string':
-      return [props.item.toString()]
+      return [currentItem.toString()]
 
     case 'object':
-      if (Array.isArray(props.item)) {
-        return [...props.item]
-      } else {
-        const label = Object.keys(props.item)[0]
-        return [label, props.item[label]]
+      if (Array.isArray(currentItem)) {
+        return currentItem.map((item: unknown) => String(item))
+      } else if (currentItem) {
+        const recordItem = currentItem as Record<string, unknown>
+        const label = Object.keys(recordItem)[0] || ''
+        return [label, String(recordItem[label] ?? '')]
       }
+      return ['']
 
     default:
       return ['']
   }
 })
 
-const erase = () => emit('erase')
+const erase = (): void => emit('erase')
 
-const dragged = (event) => emit('dragged', event)
+const dragged = (event: DragEvent): void => emit('dragged', event)
 
-const dropped = (event) => {
+const dropped = (event: DragEvent): void => {
   changeStyle(false)
   emit('dropped', event)
 }
 
-const changeStyle = (status) => {
+const changeStyle = (status: boolean): void => {
   if (status) {
     // true - dragoverの状態
-    draggableItem.value.classList.add('ondrag')
+    draggableItem.value?.classList.add('ondrag')
   } else {
     // false - dragoverが何らかの要因(drop, leave)で解除
-    draggableItem.value.classList.remove('ondrag')
+    draggableItem.value?.classList.remove('ondrag')
   }
 }
 </script>

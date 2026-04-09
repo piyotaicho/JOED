@@ -1,11 +1,7 @@
 <script setup lang="ts">
-// @ts-nocheck
-const props = defineProps({
-  title: {
-    type: String,
-    required: true
-  }
-})
+const props = defineProps<{
+  title: string
+}>()
 </script>
 
 <template>

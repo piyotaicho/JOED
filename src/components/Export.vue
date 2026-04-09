@@ -1,6 +1,5 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-// @ts-nocheck
 import { reactive, ref, watch, computed, nextTick } from 'vue'
 import { useStore } from '@/store'
 import { useRouter } from 'vue-router'
@@ -19,8 +18,19 @@ import { InvalidIDs } from '@/modules/Masters/InstituteList'
 const store = useStore()
 const router = useRouter()
 
+type ExportYear = '' | 'ALL' | 'VIEW' | 'SELECTED' | string
+type ExportType = 'registration' | 'dump' | 'CSV'
+
+type BaseCaseIdentifier = {
+  DocumentId: number
+  PatientId: string
+  DateOfProcedure: string
+}
+
+type CaseRecord = Record<string, any>
+
 const setting = reactive({
-  year: '',
+  year: '' as ExportYear,
   backup: false,
   validate: true,
   csv: false,
@@ -30,7 +40,7 @@ const outputText = ref('')
 
 const status = reactive({
   processing: false,
-  processStep: undefined,
+  processStep: undefined as number | undefined,
   progressCheckConsistency: 0,
   progressCreateData: 0,
 
@@ -61,7 +71,7 @@ watch(
 )
 
 const exportType = computed({
-  get: () => {
+  get: (): ExportType => {
     if (setting.csv) {
       return 'CSV'
     }
@@ -70,7 +80,7 @@ const exportType = computed({
     }
     return 'registration'
   },
-  set: async (newvalue) => {
+  set: async (newvalue: ExportType): Promise<void> => {
     if (
       (newvalue === 'dump' || newvalue === 'CSV') &&
       await Popups.confirm('不用意に患者情報を含むフィールドを出力するのは,個人情報保護の観点からお薦め出来ません.\nそれでも出力しますか?')
@@ -92,8 +102,8 @@ const exportType = computed({
 })
 
 const csvOptionalExportTargets = computed(() => {
-  const listSelection = store.getters['GetSelectedUidsForExport'] || []
-  const viewCaseCount = store.getters['NumberOfCases'] || 0
+  const listSelection = (store.getters['GetSelectedUidsForExport'] || []) as number[]
+  const viewCaseCount = Number(store.getters['NumberOfCases'] || 0)
 
   if (setting.csv || setting.backup) {
     return listSelection.length > 0 ?
@@ -111,7 +121,7 @@ const csvOptionalExportTargets = computed(() => {
 const readyToExport = computed(() => outputText.value.length > 4)
 
 // エクスポート処理
-const Process = async () => {
+const Process = async (): Promise<void> => {
   if (setting.year === '') {
     await Popups.error('年次が選択されていません.', 'エクスポートエラー')
     return
@@ -141,9 +151,9 @@ const Process = async () => {
 
     outputText.value = await FinaliseExportData(exportItems, countOfDenial)
     status.processStep++
-  } catch (error) {
+  } catch (error: unknown) {
     await nextTick()
-    const errorMessage = error.message.trim()
+    const errorMessage = error instanceof Error ? error.message.trim() : String(error).trim()
     if (errorMessage) {
       await Popups.error(errorMessage, 'エクスポートエラー')
     }
@@ -155,7 +165,7 @@ const Process = async () => {
 /**
  * ダウンロード処理
  */
-const Download = async () => {
+const Download = async (): Promise<void> => {
   // バックアップでは取扱の警告を表示
   if (!setting.backup ||
     (
@@ -164,14 +174,14 @@ const Download = async () => {
     )
   ) {
     // ブラウザの機能でダウンロードさせる.
-    const temporaryElementA = document.createElement('A')
+    const temporaryElementA = document.createElement('a')
     if (!setting.csv) {
       // JSONデータを設定
-      temporaryElementA.href = URL.createObjectURL(new Blob([outputText.value]), { type: 'application/json' })
+      temporaryElementA.href = URL.createObjectURL(new Blob([outputText.value], { type: 'application/json' }))
       temporaryElementA.download = 'joed-export-data.json'
     } else {
       // SHIFT-JISのCSVデータを設定
-      temporaryElementA.href = URL.createObjectURL(new Blob([new Uint8Array(Encoding.convert(outputText.value, { to: 'SJIS', type: 'array' }))]), { type: 'text/csv;charset=shift_jis;' })
+      temporaryElementA.href = URL.createObjectURL(new Blob([new Uint8Array(Encoding.convert(outputText.value, { to: 'SJIS', type: 'array' }) as number[])], { type: 'text/csv;charset=shift_jis;' }))
       temporaryElementA.download = 'joed-export-data.csv'
     }
     temporaryElementA.style.display = 'none'
@@ -183,7 +193,7 @@ const Download = async () => {
 
 // Step 1 - 施設名とIDが設定されているかを確認
 //
-const CheckSystemConfiguration = async () => {
+const CheckSystemConfiguration = async (): Promise<void> => {
   // CSV, バックアップデータでエラーチェックなしの場合 このチェックはスキップ
   if ((setting.backup || setting.csv) && !setting.validate) {
     return
@@ -204,8 +214,9 @@ const CheckSystemConfiguration = async () => {
     if (InvalidIDs().includes(store.getters['system/InstitutionID'])) {
       throw new Error('利用できない施設コードが設定されています.')
     }
-  } catch (error) {
-    if (await Popups.confirmYesNo(`${error.message}\n設定画面へ移動しますか?`, '施設情報設定エラー')) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error)
+    if (await Popups.confirmYesNo(`${message}\n設定画面へ移動しますか?`, '施設情報設定エラー')) {
       router.push({ name: 'settings' })
     }
     throw new Error()
@@ -215,13 +226,13 @@ const CheckSystemConfiguration = async () => {
 // Step 2 - インポートデータがすべて確認されているかを確認
 //
 // インポートデータ( Imported )で特になんの問題も無くインポートできたもの以外には Notification がある
-const CheckImportedRecords = async () => {
+const CheckImportedRecords = async (): Promise<void> => {
   // バックアップデータ, CSVでエラーチェックなしでは チェックをスキップする
   if ((setting.backup || setting.csv) && !setting.validate) {
     return
   }
 
-  const count = await store.dispatch('dbCount', {
+  const count = Number(await store.dispatch('dbCount', {
     Query:
       setting.year === 'ALL'
         ? {
@@ -233,7 +244,7 @@ const CheckImportedRecords = async () => {
             Imported: { $exists: true },
             DateOfProcedure: { $regex: new RegExp('^' + setting.year + '-') }
           }
-  })
+  }))
 
   if (count > 0) {
     throw new Error('登録内容の確認が必要な症例が ' + count + ' 症例あります.\n確認を御願いします.')
@@ -245,11 +256,11 @@ const CheckImportedRecords = async () => {
 // 基本的に入力時に検証されているので大丈夫だと思うが：
 //  必須項目の有無
 //  項目の重複(ditto含む)
-const CheckConsistency = async () => {
+const CheckConsistency = async (): Promise<number[]> => {
   status.progressCheckConsistency = 0
 
   // 対象の有無と重複のチェック
-  const queryParamaters = {
+  const queryParamaters: Record<string, any> = {
     Query: {
       DocumentId: { $gt: 0 }
     },
@@ -257,12 +268,12 @@ const CheckConsistency = async () => {
   }
   if (setting.year !== 'ALL') {
     if (setting.year === 'VIEW') {
-      const listSelection = store.getters['GetSelectedUidsForExport'] || []
+      const listSelection = (store.getters['GetSelectedUidsForExport'] || []) as number[]
       if (listSelection.length > 0) {
         queryParamaters.Query.DocumentId = { $in: listSelection }
       }
     } else if (setting.year === 'SELECTED') {
-      const listSelection = store.getters['GetSelectedUidsForExport'] || []
+      const listSelection = (store.getters['GetSelectedUidsForExport'] || []) as number[]
       if (listSelection.length > 0) {
         queryParamaters.Query.DocumentId = { $in: listSelection }
       } else {
@@ -272,13 +283,13 @@ const CheckConsistency = async () => {
       queryParamaters.Query.DateOfProcedure = { $regex: new RegExp('^' + setting.year + '-') }
     }
   }
-  const queriedDocuments = await store.dispatch('dbFind', queryParamaters) || []
+  const queriedDocuments = ((await store.dispatch('dbFind', queryParamaters)) || []) as BaseCaseIdentifier[]
 
   if (queriedDocuments.length === 0) {
     throw new Error('エクスポートの対象がありません.')
   } else {
     const dupcheck = queriedDocuments
-      .map(item => item.DateOfProcedure + ' ~ ' + item.PatientId)
+      .map((item) => item.DateOfProcedure + ' ~ ' + item.PatientId)
       .filter((item, index, self) => self.indexOf(item) !== index)
 
     if (dupcheck.length > 0) {
@@ -286,7 +297,7 @@ const CheckConsistency = async () => {
     }
   }
 
-  const documentIds = queriedDocuments.map(item => item.DocumentId)
+  const documentIds = queriedDocuments.map((item) => item.DocumentId)
 
   // バックアップデータ, CSVでエラーチェックなしでは これ以上のチェックをスキップする
   if ((setting.backup || setting.csv) && !setting.validate) {
@@ -297,7 +308,7 @@ const CheckConsistency = async () => {
   let errorCount = 0
 
   for (const index in documentIds) {
-    status.progressCheckConsistency = parseInt(index * 100.0 / documentIds.length)
+    status.progressCheckConsistency = parseInt(String((Number(index) * 100.0) / documentIds.length))
     try {
       await ValidateCase(
         await store.dispatch('dbFindOne',
@@ -305,11 +316,12 @@ const CheckConsistency = async () => {
             Query: { DocumentId: documentIds[index] }
           })
       )
-    } catch (error) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error)
       store.dispatch('dbUpdate',
         {
           Query: { DocumentId: documentIds[index] },
-          Update: { $set: { Notification: error.message } }
+          Update: { $set: { Notification: message } }
         })
       store.commit('RemoveDatastore', {
         DocumentId: documentIds[index]
@@ -331,19 +343,19 @@ const CheckConsistency = async () => {
 
 // Step 4 - データの整形
 //
-const CreateExportData = async (documentIds) => {
+const CreateExportData = async (documentIds: number[]): Promise<{ exportItems: CaseRecord[]; countOfDenial: number }> => {
   status.progressCreateData = 0
-  const exportItems = []
+  const exportItems: CaseRecord[] = []
   let countOfDenial = 0
 
   for (const index in documentIds) {
-    status.progressCreateData = parseInt(index * 100.0 / documentIds.length)
+    status.progressCreateData = parseInt(String((Number(index) * 100.0) / documentIds.length))
     const exportdocument = await store.dispatch('dbFindOne',
       {
         Query: { DocumentId: documentIds[index] },
         Projection: { _id: 0, DocumentId: 0 }
       }
-    )
+    ) as CaseRecord
 
     if (setting.backup || setting.csv) {
       // 生データの出力
@@ -362,7 +374,7 @@ const CreateExportData = async (documentIds) => {
       // ユニークキー(PatientId, DateOfProcedure)からレコードのハッシュを作成する.
       // 2022より明確に64bitのシードを与えるように変更:
       // 今後のライブラリ変更に備えてdataを入力前にUint8Arrayに変更
-      const hashString = store.getters['system/generateHash'](
+      const hashString = (store.getters['system/generateHash'] as (seed: string, legacy: boolean) => string)(
         JSON.stringify({
           PatientId: exportdocument.PatientId,
           DateOfProcedure: exportdocument.DateOfProcedure
@@ -384,7 +396,7 @@ const CreateExportData = async (documentIds) => {
 
 // Step 5 - データファイルデータの作成～ヘッダの付与とテキスト化
 //
-const FinaliseExportData = async (exportItem, countOfDenial) => {
+const FinaliseExportData = async (exportItem: CaseRecord[], countOfDenial: number): Promise<string> => {
   // バックアップ、CSVデータではヘッダは不要
   if (!(setting.backup || setting.csv)) {
     const length = exportItem.length
@@ -393,7 +405,7 @@ const FinaliseExportData = async (exportItem, countOfDenial) => {
       const TimeStamp = Date.now()
       const Encoder = new TextEncoder()
 
-      const outputText = JSON.stringify(exportItem, ' ', 2)
+      const outputText = JSON.stringify(exportItem, null, 2)
       // ヘッダが保持するドキュメント部分のハッシュ値
       const hash = HHX.h64(
         Encoder.encode(outputText).buffer,
@@ -414,7 +426,7 @@ const FinaliseExportData = async (exportItem, countOfDenial) => {
 
   // CSV以外はJSONテキストに変換して返す
   if (!setting.csv) {
-    return JSON.stringify(exportItem, ' ', 2)
+    return JSON.stringify(exportItem, null, 2)
   }
 
   // CSVデータに変換する項目を指定
@@ -431,7 +443,7 @@ const FinaliseExportData = async (exportItem, countOfDenial) => {
   ]
 
   // CSV用出力に抽出と成形
-  const csvObjects = exportItem.map(item => {
+  const csvObjects = exportItem.map((item: CaseRecord) => {
     return {
       PatientId: item.PatientId,
       Name: item?.Name,

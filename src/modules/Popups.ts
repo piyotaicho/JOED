@@ -1,4 +1,3 @@
-// @ts-nocheck
 // elementダイアログ
 import { ElMessageBox as MessageBox } from 'element-plus'
 
@@ -21,7 +20,7 @@ function escapeMessage(message: string): EscapedMessage {
   }
   if (matchRegexp.test(message)) {
     return {
-      text: message.replace(matchRegexp, (matchedChar) => escapePatterns[matchedChar]),
+      text: message.replace(matchRegexp, (matchedChar) => escapePatterns[matchedChar] || matchedChar),
       dangerouslyUseHTMLString: true
     }
   } else {
@@ -39,7 +38,7 @@ export function alert(message: string, title?: string): Promise<void> {
     iconClass: 'el-icon-message-solid',
     showClose: false,
     dangerouslyUseHTMLString
-  })
+  } as any).then(() => undefined)
 }
 
 export function error(message: string, title?: string): Promise<void> {
@@ -49,7 +48,7 @@ export function error(message: string, title?: string): Promise<void> {
     iconClass: 'el-icon-error',
     showClose: false,
     dangerouslyUseHTMLString
-  })
+  } as any).then(() => undefined)
 }
 
 export function information(message: string, title: string = '通知'): Promise<void> {
@@ -61,7 +60,7 @@ export function information(message: string, title: string = '通知'): Promise<
     showClose: false,
     lockScroll: false,
     dangerouslyUseHTMLString
-  })
+  } as any).then(() => undefined)
 }
 
 export async function confirm(message: string, title: string = '確認'): Promise<boolean> {
@@ -72,7 +71,7 @@ export async function confirm(message: string, title: string = '確認'): Promis
     showClose: false,
     closeOnPressEscape: true,
     dangerouslyUseHTMLString
-  }).then(() => true, () => false)
+  } as any).then(() => true, () => false)
 }
 
 export async function confirmYesNo(message: string, title: string = '確認'): Promise<boolean> {
@@ -85,7 +84,7 @@ export async function confirmYesNo(message: string, title: string = '確認'): P
     cancelButtonText: 'いいえ',
     confirmButtonText: 'はい',
     dangerouslyUseHTMLString
-  }).then(() => true, () => false)
+  } as any).then(() => true, () => false)
 }
 
 export async function confirmAnyOk(message: string, anyText: string = 'cancel'): Promise<boolean> {
@@ -97,12 +96,19 @@ export async function confirmAnyOk(message: string, anyText: string = 'cancel'):
     cancelButtonText: anyText,
     confirmButtonText: 'OK',
     dangerouslyUseHTMLString
-  }).then(() => true, () => false)
+  } as any).then(() => true, () => false)
 }
 
 export async function prompt(message: string, rule?: string): Promise<string | null> {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
-  const options = {
+  const options: {
+    title: string
+    confirmButtonText: string
+    cancelButtonText: string
+    dangerouslyUseHTMLString: boolean
+    inputPattern?: RegExp
+    inputErrorMessage?: string
+  } = {
     title: '入力',
     confirmButtonText: 'OK',
     cancelButtonText: 'キャンセル',

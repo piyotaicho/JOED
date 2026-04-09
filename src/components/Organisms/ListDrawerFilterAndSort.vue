@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { onMounted, ref, reactive, computed, nextTick } from 'vue'
 import { useStore } from '@/store'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
@@ -7,30 +6,40 @@ import InputSwitchField from '../Molecules/InputSwitchField.vue'
 import { CategoriesOfProcedure } from '@/modules/CaseValidater'
 import * as Popups from '@/modules/Popups'
 
+type FilterObject = { Field: string; Value: unknown }
+type FilterOptions = Record<string, FilterObject>
+type SortState = { Field: string; Order: 1 | -1 }
+type ViewSettings = {
+  Sort?: Record<string, number>
+  Filters?: Array<{ Field: string; Value: unknown }>
+}
+
 const store = useStore()
 
-const emit = defineEmits(['changed'])
+const emit = defineEmits<{
+  (e: 'changed'): void
+}>()
 
 const setting = reactive({
   // カテゴリ: CaterogyTranslation から作成される
-  Categories: {},
+  Categories: {} as FilterOptions,
   // 年次: created()で非同期にロードされる
-  Years: {},
+  Years: {} as FilterOptions,
   Conditions: {
     合併症あり: { Field: 'PresentAE', Value: true },
     読み込み症例: { Field: 'Imported', Value: true },
     情報あり: { Field: 'Notification', Value: { $exists: true } },
     登録拒否: { Field: 'Denial', Value: true }
-  },
+  } as FilterOptions,
   Sort: {
     Field: 'DocumentId',
     // ソート Ascending: 1, Descending: -1
-    Order: -1
-  }
+    Order: -1 as 1 | -1
+  } as SortState
 })
 
 // 選択の内容配列
-const FilterItems = ref([])
+const FilterItems = ref<string[]>([])
 
 /**
  * 表示設定の選択肢設定と
@@ -44,8 +53,9 @@ onMounted(async () => {
 
   // 年次を設定
   await store.dispatch('GetYears')
-    .then((CountByYear) => {
-      Object.keys(CountByYear).forEach(year => {
+    .then((CountByYear: Record<string, number>) => {
+      const countByYear = CountByYear as Record<string, number>
+      Object.keys(countByYear).forEach(year => {
         setting.Years[year + '年'] = { Field: 'DateOfProcedure', Value: year }
       })
     })
@@ -89,14 +99,14 @@ const Apply = async () => {
  * storeの表示設定を反映
  */
 const ReflectSettings = () => {
-  const view = store.getters.ViewSettings
+  const view = store.getters.ViewSettings as ViewSettings | undefined
 
   if (view) {
     // ソート設定の取得
     const [field, order] = Object.entries(view.Sort || {}).flat()
     if (field !== undefined && order !== undefined ) {
-      setting.Sort.Field = field
-      setting.Sort.Order = order
+      setting.Sort.Field = String(field)
+      setting.Sort.Order = (Number(order) >= 0 ? 1 : -1)
     }
 
     // フィルタの設定値を取得して配列に反映
@@ -105,18 +115,19 @@ const ReflectSettings = () => {
       const newFilters = view.Filters.map(filter => {
         switch (filter.Field) {
           case 'TypeOfProcedure': // カテゴリ
-            return filter.Value
+            return String(filter.Value)
           case 'DateOfProcedure': // 年次
-            return filter.Value + '年'
+            return String(filter.Value) + '年'
           default:  // その他：合併症あり・読み込み症例・情報あり・登録拒否
             for (const condition in setting.Conditions) {
-              if (setting.Conditions[condition].Field === filter.Field) {
+              const conditionValue = setting.Conditions[condition]
+              if (conditionValue && conditionValue.Field === filter.Field) {
                 return condition
               }
             }
             return undefined
         }
-      }).filter(item => item)
+      }).filter((item): item is string => typeof item === 'string')
       FilterItems.value.push(...newFilters)
     }
   }
@@ -142,7 +153,7 @@ const RevertToDefault = async () => {
   await DisableSearch()
   emit('changed')
   ReflectSettings()
-  nextTick()
+  await nextTick()
 }
 
 /**

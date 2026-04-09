@@ -1,11 +1,13 @@
-// @ts-nocheck
 import { parseProcedureTime, encodeProcedureTime } from '@/modules/ProcedureTimes'
 import { CheckCategoryMatch } from './CaseValidater'
+
+type JsonRecord = Record<string, any>
+type CreatedCaseData = Record<string, any>
 
 let year = ''
 let internalcounter = 1
 
-export function ValidateRecords (records) {
+export function ValidateRecords (records: JsonRecord[]): { length: number; hasHeader: boolean; anonymised: boolean } {
   if (!Array.isArray(records)) {
     throw new Error('内部呼び出しのエラーです.')
   }
@@ -61,8 +63,8 @@ export function ValidateRecords (records) {
   }
 }
 
-export async function CreateDocument (record) {
-  const CaseData = {
+export async function CreateDocument (record: JsonRecord): Promise<CreatedCaseData> {
+  const CaseData: CreatedCaseData = {
   }
 
   // DateOfProcedue と ID はレコード構成の最低限必須項目
@@ -81,14 +83,14 @@ export async function CreateDocument (record) {
   return CaseData
 }
 
-function DateOfProcedure (CaseData, record) {
+function DateOfProcedure (CaseData: CreatedCaseData, record: JsonRecord): void {
   if (record?.DateOfProcedure) {
     try {
       CaseData.DateOfProcedure = '20' +
         record.DateOfProcedure
           .match(/^20([0-9]{2})[/-](0{0,1}[1-9]|1[0-2])[/-](0{0,1}[1-9]|[12][0-9]|3[01])$/)
           .splice(1, 3)
-          .map(item => ('0' + item).slice(-2))
+          .map((item: string) => ('0' + item).slice(-2))
           .join('-')
     } catch {
       throw new Error('日付の書式が不正です.')
@@ -103,7 +105,7 @@ function DateOfProcedure (CaseData, record) {
   }
 }
 
-function BasicInformation (CaseData, record) {
+function BasicInformation (CaseData: CreatedCaseData, record: JsonRecord): void {
   // 非必須基本情報フィールドの設定
   for (const key of ['Name', 'Age', 'JSOGId', 'NCDId', 'Denial']) {
     if (record[key] !== undefined) {
@@ -124,7 +126,7 @@ function BasicInformation (CaseData, record) {
   }
 }
 
-function ProcedureTime (CaseData, record) {
+function ProcedureTime (CaseData: CreatedCaseData, record: JsonRecord): void {
   try {
     if (record?.ProcedureTime) {
       CaseData.ProcedureTime = encodeProcedureTime(parseProcedureTime(record.ProcedureTime))
@@ -139,7 +141,7 @@ function ProcedureTime (CaseData, record) {
   }
 }
 
-async function DiagnosesAndProcedures (CaseData, record) {
+async function DiagnosesAndProcedures (CaseData: CreatedCaseData, record: JsonRecord): Promise<void> {
   try {
     CaseData.Diagnoses = []
     if (record?.Diagnoses) {
@@ -159,7 +161,7 @@ async function DiagnosesAndProcedures (CaseData, record) {
     if (record?.TypeOfProcedure) {
       CaseData.TypeOfProcedure = record.TypeOfProcedure
     } else {
-      CaseData.TypeOfProcedure = await CheckCategoryMatch(CaseData, Number(CaseData.DateOfProcedure.substring(0, 4)))
+      CaseData.TypeOfProcedure = await CheckCategoryMatch(CaseData, CaseData.DateOfProcedure.substring(0, 4))
     }
   } catch {
     CaseData.Imported = true
@@ -168,7 +170,7 @@ async function DiagnosesAndProcedures (CaseData, record) {
   }
 }
 
-function AEs (CaseData, record) {
+function AEs (CaseData: CreatedCaseData, record: JsonRecord): void {
   if (record?.PresentAE !== undefined) {
     if (typeof record.PresentAE === 'boolean') {
       CaseData.PresentAE = record.PresentAE

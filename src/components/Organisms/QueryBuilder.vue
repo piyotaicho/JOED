@@ -35,18 +35,28 @@
 </template>
 
 <script setup lang="ts">
-// @ts-nocheck
 import { ref, computed } from 'vue'
+import type { PropType } from 'vue'
 import QueryPane from '@/components/Molecules/QueryPane.vue'
 import InputSwitchField from '../Molecules/InputSwitchField.vue'
 import { prompt } from '@/modules/Popups'
 import { fieldNames, generatorFunctions } from '@/modules/ImportCSV'
 import { ArrowLeft, ArrowRight, Document } from '@element-plus/icons-vue'
 
+type PaneMode = 'csv' | 'functions'
+type RuleValue = {
+  column?: number
+  constants?: string | number | boolean
+  compute?: string
+  title?: string
+  rule?: string
+}
+type RuleSet = Record<string, RuleValue>
+
 const props = defineProps({
   csv: {
-    type: Array,
-    require: true
+    type: Array as PropType<string[][]>,
+    required: true
   },
   csvHeader: {
     type: Boolean,
@@ -57,46 +67,60 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['set', 'delete'])
+const emit = defineEmits<{
+  (e: 'set', field: string, value: RuleValue): void
+  (e: 'delete', field: string): void
+}>()
 
 /**
  * Excel型(A...Z,AA...AZ,BA...)のカラムラベル生成
  * @param {Number} value
  */
-function encodeToColumnLabel (value) {
+function encodeToColumnLabel (value: number): string {
   const rowlabel = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
   if (value >= rowlabel.length) {
     const prefix = encodeToColumnLabel(((value / rowlabel.length) | 0) - 1)
     return prefix + rowlabel[value % rowlabel.length]
   } else {
-    return rowlabel[value]
+    return rowlabel[value] || ''
   }
 }
 
 const generatorFunctionsKeys = Object.keys(generatorFunctions)
+const generatorFunctionsMap = generatorFunctions as Record<string, RuleValue>
 
-const paneMode = ref('csv')
+const paneMode = ref<PaneMode>('csv')
 const previewIndex = ref(-1)
 
-const ruleset = computed(() => JSON.parse(props.ruleset))
+const ruleset = computed<RuleSet>(() => {
+  try {
+    return JSON.parse(props.ruleset || '{}') as RuleSet
+  } catch {
+    return {}
+  }
+})
 
-const csvPaneContent = computed(() => {
+const csvPaneContent = computed<string[]>(() => {
   if (previewIndex.value === -1) {
     return csvColumnLabel.value
   } else {
-    return props?.csv ? props.csv[previewIndex.value] : []
+    return props?.csv ? (props.csv[previewIndex.value] || []) : []
   }
 })
 
-const csvColumnLabel = computed(() => {
+const csvColumnLabel = computed<string[]>(() => {
+  if (!props.csv || props.csv.length === 0) {
+    return []
+  }
+
   if (props.csvHeader) {
-    return props.csv[0]
+    return props.csv[0] || []
   } else {
-    return props.csv[0].map((element, index) => '列' + encodeToColumnLabel(index))
+    return (props.csv[0] || []).map((_, index) => '列' + encodeToColumnLabel(index))
   }
 })
 
-const fieldPaneContent = computed(() => fieldNames.map(
+const fieldPaneContent = computed<Array<[string, string]>>(() => fieldNames.map(
   fieldName => {
     const assignedvalue = ruleset.value[fieldName]
     if (!assignedvalue) {
@@ -105,13 +129,13 @@ const fieldPaneContent = computed(() => fieldNames.map(
       let labelText = ''
       switch (true) {
         case assignedvalue?.column !== undefined:
-          labelText = csvColumnLabel.value[assignedvalue.column]
+          labelText = csvColumnLabel.value[assignedvalue.column] || ''
           break
         case assignedvalue?.constants !== undefined:
           labelText = '"' + (assignedvalue.title ? assignedvalue.title : assignedvalue.constants) + '"'
           break
         case assignedvalue?.compute !== undefined:
-          labelText = assignedvalue.title
+          labelText = assignedvalue.title || ''
           break
       }
       return [fieldName, '\u25C0 ' + labelText]
@@ -119,7 +143,7 @@ const fieldPaneContent = computed(() => fieldNames.map(
   })
 )
 
-const moveCursor = (vector) => {
+const moveCursor = (vector: 'prev' | 'next' | 'home') => {
   if (vector === 'home') {
     previewIndex.value = -1
   } else {
@@ -129,15 +153,22 @@ const moveCursor = (vector) => {
   }
 }
 
-const removeAssignment = (index) => {
-  if (ruleset.value[fieldNames[index]]) {
-    emit('delete', fieldNames[index])
+const removeAssignment = (index: number) => {
+  const fieldName = fieldNames[index]
+  if (fieldName && ruleset.value[fieldName]) {
+    emit('delete', fieldName)
   }
 }
 
-const itemDropped = async (index, dragevent) => {
+const itemDropped = async (index: number, dragevent: DragEvent) => {
+  const fieldName = fieldNames[index]
+  if (!fieldName) {
+    return
+  }
+
   try {
-    const data = JSON.parse(dragevent.dataTransfer.getData('text/plain'))
+    const droppedRaw = dragevent.dataTransfer?.getData('text/plain') || '{}'
+    const data = JSON.parse(droppedRaw) as RuleValue
     // ドロップされるオブジェクトは column:, constants:, compute: のいずれか
     if (
       data.column !== undefined ||
@@ -146,18 +177,18 @@ const itemDropped = async (index, dragevent) => {
     ) {
       // ユーザ入力の定数の場合は prompt で入力を促す
       if (data.constants === '$') {
-        let inputvalue = null
+        let inputvalue: string | null = null
         if (data.rule !== undefined) {
-          inputvalue = await prompt(data.title, data.rule)
+          inputvalue = await prompt(data.title || '', data.rule)
         } else {
-          inputvalue = await prompt(data.title)
+          inputvalue = await prompt(data.title || '')
         }
 
         if (inputvalue !== null) {
-          emit('set', fieldNames[index], { constants: inputvalue })
+          emit('set', fieldName, { constants: inputvalue })
         }
       } else {
-        emit('set', fieldNames[index], data)
+        emit('set', fieldName, data)
       }
     }
   } catch {
@@ -165,17 +196,19 @@ const itemDropped = async (index, dragevent) => {
   }
 }
 
-const itemDragged = (index, dragevent) => dragDataTransfer(
-  paneMode.value === 'csv'
+const itemDragged = (index: number, dragevent: DragEvent) => dragDataTransfer(
+  (paneMode.value === 'csv'
     ? { column: index }
-    : generatorFunctions[generatorFunctionsKeys[index]],
+    : (generatorFunctionsMap[generatorFunctionsKeys[index] || ''])) || {},
   dragevent
 )
 
-const dragDataTransfer = (data, dragevent) => dragevent.dataTransfer.setData(
-  'text/plain',
-  JSON.stringify(data)
-)
+const dragDataTransfer = (data: RuleValue, dragevent: DragEvent) => {
+  dragevent.dataTransfer?.setData(
+    'text/plain',
+    JSON.stringify(data)
+  )
+}
 </script>
 
 <style lang="sass">

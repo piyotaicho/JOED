@@ -1,17 +1,20 @@
 <script setup lang="ts">
-// @ts-nocheck
 import SectionBlock from '@/components/Molecules/SectionBlock.vue'
 import SectionAEItem from '@/components/Molecules/SectionAEItem.vue'
 
-const emit = defineEmits(['additem', 'edititem', 'removeitem'])
-const items = defineModel({
-  type: Array,
-  required: true
+const emit = defineEmits<{
+  (e: 'additem'): void
+  (e: 'edititem', payload: { index: number; value: string }): void
+  (e: 'removeitem', index: number): void
+}>()
+const items = defineModel<string[]>({
+  required: true,
+  default: () => [],
 })
 
-const addItem = () => emit('additem')
-const editItem = (index, value) => emit('edititem', {index, value})
-const removeItem = (index) => emit('removeitem', index)
+const addItem = (): void => emit('additem')
+const editItem = (index: number, value: string): void => emit('edititem', { index, value })
+const removeItem = (index: number): void => emit('removeitem', index)
 </script>
 
 <template>
@@ -23,7 +26,7 @@ const removeItem = (index) => emit('removeitem', index)
       <slot></slot>
     </template>
     <template #default="itemprops">
-      <SectionAEItem :item="itemprops.item" @edit="editItem(itemprops.index, itemprops.item)" @remove="removeItem(itemprops.index)" />
+      <SectionAEItem :item="String(itemprops.item ?? '')" @edit="editItem(itemprops.index, String(itemprops.item ?? ''))" @remove="removeItem(itemprops.index)" />
     </template>
   </SectionBlock>
 </template>

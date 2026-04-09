@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { watch, ref, toRef } from 'vue'
 import ReportViewer from '@/components/Atoms/Reports.vue'
 import { parseTitledCSV } from '@/modules/CSV'
@@ -17,13 +16,15 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['done'])
+const emit = defineEmits<{
+  (e: 'done', documents: Record<string, unknown>[]): void
+}>()
 
 const stream = toRef(props, 'stream')
 watch(stream, async () => ResetState())
 
 const Processing = ref(true)
-const LogMessages = ref([])
+const LogMessages = ref<string[]>([])
 
 const ResetState = () => {
   Processing.value = false
@@ -31,7 +32,7 @@ const ResetState = () => {
 }
 
 const ProcessStream = async () => {
-  const ImportedDocuments = []
+  const ImportedDocuments: Record<string, unknown>[] = []
   try {
     Processing.value = true
     // mergeファイル(quoted, titled CSV)の読み込み
@@ -42,10 +43,10 @@ const ProcessStream = async () => {
     LogMessages.value.push(
       'ファイルには' + ValidateRecords(records) + '件のレコードが含まれています.'
     )
-    if (!records[0].ID) {
+    if (!records[0]?.ID) {
       LogMessages.value.push('指定されたファイルは提出用データです.患者IDは自動生成されます.')
     }
-    if (!records[0]['手術日']) {
+    if (!records[0]?.['手術日']) {
       LogMessages.value.push('指定されたファイルは手術日の設定のない提出用データです.仮の手術日を手術年から自動生成します.')
     }
 
@@ -55,7 +56,7 @@ const ProcessStream = async () => {
         ImportedDocuments.push(CreateDocument(record))
       } catch {
         if (!(await Popups.confirm('指定されたファイル中に不適切なレコードがあります.\n残りの処理を続行しますか?'))) {
-          throw new Error('不適切なレコード\n', record.map(field => '"' + field + '"').join(','))
+          throw new Error('不適切なレコード\n' + Object.values(record as Record<string, unknown>).map((field) => '"' + String(field) + '"').join(','))
         }
       }
     }
@@ -63,8 +64,8 @@ const ProcessStream = async () => {
 
     // 作成したドキュメントを親コンポーネントに送る
     emit('done', ImportedDocuments)
-  } catch (error) {
-    Popups.alert(error.message)
+  } catch (error: unknown) {
+    await Popups.alert(error instanceof Error ? error.message : String(error))
   }
 }
 </script>

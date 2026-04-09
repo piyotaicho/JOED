@@ -1,30 +1,45 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { reactive, computed } from 'vue'
+import type { PropType } from 'vue'
+
+type SwitchPrimitive = string | number | boolean
+type SwitchOptionObject = {
+  value?: SwitchPrimitive
+  text?: string
+  color?: string
+}
+type SwitchOption = SwitchPrimitive | SwitchOptionObject
+type SwitchParam = {
+  text: string
+  value: SwitchPrimitive
+  color: string
+}
 
 const props = defineProps({
   title: {
+    type: String,
     default: 'スイッチ'
   },
   options: {
-    type: [Array]
+    type: Array as PropType<SwitchOption[] | undefined>,
+    default: undefined,
   },
   required: {
+    type: Boolean,
     default: false
   },
   classOverride: {
-    type: Array,
+    type: Array as PropType<string[]>,
     default: () => ['label', 'field']
   }
 })
 
-const modelValue = defineModel({
-  type: [String, Number, Boolean],
+const modelValue = defineModel<SwitchPrimitive>({
   required: true,
   default: false
 })
 
-const switchParams = reactive({
+const switchParams = reactive<{ inactive: SwitchParam; active: SwitchParam }>({
   inactive: {
     text: 'FALSE',
     value: false,
@@ -46,26 +61,28 @@ if (props.options !== undefined && props.options !== null) {
     throw new Error('InputSwitchField: optionsプロパティは最低2要素必要です')
   }
 
-  const parseOption = (option) => {
-    if (Object.prototype.toString.call(option) === '[object Object]') {
+  const parseOption = (option: SwitchOption): Partial<SwitchParam> => {
+    if (typeof option === 'object' && option !== null && !Array.isArray(option)) {
+      const objectOption = option as SwitchOptionObject
       return {
-        ...option?.value !== undefined ? {value: option.value} : {},
-        ...option?.text !== undefined ? {text: option.text} :
-          option?.value !== undefined
-            ? {text: typeof option.value === 'boolean' ? (option.value ? 'TRUE' : 'FALSE') : String(option.value)}
+        ...objectOption.value !== undefined ? { value: objectOption.value } : {},
+        ...objectOption.text !== undefined ? { text: objectOption.text } :
+          objectOption.value !== undefined
+            ? { text: typeof objectOption.value === 'boolean' ? (objectOption.value ? 'TRUE' : 'FALSE') : String(objectOption.value) }
             : {},
-        ...option?.color !== undefined ? {color: option.color} : {}
+        ...objectOption.color !== undefined ? { color: objectOption.color } : {}
       }
     } else {
+      const primitiveOption = option as SwitchPrimitive
       return {
-        text: typeof option === 'boolean' ? (option ? 'TRUE' : 'FALSE') : String(option),
-        value: option
+        text: typeof primitiveOption === 'boolean' ? (primitiveOption ? 'TRUE' : 'FALSE') : String(primitiveOption),
+        value: primitiveOption
       }
     }
   }
 
-  const inactiveOption = parseOption(props.options[0])
-  const activeOption = parseOption(props.options[1])
+  const inactiveOption = parseOption(props.options[0] ?? false)
+  const activeOption = parseOption(props.options[1] ?? true)
 
   switchParams.inactive = {
     ...switchParams.inactive,

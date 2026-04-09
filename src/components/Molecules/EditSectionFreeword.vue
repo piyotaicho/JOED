@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { ref, onMounted, nextTick } from 'vue'
 import { DArrowLeft, DArrowRight, Search } from '@element-plus/icons-vue'
 
@@ -9,14 +8,13 @@ const props = defineProps({
     default: true
   }
 })
-const modelValue = defineModel({
-  type: String
-})
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const emit = defineEmits(['search'])
+const modelValue = defineModel<string>({ type: String, default: '' })
+const emit = defineEmits<{
+  (e: 'search'): void
+}>()
 
 // element refs
-const inputElement = ref()
+const inputElement = ref<HTMLInputElement | null>(null)
 
 // reactive states
 const expandInput = ref(false)
@@ -30,14 +28,14 @@ onMounted(() => {
 const Toggle = () => {
   expandInput.value = !expandInput.value
   if (expandInput.value) {
-    nextTick(() => inputElement.value.focus())
+    nextTick(() => inputElement.value?.focus())
   }
 }
 
 const Open = async () => {
   expandInput.value = true
   await nextTick()
-  inputElement.value.focus()
+  inputElement.value?.focus()
 }
 
 defineExpose({ Open })
@@ -63,7 +61,7 @@ defineExpose({ Open })
         />
     </div>
     <div class="w20" v-show="expandInput">
-      <el-button type="primary" @click="$emit('search')" :icon="Search" :disabled="props.disabled">候補を検索</el-button>
+      <el-button type="primary" @click="emit('search')" :icon="Search" :disabled="props.disabled">候補を検索</el-button>
     </div>
   </div>
 </template>

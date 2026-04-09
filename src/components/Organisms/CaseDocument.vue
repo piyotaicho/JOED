@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { Loading, EditPen } from '@element-plus/icons-vue'
 import { onMounted, ref, computed } from 'vue'
 import { useStore } from '@/store'
@@ -10,14 +9,24 @@ import CaseDocumentHandler from '@/modules/DbItemHandler'
 const store = useStore()
 const router = useRouter()
 
-const props = defineProps({
-  uid: {
-    required: true,
-  },
-  selected: {
-    type: Boolean,
-    default: false,
-  },
+interface CaseDocumentRecord {
+  TypeOfProcedure?: string
+  PatientId?: string
+  Name?: string
+  DateOfProcedure?: string
+  Age?: number
+  Denial?: boolean
+  Diagnoses?: unknown[]
+  Procedures?: unknown[]
+  PresentAE?: boolean
+  Notification?: string
+}
+
+const props = withDefaults(defineProps<{
+  uid: string | number
+  selected?: boolean
+}>(), {
+  selected: false
 })
 
 const emit = defineEmits(['select', 'multiselect', 'remove', 'blur'])
@@ -35,11 +44,11 @@ onMounted(() => {
       .then(() => {
         fetching.value = false
       })
-      .catch((e) => e)
+      .catch(() => undefined)
   }
 })
 
-const currentDocument = computed(() => (fetching.value ? {} : store.getters.CaseDocument(uid.value)))
+const currentDocument = computed<CaseDocumentRecord>(() => (fetching.value ? {} : store.getters.CaseDocument(uid.value)))
 
 // ドキュメントの各種フィールド
 const Category = computed(() => (fetching.value ? '' : currentDocument.value?.TypeOfProcedure || ''))
@@ -51,11 +60,21 @@ const Age = computed(() =>
 )
 const Denial = computed(() => (!fetching.value && currentDocument.value?.Denial === true))
 
+const firstDiagnosis = computed<Record<string, unknown> | undefined>(() => {
+  const item = (currentDocument.value?.Diagnoses || [])[0]
+  return typeof item === 'object' && item !== null ? (item as Record<string, unknown>) : undefined
+})
+
+const firstProcedure = computed<Record<string, unknown> | undefined>(() => {
+  const item = (currentDocument.value?.Procedures || [])[0]
+  return typeof item === 'object' && item !== null ? (item as Record<string, unknown>) : undefined
+})
+
 const Diagnosis = computed(() =>
-  fetching.value ? '' : CaseDocumentHandler.ItemValue((currentDocument.value?.Diagnoses || [''])[0]),
+  fetching.value ? '' : CaseDocumentHandler.ItemValue(firstDiagnosis.value),
 )
 const Procedure = computed(() =>
-  fetching.value ? '' : CaseDocumentHandler.ItemValue((currentDocument.value?.Procedures || [''])[0]),
+  fetching.value ? '' : CaseDocumentHandler.ItemValue(firstProcedure.value),
 )
 const PresentAE = computed(() => !fetching.value && (currentDocument.value?.PresentAE === true))
 
@@ -67,7 +86,7 @@ const MoveToEditView = () => {
   }
 }
 
-const RemoveDocumentKeypress = (event) => {
+const RemoveDocumentKeypress = (event: KeyboardEvent) => {
   if (!event.repeat) {
     if (
       store.getters['system/Platform'] === 'darwin'
@@ -81,7 +100,7 @@ const RemoveDocumentKeypress = (event) => {
 }
 
 // マウスでの選択 - ctrlキー押下時はMultiSelect
-const Select = (event) => {
+const Select = (event: MouseEvent) => {
   if ( store.getters['system/Platform'] === 'darwin'
     ? event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey // macOS - command
     : event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey // Windows - Ctrl

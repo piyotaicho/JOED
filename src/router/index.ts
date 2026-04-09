@@ -1,10 +1,9 @@
-// @ts-nocheck
 import { createRouter, createWebHashHistory } from 'vue-router'
 import Store from '@/store/index'
 
 import ViewLogin from '@/views/VLogin.vue'
 
-const routes = [
+const routes: any[] = [
   {
     name: 'login',
     path: '/',
@@ -27,8 +26,8 @@ const routes = [
         name: 'diagnosis',
         path: 'diagnosis',
         component: () => import('@/views/VEditDiagnosis.vue'),
-        props: route => ({
-          index: parseInt(route.query.index),
+        props: (route: any) => ({
+          index: parseInt(String(route.query.index ?? '0')),
           value: route.query.value,
           year: route.query.year
         })
@@ -37,8 +36,8 @@ const routes = [
         name: 'procedure',
         path: 'procedure',
         component: () => import('@/views/VEditProcedure.vue'),
-        props: route => ({
-          index: parseInt(route.query.index),
+        props: (route: any) => ({
+          index: parseInt(String(route.query.index ?? '0')),
           value: route.query.value,
           year: route.query.year
         })
@@ -47,7 +46,7 @@ const routes = [
         name: 'approach',
         path: 'approach',
         component: () => import('@/views/VEditApproach.vue'),
-        props: route => ({
+        props: (route: any) => ({
           value: route.query.value,
           year: route.query.year,
           procedureTypes: route.query?.procedureTypes || '[]'
@@ -57,8 +56,8 @@ const routes = [
         name: 'AE',
         path: 'AE',
         component: () => import('@/views/VEditAE.vue'),
-        props: route => ({
-          index: parseInt(route.query.index),
+        props: (route: any) => ({
+          index: parseInt(String(route.query.index ?? '0')),
           value: route.query.value,
           year: route.query.year
         })
@@ -96,7 +95,7 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to: any, from: any, next: any) => {
   if (to.path === '/' || Store.getters['password/isAuthenticated']) {
     if (window?.API) {
       window.API.SwitchMenu(to.name)

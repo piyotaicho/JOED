@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { watch, ref, toRef } from 'vue'
 import ReportViewer from '@/components/Atoms/Reports.vue'
 import { ValidateRecords, CreateDocument } from '@/modules/ImportJSON'
@@ -16,16 +15,18 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['done'])
+const emit = defineEmits<{
+  (e: 'done', documents: Record<string, unknown>[]): void
+}>()
 
 const stream = toRef(props, 'stream')
 watch(stream, async () => ResetState())
 
 // 一時ドキュメントはnon reactive
-const records = []
+const records: Record<string, unknown>[] = []
 
 const Processing = ref(false)
-const LogMessages = ref([])
+const LogMessages = ref<string[]>([])
 
 const ResetState = () => {
   Processing.value = false
@@ -44,11 +45,11 @@ const ResetState = () => {
     } else {
       throw new Error()
     }
-  } catch (e) {
-    if (e.name === 'SyntaxError') {
-      Popups.alert('指定されたファイルは正しいJSON形式ではありません.')
+  } catch (e: unknown) {
+    if (e instanceof SyntaxError) {
+      void Popups.alert('指定されたファイルは正しいJSON形式ではありません.')
     } else {
-      Popups.alert('指定されたファイルの構造が違います.')
+      void Popups.alert('指定されたファイルの構造が違います.')
     }
   }
 }
@@ -57,7 +58,7 @@ const ProcessStream = async () => {
   LogMessages.value.splice(0)
   Processing.value = true
 
-  const ImportedDocuments = []
+  const ImportedDocuments: Record<string, unknown>[] = []
   try {
     const validationResult = ValidateRecords(records)
 
@@ -84,8 +85,8 @@ const ProcessStream = async () => {
 
     // 作成したドキュメントを親に送る
     emit('done', ImportedDocuments)
-  } catch (error) {
-    Popups.alert(error.message)
+  } catch (error: unknown) {
+    await Popups.alert(error instanceof Error ? error.message : String(error))
   }
 }
 </script>

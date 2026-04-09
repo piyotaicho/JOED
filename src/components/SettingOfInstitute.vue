@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { reactive, ref, computed } from 'vue'
 import { useStore } from '@/store'
 import InputTextField from '@/components/Molecules/InputTextField.vue'
@@ -8,6 +7,14 @@ import { InstituteIDFormat } from '@/modules/CaseValidater'
 import { ZenToHanNumbers } from '@/modules/ZenHanChars'
 
 const store = useStore()
+
+type InstituteItem = {
+  ID: string
+  name: string
+  invalid?: boolean
+  Prefecture?: string
+}
+
 // フォームデータ
 const data = reactive({
   InstitutionName: '',
@@ -15,7 +22,7 @@ const data = reactive({
   JSOGoncologyboardID: '',
 })
 
-const instituteList = ref([])
+const instituteList = ref<InstituteItem[]>([])
 const showList = ref(false)
 
 // フォーム内容の初期化
@@ -42,7 +49,12 @@ function listInstitutes () {
   if (data.InstitutionName.trim() === '') return
 
   // @県名 でもリストできる.
-  const [, search, , , pref] = /^([^@＠]*)(([@＠](.+))|)/.exec(data.InstitutionName.trim())
+  const match = /^([^@＠]*)(([@＠](.+))|)/.exec(data.InstitutionName.trim())
+  if (!match) {
+    return
+  }
+  const search = match[1] || ''
+  const pref = match[4] || ''
 
   if (search === '' && pref === '') return
 
@@ -50,21 +62,21 @@ function listInstitutes () {
     let prefecturesMatch = ''
     if (pref) {
       const matched = ListOfPrefectures
-        .map((item, index) => item.match('^' + pref)
+        .map((item: string, index: number) => item.match('^' + pref)
           ? ('0' + (Number(index) + 1).toString(10)).slice(-2)
           : undefined
         )
-        .filter(item => item)
+        .filter((item: string | undefined): item is string => !!item)
       if (matched.length > 0) {
         prefecturesMatch = '^(' + matched.join('|') + ')'
       }
     }
 
-    const filteredlist = ListOfInstitutions
-      .filter(item =>
+    const filteredlist = (ListOfInstitutions as InstituteItem[])
+      .filter((item) =>
         (item?.invalid !== true) &&(!prefecturesMatch || item.ID.match(prefecturesMatch)) && !!item.name.match(search)
       )
-      .map(item => {
+      .map((item) => {
         item.Prefecture = ListOfPrefectures[Number(item.ID.substring(0, 2)) - 1]
         return item
       })
@@ -74,11 +86,15 @@ function listInstitutes () {
 }
 
 // 施設リストから選択された施設情報をフォームにセットする
-function setInstituteFromList (instituteProperties) {
+function setInstituteFromList (instituteProperties: InstituteItem): void {
   data.InstitutionName = instituteProperties.name
   data.InstitutionID = instituteProperties.ID
 
   showList.value = false
+}
+
+const preserve = (): void => {
+  // MIGRATION ISSUE: 呼び出し元の意図が不明な legacy hook のため暫定 no-op
 }
 
 async function commitSettings () {

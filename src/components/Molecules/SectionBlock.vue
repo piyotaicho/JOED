@@ -1,12 +1,12 @@
 <script setup lang="ts">
-// @ts-nocheck
+import type { PropType } from 'vue'
 import SectionBox from '../Atoms/SectionBox.vue'
 import NewEntryButton from '@/components/Atoms/NewEntryButton.vue'
 import SectionItem from '@/components/Molecules/SectionItem.vue'
 import draggableContent from 'vuedraggable'
 
 // vuegraggableのUpdate = undefinedのエラーを回避
-draggableContent.compatConfig = {
+;(draggableContent as any).compatConfig = {
   MODE: 3
 }
 
@@ -20,15 +20,19 @@ const props = defineProps({
     default: true
   }
 })
-const items = defineModel({ type: Array, default: [] })
+const items = defineModel<unknown[]>({ type: Array as PropType<unknown[]>, default: () => [] })
 
-const emit = defineEmits(['add', 'edit', 'remove'])
+const emit = defineEmits<{
+  (e: 'add'): void
+  (e: 'edit', payload: { index: number; value: unknown }): void
+  (e: 'remove', index: number): void
+}>()
 
-const addItem = () => emit('add')
+const addItem = (): void => emit('add')
 
-const editItem = (index, value) => emit('edit', {index, value})
+const editItem = (index: number, value: unknown): void => emit('edit', { index, value })
 
-const removeItem = (index) => emit('remove', index)
+const removeItem = (index: number): void => emit('remove', index)
 </script>
 
 <template>
@@ -49,7 +53,7 @@ const removeItem = (index) => emit('remove', index)
       <template v-for="(element, index) in items" :key="index">
         <div class="section-item-list">
           <slot :item="element" :index="index">
-            <SectionItem :value="element" @remove="removeItem(index)" @edit="editItem(index, element)"/>
+            <SectionItem :value="String(element ?? '')" @remove="removeItem(index)" @edit="editItem(index, element)"/>
           </slot>
         </div>
       </template>

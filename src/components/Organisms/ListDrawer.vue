@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { ref, computed } from 'vue'
 import { useStore } from '@/store'
 import { useRouter } from 'vue-router'
@@ -12,11 +11,9 @@ import { ElNotification as Notification } from 'element-plus'
 const store = useStore()
 const router = useRouter()
 
-const props = defineProps({
-  visible: {
-    type: Boolean
-  }
-})
+const props = defineProps<{
+  visible?: boolean
+}>()
 
 const emit = defineEmits(['close', 'changed'])
 
@@ -38,7 +35,10 @@ const DrawerOpened = () => {
 
 const CloseDrawer = () => emit('close')
 
-const CollapseChanged = (itemname) => {
+const CollapseChanged = (itemname: string | string[]) => {
+  if (Array.isArray(itemname)) {
+    return
+  }
   if (collapseNames.includes(itemname)) {
     view.value = itemname
 

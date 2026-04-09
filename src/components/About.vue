@@ -1,17 +1,23 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-// @ts-nocheck
 import { useStore } from '@/store'
 import ExtLink from '@/components/Atoms/ExtLink.vue'
 
 const store = useStore()
+
+type LibraryItem = {
+  name: string
+  href: string
+  version?: string
+  license: string
+}
 
 const CopyrightString = __APP_COPYRIGHT__ || '2020- P4mohnet and JSGOE'
 
 // Electron環境かどうかViteのdefineで埋め込みを判定
 const isElectron = __APP_ELECTRON__ === 'true'
 
-const CoreList = [
+const CoreList: LibraryItem[] = [
   // { name: '', href: '', version: '', license: ''}
   {
     name: 'JOED5',
@@ -55,7 +61,7 @@ const CoreList = [
     : []),
 ]
 
-const ComponentList = [
+const ComponentList: LibraryItem[] = [
   // { name: '', href: '', license: '' },
   { name: 'Vuex', href: 'https://vuex.vuejs.org/', license: 'MIT' },
   { name: 'Vue Router', href: 'https://router.vuejs.org/', license: 'MIT' },

@@ -1,11 +1,10 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { computed, ref } from 'vue'
 import { ProcedureTimeSelections, encodeProcedureTime } from '@/modules/ProcedureTimes'
 
-const model = defineModel({ type: String })
+const model = defineModel<string>({ type: String, default: '' })
 
-const procedureTimeSelections = ProcedureTimeSelections()
+const procedureTimeSelections = ProcedureTimeSelections() as string[]
 
 // キー入力文字列
 const typedString = ref('')
@@ -24,24 +23,25 @@ const procedureTime = computed({
 /**
  * キーボードイベントを処理して入力文字列処理へ渡す
  */
-const handleKeydown = (event) => {
-  const keyMap = {
-    0: '0',
-    1: '1',
-    2: '2',
-    3: '3',
-    4: '4',
-    5: '5',
-    6: '6',
-    7: '7',
-    8: '8',
-    9: '9',
+const handleKeydown = (event: KeyboardEvent): void => {
+  const keyMap: Record<string, string> = {
+    '0': '0',
+    '1': '1',
+    '2': '2',
+    '3': '3',
+    '4': '4',
+    '5': '5',
+    '6': '6',
+    '7': '7',
+    '8': '8',
+    '9': '9',
     Delete: 'DEL',
     ':': ':',
     ';': ':' // USキーボードの場合
   }
-  if (keyMap[event.key] !== undefined) {
-    typeInChar(keyMap[event.key])
+  const mapped = keyMap[event.key]
+  if (mapped !== undefined) {
+    typeInChar(mapped)
     event.preventDefault()
   }
 }
@@ -50,7 +50,7 @@ const handleKeydown = (event) => {
  * 入力を受け取って文字列を生成する
  * @param char 入力文字
  */
-const typeInChar = (char) => {
+const typeInChar = (char: string): void => {
   // キー入力文字列を生成
   if (char === 'DEL') {
     typedString.value = typedString.value.slice(0, -1)
@@ -76,14 +76,14 @@ const typeInChar = (char) => {
 
     selectionCandidate.value = encodeProcedureTime((hour * 60) + minute)
   } else {
-    selectionCandidate.value = encodeProcedureTime(typedString.value)
+    selectionCandidate.value = encodeProcedureTime(Number(typedString.value || 0))
   }
 }
 
 /**
  * 手動入力値をそのまま採用する
  */
-const acceptValue = () => {
+const acceptValue = (): void => {
   if (selectionCandidate.value !== '') {
     procedureTime.value = selectionCandidate.value
   }
@@ -93,7 +93,7 @@ const acceptValue = () => {
 /**
  * 手動入力値を削除
  */
-const clearTypedValue = () => {
+const clearTypedValue = (): void => {
   typedString.value = ''
   selectionCandidate.value = ''
 }

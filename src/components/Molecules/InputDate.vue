@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { onMounted, useTemplateRef, computed } from 'vue'
+import type { PropType } from 'vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import { ja } from 'date-fns/locale'
 
@@ -13,22 +13,22 @@ const props = defineProps({
     default: false,
   },
   tabindex: {
-    type: [Number, String],
+    type: [Number, String] as PropType<number | string | undefined>,
   },
 })
-const dateOfProcedure = defineModel()
+const dateOfProcedure = defineModel<string>({ default: '' })
 
 // Set tabindex
-const datepicker = useTemplateRef('datepicker')
-let inputelement
+const datepicker = useTemplateRef<HTMLElement>('datepicker')
+let inputelement: HTMLInputElement | undefined
 onMounted(() => {
   try {
-    inputelement = datepicker.value.getElementsByTagName('input')[0]
+    inputelement = datepicker.value?.getElementsByTagName('input')?.[0]
   } catch {
     inputelement = undefined
   }
   if (props.tabindex !== undefined && inputelement !== undefined) {
-    inputelement.tabIndex = props.tabindex
+    inputelement.tabIndex = Number(props.tabindex)
   }
 })
 
@@ -37,7 +37,7 @@ const datepickerValue = computed({
     if (!dateOfProcedure.value) return null
     return dateOfProcedure.value
   },
-  set: (value) => {
+  set: (value: string | null) => {
     if (typeof value === 'string') {
       // 空文字列は許容
       dateOfProcedure.value = value
@@ -49,7 +49,7 @@ const datepickerValue = computed({
 })
 
 // yyyy-MM-dd形式にフォーマット
-const formatDisplayValue = (value) => {
+const formatDisplayValue = (value: unknown): string => {
   if (!value) return ''
 
   // 既にyyyy-MM-dd形式ならそのまま返す
@@ -60,9 +60,9 @@ const formatDisplayValue = (value) => {
   // MM/dd/yyyy形式の文字列を変換
   if (typeof value === 'string' && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(value)) {
     const parts = value.split('/')
-    const month = parts[0].padStart(2, '0')
-    const day = parts[1].padStart(2, '0')
-    const year = parts[2]
+    const month = (parts[0] || '').padStart(2, '0')
+    const day = (parts[1] || '').padStart(2, '0')
+    const year = parts[2] || ''
     return `${year}-${month}-${day}`
   }
 
@@ -74,7 +74,7 @@ const formatDisplayValue = (value) => {
     return `${year}-${month}-${day}`
   }
 
-  return value
+  return String(value)
 }
 </script>
 
@@ -125,13 +125,13 @@ const formatDisplayValue = (value) => {
             :value="formatDisplayValue(value)"
             placeholder="クリックでカレンダー"
             :class="[!value && props.required ? 'vacant' : '']"
-            @input="(e) => onInput(e)"
+            @input="(e: Event) => onInput(e)"
             @blur="onBlur"
             @focus="onFocus"
             @keypress="onKeypress"
             @keydown.enter="onEnter"
             @keydown.tab="onTab"
-            @paste="(e) => onPaste(e)"
+            @paste="onPaste"
           />
         </template>
       </VueDatePicker>

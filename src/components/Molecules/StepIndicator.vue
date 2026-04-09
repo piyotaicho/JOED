@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { computed } from 'vue'
 
 const props = defineProps({
@@ -40,10 +39,10 @@ const IconStyle = computed(() => {
         ? { color: colorTable.NORMAL }
         : { color: colorTable.DONE }
 
-    case (props.stepcount === undefined || props.stepcount < props.step):
+    case (props.step !== undefined && (props.stepcount === undefined || props.stepcount < props.step)):
       return { color: colorTable.YET }
 
-    case (props.stepcount === props.step):
+    case (props.step !== undefined && props.stepcount === props.step):
       return { color: colorTable.PROCESSING }
 
     default: // stepcount > step

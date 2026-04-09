@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { createStore } from 'vuex'
 // データベースアクセスモジュールは環境依存のため分離(viteでパスが解決される)
 import * as NedbAccess from 'depmodules/NedbAccess'
@@ -64,7 +63,7 @@ const store = createStore({
     // @param {Number} currentUid
     // @param {Number} offset 0:Self, -1:Prev, +1:Next
     GetRelativeDocumentId (state, getters) {
-      return function (currentUid, offset) {
+      return function (currentUid: any, offset: any) {
         const index = state.DocumentIds.List.indexOf(currentUid)
         if (currentUid === 0 || index === -1) {
           return 0
@@ -82,9 +81,9 @@ const store = createStore({
     // DocumentId をもつドキュメントを取得する. ロードされていない場合は空のオブジェクトが返る.
     // @param {Number}
     CaseDocument (state) {
-      return function (uid) {
+      return function (uid: any) {
         if (Number.isInteger(uid) && uid > 0) {
-          const DocumentIndex = state.DataStore.findIndex(item => item.DocumentId === uid)
+          const DocumentIndex = state.DataStore.findIndex((item: any) => item.DocumentId === uid)
           if (DocumentIndex !== -1) {
             return state.DataStore[DocumentIndex]
           }
@@ -137,7 +136,7 @@ const store = createStore({
     },
     // 現在のView設定からのクエリを作成する
     ViewQuery (state) {
-      const query = {}
+      const query: any = {}
 
       // フィルタの初期値を設定
       const filters = (state.Filters && [...state.Filters]) || []
@@ -210,7 +209,7 @@ const store = createStore({
     //
     // @param {Object} document
     SetDatastore (state, payload) {
-      const foundIndex = state.DataStore.findIndex(item => item.DocumentId === payload.DocumentId)
+      const foundIndex = state.DataStore.findIndex((item: any) => item.DocumentId === payload.DocumentId)
       if (foundIndex === -1) {
         state.DataStore.push(payload)
       } else {
@@ -221,7 +220,7 @@ const store = createStore({
     //
     // @param {Object} DocumentId
     RemoveDatastore (state, payload) {
-      const foundIndex = state.DataStore.findIndex(item => item.DocumentId === payload.DocumentId)
+      const foundIndex = state.DataStore.findIndex((item: any) => item.DocumentId === payload.DocumentId)
       if (foundIndex !== -1) {
         state.DataStore.splice(foundIndex, 1)
       }
@@ -270,7 +269,7 @@ const store = createStore({
     //
     // @param {Object}
     SetSort (state, payload = {}) {
-      const [field, value] = Object.entries(payload).flat()
+      const [field, value] = Object.entries(payload as Record<string, any>).flat() as [any, any]
       if (field !== undefined && value !== undefined) {
         state.Sort = { [field]: value }
       } else {
@@ -352,7 +351,7 @@ const store = createStore({
     //
     async ReloadDocumentList (context) {
       try {
-        const Projection = { DocumentId: 1, _id: 0 }
+        const Projection: any = { DocumentId: 1, _id: 0 }
         let documents = []
 
         // 通常のFind
@@ -381,7 +380,7 @@ const store = createStore({
                 Sort: querySort,
                 Projection
               }
-            )).sort((a, b) => {
+            )).sort((a: any, b: any) => {
               const valueA = parseProcedureTime(a.ProcedureTime)
               const valueB = parseProcedureTime(b.ProcedureTime)
               return valueA === valueB ? 0 : valueA < valueB ? -1 * direction : 1 * direction
@@ -402,7 +401,7 @@ const store = createStore({
 
         context.commit('SetDocumentIds',
           {
-            DocumentIds: documents.map(doc => doc.DocumentId)
+            DocumentIds: documents.map((doc: any) => doc.DocumentId)
           }
         )
         context.commit('SetTotalDocumentCount',
@@ -424,7 +423,7 @@ const store = createStore({
       }
 
       // 既にロードされているデータであればキャッシュから取得する
-      const DataStoreIndex = context.state.DataStore.findIndex(item => item.DocumentId === payload.DocumentId)
+      const DataStoreIndex = context.state.DataStore.findIndex((item: any) => item.DocumentId === payload.DocumentId)
       if (DataStoreIndex !== -1) {
         return DataStoreIndex
       } else {
@@ -453,7 +452,7 @@ const store = createStore({
         if (count > 0) {
           throw new Error('DUP')
         }
-      } catch (error) {
+      } catch (error: any) {
         if (error.message === 'DUP') {
           throw new Error(`同一の日付(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
         } else {
@@ -532,7 +531,7 @@ const store = createStore({
             throw new Error('DUP')
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         if (error.message === 'DUP') {
           throw new Error(`同一の日付(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
         } else {
@@ -599,7 +598,7 @@ const store = createStore({
             Query: { DocumentId: { $gt: 0 } },
             Projection: { DateOfProcedure: 1, _id: 0 }
           })
-        const CountByYear = {}
+        const CountByYear: Record<string, number> = {}
         for (const document of documents) {
           const year = document.DateOfProcedure.substring(0, 4)
           CountByYear[year] = (CountByYear[year] === undefined) ? 1 : CountByYear[year] + 1

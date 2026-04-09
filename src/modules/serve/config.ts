@@ -1,15 +1,29 @@
-// @ts-nocheck
 import HHX from 'xxhashjs'
 
-export function LoadConfig (storecontext) {
-  return storecontext.dispatch('dbFindOne', {
+type ConfigSettings = Record<string, unknown>
+type PasswordPayload = { password: string; salt: string | number }
+type StoreContextLike = {
+  dispatch: (type: string, payload?: unknown, options?: { root?: boolean }) => Promise<unknown>
+}
+
+const assertStoreContext = (storecontext?: unknown): StoreContextLike => {
+  if (!storecontext || typeof (storecontext as StoreContextLike).dispatch !== 'function') {
+    throw new Error('store context is required in serve mode')
+  }
+  return storecontext as StoreContextLike
+}
+
+export function LoadConfig (storecontext?: unknown): Promise<unknown> {
+  const context = assertStoreContext(storecontext)
+  return context.dispatch('dbFindOne', {
     Query: { Settings: { $exists: true } }
   },
   { root: true })
 }
 
-export function SaveConfig (settings, storecontext) {
-  return storecontext.dispatch('dbUpdate', {
+export function SaveConfig (settings: ConfigSettings, storecontext?: unknown): Promise<unknown> {
+  const context = assertStoreContext(storecontext)
+  return context.dispatch('dbUpdate', {
     Query: { Settings: { $exists: true } },
     Update: { Settings: settings },
     Options: { upsert: true }
@@ -17,21 +31,28 @@ export function SaveConfig (settings, storecontext) {
   { root: true })
 }
 
-export async function LoadPassword (storecontext) {
-  return await storecontext.dispatch('dbFindOne',
+export async function LoadPassword (storecontext?: unknown): Promise<string> {
+  const context = assertStoreContext(storecontext)
+  return await context.dispatch('dbFindOne',
     {
       Query: { Password: { $exists: true } }
     },
     { root: true }
-  ).then(passworddocument => passworddocument === null ? '' : passworddocument.Password)
+  ).then((passworddocument) => {
+    if (!passworddocument || typeof passworddocument !== 'object') {
+      return ''
+    }
+    return String((passworddocument as { Password?: string }).Password || '')
+  })
 }
 
-export async function SavePassword (payload, storecontext) {
+export async function SavePassword (payload: PasswordPayload, storecontext?: unknown): Promise<void> {
+  const context = assertStoreContext(storecontext)
   const password = payload.password
   const salt = payload.salt
 
   if (password === '') {
-    storecontext.dispatch('dbRemove',
+    await context.dispatch('dbRemove',
       {
         Query: { Password: { $exists: true } },
         Options: { multi: true }
@@ -40,7 +61,7 @@ export async function SavePassword (payload, storecontext) {
   } else {
     // パスワードのhash化はsaltの32bit丸めで行う
     const hashedpassword = password === '' ? '' : HHX.h64(password, salt).toString(16)
-    storecontext.dispatch('dbUpdate',
+    await context.dispatch('dbUpdate',
       {
         Query: { Password: { $exists: true } },
         Update: { Password: hashedpassword },

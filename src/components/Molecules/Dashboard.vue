@@ -1,6 +1,5 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-// @ts-nocheck
 
 import CloseButton from '@/components/Atoms/CloseButton.vue'
 import DiagnosisMaster from '@/modules/Masters/DiagnosisMaster'
@@ -14,14 +13,23 @@ import { useRouter } from 'vue-router'
 const store = useStore()
 const router = useRouter()
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
 // 一番新しいマスタの年次を取得する
-const YearOfMaster = [(new DiagnosisMaster()).Year(), (new ProcedureMaster()).Year(), (new AEMaster()).Year()].sort()[2]
+const YearOfMaster = [
+  String((new DiagnosisMaster()).Year()),
+  String((new ProcedureMaster()).Year()),
+  String((new AEMaster(undefined)).Year())
+].sort()[2]
 
-const InstituteName = computed(() => store.getters['system/InstitutionName'] || '(施設名称未設定)')
-const ViewCount = computed(() => store.getters.NumberOfCases)
-const TotalCount = computed(() => store.getters.TotalNumberOfCases)
+const InstituteName = computed<string>(() => {
+  const name = store.getters['system/InstitutionName'] as string | undefined
+  return name || '(施設名称未設定)'
+})
+const ViewCount = computed<number>(() => Number(store.getters.NumberOfCases || 0))
+const TotalCount = computed<number>(() => Number(store.getters.TotalNumberOfCases || 0))
 
 const close = () => emit('close')
 

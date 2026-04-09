@@ -1,6 +1,5 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-// @ts-nocheck
 import * as Popups from '@/modules/Popups'
 import InputFile from '@/components/Molecules/InputFile.vue'
 import ImportJSON from '@/components/Molecules/ImportJSON.vue'
@@ -13,20 +12,24 @@ import { useStore } from '@/store'
 
 const store = useStore()
 
-const importMode = ref('json')
+type ImportMode = 'json' | 'csv' | 'merge'
+
+const importMode = ref<ImportMode>('json')
 const data = reactive({
   Processing: false,
   Committing: 0,
+  ProgressBar: 0,
+  ImportProgress: 0,
   FileExtentions: {
     json: '.json',
     csv: '.csv,.mer',
     merge: '.mer'
-  },
+  } as Record<ImportMode, string>,
   FileStream: '',
   DocumentupdateCreatedDocument: false,
-  CreatedDocument: [],
+  CreatedDocument: [] as Record<string, unknown>[],
   count: 0,
-  errors: [],
+  errors: [] as string[],
   errorText: ''
 })
 
@@ -46,14 +49,14 @@ const resetState = () => {
   data.errorText = ''
 }
 
-const clickViewer = () => {
+const clickViewer = (): void => {
   data.errorText = ''
 }
 
-const saveErrorText = () => {
+const saveErrorText = (): void => {
   if (data.errorText !== '') {
-    const temporaryElementA = document.createElement('A')
-    temporaryElementA.href = URL.createObjectURL(new Blob([data.errorText]), { type: 'text/plain' })
+    const temporaryElementA = document.createElement('a')
+    temporaryElementA.href = URL.createObjectURL(new Blob([data.errorText], { type: 'text/plain' }))
     temporaryElementA.download = 'import-error-report.txt'
     temporaryElementA.style.display = 'none'
     document.body.appendChild(temporaryElementA)
@@ -62,12 +65,14 @@ const saveErrorText = () => {
   }
 }
 
-const updateStreamData = (content) => {
+const updateStreamData = (content: string): void => {
   resetState()
   data.FileStream = content
 }
 
-const updateCreatedDocument = (newdocuments) => data.CreatedDocument.splice(0, data.CreatedDocument.length, ...newdocuments)
+const updateCreatedDocument = (newdocuments: Record<string, unknown>[]): void => {
+  data.CreatedDocument.splice(0, data.CreatedDocument.length, ...newdocuments)
+}
 
 const commit = async () => {
   if (data.CreatedDocument.length === 0) {
@@ -84,7 +89,13 @@ const commit = async () => {
   for (const record of data.CreatedDocument) {
     await store.dispatch('UpsertDocument', record)
       .then(() => data.count++)
-      .catch(error => data.errors.push(error.message || error))
+      .catch((error: unknown) => {
+        if (error instanceof Error) {
+          data.errors.push(error.message)
+        } else {
+          data.errors.push(String(error))
+        }
+      })
   }
 
   data.ImportProgress = 100

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { LoadPassword, SavePassword } from 'depmodules/config'
 import HHX from 'xxhashjs'
 
@@ -9,18 +8,18 @@ export default {
     PasswordRequired: true
   },
   mutations: {
-    AuthenticationStatus (state, payload) {
+    AuthenticationStatus (state: any, payload: any) {
       state.Authenticated = payload
     },
-    PasswordRequirement (state, payload) {
+    PasswordRequirement (state: any, payload: any) {
       state.PasswordRequired = payload
     }
   },
   getters: {
-    isAuthenticated (state) {
+    isAuthenticated (state: any) {
       return state.Authenticated
     },
-    isPasswordRequired (state) {
+    isPasswordRequired (state: any) {
       return state.PasswordRequired
     }
   },
@@ -30,7 +29,7 @@ export default {
     // 認証結果は {Boolean} Authenticated に.
     //
     // @param {String} パスワード文字列
-    async Authenticate (context, payload) {
+    async Authenticate (context: any, payload: any) {
       const hashedpassword = await LoadPassword(context)
 
       if (hashedpassword === '') {
@@ -58,7 +57,7 @@ export default {
     // 空白パスワード文字列はパスワードのレコード自体を削除する.
     //
     // @param {String} パスワード文字列
-    async SetPassword (context, payload) {
+    async SetPassword (context: any, payload: any) {
       await SavePassword({
         password: payload,
         salt: context.rootGetters['system/SALT']

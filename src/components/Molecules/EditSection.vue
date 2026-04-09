@@ -1,19 +1,21 @@
 <script setup lang="ts">
-// @ts-nocheck
 // 編集セクションの登録・取り消しボタン部分(とキーボードショートカット)の大きな雛型 slotに内容を
 import { onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from '@/store'
 
 const store = useStore()
-const emit = defineEmits(['commit', 'discard'])
+const emit = defineEmits<{
+  (e: 'commit'): void
+  (e: 'discard'): void
+}>()
 
 onMounted(() => document.addEventListener('keydown', KeyboardEventhandler, true))
 onBeforeUnmount(() => document.removeEventListener('keydown', KeyboardEventhandler, true))
 
-function KeyboardEventhandler (event) {
+function KeyboardEventhandler (event: KeyboardEvent) {
   if (event.repeat) return
 
-  const platform = store.getters['system/Platform']
+  const platform = String(store.getters['system/Platform'] || '')
 
   if (platform === 'darwin'
     ? (event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) // macOS - command
@@ -37,8 +39,8 @@ function KeyboardEventhandler (event) {
     <slot></slot>
     <div class="content-bottom">
       <div class="controls">
-        <el-button type="primary" @click="$emit('discard')">取り消し</el-button>
-        <el-button type="primary" @click="$emit('commit')">登録</el-button>
+        <el-button type="primary" @click="emit('discard')">取り消し</el-button>
+        <el-button type="primary" @click="emit('commit')">登録</el-button>
       </div>
     </div>
   </div>
