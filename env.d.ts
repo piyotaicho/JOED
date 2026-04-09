@@ -14,6 +14,7 @@ interface ImportMeta {
 declare const __APP_ELECTRON__: string
 declare const __APP_COPYRIGHT__: string
 declare const __APP_VERSION__: string
+declare const __APP_DESCRIPTION__: string
 
 declare module 'encoding-japanese'
 declare module 'xxhashjs'

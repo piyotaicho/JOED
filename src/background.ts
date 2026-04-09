@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 'use strict'
 import path from 'path'
 import fs from 'fs'
@@ -26,9 +24,9 @@ const backupGeneration = 5
 // VITEで置換される
 const isDevelopment = import.meta.env?.MODE === 'development' || false
 
-let win = null
-let session = null
-const appConfig = {
+let win: BrowserWindow | null = null
+let session: any = null
+const appConfig: any = {
   electronStore: undefined,
   storeConfig: {
     // cwd ?:,
@@ -38,7 +36,7 @@ const appConfig = {
   databaseInstance: undefined,
   enableLocking: false
 }
-let enableAdvancedSettings = undefined
+let enableAdvancedSettings: any = undefined
 
 // 初期設定
 // デフォルト path の documents を userData でオーバーライド
@@ -95,7 +93,7 @@ async function createWindow() {
     // macosでウインドウが閉じた後には、アプリケーションメニューを「JOED5について」しか利用出来ないようにする.
     // windowsではウインドウが閉じる = 終了となる
     if (process.platform === 'darwin') {
-      const menu = Menu.getApplicationMenu()
+      const menu = Menu.getApplicationMenu() as any
       menu.getMenuItemById('list-new').enabled = false
       menu.getMenuItemById('list-import').enabled = false
       menu.getMenuItemById('list-export').enabled = false
@@ -160,7 +158,7 @@ function registerAppEvents() {
 
   // activate-with-no-open-windows: macosではdockに残ったアイコンからウインドウを開く.
   if (process.platform === 'darwin') {
-    app.on('activate-with-no-open-windows', () => createWindow())
+    ;(app as any).on('activate-with-no-open-windows', () => createWindow())
   }
 
   // 強制終了(windows: graceful-exit, macos: SIGTERM)への対応.
@@ -304,7 +302,7 @@ function parseCommandLineDirectives() {
 // メニューの設定
 //
 function registerMenu() {
-  const MenuTemplate = [
+  const MenuTemplate: any[] = [
     // アプリケーションメニュー
     ...(
       process.platform === 'darwin'
@@ -313,7 +311,7 @@ function registerMenu() {
           submenu: [
             { label: 'JOED5について', role: 'about' },
             { type: 'separator' },
-            { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
+            { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item: any, focusedWindow: any) => RendererRoute('settings', focusedWindow) },
             { type: 'separator' },
             { label: 'サービス', role: 'services', submenu: [] },
             { type: 'separator' },
@@ -330,20 +328,20 @@ function registerMenu() {
     {
       label: 'ファイル',
       submenu: [
-        { label: '新規症例の登録', id: 'list-new', enabled: false, accelerator: 'CmdORCtrl+N', click: (item, focusedWindow) => RendererRoute('new', focusedWindow) },
-        { label: '症例の削除', id: 'list-delete', enabled: false, accelerator: 'CmdORCtrl+X', click: (item, focusedWindow) => RendererRoute('list.delete', focusedWindow) },
+        { label: '新規症例の登録', id: 'list-new', enabled: false, accelerator: 'CmdORCtrl+N', click: (item: any, focusedWindow: any) => RendererRoute('new', focusedWindow) },
+        { label: '症例の削除', id: 'list-delete', enabled: false, accelerator: 'CmdORCtrl+X', click: (item: any, focusedWindow: any) => RendererRoute('list.delete', focusedWindow) },
         { type: 'separator' },
-        { label: 'データの読み込み', id: 'list-import', enabled: false, click: (item, focusedWindow) => RendererRoute('import', focusedWindow) },
-        { label: 'データの書き出し', id: 'list-export', enabled: false, click: (item, focusedWindow) => RendererRoute('export', focusedWindow) },
+        { label: 'データの読み込み', id: 'list-import', enabled: false, click: (item: any, focusedWindow: any) => RendererRoute('import', focusedWindow) },
+        { label: 'データの書き出し', id: 'list-export', enabled: false, click: (item: any, focusedWindow: any) => RendererRoute('export', focusedWindow) },
         ...(process.platform === 'darwin'
           ? [
             { type: 'separator' },
-            { label: 'リスト表示の設定', id: 'list-settings', enabled: false, click: (item, focusedWindow) => RendererRoute('list.drawer', focusedWindow) },
+            { label: 'リスト表示の設定', id: 'list-settings', enabled: false, click: (item: any, focusedWindow: any) => RendererRoute('list.drawer', focusedWindow) },
           ]
           : [
             { type: 'separator' },
-            { label: '設定', id: 'setup', enabled: false, accelerator: 'Ctrl+,', click: (item, focusedWindow) => RendererRoute('settings', focusedWindow) },
-            { label: 'リスト表示の設定', id: 'list-settings', enabled: false, click: (item, focusedWindow) => RendererRoute('list.drawer', focusedWindow) },
+            { label: '設定', id: 'setup', enabled: false, accelerator: 'Ctrl+,', click: (item: any, focusedWindow: any) => RendererRoute('settings', focusedWindow) },
+            { label: 'リスト表示の設定', id: 'list-settings', enabled: false, click: (item: any, focusedWindow: any) => RendererRoute('list.drawer', focusedWindow) },
             { label: '終了', accelerator: 'Alt+F4', role: 'quit' }
           ])
       ]
@@ -385,12 +383,12 @@ function registerMenu() {
             {
               label: 'リロード',
               accelerator: '',
-              click: (item, focusedWindow) => { focusedWindow.webContents.onbeforeunload = null; focusedWindow.reload() }
+              click: (item: any, focusedWindow: any) => { focusedWindow.webContents.onbeforeunload = null; focusedWindow.reload() }
             },
             {
               label: '開発者ツール',
               accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
-              click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools()
+              click: (item: any, focusedWindow: any) => focusedWindow.webContents.toggleDevTools()
             }
           ]
         }]
@@ -418,13 +416,13 @@ function registerMenu() {
 //
 
 // main -> renderer : メニューからrouterの切り替え要求 (App.vueで処理)
-function RendererRoute(routename, targetwindow) {
+function RendererRoute(routename: any, targetwindow: any) {
   targetwindow.webContents.send('update-router', routename)
 }
 
 // router毎のメニュー操作
-function switchMenu(payload) {
-  const menu = Menu.getApplicationMenu()
+function switchMenu(payload: any) {
+  const menu = Menu.getApplicationMenu() as any
   switch (payload) {
     case 'login':
     case 'edit':
@@ -517,7 +515,7 @@ function createDatabaseInstance() {
       filename: DBfilename,
       autoload: true
     })
-  } catch (error) {
+  } catch (error: any) {
     // データベースファイルが作成できないのは致命的エラーなのでダイアログを出して終了する
     if (isDevelopment) {
       console.warn('[DEV] Unable to create database file: ' + error?.message)
@@ -538,7 +536,7 @@ function createDatabaseInstance() {
  * クエリ中の $regex を RexExpオブジェクトでの呼び出しに変換する
  * @param {*} obj
  */
-function unescapeRegexInObject(obj) {
+function unescapeRegexInObject(obj: any): any {
   // $regex: string の指定があるかチェック なければそのまま返す
   if (!JSON.stringify(obj).includes('"$regex":"/')) {
     return obj
@@ -548,10 +546,10 @@ function unescapeRegexInObject(obj) {
     return obj
   }
   if (Array.isArray(obj)) {
-    return obj.map(item => unescapeRegexInObject(item))
+    return obj.map((item: any) => unescapeRegexInObject(item))
   }
   if (typeof obj === 'object') {
-    const newobj = {}
+    const newobj: Record<string, any> = {}
     for (const key in obj) {
       if (key === '$regex' && typeof obj[key] === 'string') {
         // 文字列からRegExpオブジェクトに変換
@@ -575,7 +573,7 @@ function registerIPChandlers() {
   ipcMain.handle('Insert', (_, payload) => {
     return new Promise((resolve, reject) => {
       appConfig.databaseInstance
-        .insert(payload.Document, (error, newdocument) => {
+        .insert(payload.Document, (error: any, newdocument: any) => {
           if (error) {
             reject(error)
           } else {
@@ -605,7 +603,7 @@ function registerIPChandlers() {
         .sort(sort)
         .skip(skip)
         .limit(limit)
-        .exec((error, founddocuments) => {
+        .exec((error: any, founddocuments: any) => {
           if (error) {
             reject(error)
           } else {
@@ -632,7 +630,7 @@ function registerIPChandlers() {
         .projection(projection)
         .sort(sort)
         .skip(skip)
-        .exec((error, founddocument) => {
+        .exec((error: any, founddocument: any) => {
           if (error) {
             reject(error)
           } else {
@@ -672,7 +670,7 @@ function registerIPChandlers() {
           }
         })
         .projection({ DocumentId: 1 })
-        .exec((error, founddocument) => {
+        .exec((error: any, founddocument: any) => {
           if (error) {
             reject(error)
           } else {
@@ -688,7 +686,7 @@ function registerIPChandlers() {
     return new Promise((resolve, reject) => {
       const query = payload.Query ? unescapeRegexInObject(payload.Query) : {}
       appConfig.databaseInstance
-        .count(query, (error, count) => {
+        .count(query, (error: any, count: any) => {
           if (error) {
             reject(error)
           } else {
@@ -708,7 +706,7 @@ function registerIPChandlers() {
       const update = payload.Update ? payload.Update : {}
       const options = payload.Options ? payload.Options : {}
       appConfig.databaseInstance
-        .update(query, update, options, (error, numrows) => {
+        .update(query, update, options, (error: any, numrows: any) => {
           if (error) {
             reject(error)
           } else {
@@ -726,7 +724,7 @@ function registerIPChandlers() {
       const query = payload.Query ? unescapeRegexInObject(payload.Query) : {}
       const options = payload.Options ? payload.Options : {}
       appConfig.databaseInstance
-        .remove(query, options, (error, numrows) => {
+        .remove(query, options, (error: any, numrows: any) => {
           if (error) {
             reject(error)
           } else {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 // preload script for electron context isolation
 /* eslint-env node */
 /* eslint-disable @typescript-eslint/no-require-imports */
@@ -24,29 +23,29 @@ contextBridge.exposeInMainWorld('Versions',
 contextBridge.exposeInMainWorld('API',
   {
     // Renderer to main
-    Insert: async (payload) => await ipcRenderer.invoke('Insert', payload),
-    Find: async (payload) => await ipcRenderer.invoke('Find', payload),
-    FindOne: async (payload) => await ipcRenderer.invoke('FindOne', payload),
+    Insert: async (payload: any) => await ipcRenderer.invoke('Insert', payload),
+    Find: async (payload: any) => await ipcRenderer.invoke('Find', payload),
+    FindOne: async (payload: any) => await ipcRenderer.invoke('FindOne', payload),
     // MIGRATION PROBLEM
     // IPCチャネル名が 'FineOneByHash' になっている(typo由来)ため互換維持で残置。
     // main側が将来 'FindOneByHash' に統一された場合、ここも同時変更が必要。
-    FindOneByHash: async (payload) => await ipcRenderer.invoke('FineOneByHash', payload),
-    Count: async (payload) => await ipcRenderer.invoke('Count', payload),
-    Update: async (payload) => await ipcRenderer.invoke('Update', payload),
-    Remove: async (payload) => await ipcRenderer.invoke('Remove', payload),
-    DropDatabase: async (payload) => await ipcRenderer.invoke('DropDatabase', payload),
+    FindOneByHash: async (payload: any) => await ipcRenderer.invoke('FineOneByHash', payload),
+    Count: async (payload: any) => await ipcRenderer.invoke('Count', payload),
+    Update: async (payload: any) => await ipcRenderer.invoke('Update', payload),
+    Remove: async (payload: any) => await ipcRenderer.invoke('Remove', payload),
+    DropDatabase: async (payload: any) => await ipcRenderer.invoke('DropDatabase', payload),
 
-    LoadConfig: async (payload) => await ipcRenderer.invoke('LoadConfig', payload),
-    SaveConfig: async (payload) => await ipcRenderer.invoke('SaveConfig', payload),
+    LoadConfig: async (payload: any) => await ipcRenderer.invoke('LoadConfig', payload),
+    SaveConfig: async (payload: any) => await ipcRenderer.invoke('SaveConfig', payload),
 
-    GetSystemInfo: async (payload) => await ipcRenderer.invoke('GetSystemInfo', payload),
+    GetSystemInfo: async (payload: any) => await ipcRenderer.invoke('GetSystemInfo', payload),
 
-    SwitchMenu: (payload) => ipcRenderer.send('SwitchMenu', payload),
+    SwitchMenu: (payload: any) => ipcRenderer.send('SwitchMenu', payload),
 
-    OpenURL: (payload) => ipcRenderer.send('OpenURL', payload),
+    OpenURL: (payload: any) => ipcRenderer.send('OpenURL', payload),
     RelaunchApp: () => ipcRenderer.send('RelaunchApp'),
 
     // Main to renderer
-    onChangeRouter: (callback) => ipcRenderer.on('update-router', callback)
+    onChangeRouter: (callback: any) => ipcRenderer.on('update-router', callback)
   }
 )
