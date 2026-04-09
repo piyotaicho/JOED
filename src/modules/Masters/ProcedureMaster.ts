@@ -848,7 +848,6 @@ export default class ProcedureMaster extends Master {
           },
           {
             Text: '仙骨子宮靭帯縫縮術(ロボット支援下)',
-            ValidFrom: '2021',
             ValidFrom: '2025'
           },
           // 2025 新規
