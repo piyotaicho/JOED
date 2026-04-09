@@ -6,7 +6,7 @@ import { ZenToHan } from '@/modules/ZenHanChars'
 export const LastUpdate = '2025-11-11'
 const defaultReference = '2025'
 
-const Kcodeformat = /^([A-Z]\d{3})(-0?(\d))?(-0?(\d))?/
+// const Kcodeformat = /^([A-Z]\d{3})(-0?(\d))?(-0?(\d))?/
 
 // Description の Values: [] のフォーマット
 //
@@ -1284,7 +1284,7 @@ export default class ProcedureMaster extends Master {
         }
       })
 
-    let results = []
+    const results: string[] = []
 
     // Fuse.jsを使ったあいまい検索
     const fuzzyMatch = new Fuse(masterItems, { keys: ['Text', 'Code', 'history'], threshold: 0.49 })
