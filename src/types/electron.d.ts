@@ -4,7 +4,7 @@
  * (background.ts および electron/NedbAccess.ts で使用)
  */
 
-import type { BrowserWindow, Session } from 'electron'
+// import type { BrowserWindow, Session } from 'electron'
 
 // -------- NeDB IPC ペイロード型 --------
 

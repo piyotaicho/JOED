@@ -1,8 +1,8 @@
 // preload script for electron context isolation
 /* eslint-env node */
-/* eslint-disable @typescript-eslint/no-require-imports */
-//
-const { contextBridge, ipcRenderer } = require('electron')
+import { contextBridge, ipcRenderer } from 'electron'
+import type { ConfigLoadPayload, ConfigSavePayload, NedbHashPayload, NedbInsertPayload, NedbQueryPayload, NedbRemovePayload, NedbUpdatePayload } from './types/electron'
+
 
 // Aboutで使用するバージョン文字列、Electron環境の確認にも用いる
 contextBridge.exposeInMainWorld('Versions',
@@ -20,29 +20,29 @@ contextBridge.exposeInMainWorld('Versions',
 )
 
 // IPC呼び出しのマッピング
-contextBridge.exposeInMainWorld('API',
-  {
+const api = {
     // Renderer to main
-    Insert: async (payload: any) => await ipcRenderer.invoke('Insert', payload),
-    Find: async (payload: any) => await ipcRenderer.invoke('Find', payload),
-    FindOne: async (payload: any) => await ipcRenderer.invoke('FindOne', payload),
-    FindOneByHash: async (payload: any) => await ipcRenderer.invoke('FindOneByHash', payload),
-    Count: async (payload: any) => await ipcRenderer.invoke('Count', payload),
-    Update: async (payload: any) => await ipcRenderer.invoke('Update', payload),
-    Remove: async (payload: any) => await ipcRenderer.invoke('Remove', payload),
-    DropDatabase: async (payload: any) => await ipcRenderer.invoke('DropDatabase', payload),
+    Insert: async (payload: NedbInsertPayload) => await ipcRenderer.invoke('Insert', payload),
+    Find: async (payload: NedbQueryPayload) => await ipcRenderer.invoke('Find', payload),
+    FindOne: async (payload: NedbQueryPayload) => await ipcRenderer.invoke('FindOne', payload),
+    FindOneByHash: async (payload: NedbHashPayload) => await ipcRenderer.invoke('FindOneByHash', payload),
+    Count: async (payload: NedbQueryPayload) => await ipcRenderer.invoke('Count', payload),
+    Update: async (payload: NedbUpdatePayload) => await ipcRenderer.invoke('Update', payload),
+    Remove: async (payload: NedbRemovePayload) => await ipcRenderer.invoke('Remove', payload),
+    DropDatabase: async (payload: boolean) => await ipcRenderer.invoke('DropDatabase', payload),
 
-    LoadConfig: async (payload: any) => await ipcRenderer.invoke('LoadConfig', payload),
-    SaveConfig: async (payload: any) => await ipcRenderer.invoke('SaveConfig', payload),
+    LoadConfig: async (payload: ConfigLoadPayload) => await ipcRenderer.invoke('LoadConfig', payload),
+    SaveConfig: async (payload: ConfigSavePayload) => await ipcRenderer.invoke('SaveConfig', payload),
 
-    GetSystemInfo: async (payload: any) => await ipcRenderer.invoke('GetSystemInfo', payload),
+    GetSystemInfo: async () => await ipcRenderer.invoke('GetSystemInfo'),
 
-    SwitchMenu: (payload: any) => ipcRenderer.send('SwitchMenu', payload),
+    SwitchMenu: (payload: string) => ipcRenderer.send('SwitchMenu', payload),
 
-    OpenURL: (payload: any) => ipcRenderer.send('OpenURL', payload),
+    OpenURL: (payload: string) => ipcRenderer.send('OpenURL', payload),
     RelaunchApp: () => ipcRenderer.send('RelaunchApp'),
 
     // Main to renderer
-    onChangeRouter: (callback: any) => ipcRenderer.on('update-router', callback)
+    onChangeRouter: (callback: (event: Electron.IpcRendererEvent|unknown, routename: string) => void) => ipcRenderer.on('update-router', callback)
   }
-)
+contextBridge.exposeInMainWorld('API', api)
+export type ElectronAPI = typeof api
