@@ -7,6 +7,7 @@ import { app, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron'
 import ElectronStore from 'electron-store'
 import DB from '@seald-io/nedb'
 import xxhash from 'xxhashjs'
+import { sw } from 'element-plus/es/locales.mjs'
 
 // Viteのdefineで置き換えられる定数
 const version = __APP_VERSION__
@@ -383,12 +384,12 @@ function registerMenu() {
             {
               label: 'リロード',
               accelerator: '',
-              click: (item: any, focusedWindow: any) => { focusedWindow.webContents.onbeforeunload = null; focusedWindow.reload() }
+              click: (_item, focusedWindow: BrowserWindow) => { focusedWindow.webContents.onbeforeunload = null; focusedWindow.reload() }
             },
             {
               label: '開発者ツール',
               accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
-              click: (item: any, focusedWindow: any) => focusedWindow.webContents.toggleDevTools()
+              click: (_item, focusedWindow: BrowserWindow) => focusedWindow.webContents.toggleDevTools()
             }
           ]
         }]
@@ -416,51 +417,70 @@ function registerMenu() {
 //
 
 // main -> renderer : メニューからrouterの切り替え要求 (App.vueで処理)
-function RendererRoute(routename: any, targetwindow: any) {
+function RendererRoute(routename: string, targetwindow: BrowserWindow) {
   targetwindow.webContents.send('update-router', routename)
 }
 
 // router毎のメニュー操作
-function switchMenu(payload: any) {
-  const menu = Menu.getApplicationMenu() as any
+function switchMenu(payload: string) {
+  const menu = Menu.getApplicationMenu()
+  if (!menu) {
+    return
+  }
+
+  const switchPattern = {
+    new: false,
+    delete: false,
+    import: false,
+    export: false,
+    setup: false,
+    settings: false,
+  }
+
   switch (payload) {
-    case 'login':
-    case 'edit':
-    case 'diagnosis':
-    case 'procedure':
-    case 'AE':
-      menu.getMenuItemById('list-new').enabled = false
-      menu.getMenuItemById('list-delete').enabled = false
-      menu.getMenuItemById('list-import').enabled = false
-      menu.getMenuItemById('list-export').enabled = false
-      menu.getMenuItemById('setup').enabled = false
-      menu.getMenuItemById('list-settings').enabled = false
-      break
     case 'list':
-      menu.getMenuItemById('list-new').enabled = true
-      menu.getMenuItemById('list-delete').enabled = true
-      menu.getMenuItemById('list-import').enabled = true
-      menu.getMenuItemById('list-export').enabled = true
-      menu.getMenuItemById('setup').enabled = true
-      menu.getMenuItemById('list-settings').enabled = true
+      switchPattern.new = true
+      switchPattern.delete = true
+      switchPattern.import = true
+      switchPattern.export = true
+      switchPattern.setup = true
+      switchPattern.settings = true
       break
     case 'utility':
     case 'setup':
-      menu.getMenuItemById('list-new').enabled = false
-      menu.getMenuItemById('list-delete').enabled = false
-      menu.getMenuItemById('list-import').enabled = true
-      menu.getMenuItemById('list-export').enabled = true
-      menu.getMenuItemById('setup').enabled = true
-      menu.getMenuItemById('list-settings').enabled = false
+      switchPattern.new = false
+      switchPattern.delete = false
+      switchPattern.import = true
+      switchPattern.export = true
+      switchPattern.setup = true
+      switchPattern.settings = false
       break
     default:
-      menu.getMenuItemById('list-new').enabled = false
-      menu.getMenuItemById('list-delete').enabled = false
-      menu.getMenuItemById('list-import').enabled = false
-      menu.getMenuItemById('list-export').enabled = false
-      menu.getMenuItemById('setup').enabled = false
-      menu.getMenuItemById('list-settings').enabled = false
+      switchPattern.new = false
+      switchPattern.delete = false
+      switchPattern.import = false
+      switchPattern.export = false
+      switchPattern.setup = false
+      switchPattern.settings = false
   }
+  // メニューアイテムの有効/無効を切り替える
+  const listNewItem = (menu as Electron.Menu).getMenuItemById('list-new')
+  if (listNewItem) listNewItem.enabled = switchPattern.new
+  
+  const listDeleteItem = (menu as Electron.Menu).getMenuItemById('list-delete')
+  if (listDeleteItem) listDeleteItem.enabled = switchPattern.delete
+  
+  const listImportItem = (menu as Electron.Menu).getMenuItemById('list-import')
+  if (listImportItem) listImportItem.enabled = switchPattern.import
+  
+  const listExportItem = (menu as Electron.Menu).getMenuItemById('list-export')
+  if (listExportItem) listExportItem.enabled = switchPattern.export
+  
+  const setupItem = (menu as Electron.Menu).getMenuItemById('setup')
+  if (setupItem) setupItem.enabled = switchPattern.setup
+  
+  const listSettingsItem = (menu as Electron.Menu).getMenuItemById('list-settings')
+  if (listSettingsItem) listSettingsItem.enabled = switchPattern.settings
 }
 
 //
@@ -515,16 +535,16 @@ function createDatabaseInstance() {
       filename: DBfilename,
       autoload: true
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     // データベースファイルが作成できないのは致命的エラーなのでダイアログを出して終了する
     if (isDevelopment) {
-      console.warn('[DEV] Unable to create database file: ' + error?.message)
+      console.warn('[DEV] Unable to create database file: ' + (error as Error)?.message)
     }
     dialog.showMessageBoxSync({
       title: 'JOED5',
       type: 'error',
       buttons: ['OK'],
-      message: 'データベースファイルの操作に失敗しました, アプリケーションを起動できません.\n以下の情報を添えて学会までお問い合わせください.\n\n' + error.message
+      message: 'データベースファイルの操作に失敗しました, アプリケーションを起動できません.\n以下の情報を添えて学会までお問い合わせください.\n\n' + (error as Error)?.message
     })
     removeLockfile()
     app.exit(-1)
@@ -536,7 +556,7 @@ function createDatabaseInstance() {
  * クエリ中の $regex を RexExpオブジェクトでの呼び出しに変換する
  * @param {*} obj
  */
-function unescapeRegexInObject(obj: any): any {
+function unescapeRegexInObject(obj: unknown): unknown {
   // $regex: string の指定があるかチェック なければそのまま返す
   if (!JSON.stringify(obj).includes('"$regex":"/')) {
     return obj
@@ -546,18 +566,19 @@ function unescapeRegexInObject(obj: any): any {
     return obj
   }
   if (Array.isArray(obj)) {
-    return obj.map((item: any) => unescapeRegexInObject(item))
+    return obj.map((item: unknown) => unescapeRegexInObject(item))
   }
   if (typeof obj === 'object') {
-    const newobj: Record<string, any> = {}
+    const newobj: Record<string, unknown> = {}
     for (const key in obj) {
-      if (key === '$regex' && typeof obj[key] === 'string') {
+      const value = (obj as Record<string, unknown>)[key]
+      if (key === '$regex' && typeof value === 'string') {
         // 文字列からRegExpオブジェクトに変換
-        const regexBody = obj[key].substring(1, obj[key].lastIndexOf('/'))
-        const regexFlags = obj[key].substring(obj[key].lastIndexOf('/') + 1)
+        const regexBody = value.substring(1, value.lastIndexOf('/'))
+        const regexFlags = value.substring(value.lastIndexOf('/') + 1)
         newobj[key] = new RegExp(regexBody, regexFlags)
       } else {
-        newobj[key] = unescapeRegexInObject(obj[key])
+        newobj[key] = unescapeRegexInObject(value)
       }
     }
     return newobj
