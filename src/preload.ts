@@ -26,10 +26,7 @@ contextBridge.exposeInMainWorld('API',
     Insert: async (payload: any) => await ipcRenderer.invoke('Insert', payload),
     Find: async (payload: any) => await ipcRenderer.invoke('Find', payload),
     FindOne: async (payload: any) => await ipcRenderer.invoke('FindOne', payload),
-    // MIGRATION PROBLEM
-    // IPCチャネル名が 'FineOneByHash' になっている(typo由来)ため互換維持で残置。
-    // main側が将来 'FindOneByHash' に統一された場合、ここも同時変更が必要。
-    FindOneByHash: async (payload: any) => await ipcRenderer.invoke('FineOneByHash', payload),
+    FindOneByHash: async (payload: any) => await ipcRenderer.invoke('FindOneByHash', payload),
     Count: async (payload: any) => await ipcRenderer.invoke('Count', payload),
     Update: async (payload: any) => await ipcRenderer.invoke('Update', payload),
     Remove: async (payload: any) => await ipcRenderer.invoke('Remove', payload),

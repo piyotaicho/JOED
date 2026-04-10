@@ -643,7 +643,7 @@ function registerIPChandlers() {
   // FindOneByHash
   // @Object.Hash : String
   // @Object.SALT : Integer
-  ipcMain.handle('FineOneByHash', (_, payload) => {
+  ipcMain.handle('FindOneByHash', (_, payload) => {
     const Encoder = new TextEncoder()
     return new Promise((resolve, reject) => {
       appConfig.databaseInstance
