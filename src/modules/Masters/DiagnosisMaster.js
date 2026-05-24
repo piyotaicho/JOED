@@ -126,6 +126,18 @@ export default class DiagnosisMaster extends Master {
             ValidFrom: '2020',
             Code: ['C809', 'R798']
           },
+          // 2026 新規
+          {
+            Text: '子宮頸管無力症',
+            Code: ['N883', 'O343'],
+            ValidFrom: '2026'
+          },
+          // 2026 新規
+          {
+            Text: '妊娠中期の流早産既往',
+            Code: ['O039', 'O601'],
+            ValidFrom: '2026'
+          },
           // 2021 新規
           {
             Text: '術後合併症・処置後合併症',
