@@ -1,19 +1,74 @@
-import { createStore } from 'vuex'
+import { createStore, type ActionContext } from 'vuex'
 // データベースアクセスモジュールは環境依存のため分離(viteでパスが解決される)
 import * as NedbAccess from 'depmodules/NedbAccess'
 import system from '@/store/modules/system'
 import password from '@/store/modules/passwordauth'
 import { parseProcedureTime } from '@/modules/ProcedureTimes'
+import type { CaseDocument } from '@/types/data'
+
+interface ViewFilter {
+  Field: string
+  Value: unknown
+}
+
+interface DocumentIdsState {
+  List: number[]
+  TotalCount: number
+  Range: number
+  Identifier: number
+}
+
+interface SearchState {
+  IgnoreQuery: boolean
+  Filter: ViewFilter[]
+  Preserve: string
+}
+
+interface BaseRootState {
+  DataStore: CaseDocument[]
+  DocumentIds: DocumentIdsState
+  Filters: ViewFilter[]
+  Sort: Record<string, number>
+  Search: SearchState
+  Selected: number[]
+}
+
+type RootState = BaseRootState & Record<string, any>
+
+interface ViewQueryResult {
+  Query: Record<string, any>
+  Sort: Record<string, number>
+}
+
+interface StoreGetters {
+  Uids: number[]
+  ViewQuery: ViewQueryResult
+}
+
+type StoreActionContext = ActionContext<RootState, RootState>
+type DbInsertPayload = Parameters<typeof NedbAccess.Insert>[0]
+type DbFindPayload = Parameters<typeof NedbAccess.Find>[0]
+type DbFindOnePayload = Parameters<typeof NedbAccess.FindOne>[0]
+type DbFindOneByHashPayload = Parameters<typeof NedbAccess.FindOneByHash>[0]
+type DbCountPayload = Parameters<typeof NedbAccess.Count>[0]
+type DbUpdatePayload = Parameters<typeof NedbAccess.Update>[0]
+type DbRemovePayload = Parameters<typeof NedbAccess.Remove>[0]
+
+type emptyObject = {}
+type minimumCaseDocument = {
+  DocumentId: number
+}
+
 
 // 内部定数
 const numberLoadAtAtime = 20 // 一度にロードするデータの数
 
 // ストア
-const store = createStore({
+const store = createStore<RootState>({
   modules: {
     system, password
   },
-  state: {
+  state: (): RootState => ({
     DataStore: [], // インメモリのデータベースレプリケーション
 
     DocumentIds: {
@@ -36,34 +91,34 @@ const store = createStore({
 
     // 複数選択モードでエクスポート用に選択されたDocumentIdリスト
     Selected: [],
-  },
+  }),
   getters: {
     // 現在queryで設定されているドキュメントの DocumentId を配列で返す.
-    Uids (state) {
+    Uids (state: RootState): number[] {
       return state.DocumentIds.List
     },
     // 現在queryで設定されているドキュメントの数を返す.
-    NumberOfCases (state) {
+    NumberOfCases (state: RootState): number {
       return state.DocumentIds.List.length
     },
     // データベースが保持しているドキュメントの数を返す.
-    TotalNumberOfCases (state) {
+    TotalNumberOfCases (state: RootState): number {
       return state.DocumentIds.TotalCount
     },
     // 現在queryで設定されているドキュメントの DocumentId を配列で返す.
-    PagedUids (state) {
+    PagedUids (state: RootState): number[] {
       return state.DocumentIds.List.slice(0, state.DocumentIds.Range)
     },
     // 現在表示対象となっているドキュメントの数
-    PagedUidsRange (state) {
+    PagedUidsRange (state: RootState): number {
       return state.DocumentIds.Range
     },
     // 指定された DocumentId の前後の DocumentId を返す.
     // 存在しないものは 0.
     // @param {Number} currentUid
     // @param {Number} offset 0:Self, -1:Prev, +1:Next
-    GetRelativeDocumentId (state, getters) {
-      return function (currentUid: any, offset: any) {
+    GetRelativeDocumentId (state: RootState, getters: StoreGetters): (currentUid: number, offset: number) => number {
+      return function (currentUid: number, offset: number): number {
         const index = state.DocumentIds.List.indexOf(currentUid)
         if (currentUid === 0 || index === -1) {
           return 0
@@ -75,24 +130,24 @@ const store = createStore({
         if (offsetedIndex > state.DocumentIds.List.length) {
           return 0
         }
-        return getters.Uids[offsetedIndex]
+        return getters.Uids[offsetedIndex] ?? 0
       }
     },
     // DocumentId をもつドキュメントを取得する. ロードされていない場合は空のオブジェクトが返る.
     // @param {Number}
-    CaseDocument (state) {
-      return function (uid: any) {
+    CaseDocument (state: RootState): (uid: number) => CaseDocument|emptyObject {
+      return function (uid: number) {
         if (Number.isInteger(uid) && uid > 0) {
-          const DocumentIndex = state.DataStore.findIndex((item: any) => item.DocumentId === uid)
+          const DocumentIndex = state.DataStore.findIndex((item: CaseDocument) => item.DocumentId === uid)
           if (DocumentIndex !== -1) {
             return state.DataStore[DocumentIndex]
           }
         }
-        return {}
+        return {} as emptyObject
       }
     },
     // Listの表示設定を取得
-    ViewSettings (state) {
+    ViewSettings (state: RootState): { Filters: ViewFilter[]; Sort: Record<string, number>; Search: SearchState } {
       return {
         Filters: state.Filters,
         Sort: state.Sort,
@@ -100,7 +155,7 @@ const store = createStore({
       }
     },
     // 表示設定が規定から変更されているかを取得
-    ViewSettingsChanged (state) {
+    ViewSettingsChanged (state: RootState): boolean {
       const defaultFilters = state.system.settings.View.Filters || []
       const defaultSort = state.system.settings.View.Sort || { DocumentId: -1 }
 
@@ -111,6 +166,9 @@ const store = createStore({
       for (let i = 0; i < state.Filters.length; i++) {
         const filterA = state.Filters[i]
         const filterB = defaultFilters[i]
+        if (!filterA || !filterB) {
+          return true
+        }
         if (filterA.Field !== filterB.Field || filterA.Value !== filterB.Value) {
           return true
         }
@@ -131,12 +189,12 @@ const store = createStore({
       return false
     },
     // 検索が有効かを取得
-    SearchActivated (state) {
+    SearchActivated (state: RootState): boolean {
       return Object.keys(state.Search.Filter).length > 0
     },
     // 現在のView設定からのクエリを作成する
-    ViewQuery (state) {
-      const query: any = {}
+    ViewQuery (state: RootState): ViewQueryResult {
+      const query: Record<string, unknown> = {}
 
       // フィルタの初期値を設定
       const filters = (state.Filters && [...state.Filters]) || []
@@ -192,7 +250,7 @@ const store = createStore({
       }
     },
     // エクスポート用に選択されたDocumentIdリストを取得
-    GetSelectedUidsForExport (state) {
+    GetSelectedUidsForExport (state: RootState): number[] {
       return state.Selected
     }
   },
@@ -201,15 +259,15 @@ const store = createStore({
     // DocumentIdsにドキュメントリストを設定する
     //
     // @param {Object} DocumentIds
-    SetDocumentIds (state, payload) {
+    SetDocumentIds (state: RootState, payload: { DocumentIds: number[] }) {
       state.DocumentIds.List = payload.DocumentIds
       state.DocumentIds.Identifier = state.DocumentIds.Identifier + 1
     },
     // DataStoreにデータベースをキャッシュする.
     //
     // @param {Object} document
-    SetDatastore (state, payload) {
-      const foundIndex = state.DataStore.findIndex((item: any) => item.DocumentId === payload.DocumentId)
+    SetDatastore (state: RootState, payload: CaseDocument) {
+      const foundIndex = state.DataStore.findIndex((item: CaseDocument) => item.DocumentId === payload.DocumentId)
       if (foundIndex === -1) {
         state.DataStore.push(payload)
       } else {
@@ -219,8 +277,8 @@ const store = createStore({
     // キャッシュDataStoreから指定のドキュメントを破棄.
     //
     // @param {Object} DocumentId
-    RemoveDatastore (state, payload) {
-      const foundIndex = state.DataStore.findIndex((item: any) => item.DocumentId === payload.DocumentId)
+    RemoveDatastore (state: RootState, payload: { DocumentId: number }) {
+      const foundIndex = state.DataStore.findIndex((item: CaseDocument) => item.DocumentId === payload.DocumentId)
       if (foundIndex !== -1) {
         state.DataStore.splice(foundIndex, 1)
       }
@@ -228,24 +286,24 @@ const store = createStore({
     // 総症例数
     //
     // @Param {Number}
-    SetTotalDocumentCount (state, payload) {
+    SetTotalDocumentCount (state: RootState, payload: number) {
       state.DocumentIds.TotalCount = payload
     },
     // 表示対象数をクリア
     //
-    ClearDocumentListRange (state) {
+    ClearDocumentListRange (state: RootState) {
       state.DocumentIds.Range = Math.min(numberLoadAtAtime, state.DocumentIds.List.length)
     },
     // 表示対象数を増やす
     //
-    IncrementDocumentListRange (state) {
+    IncrementDocumentListRange (state: RootState) {
       state.DocumentIds.Range = Math.min(state.DocumentIds.Range +  numberLoadAtAtime, state.DocumentIds.List.length)
     },
 
     // Filtersを設定
     //
     // @param {Object}
-    SetFilters (state, payload) {
+    SetFilters (state: RootState, payload: ViewFilter[]) {
       const newFilters = Array.isArray(payload) ? payload : state.system.settings.View.Filters
       state.Filters = newFilters
     },
@@ -253,7 +311,7 @@ const store = createStore({
     // Searchを設定
     //
     // @param {Object}
-    SetSearch (state, payload = {}) {
+    SetSearch (state: RootState, payload: Partial<SearchState> = {}) {
       if (payload.Filter !== undefined) {
         state.Search.Filter = payload.Filter
       }
@@ -268,8 +326,8 @@ const store = createStore({
     // Sortの設定
     //
     // @param {Object}
-    SetSort (state, payload = {}) {
-      const [field, value] = Object.entries(payload as Record<string, any>).flat() as [any, any]
+    SetSort (state: RootState, payload: Record<string, number> = {}) {
+      const [field, value] = Object.entries(payload)[0] || []
       if (field !== undefined && value !== undefined) {
         state.Sort = { [field]: value }
       } else {
@@ -280,7 +338,7 @@ const store = createStore({
     // エクスポート用に選択されたDocumentIdリストを設定
     //
     // @param {Array} DocumentIdの配列
-    SetSelectedUidsForExport (state, payload) {
+    SetSelectedUidsForExport (state: RootState, payload: number[]) {
       if (Array.isArray(payload)) {
         state.Selected.splice(0, state.Selected.length, ...payload)
       } else {
@@ -293,40 +351,40 @@ const store = createStore({
     // データベース操作 - moduleのフォルダで実行環境を分離する作戦
     // Insert document
     // @Param {Object} Document
-    dbInsert (_, payload) {
+    dbInsert (_: unknown, payload: DbInsertPayload) {
       return NedbAccess.Insert(payload)
     },
     // Find documents
     // @Param {Object} Query, Projection, Sort,
     // @Param {Number} Skip, Limit
-    dbFind (_, payload) {
+    dbFind (_: unknown, payload: DbFindPayload) {
       return NedbAccess.Find(payload)
     },
     // Find a document
     // @Param {Object} Query, Projection, Sort,
     // @Param {Number} Skip
-    dbFindOne (_, payload) {
+    dbFindOne (_: unknown, payload: DbFindOnePayload) {
       return NedbAccess.FindOne(payload)
     },
     // Find a document by hash
     // @Param {String} Hash
     // @Param {Number} SALT
-    dbFindOneByHash (_, payload) {
+    dbFindOneByHash (_: unknown, payload: DbFindOneByHashPayload) {
       return NedbAccess.FindOneByHash(payload)
     },
     // Count matched documents
     // @Param {Object} Query
-    dbCount (_, payload) {
+    dbCount (_: unknown, payload: DbCountPayload) {
       return NedbAccess.Count(payload)
     },
     // Update documents
     // @Param {Object} Query, Update, Options
-    dbUpdate (_, payload) {
+    dbUpdate (_: unknown, payload: DbUpdatePayload) {
       return NedbAccess.Update(payload)
     },
     // Remove documents
     // @Param {Object} Query, Options
-    dbRemove (_, payload) {
+    dbRemove (_: unknown, payload: DbRemovePayload) {
       return NedbAccess.Remove(payload)
     },
     // Dump database documents
@@ -335,7 +393,7 @@ const store = createStore({
     },
     // Drop database
     // @Param (boolean) removeBackupFiles - バックアップファイルも削除する
-    dbDrop ({state}, payload) {
+    dbDrop ({state}: { state: RootState }, payload: boolean) {
       NedbAccess.Drop(payload)
 
       // stateのDataStoreもクリアする
@@ -349,10 +407,10 @@ const store = createStore({
     // DocumentIdリストの更新. データベースの操作後は必ず実行する.
     //
     //
-    async ReloadDocumentList (context) {
+    async ReloadDocumentList (context: StoreActionContext) {
       try {
-        const Projection: any = { DocumentId: 1, _id: 0 }
-        let documents = []
+        const Projection: Record<string, 0|1> = { DocumentId: 1, _id: 0 }
+        let documents: minumumCaseDocument[] = []
 
         // 通常のFind
         if (context.getters.ViewQuery.Query.Hash === undefined) {
@@ -380,7 +438,7 @@ const store = createStore({
                 Sort: querySort,
                 Projection
               }
-            )).sort((a: any, b: any) => {
+            )).sort((a: CaseDocument, b: CaseDocument) => {
               const valueA = parseProcedureTime(a.ProcedureTime)
               const valueB = parseProcedureTime(b.ProcedureTime)
               return valueA === valueB ? 0 : valueA < valueB ? -1 * direction : 1 * direction
@@ -401,7 +459,7 @@ const store = createStore({
 
         context.commit('SetDocumentIds',
           {
-            DocumentIds: documents.map((doc: any) => doc.DocumentId)
+            DocumentIds: documents.map((doc: minumumCaseDocument) => doc.DocumentId)
           }
         )
         context.commit('SetTotalDocumentCount',
@@ -417,13 +475,13 @@ const store = createStore({
     // document = $store.getters.CaseDocument( foo )
     //
     // @Param {Object} DocumentIdのみのオブジェクト
-    async FetchDocument (context, payload) {
+    async FetchDocument (context: StoreActionContext, payload: minimumCaseDocument|emptyObject) {
       if (!payload.DocumentId) {
         return undefined
       }
 
       // 既にロードされているデータであればキャッシュから取得する
-      const DataStoreIndex = context.state.DataStore.findIndex((item: any) => item.DocumentId === payload.DocumentId)
+      const DataStoreIndex = context.state.DataStore.findIndex((item: CaseDocument) => item.DocumentId === payload.DocumentId)
       if (DataStoreIndex !== -1) {
         return DataStoreIndex
       } else {
@@ -440,7 +498,7 @@ const store = createStore({
     // 症例データの新規登録. 同一日時に同一IDの症例は登録出来ない.
     //
     // @param {Object} オブジェクトCase
-    async InsertDocument (context, payload) {
+    async InsertDocument (context: StoreActionContext, payload: Record<string, any>) {
       try {
         // 重複入力の確認
         const count = await context.dispatch('dbCount', {
@@ -512,7 +570,7 @@ const store = createStore({
     // 同一日時に同一IDの症例は登録出来ない.
     //
     // @param {Object} オブジェクトCase
-    async ReplaceDocument (context, payload) {
+    async ReplaceDocument (context: StoreActionContext, payload: Record<string, any>) {
       if (payload.DocumentId <= 0) {
         throw new Error('内部IDの指定に問題があります.')
       }
@@ -559,7 +617,7 @@ const store = createStore({
     // 症例データの登録. DocumentIdで、新規(===0)・更新(>0)を区別する.
     //
     // @param {Object} オブジェクトCase
-    UpsertDocument (context, payload) {
+    UpsertDocument (context: StoreActionContext, payload: Record<string, any>) {
       if (payload.DocumentId && payload.DocumentId > 0) {
         return context.dispatch('ReplaceDocument', payload)
       } else {
@@ -570,7 +628,7 @@ const store = createStore({
     // 症例データの削除.
     //
     // @param {Object} オブジェクトCase (検索に用いるのは DocumentId のみ)
-    async RemoveDocument (context, payload) {
+    async RemoveDocument (context: StoreActionContext, payload: { DocumentId: number }) {
       if (payload.DocumentId <= 0) {
         throw new Error('内部IDの指定に問題があります.')
       }
@@ -591,7 +649,7 @@ const store = createStore({
 
     // 症例データのもつ DateOfProcedure から年次と症例数を集計したobjectを返す
     //
-    async GetYears (context) {
+    async GetYears (context: StoreActionContext): Promise<Record<string, number>> {
       try {
         const documents = await context.dispatch('dbFind',
           {

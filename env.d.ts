@@ -18,16 +18,6 @@ declare const __APP_DESCRIPTION__: string
 
 declare module 'encoding-japanese'
 declare module 'xxhashjs'
-declare module 'vuex' {
-  interface LooseStoreOptions {
-    modules?: Record<string, any>
-    state?: any
-    getters?: Record<string, (state: any, getters: any, rootState: any, rootGetters: any) => any>
-    mutations?: Record<string, (state: any, payload?: any) => any>
-    actions?: Record<string, (context: any, payload?: any) => any>
-  }
-  export function createStore(options: LooseStoreOptions): any
-}
 declare module 'depmodules/config' {
   export function LoadConfig(storecontext?: unknown): Promise<Record<string, unknown>>
   export function SaveConfig(payload: Record<string, unknown>, storecontext?: unknown): Promise<void>

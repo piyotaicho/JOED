@@ -89,15 +89,14 @@ export type ApproachValue = Record<string, string[]>
  * 症例ドキュメント (NeDB の 1 レコード)
  */
 export interface CaseDocument {
-  _id?: string                    // NeDB が自動付与
+  _id?: string                    // NeDB が自動付与するもので、DocumentId とは別、取得することはない
   DocumentId: number
-  UniqueId?: string               // エクスポート時に生成
   Name?: string
   Age?: number
-  PatientId: string
-  JSOGId?: string
-  NCDId?: string
-  DateOfProcedure: string         // YYYY-MM-DD
+  PatientId: string               // 必須
+  JSOGId?: string                 // 廃止 腫瘍登録番号 後方互換のためにある
+  NCDId?: string                  // 廃止 NCD症例ID 後方互換のためにある
+  DateOfProcedure: string         // 必須 YYYY-MM-DD
   ProcedureTime?: string
   TypeOfProcedure?: string
   PresentAE?: boolean
@@ -109,7 +108,6 @@ export interface CaseDocument {
   Note?: string
   Notification?: string
   Imported?: boolean
-  ValidationReport?: string[]
 }
 
 // -------- エクスポート用データ --------
@@ -121,19 +119,25 @@ export interface ExportHeader {
   InstitutionName: string
   InstitutionID: string
   Year?: string
+  TimeStamp: number // Unix timestamp (milliseconds since epoch) from Date.now()
+  NumberOfCases: number
+  NumberOfDenial: number
+  Version: string
+  Platform: string
+  hash: string
 }
 
 /**
  * 提出用症例レコード (CaseDocument の提出用サブセット)
  */
 export interface ExportCaseRecord {
-  YearOfProcedure: string
-  ProcedureTime?: string
-  TypeOfProcedure?: string
-  Diagnoses?: Array<{ Text: string; Description?: ProcedureDescription }>
-  Procedures?: Array<{ Text: string; Description?: ProcedureDescription }>
+  YearOfProcedure: string // YYYY
+  ProcedureTime: string
+  TypeOfProcedure: string
+  Diagnoses: Array<{ Text: string; Description?: ProcedureDescription }>
+  Procedures: Array<{ Text: string; Description?: ProcedureDescription }>
   Approach?: ApproachValue
-  PresentAE?: boolean
+  PresentAE: boolean
   AEs?: AEItem[]
   Imported?: boolean
 }
@@ -168,7 +172,7 @@ export interface AppSettings {
   EditJSOGId: boolean
   EditNCDId: boolean
   ShowNote: boolean
-  Approach: string        // JSON 文字列化された ApproachValue
+  Approach: string        // JSON 文字列化された ApproachValue のデフォルト値
   ShowStartupDialog: boolean
   EnableAdvancedSettings: boolean
   View: ViewSettings
