@@ -87,6 +87,7 @@ export default class DiagnosisMaster extends Master {
           // 2021 新規
           {
             Text: '帝王切開瘢痕症候群',
+            Code: ['O342'],
             ValidFrom: '2021'
           },
           // 2021 表記変更 機能性不妊症(腹腔内検査) -> 機能性不妊症(腹腔内検査,SecondLookを含む)
@@ -524,6 +525,7 @@ export default class DiagnosisMaster extends Master {
           },
           {
             Text: '帝王切開瘢痕症候群',
+            Code: ['O342'],
             ValidFrom: '2020'
           },
           {
