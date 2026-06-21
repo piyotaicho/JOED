@@ -87,6 +87,7 @@ export default class DiagnosisMaster extends Master {
           // 2021 新規
           {
             Text: '帝王切開瘢痕症候群',
+            Code: ['O342'],
             ValidFrom: '2021'
           },
           // 2021 表記変更 機能性不妊症(腹腔内検査) -> 機能性不妊症(腹腔内検査,SecondLookを含む)
@@ -125,6 +126,18 @@ export default class DiagnosisMaster extends Master {
             Text: '予防的内性器摘出術の適応',
             ValidFrom: '2020',
             Code: ['C809', 'R798']
+          },
+          // 2026 新規
+          {
+            Text: '子宮頸管無力症',
+            Code: ['N883', 'O343'],
+            ValidFrom: '2026'
+          },
+          // 2026 新規
+          {
+            Text: '妊娠中期の流早産既往',
+            Code: ['O039', 'O601'],
+            ValidFrom: '2026'
           },
           // 2021 新規
           {
@@ -512,6 +525,7 @@ export default class DiagnosisMaster extends Master {
           },
           {
             Text: '帝王切開瘢痕症候群',
+            Code: ['O342'],
             ValidFrom: '2020'
           },
           {
