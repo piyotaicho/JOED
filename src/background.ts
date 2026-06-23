@@ -876,6 +876,23 @@ function registerIPChandlers() {
   // Renderが指定する外部リンクをシステムで開く
   ipcMain.on('OpenURL', (_, target) => shell.openExternal(target))
 
+  // Renderが指定するフォルダ (Config, Data) をシステムで開く
+  ipcMain.on('OpenSystemFolder', (_, target) => {
+    if (target === 'Config') {
+      if (appConfig.storeConfig.cwd) {
+        if (appConfig.storeConfig.name && appConfig.storeConfig.fileExtension) {
+          shell.showItemInFolder(path.join(appConfig.storeConfig.cwd as string, appConfig.storeConfig.name as string + '.' + appConfig.storeConfig.fileExtension as string))
+        } else {
+          shell.showItemInFolder(path.join(appConfig.storeConfig.cwd as string, 'config.json'))
+        }
+      } else {
+        shell.showItemInFolder(path.join(app.getPath('userData'), 'config.json'))
+      }
+    } else if (target === 'Data') {
+      shell.showItemInFolder(path.join(app.getPath('documents'), 'joed.nedb'))
+    }
+  })
+
   // 再起動
   ipcMain.on('RelaunchApp', () => {
     app.relaunch()

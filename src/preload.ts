@@ -39,6 +39,8 @@ const api = {
     SwitchMenu: (payload: string) => ipcRenderer.send('SwitchMenu', payload),
 
     OpenURL: (payload: string) => ipcRenderer.send('OpenURL', payload),
+    OpenSystemFolder: (payload: string) => ipcRenderer.send('OpenSystemFolder', payload),
+
     RelaunchApp: () => ipcRenderer.send('RelaunchApp'),
 
     // Main to renderer
