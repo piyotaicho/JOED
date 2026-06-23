@@ -42,8 +42,8 @@ const hashString = computed(() => {
     const generateHash = store.getters['system/generateHash'] as ((value: string, oldStyle: boolean) => string) | undefined
     return generateHash?.(
       JSON.stringify({
-        DateOfProcedure: props.DateOfProcedure,
-        PatientId: props.PatientId
+        PatientId: props.PatientId,
+        DateOfProcedure: props.DateOfProcedure
       }),
       props.DateOfProcedure.substring(0, 4) <= '2021'
     ) || ''
