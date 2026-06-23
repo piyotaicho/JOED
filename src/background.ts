@@ -7,7 +7,6 @@ import { app, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron'
 import ElectronStore from 'electron-store'
 import DB from '@seald-io/nedb'
 import xxhash from 'xxhashjs'
-import { sw } from 'element-plus/es/locales.mjs'
 
 // Viteのdefineで置き換えられる定数
 const version = __APP_VERSION__
@@ -25,19 +24,22 @@ const backupGeneration = 5
 // VITEで置換される
 const isDevelopment = import.meta.env?.MODE === 'development' || false
 
-let win: BrowserWindow | null = null
-let session: any = null
-const appConfig: any = {
-  electronStore: undefined,
+let win: BrowserWindow
+let session: Electron.Session
+
+// アプリケーション設定
+const appConfig = {
+  electronStore: undefined as ElectronStore<Record<string, unknown>> | undefined,
   storeConfig: {
-    // cwd ?:,
-    // name ?:
-    // fileExtension ?:
-  },
-  databaseInstance: undefined,
+    // cwd?: string|undefined,
+    // name?: string|undefined,
+    // fileExtension?: string
+  } as Record<string, unknown>,
+  databaseInstance: undefined as DB<Record<string, unknown>> | undefined,
   enableLocking: false
 }
-let enableAdvancedSettings: any = undefined
+// コマンドラインオプションで高度な設定の利用可否を指定する場合のフラグ(tri-state)
+let enableAdvancedSettings: boolean | undefined = undefined
 
 // 初期設定
 // デフォルト path の documents を userData でオーバーライド
@@ -94,13 +96,22 @@ async function createWindow() {
     // macosでウインドウが閉じた後には、アプリケーションメニューを「JOED5について」しか利用出来ないようにする.
     // windowsではウインドウが閉じる = 終了となる
     if (process.platform === 'darwin') {
-      const menu = Menu.getApplicationMenu() as any
-      menu.getMenuItemById('list-new').enabled = false
-      menu.getMenuItemById('list-import').enabled = false
-      menu.getMenuItemById('list-export').enabled = false
-      menu.getMenuItemById('setup').enabled = false
+      const menu = Menu.getApplicationMenu()
+      if (menu) {
+        const listNewItem = menu.getMenuItemById('list-new')
+        if (listNewItem) listNewItem.enabled = false
+
+        const listImportItem = menu.getMenuItemById('list-import')
+        if (listImportItem) listImportItem.enabled = false
+
+        const listExportItem = menu.getMenuItemById('list-export')
+        if (listExportItem) listExportItem.enabled = false
+
+        const setupItem = menu.getMenuItemById('setup')
+        if (setupItem) setupItem.enabled = false
+      }
     }
-    win = null
+    win = null as unknown as BrowserWindow
   })
 }
 
@@ -159,7 +170,8 @@ function registerAppEvents() {
 
   // activate-with-no-open-windows: macosではdockに残ったアイコンからウインドウを開く.
   if (process.platform === 'darwin') {
-    ;(app as any).on('activate-with-no-open-windows', () => createWindow())
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    app.on('activate-with-no-open-windows' as any, () => createWindow())
   }
 
   // 強制終了(windows: graceful-exit, macos: SIGTERM)への対応.
@@ -303,7 +315,7 @@ function parseCommandLineDirectives() {
 // メニューの設定
 //
 function registerMenu() {
-  const MenuTemplate: any[] = [
+  const MenuTemplate = [
     // アプリケーションメニュー
     ...(
       process.platform === 'darwin'
@@ -312,7 +324,7 @@ function registerMenu() {
           submenu: [
             { label: 'JOED5について', role: 'about' },
             { type: 'separator' },
-            { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item: any, focusedWindow: any) => RendererRoute('settings', focusedWindow) },
+            { label: '設定', id: 'setup', enabled: false, accelerator: 'Command+,', click: (item: unknown, focusedWindow: BrowserWindow) => RendererRoute('settings', focusedWindow) },
             { type: 'separator' },
             { label: 'サービス', role: 'services', submenu: [] },
             { type: 'separator' },
@@ -329,20 +341,20 @@ function registerMenu() {
     {
       label: 'ファイル',
       submenu: [
-        { label: '新規症例の登録', id: 'list-new', enabled: false, accelerator: 'CmdORCtrl+N', click: (item: any, focusedWindow: any) => RendererRoute('new', focusedWindow) },
-        { label: '症例の削除', id: 'list-delete', enabled: false, accelerator: 'CmdORCtrl+X', click: (item: any, focusedWindow: any) => RendererRoute('list.delete', focusedWindow) },
+        { label: '新規症例の登録', id: 'list-new', enabled: false, accelerator: 'CmdORCtrl+N', click: (item: unknown, focusedWindow: BrowserWindow) => RendererRoute('new', focusedWindow) },
+        { label: '症例の削除', id: 'list-delete', enabled: false, accelerator: 'CmdORCtrl+X', click: (item: unknown, focusedWindow: BrowserWindow) => RendererRoute('list.delete', focusedWindow) },
         { type: 'separator' },
-        { label: 'データの読み込み', id: 'list-import', enabled: false, click: (item: any, focusedWindow: any) => RendererRoute('import', focusedWindow) },
-        { label: 'データの書き出し', id: 'list-export', enabled: false, click: (item: any, focusedWindow: any) => RendererRoute('export', focusedWindow) },
+        { label: 'データの読み込み', id: 'list-import', enabled: false, click: (item: unknown, focusedWindow: BrowserWindow) => RendererRoute('import', focusedWindow) },
+        { label: 'データの書き出し', id: 'list-export', enabled: false, click: (item: unknown, focusedWindow: BrowserWindow) => RendererRoute('export', focusedWindow) },
         ...(process.platform === 'darwin'
           ? [
             { type: 'separator' },
-            { label: 'リスト表示の設定', id: 'list-settings', enabled: false, click: (item: any, focusedWindow: any) => RendererRoute('list.drawer', focusedWindow) },
+            { label: 'リスト表示の設定', id: 'list-settings', enabled: false, click: (item: unknown, focusedWindow: BrowserWindow) => RendererRoute('list.drawer', focusedWindow) },
           ]
           : [
             { type: 'separator' },
-            { label: '設定', id: 'setup', enabled: false, accelerator: 'Ctrl+,', click: (item: any, focusedWindow: any) => RendererRoute('settings', focusedWindow) },
-            { label: 'リスト表示の設定', id: 'list-settings', enabled: false, click: (item: any, focusedWindow: any) => RendererRoute('list.drawer', focusedWindow) },
+            { label: '設定', id: 'setup', enabled: false, accelerator: 'Ctrl+,', click: (item: unknown, focusedWindow: BrowserWindow) => RendererRoute('settings', focusedWindow) },
+            { label: 'リスト表示の設定', id: 'list-settings', enabled: false, click: (item: unknown, focusedWindow: BrowserWindow) => RendererRoute('list.drawer', focusedWindow) },
             { label: '終了', accelerator: 'Alt+F4', role: 'quit' }
           ])
       ]
@@ -384,12 +396,12 @@ function registerMenu() {
             {
               label: 'リロード',
               accelerator: '',
-              click: (_item, focusedWindow: BrowserWindow) => { focusedWindow.webContents.onbeforeunload = null; focusedWindow.reload() }
+              click: (_item: unknown, focusedWindow: BrowserWindow) => { focusedWindow.webContents.removeAllListeners('before-unload'); focusedWindow.reload() }
             },
             {
               label: '開発者ツール',
               accelerator: (process.platform === 'darwin') ? 'Alt+Command+I' : 'Ctrl+Shift+I',
-              click: (_item, focusedWindow: BrowserWindow) => focusedWindow.webContents.toggleDevTools()
+              click: (_item: unknown, focusedWindow: BrowserWindow) => focusedWindow.webContents.toggleDevTools()
             }
           ]
         }]
@@ -397,7 +409,7 @@ function registerMenu() {
     )
   ]
 
-  Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate))
+  Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate as Electron.MenuItemConstructorOptions[]))
 
   // メニューと言えばメニューなのでAboutメニューのダイアログ
 
@@ -466,19 +478,19 @@ function switchMenu(payload: string) {
   // メニューアイテムの有効/無効を切り替える
   const listNewItem = (menu as Electron.Menu).getMenuItemById('list-new')
   if (listNewItem) listNewItem.enabled = switchPattern.new
-  
+
   const listDeleteItem = (menu as Electron.Menu).getMenuItemById('list-delete')
   if (listDeleteItem) listDeleteItem.enabled = switchPattern.delete
-  
+
   const listImportItem = (menu as Electron.Menu).getMenuItemById('list-import')
   if (listImportItem) listImportItem.enabled = switchPattern.import
-  
+
   const listExportItem = (menu as Electron.Menu).getMenuItemById('list-export')
   if (listExportItem) listExportItem.enabled = switchPattern.export
-  
+
   const setupItem = (menu as Electron.Menu).getMenuItemById('setup')
   if (setupItem) setupItem.enabled = switchPattern.setup
-  
+
   const listSettingsItem = (menu as Electron.Menu).getMenuItemById('list-settings')
   if (listSettingsItem) listSettingsItem.enabled = switchPattern.settings
 }
@@ -593,8 +605,13 @@ function registerIPChandlers() {
   // @Object.Document : Object
   ipcMain.handle('Insert', (_, payload) => {
     return new Promise((resolve, reject) => {
+      if (appConfig.databaseInstance === undefined) {
+        reject(new Error('Database instance is not initialized.'))
+        return
+      }
+
       appConfig.databaseInstance
-        .insert(payload.Document, (error: any, newdocument: any) => {
+        .insert(payload.Document, (error: unknown, newdocument: unknown) => {
           if (error) {
             reject(error)
           } else {
@@ -618,13 +635,18 @@ function registerIPChandlers() {
       const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
       const limit = payload.Limit ? Number.parseInt(payload.Limit) : 0
 
+      if (appConfig.databaseInstance === undefined) {
+        reject(new Error('Database instance is not initialized.'))
+        return
+      }
+
       appConfig.databaseInstance
         .find(query)
         .projection(projection)
         .sort(sort)
         .skip(skip)
         .limit(limit)
-        .exec((error: any, founddocuments: any) => {
+        .exec((error: unknown, founddocuments: unknown) => {
           if (error) {
             reject(error)
           } else {
@@ -646,12 +668,17 @@ function registerIPChandlers() {
       const sort = payload.Sort ? payload.Sort : {}
       const skip = payload.Skip ? Number.parseInt(payload.Skip) : 0
 
+      if (appConfig.databaseInstance === undefined) {
+        reject(new Error('Database instance is not initialized.'))
+        return
+      }
+
       appConfig.databaseInstance
-        .findOne(query)
+        .findOneAsync(query)
         .projection(projection)
         .sort(sort)
         .skip(skip)
-        .exec((error: any, founddocument: any) => {
+        .exec((error: unknown, founddocument: unknown) => {
           if (error) {
             reject(error)
           } else {
@@ -667,8 +694,13 @@ function registerIPChandlers() {
   ipcMain.handle('FindOneByHash', (_, payload) => {
     const Encoder = new TextEncoder()
     return new Promise((resolve, reject) => {
+      if (appConfig.databaseInstance === undefined) {
+        reject(new Error('Database instance is not initialized.'))
+        return
+      }
+
       appConfig.databaseInstance
-        .findOne({
+        .findOneAsync({
           $where: function () {
             if (this.PatientId && this.DateOfProcedure) {
               // 2021より実装変更:
@@ -684,6 +716,7 @@ function registerIPChandlers() {
                   payload.SALT.toString()
                 ).toString(36)
                 : xxhash.h64(JSON.stringify(recordKeys), payload.SALT).toString(36)
+              console.log('[DEV] FindOneByHash: ', recordKeys, ' => ', hash, ')')
               return payload.Hash === hash
             } else {
               return false
@@ -691,11 +724,11 @@ function registerIPChandlers() {
           }
         })
         .projection({ DocumentId: 1 })
-        .exec((error: any, founddocument: any) => {
+        .exec((error: unknown, founddocument: unknown) => {
           if (error) {
             reject(error)
           } else {
-            resolve(founddocument !== null ? founddocument.DocumentId : undefined)
+            resolve(founddocument !== null ? (founddocument as { DocumentId: number }).DocumentId : undefined)
           }
         })
     })
@@ -706,8 +739,14 @@ function registerIPChandlers() {
   ipcMain.handle('Count', (_, payload) => {
     return new Promise((resolve, reject) => {
       const query = payload.Query ? unescapeRegexInObject(payload.Query) : {}
+
+      if (appConfig.databaseInstance === undefined) {
+        reject(new Error('Database instance is not initialized.'))
+        return
+      }
+
       appConfig.databaseInstance
-        .count(query, (error: any, count: any) => {
+        .count(query, (error: unknown, count: number) => {
           if (error) {
             reject(error)
           } else {
@@ -726,8 +765,14 @@ function registerIPChandlers() {
       const query = payload.Query ? unescapeRegexInObject(payload.Query) : {}
       const update = payload.Update ? payload.Update : {}
       const options = payload.Options ? payload.Options : {}
+
+      if (appConfig.databaseInstance === undefined) {
+        reject(new Error('Database instance is not initialized.'))
+        return
+      }
+
       appConfig.databaseInstance
-        .update(query, update, options, (error: any, numrows: any) => {
+        .update(query, update, options, (error: unknown, numrows: number) => {
           if (error) {
             reject(error)
           } else {
@@ -744,8 +789,13 @@ function registerIPChandlers() {
     return new Promise((resolve, reject) => {
       const query = payload.Query ? unescapeRegexInObject(payload.Query) : {}
       const options = payload.Options ? payload.Options : {}
+
+      if (appConfig.databaseInstance === undefined) {
+        throw new Error('Database instance is not initialized.')
+      }
+
       appConfig.databaseInstance
-        .remove(query, options, (error: any, numrows: any) => {
+        .remove(query, options, (error: unknown, numrows: number) => {
           if (error) {
             reject(error)
           } else {
@@ -758,6 +808,10 @@ function registerIPChandlers() {
   // Drop
   // @Boolean.RemoveBackupFiles : Boolean
   ipcMain.handle('DropDatabase', async (_, removeBackupFiles) => {
+    if (appConfig.databaseInstance === undefined) {
+      throw new Error('Database instance is not initialized.')
+    }
+
     // データベースを全削除する
     await appConfig.databaseInstance.dropDatabaseAsync()
     // バックアップファイルも削除する
@@ -780,14 +834,18 @@ function registerIPChandlers() {
   // @Object.Key : String
   // @Object.DefaultConfig : Object
   ipcMain.handle('LoadConfig', (_, payload) => {
-    const config = appConfig.electronStore.get(payload.Key, payload.DefaultConfig)
+    if (appConfig.electronStore === undefined) {
+      throw new Error('Electron store is not initialized.')
+    }
+
+    const config = appConfig.electronStore.get(payload.Key, payload.DefaultConfig) as Record<string, unknown>
 
     // Configを取得する場合、高度な設定の利用可否がコマンドラインオプションで与えられていた場合それを反映
     if (payload.Key === 'Config' && enableAdvancedSettings !== undefined) {
       if (config?.Settings === undefined) {
-        config.Settings = {}
+        config.Settings = {} as Record<string, unknown>
       }
-      config.Settings.EnableAdvancedSettings = enableAdvancedSettings
+      (config.Settings as Record<string, unknown>).EnableAdvancedSettings = enableAdvancedSettings
     }
     return config
   })
@@ -795,9 +853,12 @@ function registerIPChandlers() {
   // SaveConfig
   // @Object.Key : String
   // @Object.Config : Object
-  ipcMain.handle('SaveConfig', (_, payload) =>
+  ipcMain.handle('SaveConfig', (_, payload) => {
+    if (appConfig.electronStore === undefined) {
+      throw new Error('Electron store is not initialized.')
+    }
     appConfig.electronStore.set(payload.Key, payload.Config)
-  )
+  })
 
   // GetSystemInfo
   // @no params
