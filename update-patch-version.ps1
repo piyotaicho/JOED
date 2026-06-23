@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 <#
 .SYNOPSIS
 バージョン更新スクリプト - 基準日からの経過日数をパッチレベルとして使用
@@ -79,7 +79,7 @@ if (-not (Test-Path $PackageJsonPath)) {
     exit 1
 }
 
-$packageContent = Get-Content $PackageJsonPath -Raw | ConvertFrom-Json
+$packageContent = Get-Content $PackageJsonPath -Encoding UTF8 | ConvertFrom-Json
 
 # 現在のバージョンを表示
 Write-Host "現在のバージョン: $($packageContent.version)" -ForegroundColor Cyan

@@ -1,4 +1,4 @@
-# UpdateBuildNumber [newVersionString or newMajorVersion] [newMinorVersion]
+﻿# UpdateBuildNumber [newVersionString or newMajorVersion] [newMinorVersion]
 param(
     [ValidatePattern('^\d+(.\d+)?$')]
     [Alias('Version', 'Ver')]
