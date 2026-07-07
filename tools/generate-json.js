@@ -8,10 +8,11 @@ commander
   .option('--diagnosis', 'Generate from DiagnosisMaster')
   .option('--procedure', 'Generate from ProcedureMaster')
   .option('--ae', 'Generate from AE master')
-  .option('--dump', 'Generate master object tree dump insted of array of texts')
   .option('--year <year>', 'Year of master items')
+  .option('--dump', 'Generate master object tree dump insted of array of texts')
   .option('--level', 'Output as object with category keys (not effective with --dump)')
-  .option('--mark', 'Mark description')
+  .option('--parse_description', 'Output as object with category keys and descriptions (overrides --level and not effective with --mark)')
+  .option('--mark', 'Mark description and additional procedure with $ and + (not effective with --parse_description)')
   .option('-o, --output <file>', 'Output file name')
   .parse(process.argv)
 
@@ -69,15 +70,19 @@ const main = async () => {
       jsonOutput = JSON.stringify(master, null, 2)
 
     } else if (!options.ae) {
-      if (options.level) {
+      if (options.level || options.parse_description) {
         // Output as object with category keys and arrays as values
         const result = {}
         for (const category of categories) {
           const items = master.Items(category, undefined, options.year)
-          if (!options.mark) {
-            result[category] = [...new Set(items.map(item => item.Text))]
+          if (options.parse_description) {
+            result[category] = [...new Set(items.map(item => item.Description ? { [item.Text]: item.Description.Values.map(value => value.indexOf('$') == -1 ? value : '')} : item.Text))]
           } else {
-            result[category] = [...new Set(items.map(item => item.Text + (item?.Description ? '$' : '') + (item?.AdditionalProcedure ? '+' : '')))]
+            if (options.mark) {
+              result[category] = [...new Set(items.map(item => item.Text + (item?.Description ? '$' : '') + (item?.AdditionalProcedure ? '+' : '')))]
+            } else {
+              result[category] = [...new Set(items.map(item => item.Text))]
+            }
           }
         }
         jsonOutput = JSON.stringify(result, null, 2)
@@ -87,11 +92,11 @@ const main = async () => {
         for (const category of categories) {
           items.push(...master.Items(category, undefined, options.year))
         }
-        if (!options.mark) {
-          const texts = [...new Set(items.map(item => item.Text))]
+        if (options.mark) {
+          const texts = [...new Set(items.map(item => item.Text + (item?.Description ? '$' : '') + (item?.AdditionalProcedure ? '+' : '')))]
           jsonOutput = JSON.stringify(texts, null, 2)
         } else {
-          const texts = [...new Set(items.map(item => item.Text + (item?.Description ? '$' : '') + (item?.AdditionalProcedure ? '+' : '')))]
+          const texts = [...new Set(items.map(item => item.Text))]
           jsonOutput = JSON.stringify(texts, null, 2)
         }
       }
