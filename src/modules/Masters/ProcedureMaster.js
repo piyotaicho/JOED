@@ -2,8 +2,8 @@ import Master from '@/modules/Masters/Master'
 import Fuse from 'fuse.js'
 import { ZenToHan } from '@/modules/ZenHanChars'
 
-export const LastUpdate = '2025-11-11'
-const defaultReference = '2025'
+export const LastUpdate = '2026-10-01'
+const defaultReference = '2026'
 
 const Kcodeformat = /^([A-Z]\d{3})(-0?(\d))?(-0?(\d))?/
 
@@ -132,9 +132,14 @@ export default class ProcedureMaster extends Master {
             ValidFrom: '2022',
             Code: ['K882-02-00']
           },
-          // 2022 新規
+          // 2026 新規
           {
             Text: '子宮頸管縫縮術',
+            Description: {
+              Text: '実施タイミング',
+              Values: ['妊娠中'],
+              Selection: 'anyornone'
+            },
             ValidFrom: '2026',
             Code: ['K906-03-00']
           },
@@ -788,6 +793,16 @@ export default class ProcedureMaster extends Master {
           {
             Text: '子宮付属器癒着剥離術(ロボット支援下)',
             ValidFrom: '2025'
+          },
+          // 2026 新規
+          {
+            Text: '子宮頸管縫縮術(ロボット支援下)',
+            Description: {
+              Text: '実施タイミング',
+              Values: ['妊娠中'],
+              Selection: 'anyornone'
+            },
+            ValidFrom: '2026'
           },
           // 2021 削除
           {
