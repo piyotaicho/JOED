@@ -1219,6 +1219,13 @@ export default class ProcedureMaster extends Master {
               Selection: 'anyornone'
             },
             ValidFrom: '2022',
+            ValidTo: '2025',
+            Code: ['K890-02-00']
+          },
+          // 2026年 腹腔鏡にアプローチが必須となるので腹腔鏡併用は該当する術式を選択して貰う必要がある
+          {
+            Text: '卵管鏡下卵管形成術',
+            ValidFrom: '2026',
             Code: ['K890-02-00']
           }
         ]
