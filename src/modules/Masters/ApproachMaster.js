@@ -41,13 +41,13 @@ export default class ApproachMaster {
       ],
       'ロボット': [
         {
-          oneOf: ['da Vinci[ Si,X,Xi,5]', 'da Vinci SP', 'Hugo', 'hinotori', 'Saroa']
+          oneOf: ['da Vinci[Si,X,Xi,5]', 'da Vinci SP', 'Hugo', 'hinotori', 'Saroa']
         },
         {
           anyOf: ['腹腔内アプローチ[(リンパ節処理)]', '後腹膜アプローチ[(リンパ節処理)]']
         },
         {
-          check: ['ダブルバイポーラ']
+          check: ['ダブルバイポーラ', 'VNOTES']
         },
         {
           check: ['治療のため腹腔鏡に移行$', '治療のため開腹移行$']
