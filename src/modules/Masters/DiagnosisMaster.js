@@ -135,12 +135,6 @@ export default class DiagnosisMaster extends Master {
           },
           // 2026 新規
           {
-            Text: '妊娠中期の流早産既往',
-            Code: ['O039', 'O601'],
-            ValidFrom: '2026'
-          },
-          // 2026 新規
-          {
             Text: '子宮頸部病変手術既往',
             ValidFrom: '2026'
           },
