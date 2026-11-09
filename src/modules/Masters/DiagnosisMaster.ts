@@ -2,8 +2,8 @@ import Master from '@/modules/Masters/Master'
 import Fuse from 'fuse.js'
 import { ZenToHan } from '@/modules/ZenHanChars'
 
-export const LastUpdate = '2025-11-11'
-const defaultReference = '2025'
+export const LastUpdate = '2026-10-01'
+const defaultReference = '2026'
 
 const icd10format = /^([A-Z][0-9]{2,3})$/i
 
@@ -137,6 +137,11 @@ export default class DiagnosisMaster extends Master {
           {
             Text: '妊娠中期の流早産既往',
             Code: ['O039', 'O601'],
+            ValidFrom: '2026'
+          },
+          // 2026 新規
+          {
+            Text: '子宮頸部病変手術既往',
             ValidFrom: '2026'
           },
           // 2021 新規
