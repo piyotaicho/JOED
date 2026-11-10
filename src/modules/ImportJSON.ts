@@ -1,5 +1,5 @@
 import { parseProcedureTime, encodeProcedureTime } from '@/modules/ProcedureTimes'
-import { CheckCategoryMatch } from './CaseValidater'
+import { ValidateCategory } from './CaseValidater'
 
 type JsonRecord = Record<string, any>
 type CreatedCaseData = Record<string, any>
@@ -161,7 +161,7 @@ async function DiagnosesAndProcedures (CaseData: CreatedCaseData, record: JsonRe
     if (record?.TypeOfProcedure) {
       CaseData.TypeOfProcedure = record.TypeOfProcedure
     } else {
-      CaseData.TypeOfProcedure = await CheckCategoryMatch(CaseData, CaseData.DateOfProcedure.substring(0, 4))
+      CaseData.TypeOfProcedure = await ValidateCategory(CaseData, CaseData.DateOfProcedure.substring(0, 4))
     }
   } catch {
     CaseData.Imported = true

@@ -65,7 +65,7 @@ export async function ValidateCase (item: CaseLike = {}, temporary = false): Pro
     // 可能であればカテゴリーを取得(エラーならundefinedを返す)
     let category: string | undefined = undefined
     try {
-      category = await ValidateCategoryMatch(item, year)
+      category = await ValidateCategory(item, year)
     } finally {
       return category
     }
@@ -74,7 +74,7 @@ export async function ValidateCase (item: CaseLike = {}, temporary = false): Pro
       ValidateDateOfProcedure(item),
       ValidateOptionalInformations(item),
       ValidateProcedureTime(item),
-      ValidateCategoryMatch(item, year), // [3] returns category
+      ValidateCategory(item, year), // [3] returns category
       ValidateDiagnoses(item, year),
       ValidateProcedures(item, year),
       ValidateAEs(item, year),
@@ -129,7 +129,7 @@ export async function ValidateOptionalInformations (item: CaseLike): Promise<voi
 
 // 主たる術後診断・実施術式のカテゴリの一致の検証
 //
-export async function ValidateCategoryMatch (item: CaseLike, year: string): Promise<string> {
+export async function ValidateCategory (item: CaseLike, year: string): Promise<string> {
   // 判定はあくまで主たる診断・術式
   const categoryOfDiagnosis = item?.Diagnoses?.[0]?.Chain?.[0]
   const categoryOfProcedure = item?.Procedures?.[0]?.Chain?.[0]
