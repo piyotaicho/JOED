@@ -11,30 +11,6 @@ type CaseLike = Record<string, any>
 export const DateFormatPattern = '^20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$'
 export const DateFormat = new RegExp(DateFormatPattern)
 
-// 年次依存の改善メモ:
-// 1. 年の決定を「DateOfProcedure からの文字列切り出し」ではなく、1つの正規化関数で明示的に行う。
-// 2. 日付欠落/不正時でも、安全に最新マスタ年へフォールバックし、年比較の誤判定を防ぐ。
-// 3. 2020年以前 / 2021年以後の分岐を常に 4 桁の年文字列で比較することで、比較ロジックが単純化される。
-function resolveYear (value: string | undefined): string {
-  const raw = value?.toString().trim() ?? ''
-
-  // マスタから取得する年のフォールバック値
-  const fallbackYear =
-
-  if (/^20\d{2}$/.test(raw)) {
-    return raw
-  }
-  if (/^20\d{2}-\d{2}-\d{2}$/.test(raw)) {
-    return raw.substring(0, 4)
-  }
-  if (/^20\d{2}[/-]\d{1,2}[/-]\d{1,2}$/.test(raw)) {
-    const matched = raw.match(/^20\d{2}/)
-    return matched ? matched[0] : fallbackYear
-  }
-
-  return fallbackYear
-}
-
 // 手術時間の表記
 // procedureTimeFormat - ProcedureTimesからimport
 
@@ -53,6 +29,27 @@ export const CategoriesOfDiagnosis = ['腹腔鏡', '腹腔鏡悪性', '子宮鏡
 // 術式カテゴリ
 export const CategoriesOfProcedure = ['腹腔鏡', '腹腔鏡悪性', 'ロボット', 'ロボット悪性', '子宮鏡', '卵管鏡']
 
+// 年次情報を取得する
+function resolveYear (value: string | undefined): string {
+  const raw = value?.toString().trim() ?? ''
+
+  const enumMasterYear = [(new DiagnosisMaster()).Year(), (new ProcedureMaster()).Year(), (new AEmaster()).Year(), (new ApproachMaster()).getYear()]
+  const defaultYear = (enumMasterYear.sort().reverse())[0] as string
+
+  if (/^20\d{2}$/.test(raw)) {
+    return raw
+  }
+  if (/^20\d{2}-\d{2}-\d{2}$/.test(raw)) {
+    return raw.substring(0, 4)
+  }
+  if (/^20\d{2}[/-]\d{1,2}[/-]\d{1,2}$/.test(raw)) {
+    const matched = raw.match(/^20\d{2}/)
+    return matched ? matched[0] : defaultYear
+  }
+
+  return defaultYear
+}
+
 // 症例データの検証
 //
 // @Param Object １症例分のドキュメントオブジェクト
@@ -64,20 +61,20 @@ export async function ValidateCase (item: CaseLike = {}, temporary = false): Pro
 
   if (temporary) {
     // 一時保存でも患者IDと手術日は最低限の必須入力項目
-    await CheckBasicInformations(item)
+    await ValidateDateOfProcedure(item)
     // 可能であればカテゴリーを取得(エラーならundefinedを返す)
     let category: string | undefined = undefined
     try {
-      category = await CheckCategoryMatch(item, year)
+      category = await ValidateCategoryMatch(item, year)
     } finally {
       return category
     }
   } else {
     const results = await allSettled([
-      CheckBasicInformations(item),
-      ValidateAdditionalInformations(item),
-      CheckProcedureTime(item),
-      CheckCategoryMatch(item, year), // [3] returns category
+      ValidateDateOfProcedure(item),
+      ValidateOptionalInformations(item),
+      ValidateProcedureTime(item),
+      ValidateCategoryMatch(item, year), // [3] returns category
       ValidateDiagnoses(item, year),
       ValidateProcedures(item, year),
       ValidateAEs(item, year),
@@ -89,7 +86,7 @@ export async function ValidateCase (item: CaseLike = {}, temporary = false): Pro
 
 // 必須基本情報の有無
 //
-export async function CheckBasicInformations (item: CaseLike): Promise<void> {
+export async function ValidateDateOfProcedure (item: CaseLike): Promise<void> {
   if (
     !item.PatientId ||
     !DateFormat.test(item.DateOfProcedure ?? '')
@@ -100,7 +97,7 @@ export async function CheckBasicInformations (item: CaseLike): Promise<void> {
 
 // 手術時間の入力を確認
 //
-export async function CheckProcedureTime (item: CaseLike): Promise<void> {
+export async function ValidateProcedureTime (item: CaseLike): Promise<void> {
   if (!item.ProcedureTime) {
     throw Error('手術時間は必須入力項目です.')
   }
@@ -114,7 +111,7 @@ export async function CheckProcedureTime (item: CaseLike): Promise<void> {
 }
 // 補足登録情報の検証
 //
-export async function ValidateAdditionalInformations (item: CaseLike): Promise<void> {
+export async function ValidateOptionalInformations (item: CaseLike): Promise<void> {
   const errorMessages: string[] = []
   if (item.Age && (item.Age <= 0 || item.Age > 129)) {
     errorMessages.push('年齢の入力内容を確認してください.')
@@ -132,7 +129,7 @@ export async function ValidateAdditionalInformations (item: CaseLike): Promise<v
 
 // 主たる術後診断・実施術式のカテゴリの一致の検証
 //
-export async function CheckCategoryMatch (item: CaseLike, year: string): Promise<string> {
+export async function ValidateCategoryMatch (item: CaseLike, year: string): Promise<string> {
   // 判定はあくまで主たる診断・術式
   const categoryOfDiagnosis = item?.Diagnoses?.[0]?.Chain?.[0]
   const categoryOfProcedure = item?.Procedures?.[0]?.Chain?.[0]
@@ -290,7 +287,7 @@ export async function ValidateProcedures (item: CaseLike, year: string): Promise
                 // 入力あり
                 // 単一入力 Selection == 'one' に複数の入力がある
                 if (itemDescription.Selection === 'one' && record.Description.length > 1) {
-                  reject(Error('実施手術 ' + record.Text + ' に単一では無く複数の詳細情報が設定されています.'))
+                  reject(Error('実施手術 ' + record.Text + ' に複数の詳細情報が設定されています.'))
                 }
 
                 // 入力内容の確認
@@ -309,7 +306,7 @@ export async function ValidateProcedures (item: CaseLike, year: string): Promise
           } else {
             // Descriptionの入力がマスタに定義されていない
             if (record?.Description !== undefined && record.Description.length > 0) {
-              reject(Error('実施手術 ' + record.Text + ' に不要な詳細情報が入力されています.'))
+              reject(Error('実施手術 ' + record.Text + ' に不要もしくは廃止された詳細情報が入力されています.'))
             }
           }
         }
