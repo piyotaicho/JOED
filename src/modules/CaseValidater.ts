@@ -1,4 +1,4 @@
-import DaignosisMaster from '@/modules/Masters/DiagnosisMaster'
+import DiagnosisMaster from '@/modules/Masters/DiagnosisMaster'
 import ProcedureMaster from '@/modules/Masters/ProcedureMaster'
 import ApproachMaster from '@/modules/Masters/ApproachMaster'
 import AEmaster from '@/modules/Masters/AE'
@@ -10,6 +10,30 @@ type CaseLike = Record<string, any>
 // 日付の表記
 export const DateFormatPattern = '^20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$'
 export const DateFormat = new RegExp(DateFormatPattern)
+
+// 年次依存の改善メモ:
+// 1. 年の決定を「DateOfProcedure からの文字列切り出し」ではなく、1つの正規化関数で明示的に行う。
+// 2. 日付欠落/不正時でも、安全に最新マスタ年へフォールバックし、年比較の誤判定を防ぐ。
+// 3. 2020年以前 / 2021年以後の分岐を常に 4 桁の年文字列で比較することで、比較ロジックが単純化される。
+function resolveYear (value: string | undefined): string {
+  const raw = value?.toString().trim() ?? ''
+
+  // マスタから取得する年のフォールバック値
+  const fallbackYear =
+
+  if (/^20\d{2}$/.test(raw)) {
+    return raw
+  }
+  if (/^20\d{2}-\d{2}-\d{2}$/.test(raw)) {
+    return raw.substring(0, 4)
+  }
+  if (/^20\d{2}[/-]\d{1,2}[/-]\d{1,2}$/.test(raw)) {
+    const matched = raw.match(/^20\d{2}/)
+    return matched ? matched[0] : fallbackYear
+  }
+
+  return fallbackYear
+}
 
 // 手術時間の表記
 // procedureTimeFormat - ProcedureTimesからimport
@@ -35,7 +59,9 @@ export const CategoriesOfProcedure = ['腹腔鏡', '腹腔鏡悪性', 'ロボッ
 //
 // return string 症例区分
 export async function ValidateCase (item: CaseLike = {}, temporary = false): Promise<string | undefined> {
-  const year = item.DateOfProcedure ? item.DateOfProcedure.substring(0, 4) : undefined
+  // 年次の取得
+  const year = resolveYear(item?.DateOfProcedure)
+
   if (temporary) {
     // 一時保存でも患者IDと手術日は最低限の必須入力項目
     await CheckBasicInformations(item)
@@ -106,13 +132,13 @@ export async function ValidateAdditionalInformations (item: CaseLike): Promise<v
 
 // 主たる術後診断・実施術式のカテゴリの一致の検証
 //
-export async function CheckCategoryMatch (item: CaseLike, year: string | undefined): Promise<string> {
+export async function CheckCategoryMatch (item: CaseLike, year: string): Promise<string> {
   // 判定はあくまで主たる診断・術式
   const categoryOfDiagnosis = item?.Diagnoses?.[0]?.Chain?.[0]
   const categoryOfProcedure = item?.Procedures?.[0]?.Chain?.[0]
   // Diagnoses, Proceduresが未設定については別でチェックされる
   if (categoryOfDiagnosis && categoryOfProcedure) {
-    if (year && year <= '2020') {
+    if (year <= '2020') {
       // 2020年以前の対応表 - 術式のカテゴリを優先
       const translation: Record<string, string> = {
         腹腔鏡: '腹腔鏡',
@@ -183,14 +209,14 @@ export async function CheckDupsInDiagnoses (item: CaseLike): Promise<void> {
 
 // 術後診断の重複確認と年次ツリーとの整合性検証
 //
-export async function ValidateDiagnoses (item: CaseLike, year: string | undefined): Promise<void> {
+export async function ValidateDiagnoses (item: CaseLike, year: string): Promise<void> {
   if (!(item?.Diagnoses?.length > 0)) {
     throw Error('手術診断の入力がありません.')
   }
 
   await CheckDupsInDiagnoses(item)
 
-  const master = new DaignosisMaster()
+  const master = new DiagnosisMaster()
   await allSettled(
     item.Diagnoses!.map((record: any) => new Promise<void>((resolve, reject) => {
       if (!record.Text) {
@@ -226,13 +252,12 @@ export async function CheckDupsInProcedures (item: CaseLike): Promise<void> {
 // 実施手術名の重複確認と年次ツリーとの整合性検証
 // 実施手術のアプローチの整合性検証
 //
-export async function ValidateProcedures (item: CaseLike, year: string | undefined): Promise<void> {
+export async function ValidateProcedures (item: CaseLike, year: string): Promise<void> {
   if (!(item?.Procedures?.length > 0)) {
     throw Error('実施手術の入力がありません.')
   }
 
   await CheckDupsInProcedures(item)
-
   const master = new ProcedureMaster()
   await allSettled(
     item.Procedures!.map((record: any) => new Promise<void>((resolve, reject) => {
@@ -295,7 +320,7 @@ export async function ValidateProcedures (item: CaseLike, year: string | undefin
 }
 
 // アプローチ入力の整合性確認
-export async function ValidateApproach (item: CaseLike, year: string | undefined): Promise<void> {
+export async function ValidateApproach (item: CaseLike, year: string): Promise<void> {
   const approach = new ApproachMaster(year)
   if (Object.keys(approach).length > 0) {
     // 実施手術のカテゴリを取得
@@ -310,7 +335,7 @@ export async function ValidateApproach (item: CaseLike, year: string | undefined
 
       if (item?.Approach === undefined || Object.keys(item.Approach).length === 0) {
         // 入力無しへの対応、アプローチの入力必須は2026年以降
-        if ((year ?? '0') >= '2026') {
+        if (year >= '2026') {
           throw Error('実施手術アプローチの入力がありません.')
         }
       } else {
@@ -329,7 +354,7 @@ export async function ValidateApproach (item: CaseLike, year: string | undefined
 
 // 合併症の重複と整合性確認
 //
-export async function ValidateAEs (item: CaseLike, year: string | undefined): Promise<void> {
+export async function ValidateAEs (item: CaseLike, year: string): Promise<void> {
   if (item?.PresentAE === undefined && item?.AEs?.length === undefined) {
     throw Error('合併症の入力がありません.')
   }
@@ -373,10 +398,6 @@ export async function ValidateAEs (item: CaseLike, year: string | undefined): Pr
       throw Error(`合併症の登録に ${dupValues.map(value => (value.split(','))[0]).join(', ')} の重複があります.`)
     }
   }
-
-  // if (values.length !== (new Set(values)).size) {
-  //   throw Error('合併症の登録内容に重複があります.')
-  // }
 
   // 登録内容の整合性確認
   const Master = new AEmaster(year)
