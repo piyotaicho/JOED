@@ -1,10 +1,15 @@
 // elementダイアログ
 import { ElMessageBox as MessageBox } from 'element-plus'
 
+interface EscapedMessage {
+  text: string
+  dangerouslyUseHTMLString: boolean
+}
+
 // messageに改行があったらelementを返す
-function escapeMessage (message) {
+function escapeMessage(message: string): EscapedMessage {
   const matchRegexp = /['"&<> \n]/g
-  const escapePatterns = {
+  const escapePatterns: Record<string, string> = {
     '\'': '&#39;',
     '"': '&quot;',
     '&': '&amp;',
@@ -15,7 +20,7 @@ function escapeMessage (message) {
   }
   if (matchRegexp.test(message)) {
     return {
-      text: message.replace(matchRegexp, (matchedChar) => escapePatterns[matchedChar]),
+      text: message.replace(matchRegexp, (matchedChar) => escapePatterns[matchedChar] || matchedChar),
       dangerouslyUseHTMLString: true
     }
   } else {
@@ -26,27 +31,27 @@ function escapeMessage (message) {
   }
 }
 
-export function alert (message, title = undefined) {
+export function alert(message: string, title?: string): Promise<void> {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return MessageBox.alert(text, {
     title: title,
     iconClass: 'el-icon-message-solid',
     showClose: false,
     dangerouslyUseHTMLString
-  })
+  } as any).then(() => undefined)
 }
 
-export function error (message, title = undefined) {
+export function error(message: string, title?: string): Promise<void> {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return MessageBox.alert(text, {
     title: title,
     iconClass: 'el-icon-error',
     showClose: false,
     dangerouslyUseHTMLString
-  })
+  } as any).then(() => undefined)
 }
 
-export function information (message, title = '通知') {
+export function information(message: string, title: string = '通知'): Promise<void> {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return MessageBox.alert(text, {
     title: title,
@@ -55,10 +60,10 @@ export function information (message, title = '通知') {
     showClose: false,
     lockScroll: false,
     dangerouslyUseHTMLString
-  })
+  } as any).then(() => undefined)
 }
 
-export async function confirm (message, title = '確認') {
+export async function confirm(message: string, title: string = '確認'): Promise<boolean> {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return await MessageBox.confirm(text, {
     title: title,
@@ -66,10 +71,10 @@ export async function confirm (message, title = '確認') {
     showClose: false,
     closeOnPressEscape: true,
     dangerouslyUseHTMLString
-  }).then(() => true, () => false)
+  } as any).then(() => true, () => false)
 }
 
-export async function confirmYesNo (message, title = '確認') {
+export async function confirmYesNo(message: string, title: string = '確認'): Promise<boolean> {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return await MessageBox.confirm(text, {
     title: title,
@@ -79,10 +84,10 @@ export async function confirmYesNo (message, title = '確認') {
     cancelButtonText: 'いいえ',
     confirmButtonText: 'はい',
     dangerouslyUseHTMLString
-  }).then(() => true, () => false)
+  } as any).then(() => true, () => false)
 }
 
-export async function confirmAnyOk (message, anyText = 'cancel') {
+export async function confirmAnyOk(message: string, anyText: string = 'cancel'): Promise<boolean> {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
   return await MessageBox.confirm(text, {
     iconClass: 'el-icon-message-solid',
@@ -91,12 +96,19 @@ export async function confirmAnyOk (message, anyText = 'cancel') {
     cancelButtonText: anyText,
     confirmButtonText: 'OK',
     dangerouslyUseHTMLString
-  }).then(() => true, () => false)
+  } as any).then(() => true, () => false)
 }
 
-export async function prompt (message, rule = undefined) {
+export async function prompt(message: string, rule?: string): Promise<string | null> {
   const { text, dangerouslyUseHTMLString } = escapeMessage(message)
-  const options = {
+  const options: {
+    title: string
+    confirmButtonText: string
+    cancelButtonText: string
+    dangerouslyUseHTMLString: boolean
+    inputPattern?: RegExp
+    inputErrorMessage?: string
+  } = {
     title: '入力',
     confirmButtonText: 'OK',
     cancelButtonText: 'キャンセル',

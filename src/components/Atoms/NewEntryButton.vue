@@ -9,21 +9,18 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { Plus } from '@element-plus/icons-vue'
 
-const props = defineProps({
-  tabindex: {
-    type: [String, Number],
-    default: 0
-  },
-  accesskey: {
-    type: String
-  }
+const props = withDefaults(defineProps<{
+  tabindex?: string | number
+  accesskey?: string
+}>(), {
+  tabindex: 0
 })
 const emit = defineEmits(['click'])
 
-const cclickButton = (event) => emit('click', event)
+const cclickButton = (event: MouseEvent | KeyboardEvent) => emit('click', event)
 </script>
 
 <style lang="sass">

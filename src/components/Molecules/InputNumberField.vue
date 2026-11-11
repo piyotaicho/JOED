@@ -1,9 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { ZenToHanNumbers } from '@/modules/ZenHanChars'
 
 const props = defineProps({
   title: {
+    type: String,
     default: '数値を入力'
   },
   min: {
@@ -13,15 +14,16 @@ const props = defineProps({
     type: Number
   },
   required: {
+    type: Boolean,
     default: false
   }
 })
-const value = defineModel({ type: [Number, String] })
+const value = defineModel<string | number | undefined>({ type: [Number, String] })
 
-const inputText = computed({
+const inputText = computed<string | number | undefined>({
   get () { return value.value },
   set (newvalue) {
-    value.value = ZenToHanNumbers(newvalue)
+    value.value = ZenToHanNumbers(String(newvalue ?? ''))
   }
 })
 

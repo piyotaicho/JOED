@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useStore } from '@/store'
 import CloseButton from '@/components/Atoms/CloseButton.vue'
@@ -7,7 +7,7 @@ import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 
 const store = useStore()
 
-const isShowStartupDialog = ref(store.getters['system/Settings'].ShowStartupDialog)
+const isShowStartupDialog = ref<boolean>(store.getters['system/Settings'].ShowStartupDialog)
 
 function closeDialog () {
   store.dispatch('system/SetAndSaveShowStartupDialog', isShowStartupDialog.value)

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store'
@@ -41,13 +41,13 @@ if (procedureTypes.length === 0) {
 }
 
 // reactivities
-const categorySelections = ref({})
-const categorySelectionOfOneOf = ref({})
+const categorySelections = ref<Record<string, string[]>>({})
+const categorySelectionOfOneOf = ref<Record<string, string>>({})
 for (const category of procedureTypes) {
   categorySelections.value[category] = []
   categorySelectionOfOneOf.value[category] = ''
 }
-const required = computed(() => { return (category) => {
+const required = computed(() => { return (category: string) => {
   return (
     categorySelectionOfOneOf.value[category] === undefined ||
     categorySelectionOfOneOf.value[category] === null ||
@@ -69,7 +69,7 @@ onMounted(() => {
         ?.oneOf) || []
       const otherItems = (masterTree[category]
         ?.filter(directive => Object.keys(directive)[0] !== 'oneOf')
-        ?.map(directive => directive[Object.keys(directive)[0]])
+        ?.map(directive => directive[Object.keys(directive)[0] as string])
         .flat(2)) || []
 
       let selections = value[category] || []
@@ -89,7 +89,7 @@ onMounted(() => {
 
         if (otherItems.map(item => ApproachMaster.asValue(item)).includes(selection)) {
           // その他の項目の場合は複数選択として扱う
-          categorySelections.value[category].push(selection)
+          ;(categorySelections.value[category] || (categorySelections.value[category] = [])).push(selection)
         }
       }
     }
@@ -98,7 +98,7 @@ onMounted(() => {
 
 const CommitChange = async () => {
   // 現在の選択内容をemitする
-  const returnValue = {}
+  const returnValue: Record<string, string[]> = {}
   for (const category of procedureTypes) {
     returnValue[category] = []
     if (

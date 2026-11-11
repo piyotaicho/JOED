@@ -16,13 +16,16 @@
   </label>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
+import type { PropType } from 'vue'
+
+type RadioValue = boolean | string | number | null
 
 const props = defineProps({
   // チェックボックスで設定される値
   value: {
-    type: [Boolean, String, Number],
+    type: [Boolean, String, Number] as PropType<boolean | string | number>,
     default: true
   },
   disabled: {
@@ -39,11 +42,11 @@ const props = defineProps({
   }
 })
 
-const modelValue = defineModel()
+const modelValue = defineModel<RadioValue>()
 
-const inputElement = ref()
+const inputElement = ref<HTMLInputElement | null>(null)
 
-const changeState = () => {
+const changeState = (): void => {
   if (modelValue.value === props.value) {
     // すでに選択されている場合は選択解除 radioなのでnull
     modelValue.value = null

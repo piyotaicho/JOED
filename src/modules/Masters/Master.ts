@@ -1,3 +1,5 @@
+import type { MasterItemRaw, MasterItemObject, MasterTree } from '@/types/frontend'
+
 /*
   診断・術式マスタオブジェクト
 
@@ -6,7 +8,7 @@
 */
 
 export default class Master {
-  constructor (initialTree = {}, Year = '') {
+  constructor(initialTree: MasterTree = {}, Year: string = '') {
     // マスタ年次の設定
     if (/^20[1-9]\d$/.test(Year)) {
       Object.defineProperty(this, 'YearofMaster', { value: Year })
@@ -23,8 +25,8 @@ export default class Master {
     }
   }
 
-  Year () {
-    return this.YearofMaster
+  Year(): string {
+    return (this as unknown as { YearofMaster: string }).YearofMaster
   }
 
   /*
@@ -69,7 +71,7 @@ export default class Master {
   // カテゴリkeyのarrayを取得
   //
   // return: array of string
-  Categories () {
+  Categories(): string[] {
     return Object.keys(this)
   }
 
@@ -78,9 +80,9 @@ export default class Master {
   // @param {string} カテゴリ
   //
   // return: array of string
-  Targets (category = '') {
+  Targets(category: string = ''): string[] {
     if (category) {
-      const categoryObject = this[category]
+      const categoryObject = (this as unknown as Record<string, Record<string, MasterItemRaw[]> | undefined>)[category]
       // 不正なカテゴリが指定された場合は空白のarray
       return categoryObject ? Object.keys(categoryObject) : []
     } else {
@@ -95,23 +97,25 @@ export default class Master {
   // @param {number/string} データセットの参照年指定(デフォルトはマスタの年次=最新)
   //
   // return: array
-  Items (category = '', target, year = this.YearofMaster) {
+  Items(category: string = '', target?: string, year: string = (this as unknown as { YearofMaster: string }).YearofMaster): MasterItemRaw[] {
     if (year === '') {
-      year = this.YearofMaster
+      year = (this as unknown as { YearofMaster: string }).YearofMaster
     }
     if (year < '2019') {
       year = '2019'
     }
 
-    const temporaryArray = []
+    const temporaryArray: MasterItemRaw[] = []
 
     if (!category) {
       return temporaryArray
     }
 
     for (const targetname of (target ? [target] : this.Targets(category))) {
+      const self = this as unknown as Record<string, Record<string, MasterItemRaw[]>>
+      const categoryEntries = self[category] || {}
       temporaryArray.push(
-        ...this[category][targetname]
+        ...(categoryEntries[targetname] || [])
           .filter(item => Master.parseItem(item, 'Text', year))
       )
     }
@@ -125,9 +129,9 @@ export default class Master {
   // @param {number/string} データセットの参照年指定(デフォルトはマスタの年次=最新)
   //
   // return: object 見つからない場合は空白オブジェクト
-  getItem (text = '', category = '', target, year = this.YearofMaster) {
+  getItem(text: string = '', category: string = '', target?: string, year: string = (this as unknown as { YearofMaster: string }).YearofMaster): MasterItemRaw {
     const itemFound = this.Items(category, target, year).find(item => Master.parseItem(item, 'Text', year) === text)
-    return itemFound !== undefined ? itemFound : {}
+    return itemFound !== undefined ? itemFound : ({} as MasterItemRaw)
   }
 
   // アイテムobject のプロパティを取得
@@ -139,7 +143,7 @@ export default class Master {
   // @param {string}  データセットの参照年指定
   //
   // return any
-  static parseItem (item, $attribute = 'Text', year = '') {
+  static parseItem(item: MasterItemRaw, $attribute: string = 'Text', year: string = ''): unknown {
     if (typeof item === 'object') {
       if (year !== '') {
         if (item?.ValidTo && year > item.ValidTo) {
@@ -162,7 +166,7 @@ export default class Master {
   // 3層目オブジェクトの題目を取得 - parseItemのラッパー
   //
   // @param {any} ３層目の値
-  getText (item) {
+  getText(item: MasterItemRaw): unknown {
     return Master.parseItem(item, 'Text')
   }
 }

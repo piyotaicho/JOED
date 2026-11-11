@@ -1,5 +1,15 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
+
+type AEItem = {
+  Category?: string
+  BloodCount?: string | number
+  Title?: string[]
+  Cause?: string[]
+  Location?: string[]
+  Grade?: string | number
+  Course?: string[]
+}
 
 const props = defineProps({
   item: {
@@ -7,7 +17,13 @@ const props = defineProps({
   }
 })
 
-const item = computed(() => JSON.parse(props.item || '{}'))
+const item = computed<AEItem>(() => {
+  try {
+    return JSON.parse(props.item || '{}') as AEItem
+  } catch {
+    return {}
+  }
+})
 </script>
 
 <template>
@@ -22,7 +38,7 @@ const item = computed(() => JSON.parse(props.item || '{}'))
       <div v-if="item.Location">部位: {{ item.Location.join(', ') }}</div>
     </template>
     <div>合併症の程度: Grade {{ item.Grade }}</div>
-    <div>転帰: {{ item.Course.join(', ') }}</div>
+    <div>転帰: {{ (item.Course || []).join(', ') }}</div>
   </div>
 </template>
 

@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+import type { PropType } from 'vue'
 import ListItem from '@/components/Molecules/QueryPaneListItem.vue'
 
 const props = defineProps({
@@ -15,12 +16,16 @@ const props = defineProps({
     default: false
   },
   container: {
-    type: Array,
-    require: true
+    type: Array as PropType<any[]>,
+    required: true
   }
 })
 
-const emit = defineEmits(['erase', 'dragged', 'dropped'])
+const emit = defineEmits<{
+  (e: 'erase', index: number): void
+  (e: 'dragged', index: number, event: DragEvent): void
+  (e: 'dropped', index: number, event: DragEvent): void
+}>()
 </script>
 
 <template>

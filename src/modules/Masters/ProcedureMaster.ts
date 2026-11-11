@@ -1,11 +1,12 @@
 import Master from '@/modules/Masters/Master'
+import type { MasterItemRaw } from '@/types/frontend'
 import Fuse from 'fuse.js'
 import { ZenToHan } from '@/modules/ZenHanChars'
 
 export const LastUpdate = '2026-10-01'
 const defaultReference = '2026'
 
-const Kcodeformat = /^([A-Z]\d{3})(-0?(\d))?(-0?(\d))?/
+// const Kcodeformat = /^([A-Z]\d{3})(-0?(\d))?(-0?(\d))?/
 
 // Description の Values: [] のフォーマット
 //
@@ -868,7 +869,6 @@ export default class ProcedureMaster extends Master {
           },
           {
             Text: '仙骨子宮靭帯縫縮術(ロボット支援下)',
-            ValidFrom: '2021',
             ValidFrom: '2025'
           },
           // 2025 新規
@@ -1255,31 +1255,31 @@ export default class ProcedureMaster extends Master {
   // - parseItemはMasterからの継承
   // - 該当項目がなければ undefined を返す
   // @param {object/string} 第三層の項目
-  static getAdditioninalProcedure(item) {
+  static getAdditioninalProcedure(item: MasterItemRaw): unknown {
     return this.parseItem(item, 'AdditionalProcedure')
   }
 
-  static getDittos(item) {
+  static getDittos(item: MasterItemRaw): unknown {
     return this.parseItem(item, 'Ditto')
   }
 
-  static getDescriptionObject(item) {
-    return this.parseItem(item, 'Description')
+  static getDescriptionObject(item: MasterItemRaw): { Text?: string; Values?: string[]; Selection?: string } | undefined {
+    return this.parseItem(item, 'Description') as { Text?: string; Values?: string[]; Selection?: string } | undefined
   }
 
-  static getCodes(item) {
+  static getCodes(item: MasterItemRaw): unknown {
     return this.parseItem(item, 'Code')
   }
 
-  static getDescriptionTitle(item) {
+  static getDescriptionTitle(item: MasterItemRaw): string | undefined {
     return this.getDescriptionObject(item)?.Text
   }
 
-  static getDescriptionOptions(item) {
+  static getDescriptionOptions(item: MasterItemRaw): string[] {
     return (this.getDescriptionObject(item)?.Values || [])
   }
 
-  static getDescriptionSelectionMode(item) {
+  static getDescriptionSelectionMode(item: MasterItemRaw): string {
     return (this.getDescriptionObject(item)?.Selection || 'one')
   }
 
@@ -1291,7 +1291,7 @@ export default class ProcedureMaster extends Master {
   // @param {string|number}
   //
   // @return {array}
-  Matches(text, category = '', target = '', year = this.YearofMaster) {
+  Matches(text: string, category: string = '', target: string = '', year: string = (this as unknown as { YearofMaster: string }).YearofMaster): string[] {
     if (text === undefined || text === '') {
       return []
     }
@@ -1305,14 +1305,15 @@ export default class ProcedureMaster extends Master {
     // マスタから年次・カテゴリ・対象に応じた術式一覧を取得
     const masterItems = this.Items(category, target, year)
       .map(item => {
+        const obj = typeof item === 'string' ? { Text: item } as import('@/types/frontend').MasterItemObject : item
         return {
-          Text: item.Text,
-          Code: item?.Code || [],
-          history: item?.history || []
+          Text: obj.Text,
+          Code: (obj['Code'] as string[] | undefined) ?? [],
+          history: (obj['history'] as string[] | undefined) ?? []
         }
       })
 
-    let results = []
+    const results: string[] = []
 
     // Fuse.jsを使ったあいまい検索
     const fuzzyMatch = new Fuse(masterItems, { keys: ['Text', 'Code', 'history'], threshold: 0.49 })
@@ -1324,9 +1325,9 @@ export default class ProcedureMaster extends Master {
   }
 } // class ProcedureMaster おわり
 
-function regulateExpression(str = '') {
+function regulateExpression(str: string = ''): string {
   // 型変換と前後の余白の削除
-  let searchstring = str.toString().trim()
+  let searchstring: string = str.toString().trim()
   if (searchstring === '') {
     return ''
   }
@@ -1340,7 +1341,7 @@ function regulateExpression(str = '') {
 
   // 置換1 - 文字列の全置換
   // 表現の揺らぎなど g フラグ付きで検索・置換する
-  const ruleset1 = {
+  const ruleset1: Record<string, string> = {
     // 修飾語の除去
     '緊急|右|左': '',
     '全?腹腔鏡(補助)?下': '',
@@ -1364,12 +1365,12 @@ function regulateExpression(str = '') {
 
   for (const rule in ruleset1) {
     const regex = new RegExp(rule, 'g')
-    searchstring = searchstring.replace(regex, ruleset1[rule])
+    searchstring = searchstring.replace(regex, ruleset1[rule] ?? '')
   }
 
   // 置換2 - 文字列からの検索して置き換え
   // exact matchにむけての置換 ルールにマッチしたら文字列を完全に置き換える
-  const ruleset2 = {
+  const ruleset2: Record<string, string> = {
     '全?腹腔鏡下子宮全摘': 'K877-02-00',
     'VANH': '子宮全摘術',
     LAM: '子宮筋腫核出術(腹腔鏡補助下)',
@@ -1396,7 +1397,7 @@ function regulateExpression(str = '') {
   for (const rule in ruleset2) {
     const regex = new RegExp(rule, 'i')
     if (regex.test(searchstring)) {
-      searchstring = ruleset2[rule]
+      searchstring = ruleset2[rule] ?? searchstring
     }
   }
 

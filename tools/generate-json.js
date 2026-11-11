@@ -1,7 +1,7 @@
 import fs from 'fs'
 import commander from 'commander'
-import DiagnosisMaster from '@/modules/Masters/DiagnosisMaster.js'
-import ProcedureMaster from '@/modules/Masters/ProcedureMaster.js'
+import DiagnosisMaster from '@/modules/Masters/DiagnosisMaster'
+import ProcedureMaster from '@/modules/Masters/ProcedureMaster'
 import AEMaster from '@/modules/Masters/AE'
 
 commander

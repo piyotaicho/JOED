@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => ({
     outDir: 'dist',
     emptyOutDir: true,
     lib: {
-      entry: resolve(__dirname, 'src/background.js'),
+      entry: resolve(__dirname, 'src/background.ts'),
       formats: ['es'],
       fileName: () => 'background.js'
     },

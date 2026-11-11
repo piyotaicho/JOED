@@ -1,12 +1,23 @@
-<script setup>
-import { ref, computed } from 'vue'
+<script setup lang="ts">
+import { ref, computed, type ComponentPublicInstance } from 'vue'
 import { useStore } from './store'
 import { useRoute, useRouter } from 'vue-router'
+import type { ElectronAPI } from './preload'
+
+declare global {
+  interface Window {
+    API: ElectronAPI
+  } 
+}
+type ChildComponentInstance = ComponentPublicInstance<{
+  openDrawer?: () => void
+  remove?: () => void
+}>
 
 const store = useStore()
 const route = useRoute()
 const router = useRouter()
-const routerViewRef = ref(null)
+const routerViewRef = ref<ChildComponentInstance>()
 
 // 設定とデータリストを取得
 store.dispatch('system/LoadPreferences')
@@ -21,14 +32,12 @@ store.dispatch('system/LoadPreferences')
 
 // 実行環境情報を取得
 store.dispatch('system/getPlatformInfo')
-  .catch((e) => {
-    store.commit('system/SetPlatform', 'failed to get platform info')
-  })
+  .catch(() => store.commit('system/SetPlatform', 'failed to get platform info'))
 
 // ルーティングの設定
 // electron環境下でのメインプロセスからのメッセージ(メニュー操作によるrouter変更)を処理
 if (window?.API) {
-  window.API.onChangeRouter((_undefined, routename) => {
+  window.API.onChangeRouter((_event, routename) => {
     if (route.name === routename || routename === '') {
       return
     }
@@ -69,7 +78,7 @@ if (window?.API) {
 // 同一uidからのroutingに対するquick-hack どんな環境でも動作する
 const routeKey = computed(() => {
   const path = route.path.split('/')
-  return (path.length > 2 && /^\d+$/.test(path[2]))
+  return (path.length > 2 && /^\d+$/.test(path[2] || ''))
     ? path[1] + '/' + path[2]
     : (path[1] || '/')
 })
