@@ -8,7 +8,7 @@ const store = useStore()
 const router = useRouter()
 
 const tilte = computed<[string, string]>(() => [
-  '日本産科婦人科内視鏡学会',
+  '日本産科婦人科内視鏡・ロボティクス学会',
   '症例登録システム ' +
   store.getters['system/ApplicationName'] +
   ' version ' +

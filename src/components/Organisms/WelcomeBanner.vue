@@ -33,7 +33,7 @@ function closeDialog () {
         </LabeledCheckbox>
       </div>
       <div id="welcome-banner-footer">
-        日本産科婦人科内視鏡学会 調査普及委員会
+        日本産科婦人科内視鏡・ロボティクス学会 調査普及委員会
       </div>
       <CloseButton @click="closeDialog" tabindex="0"/>
     </div>

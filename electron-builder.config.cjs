@@ -1,4 +1,4 @@
-const copyright = '2020-2025 P4mohnet and 日本産科婦人科内視鏡学会'
+const copyright = '2020-2026 P4mohnet and 日本産科婦人科内視鏡・ロボティクス学会'
 
 module.exports = async () => (
   {
@@ -26,7 +26,7 @@ module.exports = async () => (
       category: 'public.app-category.medical',
       entitlements: 'build/entitlements.mac.plist',
       entitlementsInherit: 'build/entitlements.mac.inherit.plist',
-      
+
       notarize: false,
       hardenedRuntime: true,
       mergeASARs: true,
@@ -39,7 +39,7 @@ module.exports = async () => (
     win: {
       target: 'nsis',
       icon: 'Windows.ico',
-      legalTrademarks: 'P4mohnet and 日本産科婦人科内視鏡学会'
+      legalTrademarks: 'P4mohnet and 日本産科婦人科内視鏡・ロボティクス学会'
     },
     nsis: {
       installerIcon: 'Windows.ico',
