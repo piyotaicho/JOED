@@ -135,7 +135,17 @@ export default class DiagnosisMaster extends Master {
           },
           // 2026 新規
           {
-            Text: '子宮頸部病変手術既往',
+            Text: '子宮頸部円錐切除術既往',
+            ValidFrom: '2026'
+          },
+          // 2026 新規
+          {
+            Text: '子宮頸部切断術既往',
+            ValidFrom: '2026'
+          },
+          // 2026 新規
+          {
+            Text: '子宮頸部病変手術既往(その他)',
             ValidFrom: '2026'
           },
           // 2021 新規
