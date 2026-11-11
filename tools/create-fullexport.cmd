@@ -25,7 +25,7 @@ goto :EOF
 #
 # JOED5ソフトウエア サポートスクリプト : バックアップデータの作成
 #
-# Copyright (c) 2023-2025 P4mohnet
+# Copyright (c) 2023-2026 P4mohnet
 # Licensed under the MIT License.
 
 # データフォルダをデフォルトから移動していた場合のコマンドラインパラメータ取得
