@@ -279,9 +279,9 @@ export default class AEmaster {
         enumerable: true,
         value: [
           {
-            Title: 'Grade 1～2',
+            Title: 'Grade 1',
             Min: 1,
-            Max: 2,
+            Max: 1,
             Items: [
               [
                 '経過観察',
