@@ -18,9 +18,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 import ApproachMaster from '@/modules/Masters/ApproachMaster'
 import type { PropType } from 'vue'
+
+// カテゴリごとのカラーコードマップ
+const colorMap: Record<string, string> = {
+  'undefined': '#DDDDDD',
+  '腹腔鏡': '#8CF700',
+  'ロボット': '#00F063',
+  '子宮鏡': '#00BBFF',
+  '卵管鏡': '#FFD000'
+}
 
 const props = defineProps({
   value: {
@@ -62,7 +71,7 @@ const dataCategories = computed(() => {
   return (master.value as any).getCategories(Object.keys(props.value || {})) as string[]
 })
 
-const getColorCode = computed(() => (category: string) => (master.value as any).getColorCode(category))
+const getColorCode = computed(() => (category: string) => colorMap[category] || colorMap['undefined'])
 
 const valueToLabel = computed(() => (value: string, category: string) => {
   return (master.value as any).valueToLabel(value, category)
