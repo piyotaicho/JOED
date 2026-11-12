@@ -50,7 +50,7 @@ function resolveYear (value: string | undefined): string {
   return defaultYear
 }
 
-// 症例データの検証
+// 症例データーの検証
 //
 // @Param Object １症例分のドキュメントオブジェクト
 //

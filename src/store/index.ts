@@ -1,5 +1,5 @@
 import { createStore, type ActionContext } from 'vuex'
-// データベースアクセスモジュールは環境依存のため分離(viteでパスが解決される)
+// データーベースアクセスモジュールは環境依存のため分離(viteでパスが解決される)
 import * as NedbAccess from 'depmodules/NedbAccess'
 import system from '@/store/modules/system'
 import password from '@/store/modules/passwordauth'
@@ -61,7 +61,7 @@ type minimumCaseDocument = {
 
 
 // 内部定数
-const numberLoadAtAtime = 20 // 一度にロードするデータの数
+const numberLoadAtAtime = 20 // 一度にロードするデーターの数
 
 // ストア
 const store = createStore<RootState>({
@@ -69,7 +69,7 @@ const store = createStore<RootState>({
     system, password
   },
   state: (): RootState => ({
-    DataStore: [], // インメモリのデータベースレプリケーション
+    DataStore: [], // インメモリのデーターベースレプリケーション
 
     DocumentIds: {
       List: [], // queryされたuidの全リスト
@@ -78,7 +78,7 @@ const store = createStore<RootState>({
       Identifier: 0 // 表示クエリ変更のシリアル値
     },
 
-    // 以下データベースリストのクエリの待避
+    // 以下データーベースリストのクエリの待避
     Filters: [],
     Sort: {
       DocumentId: -1
@@ -101,7 +101,7 @@ const store = createStore<RootState>({
     NumberOfCases (state: RootState): number {
       return state.DocumentIds.List.length
     },
-    // データベースが保持しているドキュメントの数を返す.
+    // データーベースが保持しているドキュメントの数を返す.
     TotalNumberOfCases (state: RootState): number {
       return state.DocumentIds.TotalCount
     },
@@ -263,7 +263,7 @@ const store = createStore<RootState>({
       state.DocumentIds.List = payload.DocumentIds
       state.DocumentIds.Identifier = state.DocumentIds.Identifier + 1
     },
-    // DataStoreにデータベースをキャッシュする.
+    // DataStoreにデーターベースをキャッシュする.
     //
     // @param {Object} document
     SetDatastore (state: RootState, payload: CaseDocument) {
@@ -348,7 +348,7 @@ const store = createStore<RootState>({
   },
 
   actions: {
-    // データベース操作 - moduleのフォルダで実行環境を分離する作戦
+    // データーベース操作 - moduleのフォルダで実行環境を分離する作戦
     // Insert document
     // @Param {Object} Document
     dbInsert (_: unknown, payload: DbInsertPayload) {
@@ -404,7 +404,7 @@ const store = createStore<RootState>({
       state.DocumentIds.Identifier = 0
       state.Selected.splice(0, state.Selected.length)
     },
-    // DocumentIdリストの更新. データベースの操作後は必ず実行する.
+    // DocumentIdリストの更新. データーベースの操作後は必ず実行する.
     //
     //
     async ReloadDocumentList (context: StoreActionContext) {
@@ -414,7 +414,7 @@ const store = createStore<RootState>({
 
         // 通常のFind
         if (context.getters.ViewQuery.Query.Hash === undefined) {
-          // 手術時間でのソートは負荷が高いのでデータベースではなく返り値に対してソートを行う
+          // 手術時間でのソートは負荷が高いのでデーターベースではなく返り値に対してソートを行う
           if (context.getters.ViewQuery.Sort.ProcedureTime === undefined) {
             documents = await context.dispatch('dbFind',
               {
@@ -466,7 +466,7 @@ const store = createStore<RootState>({
           await context.dispatch('dbCount', { Query: { DocumentId: { $gt: 0 } } })
         )
       } catch {
-        throw new Error('データベースエラー(FIND)です.')
+        throw new Error('データーベースエラー(FIND)です.')
       }
     },
 
@@ -480,22 +480,22 @@ const store = createStore<RootState>({
         return undefined
       }
 
-      // 既にロードされているデータであればキャッシュから取得する
+      // 既にロードされているデーターであればキャッシュから取得する
       const DataStoreIndex = context.state.DataStore.findIndex((item: CaseDocument) => item.DocumentId === payload.DocumentId)
       if (DataStoreIndex !== -1) {
         return DataStoreIndex
       } else {
-        // キャッシュされていないデータなので読み込んでDatastoreにキャッシュする
+        // キャッシュされていないデーターなので読み込んでDatastoreにキャッシュする
         try {
           context.commit('SetDatastore',
             await context.dispatch('dbFindOne', { Query: { DocumentId: payload.DocumentId }, Projection: { _id: 0 } })
           )
         } catch {
-          throw new Error('データベースエラー(FINDONE)です.')
+          throw new Error('データーベースエラー(FINDONE)です.')
         }
       }
     },
-    // 症例データの新規登録. 同一日時に同一IDの症例は登録出来ない.
+    // 症例データーの新規登録. 同一日時に同一IDの症例は登録出来ない.
     //
     // @param {Object} オブジェクトCase
     async InsertDocument (context: StoreActionContext, payload: Record<string, any>) {
@@ -514,7 +514,7 @@ const store = createStore<RootState>({
         if (error.message === 'DUP') {
           throw new Error(`同一の日付(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
         } else {
-          throw new Error('データベースエラー(COUNT)です.')
+          throw new Error('データーベースエラー(COUNT)です.')
         }
       }
 
@@ -562,11 +562,11 @@ const store = createStore<RootState>({
         // レコード操作をしたら必ずキャッシュをリロード
         await context.dispatch('ReloadDocumentList')
       } catch {
-        throw new Error('データベースエラー(INSERT)です.')
+        throw new Error('データーベースエラー(INSERT)です.')
       }
     },
 
-    // 症例データの更新. Case.DocumentId をキーとするため、有効な DocumentId であることが必須.
+    // 症例データーの更新. Case.DocumentId をキーとするため、有効な DocumentId であることが必須.
     // 同一日時に同一IDの症例は登録出来ない.
     //
     // @param {Object} オブジェクトCase
@@ -593,7 +593,7 @@ const store = createStore<RootState>({
         if (error.message === 'DUP') {
           throw new Error(`同一の日付(${payload.DateOfProcedure})に同一ID(${payload.PatientId})の症例は登録できません.`)
         } else {
-          throw new Error('データベースエラー(FIND)です.')
+          throw new Error('データーベースエラー(FIND)です.')
         }
       }
 
@@ -610,11 +610,11 @@ const store = createStore<RootState>({
         // レコード操作をしたら必ずキャッシュをリロード
         await context.dispatch('ReloadDocumentList')
       } catch {
-        throw new Error('データベースエラー(UPDATE)です.')
+        throw new Error('データーベースエラー(UPDATE)です.')
       }
     },
 
-    // 症例データの登録. DocumentIdで、新規(===0)・更新(>0)を区別する.
+    // 症例データーの登録. DocumentIdで、新規(===0)・更新(>0)を区別する.
     //
     // @param {Object} オブジェクトCase
     UpsertDocument (context: StoreActionContext, payload: Record<string, any>) {
@@ -625,7 +625,7 @@ const store = createStore<RootState>({
       }
     },
 
-    // 症例データの削除.
+    // 症例データーの削除.
     //
     // @param {Object} オブジェクトCase (検索に用いるのは DocumentId のみ)
     async RemoveDocument (context: StoreActionContext, payload: { DocumentId: number }) {
@@ -643,11 +643,11 @@ const store = createStore<RootState>({
         // レコード操作をしたら必ずキャッシュをリロード
         await context.dispatch('ReloadDocumentList')
       } catch {
-        throw new Error('データベースエラー(REMOVE)です.')
+        throw new Error('データーベースエラー(REMOVE)です.')
       }
     },
 
-    // 症例データのもつ DateOfProcedure から年次と症例数を集計したobjectを返す
+    // 症例データーのもつ DateOfProcedure から年次と症例数を集計したobjectを返す
     //
     async GetYears (context: StoreActionContext): Promise<Record<string, number>> {
       try {
@@ -663,7 +663,7 @@ const store = createStore<RootState>({
         }
         return CountByYear
       } catch {
-        throw new Error('データベースエラー(FIND)です.')
+        throw new Error('データーベースエラー(FIND)です.')
       }
     }
   }

@@ -15,7 +15,7 @@ export default class ApproachMaster {
     Object.defineProperty(this, 'year', { value: argYear || defaultReference, enumerable: false, writable: false })
 
     const year = this.year
-    // マスタデータ定義
+    // マスタデーター定義
     // $で終わるプロパティはマスタ情報としてnon-enumerableに設定
     //
     // カテゴリプロパティの内容は配列で、各要素(行)はオブジェクトで指定
@@ -90,7 +90,7 @@ export default class ApproachMaster {
       '卵管鏡': '#FFD000'
     }
 
-    // マスタデータをプロパティとして設定
+    // マスタデーターをプロパティとして設定
     for(const key in approachMasterSets) {
       if (key.slice(-1) === '$') {
         const propertyName = key.slice(0, -1)

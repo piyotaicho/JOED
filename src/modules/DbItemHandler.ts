@@ -3,7 +3,7 @@ import type { CaseDocument, DiagnosisItem, ProcedureItem, ExportCaseRecord, Proc
 type ItemWithText = { Text: string; Description?: ProcedureDescription }
 
 export default class CaseDocumentHandler {
-  // 症例データの項目に対する操作
+  // 症例データーの項目に対する操作
   //
   // 診断・実施手術項目
   // Diagnoses - Hash[]
@@ -13,7 +13,7 @@ export default class CaseDocumentHandler {
   //  {
   //     Text: "登録される内容",
   //     Chain: [ {{カテゴリ}}, {{対象}}|undefined ]
-  //     AdditionalProcedure: { Text: ..., Description: [] } => Chainを除くitem/出力データでは主アイテムの次に入る
+  //     AdditionalProcedure: { Text: ..., Description: [] } => Chainを除くitem/出力データーでは主アイテムの次に入る
   //     Description: []
   //     UserTyped: boolean
   //  }, ...
@@ -124,7 +124,7 @@ export default class CaseDocumentHandler {
     return temporaryArray
   }
 
-  // 症例データから症例登録用のデータとしてプロパティを抽出する
+  // 症例データーから症例登録用のデーターとしてプロパティを抽出する
   //
   // @Param Object
   static ExportCase(caserecord: Partial<CaseDocument> = {}): ExportCaseRecord {

@@ -19,7 +19,7 @@ export function ValidateRecords (records: JsonRecord[]): { length: number; hasHe
   let numberofCase = 0
 
   for (const record of records) {
-    // 提出用データのヘッダレコード
+    // 提出用データーのヘッダレコード
     if (
       record.InstitutionName &&
       record.InstitutionID
@@ -36,7 +36,7 @@ export function ValidateRecords (records: JsonRecord[]): { length: number; hasHe
       // 症例レコードの数をカウントアップ
       numberofCase++
     } else {
-      // 提出データに準ずる最低条件を満たしているパターン
+      // 提出データーに準ずる最低条件を満たしているパターン
       // ApproachやTypeOfProcedureのないパターンもあるため、これらは条件に入れない
       if (
         record.ProcedureTime &&
@@ -98,7 +98,7 @@ function DateOfProcedure (CaseData: CreatedCaseData, record: JsonRecord): void {
   } else {
     // 日付の設定が無い場合自動生成
     if (year === '') {
-      throw new Error('データの自動生成に必要な情報が不足しているためこれ以上の変換は出来ません.')
+      throw new Error('データーの自動生成に必要な情報が不足しているためこれ以上の変換は出来ません.')
     }
     CaseData.DateOfProcedure = year + '-01-01'
     CaseData.Imported = true

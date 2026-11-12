@@ -19,7 +19,7 @@ const route = useRoute()
 const router = useRouter()
 const routerViewRef = ref<ChildComponentInstance>()
 
-// 設定とデータリストを取得
+// 設定とデーターリストを取得
 store.dispatch('system/LoadPreferences')
   .then(() => {
     // システムSALTが未設定の場合は起動時をSALTにする.

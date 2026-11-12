@@ -147,7 +147,7 @@ export async function Remove (payload: RemovePayload): Promise<number> {
 }
 
 /**
- * データベースの登録内容をダンプする
+ * データーベースの登録内容をダンプする
  * @returns
  */
 export async function Dump() {
@@ -155,7 +155,7 @@ export async function Dump() {
 }
 
 /**
- * データベースを全削除する
+ * データーベースを全削除する
  * @param {boolean} removeBackupFiles - バックアップファイルも削除する
  * @returns
  */

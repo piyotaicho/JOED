@@ -28,7 +28,7 @@ const emit = defineEmits(['data-upsert'])
 
 const GoBack = () => router.replace('./')
 
-// マスターデータ取得(non-reactive)
+// マスターデーター取得(non-reactive)
 const master = new ApproachMaster(props.year || '')
 // propsのprocedureTypesを配列化(non-reactive)
 const procedureTypes = master.getCategories(JSON.parse(props.procedureTypes || '[]'))

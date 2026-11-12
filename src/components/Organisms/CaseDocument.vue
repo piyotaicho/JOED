@@ -53,7 +53,7 @@ const currentDocument = computed<CaseDocumentRecord>(() => (fetching.value ? {} 
 // ドキュメントの各種フィールド
 const Category = computed(() => (fetching.value ? '' : currentDocument.value?.TypeOfProcedure || ''))
 const Id = computed(() => (fetching.value ? '' : currentDocument.value?.PatientId || ''))
-const Name = computed(() => (fetching.value ? 'データを取得中' : currentDocument.value?.Name || ''))
+const Name = computed(() => (fetching.value ? 'データーを取得中' : currentDocument.value?.Name || ''))
 const DateOfProcedure = computed(() => (fetching.value ? '' : currentDocument.value?.DateOfProcedure))
 const Age = computed(() =>
   fetching.value ? '' : (currentDocument.value?.Age ? '( ' + currentDocument.value.Age + '歳 )' : '')

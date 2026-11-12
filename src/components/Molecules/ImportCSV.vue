@@ -104,7 +104,7 @@ const convertStream = async () => {
       throw new Error('手術日とIDへの割り当ては必須です.')
     }
 
-    // CSVデータの確認表示
+    // CSVデーターの確認表示
     data.ProcessStep = 0
     data.LogMessages.push('ファイルにはタイトル行を含めて' + data.CsvArray.length + '行の情報があります.')
 
@@ -172,7 +172,7 @@ const storeRuleset = () => {
 <template>
   <div>
     <div style="padding-bottom: 1rem;">
-      Excelなどから出力したCSVファイルからデータの雛型を読み込むことが出来ます.<br/>
+      Excelなどから出力したCSVファイルからデーターの雛型を読み込むことが出来ます.<br/>
       全ての項目を完全に入力することは出来ませんが, CSVファイルのフィールドや定数を指定の項目に割り当てて読み込みます.<br/>
       手術実施日と患者IDは重複入力確認のため必須入力です.<br/>
       完全な入力は原理的に不可能ですので,全ての入力に編集と確認の操作が必要になります.<br/>
@@ -196,7 +196,7 @@ const storeRuleset = () => {
       </el-tooltip>
     </div>
     <div style="padding: 1rem 0;">
-      <el-button type="primary" :disabled="disableProcess" @click="convertStream">上記ルールに則ってデータを変換</el-button>
+      <el-button type="primary" :disabled="disableProcess" @click="convertStream">上記ルールに則ってデーターを変換</el-button>
       <el-button type="primary" :disabled="props.disabled" @click="storeRuleset">ルールを保存</el-button>
     </div>
     <div class="progress-views">

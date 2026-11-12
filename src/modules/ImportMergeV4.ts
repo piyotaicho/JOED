@@ -20,10 +20,10 @@ export function ValidateRecords (records: MergeRecord[]): number {
 }
 
 export function CreateDocument (record: MergeRecord): CreatedCaseData {
-  // インポートデータのフラグとメッセージ
+  // インポートデーターのフラグとメッセージ
   const CaseData: CreatedCaseData = {
     Imported: true,
-    Notification: '症例登録システムJOE-D version 4から読み込まれたデータです.確認と保存が必要です.\n'
+    Notification: '症例登録システムJOE-D version 4から読み込まれたデーターです.確認と保存が必要です.\n'
   }
 
   // DateOfProcedue と ID はレコード構成の最低限必須項目

@@ -307,7 +307,7 @@ const cancelQuery = () => {
       <InputSwitchField
         v-model="settings.IgnoreQuery"
         title=""
-        :options="[{ text: '全データ', value: true }, { text: '現在の表示設定', value: false }]"
+        :options="[{ text: '全データー', value: true }, { text: '現在の表示設定', value: false }]"
       />
     </div>
 

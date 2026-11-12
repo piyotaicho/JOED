@@ -63,7 +63,7 @@ const ProcessStream = async () => {
     const validationResult = ValidateRecords(records)
 
     if (validationResult.hasHeader) {
-      LogMessages.value.push('ファイルは学会提出用データです.必要に応じてフィールド内容が自動生成されます.')
+      LogMessages.value.push('ファイルは学会提出用データーです.必要に応じてフィールド内容が自動生成されます.')
     }
     if (validationResult.anonymised && !validationResult.hasHeader) {
       LogMessages.value.push('ファイルにはIDなどが含まれていません.必要に応じてフィールド内容が自動生成されます.')
@@ -96,8 +96,8 @@ const ProcessStream = async () => {
     <div style="padding-bottom: 1rem;">
       JOED5の症例レコードフォーマットに一致したJSONファイルを読み込むことが出来ます.<br/>
       規定のフォーマットにある程度一致していれば要確認のフラグはつきません.<br/>
-      提出用データのインポートの際には,手術日・患者IDは自動生成されますがあまりお薦めできません.<br/>
-      データフォーマットについては, 設定のライセンス表記中に記載されたJOEDの開発リポジトリのドキュメントをご覧下さい.<br/>
+      提出用データーのインポートの際には,手術日・患者IDは自動生成されますがあまりお薦めできません.<br/>
+      データーフォーマットについては, 設定のライセンス表記中に記載されたJOEDの開発リポジトリのドキュメントをご覧下さい.<br/>
     </div>
     <div>
       <el-button type="primary" :disabled="props.disabled || Processing " @click="ProcessStream">ファイルの読み込みと変換</el-button>

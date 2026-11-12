@@ -45,10 +45,10 @@ export const generatorFunctions: Record<string, GeneratorFunction> = {
 }
 
 export function CreateDocument (record: CsvRecord = [], ruleset: CsvRuleset = {}): CaseLike {
-  // インポートデータのフラグとメッセージ
+  // インポートデーターのフラグとメッセージ
   const CaseData = {
     Imported: true,
-    Notification: 'CSVファイルから変換されたデータです.確認と保存が必要です.\n'
+    Notification: 'CSVファイルから変換されたデーターです.確認と保存が必要です.\n'
   }
 
   // DateOfProcedue と ID はレコード構成の最低限必須項目
@@ -124,7 +124,7 @@ function DateOfProcedure (CaseData: CaseLike, record: CsvRecord, ruleset: CsvRul
 }
 
 function BasicInformation (CaseData: CaseLike, record: CsvRecord, ruleset: CsvRuleset): void {
-  // 患者属性データの設定
+  // 患者属性データーの設定
 
   // 必須項目である患者IDを設定もしくは生成
   const id = getvalueByRule('ID (必須)', record, ruleset,

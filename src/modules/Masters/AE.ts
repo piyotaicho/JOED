@@ -377,8 +377,8 @@ export default class AEmaster {
   validate (AE: AEItem = {} as AEItem): boolean {
     // 合併症の種類毎に入力を確認
     if (!AE.Category) {
-      // データがそもそもおかしい
-      throw Error('合併症入力にカテゴリ設定のない不正なデータです.')
+      // データーがそもそもおかしい
+      throw Error('合併症入力にカテゴリ設定のない不正なデーターです.')
     }
 
     // 合併症カテゴリの設計オブジェクトを取得

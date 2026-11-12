@@ -91,7 +91,7 @@ export function generateCSVFromObjects (
   // ヘッダー行
   rows.push(columns.map(col => col.header))
 
-  // データ行
+  // データー行
   for (const object of objects) {
     const row = []
     for (const col of columns) {

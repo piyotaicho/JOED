@@ -1,6 +1,6 @@
 // ブラウザのファイルシステムへのNeDBラッパー
 // seald/nedbになって*AsyncができたのでPromise+callbackから移行
-// データベースインスタンスは公開不要なのでインターフェースを簡素化した
+// データーベースインスタンスは公開不要なのでインターフェースを簡素化した
 import HHX from 'xxhashjs'
 import NeDB from '@seald-io/nedb'
 
@@ -167,7 +167,7 @@ export async function Remove(payload: RemovePayload): Promise<number> {
 }
 
 /**
- * データベースの登録内容をダンプする
+ * データーベースの登録内容をダンプする
  * @returns
  */
 export async function Dump() {
@@ -178,7 +178,7 @@ export async function Dump() {
 }
 
 /**
- * データベースを全削除する - removeBackupFilesはelectronとの互換性維持のための引数で無視
+ * データーベースを全削除する - removeBackupFilesはelectronとの互換性維持のための引数で無視
  * @param {boolean} removeBackupFiles - バックアップファイルも削除する
  * @returns
  */

@@ -15,7 +15,7 @@ type InstituteItem = {
   Prefecture?: string
 }
 
-// フォームデータ
+// フォームデーター
 const data = reactive({
   InstitutionName: '',
   InstitutionID: '',

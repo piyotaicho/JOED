@@ -15,7 +15,7 @@ const removeBackupFiles = ref(false)
 const backupDatabase = async (): Promise<void> => {
   // システム設定を取得
   const settings = await store.dispatch('system/LoadPreferences') as Record<string, unknown>
-  // ドキュメントをデータベースからダンプ
+  // ドキュメントをデーターベースからダンプ
   const documents = (await store.dispatch('dbDump')) as Record<string, unknown>[]
 
   // バックアップJSON文字列を作成(整形なし)
@@ -25,7 +25,7 @@ const backupDatabase = async (): Promise<void> => {
   ])
 
   // ファイルとしてダウンロード
-  if (await confirm('保存されるデータには要配慮個人情報が含まれています.\n出力されたファイルの取扱は厳重に行ってください.')) {
+  if (await confirm('保存されるデーターには要配慮個人情報が含まれています.\n出力されたファイルの取扱は厳重に行ってください.')) {
     const temporaryElementA = document.createElement('a')
     temporaryElementA.href = URL.createObjectURL(new Blob([outputText], { type: 'application/json' }))
     temporaryElementA.download = `joed-whole-backup-${new Date().toISOString().slice(0,10)}.json`
@@ -37,9 +37,9 @@ const backupDatabase = async (): Promise<void> => {
 }
 
 const restoreDatabase = async (): Promise<void> => {
-  // データベースが空であることを確認
+  // データーベースが空であることを確認
   if (store.getters['TotalNumberOfCases'] > 0) {
-    await alertPopup('情報が既に存在しています.\n先にデータベースを初期化してください.')
+    await alertPopup('情報が既に存在しています.\n先にデーターベースを初期化してください.')
     return
   }
 
@@ -63,8 +63,8 @@ const restoreDatabase = async (): Promise<void> => {
         throw new Error('不正なファイルです.')
       }
 
-      if (await confirmYesNo('データベースの内容はバックアップファイルの内容で上書きされます.\nこの操作は元に戻せません.')) {
-        const loading = ElLoading.service({ fullscreen: true, text: 'データベースを復元中...' })
+      if (await confirmYesNo('データーベースの内容はバックアップファイルの内容で上書きされます.\nこの操作は元に戻せません.')) {
+        const loading = ElLoading.service({ fullscreen: true, text: 'データーベースを復元中...' })
         // システム設定を復元し保存
         const selectedSettings = data.splice(settingIndex, 1)[0]
         const settings = selectedSettings?.Settings || {}
@@ -75,7 +75,7 @@ const restoreDatabase = async (): Promise<void> => {
         let count = 1
         for (const document of data) {
           if ('setText' in loading && typeof loading.setText === 'function') {
-            loading.setText(`データベースを復元中... (${count}/${data.length})`)
+            loading.setText(`データーベースを復元中... (${count}/${data.length})`)
           }
           await store.dispatch('dbInsert', {Document: document})
           count++
@@ -83,7 +83,7 @@ const restoreDatabase = async (): Promise<void> => {
 
         loading.close()
 
-        await alertPopup('データベースの復元が完了しました.\nアプリケーションをリロードします.')
+        await alertPopup('データーベースの復元が完了しました.\nアプリケーションをリロードします.')
         relaunchApp()
       }
     } catch (error: unknown) {
@@ -99,11 +99,11 @@ const restoreDatabase = async (): Promise<void> => {
 const dropDatabase = async (): Promise<void> => {
   const passphrase = ['DELETE', 'delete', '削除', 'バルス'][Math.floor(Math.random() * 4)]
 
-  if (await confirmYesNo('この操作はデータベースの内容を完全に削除します.\nこの操作は元に戻せません.')) {
+  if (await confirmYesNo('この操作はデーターベースの内容を完全に削除します.\nこの操作は元に戻せません.')) {
     const input = await prompt(`続行するには "${passphrase}" と入力してください.`)
     if (input === passphrase || input === `"${passphrase}"`) {
       await store.dispatch('dbDrop', removeBackupFiles.value)
-      await alertPopup('データベースが完全に削除されました. \nアプリケーションをリロードします.')
+      await alertPopup('データーベースが完全に削除されました. \nアプリケーションをリロードします.')
       relaunchApp()
     } else {
       await alertPopup('操作がキャンセルされました.')
@@ -117,7 +117,7 @@ const dropDatabase = async (): Promise<void> => {
     <div class="utility-switches">
       <div>
         <div class="label w60">
-          システム設定・データベースのバックアップ取得
+          システム設定・データーベースのバックアップ取得
         </div>
         <div class="field w40">
           <el-button type="primary" @click="backupDatabase" :disabled="!enableAdvancedSettings">実行</el-button>
@@ -126,7 +126,7 @@ const dropDatabase = async (): Promise<void> => {
 
       <div>
         <div class="label w60">
-          システム設定・データベースをバックアップから復元
+          システム設定・データーベースをバックアップから復元
         </div>
         <div class="field w40">
           <el-button type="danger" @click="restoreDatabase" :disabled="!enableAdvancedSettings || store.getters['TotalNumberOfCases'] > 0">実行</el-button>
@@ -135,13 +135,13 @@ const dropDatabase = async (): Promise<void> => {
 
       <div>
         <div class="label w80" style="color: var(--color-danger); margin-top: 2rem;">
-          以下の操作はデータを失う可能性があります。<br/>必要ならば実行前にバックアップを取得してください。
+          以下の操作はデーターを失う可能性があります。<br/>必要ならば実行前にバックアップを取得してください。
         </div>
       </div>
 
       <div style="margin-top: 1rem;">
         <div class="label w60">
-          データベースの完全削除
+          データーベースの完全削除
         </div>
         <div class="field w40">
           <el-button type="danger" @click="dropDatabase" :disabled="!enableAdvancedSettings">実行</el-button>

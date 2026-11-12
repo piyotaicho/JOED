@@ -125,7 +125,7 @@ function registerAppEvents() {
       // コマンドラインディレクティブの実行
       parseCommandLineDirectives()
 
-      // データベースインスタンスの作成
+      // データーベースインスタンスの作成
       appConfig.databaseInstance = createDatabaseInstance()
 
       // ウインドウの作成
@@ -190,7 +190,7 @@ function registerAppEvents() {
 // コマンドラインオプションの処理
 //
 function parseCommandLineOptions() {
-  // --datadir : データの保存ディレクトリの設定 setPath(documents)の指定
+  // --datadir : データーの保存ディレクトリの設定 setPath(documents)の指定
   if (app.commandLine.hasSwitch('datadir')) {
     const datadirarg = app.commandLine.getSwitchValue('datadir')
     try {
@@ -206,7 +206,7 @@ function parseCommandLineOptions() {
         throw new Error()
       }
     } catch {
-      dialog.showErrorBox('JOED5', `データ保存先として指定されたパス(${datadirarg})が不正です.`)
+      dialog.showErrorBox('JOED5', `データー保存先として指定されたパス(${datadirarg})が不正です.`)
       app.exit(-1)
     }
   }
@@ -280,7 +280,7 @@ function parseCommandLineOptions() {
 }
 
 function parseCommandLineDirectives() {
-  // drop-database : データベースファイルの削除 (=all でバックアップも削除, =lock で消し忘れたロックファイルのみ削除)
+  // drop-database : データーベースファイルの削除 (=all でバックアップも削除, =lock で消し忘れたロックファイルのみ削除)
   if (app.commandLine.hasSwitch('drop-database')) {
     const DBfilename = path.join(app.getPath('documents'), 'joed.nedb')
     if (app.commandLine.getSwitchValue('drop-database').toLowerCase() === 'lock') {
@@ -344,8 +344,8 @@ function registerMenu() {
         { label: '新規症例の登録', id: 'list-new', enabled: false, accelerator: 'CmdORCtrl+N', click: (item: unknown, focusedWindow: BrowserWindow) => RendererRoute('new', focusedWindow) },
         { label: '症例の削除', id: 'list-delete', enabled: false, accelerator: 'CmdORCtrl+X', click: (item: unknown, focusedWindow: BrowserWindow) => RendererRoute('list.delete', focusedWindow) },
         { type: 'separator' },
-        { label: 'データの読み込み', id: 'list-import', enabled: false, click: (item: unknown, focusedWindow: BrowserWindow) => RendererRoute('import', focusedWindow) },
-        { label: 'データの書き出し', id: 'list-export', enabled: false, click: (item: unknown, focusedWindow: BrowserWindow) => RendererRoute('export', focusedWindow) },
+        { label: 'データーの読み込み', id: 'list-import', enabled: false, click: (item: unknown, focusedWindow: BrowserWindow) => RendererRoute('import', focusedWindow) },
+        { label: 'データーの書き出し', id: 'list-export', enabled: false, click: (item: unknown, focusedWindow: BrowserWindow) => RendererRoute('export', focusedWindow) },
         ...(process.platform === 'darwin'
           ? [
             { type: 'separator' },
@@ -496,10 +496,10 @@ function switchMenu(payload: string) {
 }
 
 //
-// データベースの設定
+// データーベースの設定
 //
 
-// データベースロックファイル制御
+// データーベースロックファイル制御
 //
 function createLockfile() {
   if (appConfig.enableLocking) {
@@ -516,7 +516,7 @@ function removeLockfile() {
   }
 }
 
-// データベースインスタンスの作成
+// データーベースインスタンスの作成
 //
 function createDatabaseInstance() {
   // appPath documents はデフォルトで userData にオーバーライドされている.
@@ -526,11 +526,11 @@ function createDatabaseInstance() {
   try {
     createLockfile()
   } catch {
-    dialog.showMessageBoxSync({ title: 'JOED5', type: 'info', message: '他のユーザがデータベースファイルを使用中のため起動を中止します.' })
+    dialog.showMessageBoxSync({ title: 'JOED5', type: 'info', message: '他のユーザがデーターベースファイルを使用中のため起動を中止します.' })
     app.exit(-1)
   }
 
-  // データベースファイルのバックアップを作る
+  // データーベースファイルのバックアップを作る
   // 原則としてバックアップ作成に関わるエラーは全て無視する.
   for (let i = (backupGeneration - 1); i > 0; i--) {
     try {
@@ -541,14 +541,14 @@ function createDatabaseInstance() {
     fs.copyFileSync(DBfilename, DBfilename + '.1')
   } catch { }
 
-  // データベースの作成
+  // データーベースの作成
   try {
     return new DB({
       filename: DBfilename,
       autoload: true
     })
   } catch (error: unknown) {
-    // データベースファイルが作成できないのは致命的エラーなのでダイアログを出して終了する
+    // データーベースファイルが作成できないのは致命的エラーなのでダイアログを出して終了する
     if (isDevelopment) {
       console.warn('[DEV] Unable to create database file: ' + (error as Error)?.message)
     }
@@ -556,7 +556,7 @@ function createDatabaseInstance() {
       title: 'JOED5',
       type: 'error',
       buttons: ['OK'],
-      message: 'データベースファイルの操作に失敗しました, アプリケーションを起動できません.\n以下の情報を添えて学会までお問い合わせください.\n\n' + (error as Error)?.message
+      message: 'データーベースファイルの操作に失敗しました, アプリケーションを起動できません.\n以下の情報を添えて学会までお問い合わせください.\n\n' + (error as Error)?.message
     })
     removeLockfile()
     app.exit(-1)
@@ -598,7 +598,7 @@ function unescapeRegexInObject(obj: unknown): unknown {
   return obj
 }
 //
-// IPCとデータベースのAPIラッパー
+// IPCとデーターベースのAPIラッパー
 //
 function registerIPChandlers() {
   // Insert
@@ -812,7 +812,7 @@ function registerIPChandlers() {
       throw new Error('Database instance is not initialized.')
     }
 
-    // データベースを全削除する
+    // データーベースを全削除する
     await appConfig.databaseInstance.dropDatabaseAsync()
     // バックアップファイルも削除する
     if (removeBackupFiles) {

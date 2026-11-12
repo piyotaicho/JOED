@@ -54,10 +54,10 @@ function goBack () {
           <DArrowLeft style="height: 1.4rem; padding-right: 0.6rem;"/> <span>戻る</span>
         </template>
       </el-tab-pane>
-      <el-tab-pane label="データ出力" name="export">
+      <el-tab-pane label="データー出力" name="export">
         <ExportData/>
       </el-tab-pane>
-      <el-tab-pane label="データ読み込み" name="import">
+      <el-tab-pane label="データー読み込み" name="import">
         <ImportData/>
       </el-tab-pane>
     </el-tabs>

@@ -169,18 +169,18 @@ const Download = async (): Promise<void> => {
   // バックアップでは取扱の警告を表示
   if (!setting.backup ||
     (
-      await Popups.confirmYesNo('保存されるデータにはID番号・氏名・年齢などの個人情報が含まれている可能性があります.\n処理を続行しますか?') &&
+      await Popups.confirmYesNo('保存されるデーターにはID番号・氏名・年齢などの個人情報が含まれている可能性があります.\n処理を続行しますか?') &&
       await Popups.confirm('出力されたファイルの取り扱いは厳重に行ってください.')
     )
   ) {
     // ブラウザの機能でダウンロードさせる.
     const temporaryElementA = document.createElement('a')
     if (!setting.csv) {
-      // JSONデータを設定
+      // JSONデーターを設定
       temporaryElementA.href = URL.createObjectURL(new Blob([outputText.value], { type: 'application/json' }))
       temporaryElementA.download = 'joed-export-data.json'
     } else {
-      // SHIFT-JISのCSVデータを設定
+      // SHIFT-JISのCSVデーターを設定
       temporaryElementA.href = URL.createObjectURL(new Blob([new Uint8Array(Encoding.convert(outputText.value, { to: 'SJIS', type: 'array' }) as number[])], { type: 'text/csv;charset=shift_jis;' }))
       temporaryElementA.download = 'joed-export-data.csv'
     }
@@ -194,7 +194,7 @@ const Download = async (): Promise<void> => {
 // Step 1 - 施設名とIDが設定されているかを確認
 //
 const CheckSystemConfiguration = async (): Promise<void> => {
-  // CSV, バックアップデータでエラーチェックなしの場合 このチェックはスキップ
+  // CSV, バックアップデーターでエラーチェックなしの場合 このチェックはスキップ
   if ((setting.backup || setting.csv) && !setting.validate) {
     return
   }
@@ -223,11 +223,11 @@ const CheckSystemConfiguration = async (): Promise<void> => {
   }
 }
 
-// Step 2 - インポートデータがすべて確認されているかを確認
+// Step 2 - インポートデーターがすべて確認されているかを確認
 //
-// インポートデータ( Imported )で特になんの問題も無くインポートできたもの以外には Notification がある
+// インポートデーター( Imported )で特になんの問題も無くインポートできたもの以外には Notification がある
 const CheckImportedRecords = async (): Promise<void> => {
-  // バックアップデータ, CSVでエラーチェックなしでは チェックをスキップする
+  // バックアップデーター, CSVでエラーチェックなしでは チェックをスキップする
   if ((setting.backup || setting.csv) && !setting.validate) {
     return
   }
@@ -251,7 +251,7 @@ const CheckImportedRecords = async (): Promise<void> => {
   }
 }
 
-// Step 3 - データの妥当性検証
+// Step 3 - データーの妥当性検証
 //
 // 基本的に入力時に検証されているので大丈夫だと思うが：
 //  必須項目の有無
@@ -299,7 +299,7 @@ const CheckConsistency = async (): Promise<number[]> => {
 
   const documentIds = queriedDocuments.map((item) => item.DocumentId)
 
-  // バックアップデータ, CSVでエラーチェックなしでは これ以上のチェックをスキップする
+  // バックアップデーター, CSVでエラーチェックなしでは これ以上のチェックをスキップする
   if ((setting.backup || setting.csv) && !setting.validate) {
     return documentIds
   }
@@ -333,7 +333,7 @@ const CheckConsistency = async (): Promise<number[]> => {
 
   if (errorCount > 0) {
     throw new Error(
-      'データ検証で' + errorCount + '件のエラーが確認されました.\n' +
+      'データー検証で' + errorCount + '件のエラーが確認されました.\n' +
       '確認と修正を御願いします.'
     )
   }
@@ -341,7 +341,7 @@ const CheckConsistency = async (): Promise<number[]> => {
   return documentIds
 }
 
-// Step 4 - データの整形
+// Step 4 - データーの整形
 //
 const CreateExportData = async (documentIds: number[]): Promise<{ exportItems: CaseRecord[]; countOfDenial: number }> => {
   status.progressCreateData = 0
@@ -358,12 +358,12 @@ const CreateExportData = async (documentIds: number[]): Promise<{ exportItems: C
     ) as CaseRecord
 
     if (setting.backup || setting.csv) {
-      // 生データの出力
+      // 生データーの出力
       exportItems.push(exportdocument)
     } else {
-      // 提出用データを出力
+      // 提出用データーを出力
 
-      // 登録拒否症例は出力データに含めない
+      // 登録拒否症例は出力データーに含めない
       if (exportdocument?.Denial === true) {
         countOfDenial++
         continue
@@ -394,10 +394,10 @@ const CreateExportData = async (documentIds: number[]): Promise<{ exportItems: C
   return { exportItems, countOfDenial }
 }
 
-// Step 5 - データファイルデータの作成～ヘッダの付与とテキスト化
+// Step 5 - データーファイルデーターの作成～ヘッダの付与とテキスト化
 //
 const FinaliseExportData = async (exportItem: CaseRecord[], countOfDenial: number): Promise<string> => {
-  // バックアップ、CSVデータではヘッダは不要
+  // バックアップ、CSVデーターではヘッダは不要
   if (!(setting.backup || setting.csv)) {
     const length = exportItem.length
 
@@ -429,7 +429,7 @@ const FinaliseExportData = async (exportItem: CaseRecord[], countOfDenial: numbe
     return JSON.stringify(exportItem, null, 2)
   }
 
-  // CSVデータに変換する項目を指定
+  // CSVデーターに変換する項目を指定
   const csvHeader = [
     { header: '患者ID', key: 'PatientId' },
     { header: '患者名', key: 'Name' },
@@ -457,7 +457,7 @@ const FinaliseExportData = async (exportItem: CaseRecord[], countOfDenial: numbe
     }
   })
 
-  // CSVデータに変換して返す
+  // CSVデーターに変換して返す
   return generateCSVFromObjects(csvObjects, csvHeader)
 }
 </script>
@@ -469,9 +469,9 @@ const FinaliseExportData = async (exportItem: CaseRecord[], countOfDenial: numbe
         <div class="label w30">出力の形式</div>
         <div class="field w70">
           <select v-model="exportType">
-            <option value="registration">学会提出データ</option>
-            <option value="dump">バックアップデータ</option>
-            <option value="CSV">CSVデータ</option>
+            <option value="registration">学会提出データー</option>
+            <option value="dump">バックアップデーター</option>
+            <option value="CSV">CSVデーター</option>
           </select>
         </div>
       </div>
@@ -489,7 +489,7 @@ const FinaliseExportData = async (exportItem: CaseRecord[], countOfDenial: numbe
       <InputSwitchField
         v-model="setting.validate"
         :disabled="exportType === 'registration'"
-        title="データのエラーチェック"
+        title="データーのエラーチェック"
         :options="[{ text: '行う', value: true }, { text: '行わない', value: false }]"
         :class-override="['label w30', 'field w70']"
       />
@@ -501,7 +501,7 @@ const FinaliseExportData = async (exportItem: CaseRecord[], countOfDenial: numbe
             type="primary"
             @click="Process()"
             :disabled="!setting.year || status.processing"
-            >出力データの作成</el-button>
+            >出力データーの作成</el-button>
         </div>
       </div>
     </div>
@@ -525,7 +525,7 @@ const FinaliseExportData = async (exportItem: CaseRecord[], countOfDenial: numbe
               />
             </template>
           </el-step>
-          <el-step title="提出用データとして整形">
+          <el-step title="提出用データーとして整形">
             <template #description>
               <el-progress
                 :v-show="status.progressCreateData > 0"

@@ -23,12 +23,12 @@ goto :EOF
 
 ::PS_SCRIPT_BEGIN::
 #
-# JOED5ソフトウエア サポートスクリプト : バックアップデータの作成
+# JOED5ソフトウエア サポートスクリプト : バックアップデーターの作成
 #
 # Copyright (c) 2023-2026 P4mohnet
 # Licensed under the MIT License.
 
-# データフォルダをデフォルトから移動していた場合のコマンドラインパラメータ取得
+# データーフォルダをデフォルトから移動していた場合のコマンドラインパラメータ取得
 param(
     [string]$DataPath = $ENV:APPDATA + "\JOED5"
 )
@@ -41,7 +41,7 @@ try {
 }
 catch {
     # System.Windows.Forms アセンブリの読み込みに失敗した場合、保存先はデスクトップになる旨を通知する
-    show-message "バックアップデータの保存先はデスクトップの joed5-full-export.json になります。"
+    show-message "バックアップデーターの保存先はデスクトップの joed5-full-export.json になります。"
 }
 
 # メッセージダイアログを表示する
@@ -70,22 +70,22 @@ function Show-Message {
     }
 }
 
-# データフォルダの存在確認
+# データーフォルダの存在確認
 if (-not (Test-Path -Path $DataPath)) {
-    show-message "データフォルダが見つかりません: $DataPath" -isError $true
+    show-message "データーフォルダが見つかりません: $DataPath" -isError $true
     exit 3
 }
 
-# データファイルの存在確認
+# データーファイルの存在確認
 if (-not (Test-Path -Path "$DataPath\joed.nedb")) {
-    Show-Message "JOED5のデータファイルが見つかりません: $DataPath\joed.nedb" -isError $true
+    Show-Message "JOED5のデーターファイルが見つかりません: $DataPath\joed.nedb" -isError $true
     exit 3
 }
 
 # JSONファイルの取得
 $data = Get-Content -Path "$DataPath\joed.nedb" -Encoding UTF8
 
-# JSONファイルデータのチェック
+# JSONファイルデーターのチェック
 $errorData = $false
 $data | foreach {
     try {
@@ -96,13 +96,13 @@ $data | foreach {
             $id = $matches[1]
             Show-Message "不正なレコードが検出されました: (患者認識子: $id)" -isError $true
         } ekse {
-            Show-Message "JOED5のデータファイルが不正です: $DataPath\joed.nedb" -isError $true
+            Show-Message "JOED5のデーターファイルが不正です: $DataPath\joed.nedb" -isError $true
         }
     }
 }
 
 if ($errorData) {
-    Show-Message "JOED5のデータファイルにエラーが検出されたため、バックアップを作成できません。" -isError $true
+    Show-Message "JOED5のデーターファイルにエラーが検出されたため、バックアップを作成できません。" -isError $true
     exit 13
 }
 
@@ -129,7 +129,7 @@ if ($WindowsFormsLoaded) {
     }
 }
 
-# バックアップデータの生成
+# バックアップデーターの生成
 $parsedData = $data | ConvertFrom-Json
 $backupData = @{}
 foreach ($record in $parsedData) {
@@ -155,10 +155,10 @@ foreach ($record in $parsedData) {
     }
 }
 
-# バックアップファイルにバックアップデータを保存
+# バックアップファイルにバックアップデーターを保存
 try {
     if ($backupData.Count -eq 0) {
-        Show-Message "出力するデータがありませんでした。" -isError $true
+        Show-Message "出力するデーターがありませんでした。" -isError $true
         exit 259
     }
 

@@ -13,7 +13,7 @@ const store = useStore()
 type MasterDirective = Record<string, string[]>
 type MasterTree = Record<string, MasterDirective[]>
 
-// マスターデータ取得(non-reactive)
+// マスターデーター取得(non-reactive)
 const master = new ApproachMaster()
 // マスターツリー取得(non-reactive) デフォルト設定用
 const masterTree = master.getTree(undefined, true) as MasterTree

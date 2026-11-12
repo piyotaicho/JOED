@@ -1,6 +1,6 @@
 /**
  * src/types/data.ts
- * アプリケーション全体で使用するコアデータ型定義
+ * アプリケーション全体で使用するコアデーター型定義
  * (旧 src/modules/definitions.js のクラス定義をTypeScriptに移行)
  */
 
@@ -12,7 +12,7 @@ export interface Institution {
   LockedInstitutionProperty: boolean
 }
 
-// -------- データベースプロパティ --------
+// -------- データーベースプロパティ --------
 
 export interface DatabaseProperty {
   ApplicationVersion: string
@@ -20,7 +20,7 @@ export interface DatabaseProperty {
   Year: string
 }
 
-// -------- 症例データ構造 --------
+// -------- 症例データー構造 --------
 
 /**
  * 診断項目
@@ -110,7 +110,7 @@ export interface CaseDocument {
   Imported?: boolean
 }
 
-// -------- エクスポート用データ --------
+// -------- エクスポート用データー --------
 
 /**
  * 提出用ヘッダレコード
@@ -150,7 +150,7 @@ export interface ImportValidationResult {
   anonymised: boolean
 }
 
-// -------- 設定データ --------
+// -------- 設定データー --------
 
 export interface ViewSettings {
   Filters: FilterCondition[]

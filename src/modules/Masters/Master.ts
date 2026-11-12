@@ -61,7 +61,7 @@ export default class Master {
         // 要素に '$MULTI$' を含むとDescriptionは複数保持可能となる
         //
         // $ で終わる文字列が選択された場合はその術式は登録無効となる(単独選択の場合エラーで登録出来ない)
-        // [] で囲まれた文字列は選択肢には表示されず、データの可読性を目的に保持される
+        // [] で囲まれた文字列は選択肢には表示されず、データーの可読性を目的に保持される
 
       }
     }
@@ -94,7 +94,7 @@ export default class Master {
   //
   // @param {string} カテゴリ
   // @param {string} 対象続器 - 空白もしくはundefinedの場合はカテゴリ内すべて
-  // @param {number/string} データセットの参照年指定(デフォルトはマスタの年次=最新)
+  // @param {number/string} データーセットの参照年指定(デフォルトはマスタの年次=最新)
   //
   // return: array
   Items(category: string = '', target?: string, year: string = (this as unknown as { YearofMaster: string }).YearofMaster): MasterItemRaw[] {
@@ -126,7 +126,7 @@ export default class Master {
   //
   // @param {string} アイテム名(.Text)
   // @param {string} カテゴリ
-  // @param {number/string} データセットの参照年指定(デフォルトはマスタの年次=最新)
+  // @param {number/string} データーセットの参照年指定(デフォルトはマスタの年次=最新)
   //
   // return: object 見つからない場合は空白オブジェクト
   getItem(text: string = '', category: string = '', target?: string, year: string = (this as unknown as { YearofMaster: string }).YearofMaster): MasterItemRaw {
@@ -140,7 +140,7 @@ export default class Master {
   //
   // @param {any} ３層目のオブジェクト
   // @param {string}  プロパティ名 デフォルトはText
-  // @param {string}  データセットの参照年指定
+  // @param {string}  データーセットの参照年指定
   //
   // return any
   static parseItem(item: MasterItemRaw, $attribute: string = 'Text', year: string = ''): unknown {

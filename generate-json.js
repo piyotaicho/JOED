@@ -2,9 +2,9 @@
 import ProcedureMaster from './src/modules/Masters/ProcedureMaster.ts';
 import fs from 'fs';
 
-// ProcedureMasterのインスタンスを作成するために必要なダミーデータ
-const treeData = { /* ... Treeオブジェクトの構造に合わせたデータ ... */ };
-const riskData = { /* ... Riskオブジェクトの構造に合わせたデータ ... */ };
+// ProcedureMasterのインスタンスを作成するために必要なダミーデーター
+const treeData = { /* ... Treeオブジェクトの構造に合わせたデーター ... */ };
+const riskData = { /* ... Riskオブジェクトの構造に合わせたデーター ... */ };
 const year = '2025-07-08'; // ISO 8601形式の日付
 
 try {

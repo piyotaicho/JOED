@@ -60,7 +60,7 @@ onMounted(async () => {
       })
     })
     .catch(async () => {
-      await Popups.alert('データベースエラーにより年次リストの取得に失敗しました.')
+      await Popups.alert('データーベースエラーにより年次リストの取得に失敗しました.')
       setting.Years = {}
     })
 

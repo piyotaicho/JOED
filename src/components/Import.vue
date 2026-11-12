@@ -135,7 +135,7 @@ const commit = async () => {
   <div class="utility">
     <div class="utility-switches">
       <div>
-        <div class="title">データ読み込み</div>
+        <div class="title">データー読み込み</div>
       </div>
       <div>
         <div class="label w30">ファイル種別の指定</div>
@@ -166,7 +166,7 @@ const commit = async () => {
       <div class="label w30"></div>
       <div class="field w70">
         <el-button type="primary" :disabled="data.CreatedDocument.length === 0 || data.Committing > 0"
-          @click="commit">変換したデータの登録</el-button>
+          @click="commit">変換したデーターの登録</el-button>
       </div>
     </div>
 

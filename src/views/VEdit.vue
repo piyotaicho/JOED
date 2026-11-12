@@ -216,11 +216,11 @@ const editDialog = useTemplateRef<HTMLDivElement>('editDialog')
 let preserve = ''
 let preservedElement: HTMLElement | null = null
 
-// Reactiveでない状態(a.k.a.created)で既存データの読み込みをする.
+// Reactiveでない状態(a.k.a.created)で既存データーの読み込みをする.
 //
 // @prop {uid} DocumentId
 function onCreated() {
-  // uid '0','00'は新規作成 - uid > 0 は既存データ編集
+  // uid '0','00'は新規作成 - uid > 0 は既存データー編集
   const uid = Number(props.uid)
   if (uid > 0) {
     store.dispatch('FetchDocument', { DocumentId: uid }).then(() => {
@@ -385,11 +385,11 @@ const UpdateList = (target: string, index: number, value: string | undefined) =>
     const isEmptyValue = typeof value === 'undefined' || (typeof value === 'string' && value === '')
     if (index >= 0) {
       if (list[index] !== undefined) {
-        // 空データが与えられた場合は当該インデックスを削除
+        // 空データーが与えられた場合は当該インデックスを削除
         if (isEmptyValue) {
           list.splice(index, 1)
         } else {
-          // 実データが与えられた場合は当該インデックスの内容を置換する
+          // 実データーが与えられた場合は当該インデックスの内容を置換する
           list.splice(index, 1, value)
         }
       }
@@ -464,7 +464,7 @@ const StoreCase = async (temporary = false) => {
   try {
     processing.value = true
 
-    // データベース登録に用いるレコードドキュメントを生成
+    // データーベース登録に用いるレコードドキュメントを生成
     const newDocument: Record<string, any> = {}
     const caseDataRecord = CaseData as unknown as Record<string, unknown>
     for (const key in caseDataRecord) {
@@ -486,7 +486,7 @@ const StoreCase = async (temporary = false) => {
 
     if (temporary) {
       // 一次保存の場合メッセージを設定
-      newDocument.Notification = '一時保存したデータです.\n編集終了後に確定保存して下さい.'
+      newDocument.Notification = '一時保存したデーターです.\n編集終了後に確定保存して下さい.'
     } else {
       // 一時保存でなければメッセージを削除
       delete newDocument.Notification
@@ -541,7 +541,7 @@ const StoreCase = async (temporary = false) => {
       throw new Error('メモの内容は10,000文字以内にしてください.')
     }
 
-    // データの検証と区分の取得
+    // データーの検証と区分の取得
     const typeofprocedure = await ValidateCase(newDocument, temporary)
 
     // 区分コードの設定

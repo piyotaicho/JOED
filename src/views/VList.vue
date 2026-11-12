@@ -37,15 +37,15 @@ const blurredUid = ref<number | null>(null)
 watch(uids, () => {
   selectedUids.value.splice(0)
   multiSelectMode.value = false
-  // データ追加・フィルタリング後、DOMレンダリング完了後にスクロールバーチェック
+  // データー追加・フィルタリング後、DOMレンダリング完了後にスクロールバーチェック
   setTimeout(() => ensureScrollbar(), 100)
 })
 
-// noMoreの変化も監視（全データロード完了時）
+// noMoreの変化も監視（全データーロード完了時）
 watch(noMore, (isNoMore) => {
   if (isNoMore) {
-    // 全データロード完了時、スクロールバーが出ない場合はそのまま終了
-    // これにより、データ量が少ない場合の無限ループを防ぐ
+    // 全データーロード完了時、スクロールバーが出ない場合はそのまま終了
+    // これにより、データー量が少ない場合の無限ループを防ぐ
     fetching.value = false
   }
 })
@@ -56,7 +56,7 @@ const ensureScrollbar = () => {
 
   const { scrollHeight, clientHeight } = scrollContainer.value
   // スクロールバーが表示されていない（コンテンツが足りない）場合は追加ロード
-  // ただし、全データを表示してもスクロールバーが出ない場合はnoMore.valueがtrueになるので停止する
+  // ただし、全データーを表示してもスクロールバーが出ない場合はnoMore.valueがtrueになるので停止する
   if (scrollHeight <= clientHeight && !noMore.value) {
     fetching.value = true
     setTimeout(() => {
@@ -69,7 +69,7 @@ const ensureScrollbar = () => {
 }
 
 onMounted(async () => {
-  // 初期ロード：スクロールバーが表示されるまでデータをロード
+  // 初期ロード：スクロールバーが表示されるまでデーターをロード
   ensureScrollbar()
   await nextTick()
 

@@ -41,7 +41,7 @@ ShowUnInstDetails show
 !insertmacro MUI_UNPAGE_INSTFILES
 !define MUI_FINISHPAGE_SHOWREADME
 !define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
-!define MUI_FINISHPAGE_SHOWREADME_TEXT "設定とデータファイルも削除する場合はチェックしてください."
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "設定とデーターファイルも削除する場合はチェックしてください."
 !define MUI_FINISHPAGE_SHOWREADME_FUNCTION un.DeleteDataFolder
 !insertmacro MUI_UNPAGE_FINISH
 
@@ -122,10 +122,10 @@ Section "Uninstall"
 SectionEnd
 
 Function un.DeleteDataFolder
-    MessageBox MB_YESNO "設定とデータファイルを削除します, よろしいですか？" IDNO done IDYES proceed
+    MessageBox MB_YESNO "設定とデーターファイルを削除します, よろしいですか？" IDNO done IDYES proceed
     proceed:
         RMDIR /r "$APPDATA\JOED5"
-        MessageBox MB_ICONINFORMATION|MB_OK "設定とデータファイル等を削除しました."
+        MessageBox MB_ICONINFORMATION|MB_OK "設定とデーターファイル等を削除しました."
     done:
 FunctionEnd
 

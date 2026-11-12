@@ -11,7 +11,7 @@ const defaultReference = '2026'
 // Description の Values: [] のフォーマット
 //
 // $ で終わる文字列が選択された場合はその術式は登録無効となる(単独選択の場合エラーで登録出来ない)
-// [] で囲まれた文字列は選択肢には表示されず、データの可読性を目的に保持される
+// [] で囲まれた文字列は選択肢には表示されず、データーの可読性を目的に保持される
 
 export default class ProcedureMaster extends Master {
   constructor() {
