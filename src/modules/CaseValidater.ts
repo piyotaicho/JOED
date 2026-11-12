@@ -29,6 +29,16 @@ export const CategoriesOfDiagnosis = ['腹腔鏡', '腹腔鏡悪性', '子宮鏡
 // 術式カテゴリ
 export const CategoriesOfProcedure = ['腹腔鏡', '腹腔鏡悪性', 'ロボット', 'ロボット悪性', '子宮鏡', '卵管鏡']
 
+// 術式と診断のカテゴリーマップ
+export const CategoryMap: Record<string, string> = {
+  '腹腔鏡': '腹腔鏡',
+  '腹腔鏡悪性': '腹腔鏡',
+  'ロボット': 'ロボット',
+  'ロボット悪性': 'ロボット',
+  '子宮鏡': '子宮鏡',
+  '卵管鏡': '卵管鏡'
+}
+
 // 年次情報を取得する
 function resolveYear (value: string | undefined): string {
   const raw = value?.toString().trim() ?? ''

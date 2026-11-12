@@ -1,3 +1,5 @@
+import { CategoryMap } from '@/modules/CaseValidater'
+
 export const LastUpdate = '2025-10-01'
 const defaultReference = '2025'
 
@@ -8,8 +10,6 @@ export default class ApproachMaster {
   declare readonly year: string
   declare readonly title: string | undefined
   declare readonly requirement: string
-  declare readonly categorymap: Record<string, string | undefined>
-  declare readonly colormap: Record<string, string | undefined>
 
   constructor (argYear = defaultReference) {
     Object.defineProperty(this, 'year', { value: argYear || defaultReference, enumerable: false, writable: false })
@@ -73,23 +73,6 @@ export default class ApproachMaster {
       ]
     }
 
-    // カテゴリマップとカラーマップを定義(基本的に年次に左右されない)
-    approachMasterSets['categorymap$'] = {
-      '腹腔鏡': '腹腔鏡',
-      '腹腔鏡悪性': '腹腔鏡',
-      'ロボット': 'ロボット',
-      'ロボット悪性': 'ロボット',
-      '子宮鏡': '子宮鏡'
-    }
-
-    approachMasterSets['colormap$'] = {
-      'undefined': '#DDDDDD',
-      '腹腔鏡': '#8CF700',
-      'ロボット': '#00F063',
-      '子宮鏡': '#00BBFF',
-      '卵管鏡': '#FFD000'
-    }
-
     // マスタデーターをプロパティとして設定
     for(const key in approachMasterSets) {
       if (key.slice(-1) === '$') {
@@ -130,21 +113,7 @@ export default class ApproachMaster {
    * カテゴリマップで置換
    */
   mapCategory (category: string): string | undefined {
-    if (!this?.categorymap) {
-      return undefined
-    }
-    return this.categorymap[category] || undefined
-  }
-
-  /**
-   * カラーコードを取得
-   */
-  getColorCode (category: string): string {
-    if (this.colormap[category]) {
-      return this.colormap[category]!
-    }
-    const mappedCategory = this.mapCategory(category) || 'undefined'
-    return (this.colormap[mappedCategory] || this.colormap['undefined'])!
+    return CategoryMap[category] || undefined
   }
 
   /**
