@@ -5,6 +5,7 @@ import AEmaster from '@/modules/Masters/AE'
 
 import { procedureTimeFormat } from '@/modules/ProcedureTimes'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CaseLike = Record<string, any>
 
 // 日付の表記
@@ -165,6 +166,7 @@ export async function ValidateCategory (item: CaseLike, year: string): Promise<s
         // 同一の場合はそのまま
         return categoryOfDiagnosis
       } else {
+        // 腹腔鏡・ロボットのカテゴリー判定
         if (categoryOfDiagnosis === '腹腔鏡') {
           // 良性腹腔鏡
           if (
@@ -197,6 +199,7 @@ export async function ValidateCategory (item: CaseLike, year: string): Promise<s
             return 'ロボット悪性'
           }
         }
+
         throw Error('主たる手術診断と主たる実施術式のカテゴリが一致していません.')
       }
     }
@@ -208,6 +211,7 @@ export async function ValidateCategory (item: CaseLike, year: string): Promise<s
 // 術後診断の重複の有無
 //
 export async function CheckDupsInDiagnoses (item: CaseLike): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const itemTexts = item.Diagnoses!.map((item: any) => item.Text)
   if (itemTexts.length > (new Set(itemTexts)).size) {
     throw Error('手術診断に重複があります.')
@@ -225,6 +229,7 @@ export async function ValidateDiagnoses (item: CaseLike, year: string): Promise<
 
   const master = new DiagnosisMaster()
   await allSettled(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     item.Diagnoses!.map((record: any) => new Promise<void>((resolve, reject) => {
       if (!record.Text) {
         reject(Error('空白の手術診断レコードです.'))
@@ -245,6 +250,7 @@ export async function ValidateDiagnoses (item: CaseLike, year: string): Promise<
 //
 export async function CheckDupsInProcedures (item: CaseLike): Promise<void> {
   const itemTexts = item.Procedures!
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .map((item: any) => [
       item.Text,
       (item.AdditionalProcedure ? item.AdditionalProcedure.Text : []),
@@ -267,6 +273,7 @@ export async function ValidateProcedures (item: CaseLike, year: string): Promise
   await CheckDupsInProcedures(item)
   const master = new ProcedureMaster()
   await allSettled(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     item.Procedures!.map((record: any) => new Promise<void>((resolve, reject) => {
       if (!record.Text) {
         reject(Error('空白の実施手術レコードです.'))
@@ -331,15 +338,13 @@ export async function ValidateApproach (item: CaseLike, year: string): Promise<v
   const approach = new ApproachMaster(year)
   if (Object.keys(approach).length > 0) {
     // 実施手術のカテゴリを取得
-    const categories = new Set<string>(
-      item.Procedures!
-        .map((record: any) => approach.categorymap[record?.Chain?.[0] || ''])
+    const categories = item.Procedures
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((record: any) => record?.Chain?.[0])
         .filter((value: string | undefined): value is string => value !== undefined)
-    )
 
-    if (categories.size > 0) {
+    if (approach.getRequirement(categories) !== 'none') {
       // アプローチ入力が必要なカテゴリあり
-
       if (item?.Approach === undefined || Object.keys(item.Approach).length === 0) {
         // 入力無しへの対応、アプローチの入力必須は2026年以降
         if (year >= '2026') {
@@ -347,12 +352,14 @@ export async function ValidateApproach (item: CaseLike, year: string): Promise<v
         }
       } else {
         // カテゴリ毎の未入力をチェック
-        const missing = Array.from(categories).filter(category => !Object.keys(item.Approach).includes(category))
+        const missing = Array.from(new Set(categories))
+          .filter(category => approach.mapCategory(category as string) !== undefined)
+          .filter(category => !Object.keys(item.Approach).includes(category as string))
         if (missing.length > 0) {
           throw Error(`実施手術カテゴリー ${missing.join(',')} のアプローチの入力がありません.`)
         } else {
           // 入力がされていたらチェックする
-          approach.check(item.Approach)
+          approach.validate(item.Approach)
         }
       }
     }
@@ -382,6 +389,7 @@ export async function ValidateAEs (item: CaseLike, year: string): Promise<void> 
   // 出血の重複を回避
   const checkValues = item.AEs!
     .map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (record: any) => record.Category === '出血'
         ? record.Category
         : [
@@ -408,6 +416,7 @@ export async function ValidateAEs (item: CaseLike, year: string): Promise<void> 
 
   // 登録内容の整合性確認
   const Master = new AEmaster(year)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await allSettled(item.AEs!.map((record: any) => Promise.resolve(Master.validate(record))))
 }
 
@@ -415,6 +424,7 @@ export async function ValidateAEs (item: CaseLike, year: string): Promise<void> 
 // エラーメッセージを連結してthrowする
 //
 // @param{Array} promiseの配列オブジェクト
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function allSettled (promises: Array<Promise<any>>): Promise<any[]> {
   return Promise.allSettled(promises)
     .then(results => {
@@ -427,6 +437,7 @@ function allSettled (promises: Array<Promise<any>>): Promise<any[]> {
       }
       return results
         .filter(result => result.status === 'fulfilled')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((result: any) => result.value)
     })
 }

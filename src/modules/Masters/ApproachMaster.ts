@@ -1,27 +1,29 @@
 import { CategoryMap } from '@/modules/CaseValidater'
 
-export const LastUpdate = '2025-10-01'
-const defaultReference = '2025'
+export const LastUpdate = '2026-11-01'
+const defaultReference = '2026'
 
 type ApproachDirective = Record<string, string[]>
 type ApproachMasterSets = Record<string, string | ApproachDirective[] | Record<string, string>>
 
+type RequirementFlag = 'none' | 'optional' | 'mandatory'
+
 export default class ApproachMaster {
-  declare readonly year: string
+  declare readonly yearOfMaster: string
   declare readonly title: string | undefined
-  declare readonly requirement: string
+  declare readonly requirement: RequirementFlag
 
   constructor (argYear = defaultReference) {
-    Object.defineProperty(this, 'year', { value: argYear || defaultReference, enumerable: false, writable: false })
+    Object.defineProperty(this, 'yearOfMaster', { value: argYear || defaultReference, enumerable: false, writable: false })
 
-    const year = this.year
+    const year = this.yearOfMaster
     // マスタデーター定義
     // $で終わるプロパティはマスタ情報としてnon-enumerableに設定
     //
     // カテゴリプロパティの内容は配列で、各要素(行)はオブジェクトで指定
-    // oneof - 必須選択肢 各カテゴリに1つ
-    // anyof - 任意選択肢 複数選択可
-    // check - チェックボックス 複数選択可
+    //  oneof - 必須選択肢 各カテゴリに1つ
+    //  anyof - 任意選択肢 複数選択可
+    //  check - チェックボックス 複数選択可
     //
     // 各選択肢の最後に $ が付く場合、その選択肢はデフォルト値設定用には含めない
     const approachMasterSets: ApproachMasterSets = year <= '2024' ? {
@@ -87,7 +89,7 @@ export default class ApproachMaster {
 
   // マスタ年次を取得
   getYear (): string {
-    return this.year
+    return this.yearOfMaster
   }
 
   /**
@@ -98,22 +100,26 @@ export default class ApproachMaster {
   }
 
   /**
-   * カテゴリから必須かどうかを判断
+   * カテゴリーから必須かどうかを判断
    */
-  getRequirement (categories: string[] = []): string {
-    const mappedCategories = categories.map(category => this.mapCategory(category)).filter(category => category !== undefined)
+  getRequirement (categories: string[] = []): RequirementFlag {
+    const mappedCategories = Array.from(new Set(categories.map(category => this.mapCategory(category)).filter(category => category !== undefined)))
     if (mappedCategories.length === 0) {
       return 'none'
     }
-
     return this.requirement
   }
 
   /**
-   * カテゴリマップで置換
+   * カテゴリーマップで置換してマスタにないカテゴリーは undefined を返す
    */
   mapCategory (category: string): string | undefined {
-    return CategoryMap[category] || undefined
+    const mappedCategory = CategoryMap[category]
+    if (mappedCategory === undefined || Object.prototype.hasOwnProperty.call(this, mappedCategory) === false) {
+      console.log(`Category "${category}" is not mapped or not found in the master.`)
+      return undefined
+    }
+    return mappedCategory
   }
 
   /**
@@ -145,7 +151,7 @@ export default class ApproachMaster {
   getTree (argCategories?: string | string[], asDefaultValues = false): Record<string, ApproachDirective[]> {
     const categories = new Set<string>()
 
-    if (typeof argCategories === 'string' && Object.keys(this?.categorymap || {}).includes(argCategories)) {
+    if (typeof argCategories === 'string' && Object.keys(CategoryMap).includes(argCategories)) {
       const mapped = this.mapCategory(argCategories)
       if (mapped !== undefined) {
         categories.add(mapped)
@@ -156,7 +162,7 @@ export default class ApproachMaster {
         Object.keys(this).forEach(category => categories.add(category))
       } else {
         for (const category of argCategories) {
-          if (Object.keys(this?.categorymap || {}).includes(category)) {
+          if (Object.keys(CategoryMap).includes(category)) {
             const mapped = this.mapCategory(category)
             if (mapped !== undefined) {
               categories.add(mapped)
@@ -205,7 +211,7 @@ export default class ApproachMaster {
    *
    * @param { *} selection
    */
-  check (selection: Record<string, string[]> = {}): void {
+  validate (selection: Record<string, string[]> = {}): void {
     for(const category in selection) {
       // 不正なカテゴリのチェック
       if (!Object.keys(this).includes(category)) {
