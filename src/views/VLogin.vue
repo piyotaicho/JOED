@@ -7,13 +7,11 @@ import LargeIcon from '@/components/Atoms/LargeIcon.vue'
 const store = useStore()
 const router = useRouter()
 
-const tilte = computed<[string, string]>(() => [
-  '日本産科婦人科内視鏡・ロボティクス学会',
-  '症例登録システム ' +
+const appNameAndVersionString = computed(() =>
   store.getters['system/ApplicationName'] +
   ' version ' +
   store.getters['system/ApplicationVersion']
-])
+)
 
 const password = ref('')
 const loginFailed = ref(false)
@@ -39,8 +37,8 @@ async function performAuthentication () {
   <div class="login-dialog">
     <div class="w30" id="auth-logo"><LargeIcon/></div>
     <div class="w70" id="auth">
-      <div class="title">{{tilte[0]}}</div>
-      <div class="subtitle">{{tilte[1]}}</div>
+      <div class="title">日本産科婦人科内視鏡・ロボティクス学会</div>
+      <div class="subtitle">症例登録システム {{appNameAndVersionString}}</div>
 
       <div>
         <label>
@@ -72,6 +70,15 @@ div.login-dialog
   display: flex
   flex-direction: row
 
+.login-dialog .title
+  font-size: 1.3rem
+  font-weight: 600
+  letter-spacing: 0.03rem
+
+.login-dialog .subtitle
+  font-size: 1.13rem
+  letter-spacing: 0.03rem
+
 #auth-logo
   display: flex
   flex-direction: row
@@ -92,4 +99,6 @@ div.login-dialog
     margin-top: 0
   div:last-child
     margin-bottom: 0
+
+
 </style>
