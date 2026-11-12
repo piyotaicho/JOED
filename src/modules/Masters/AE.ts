@@ -1,8 +1,8 @@
 import type { AECategoryDefinition, AEComponentDefinition, AEGradeDefinition, AECourseDefinition } from '@/types/frontend'
 import type { AEItem } from '@/types/data'
 
-export const LastUpdate = '2022-11-27'
-const defaultReference = '2022'
+export const LastUpdate = '2026-11-01'
+const defaultReference = '2026'
 
 export default class AEmaster {
   declare readonly YearofMaster: string
@@ -284,7 +284,7 @@ export default class AEmaster {
           {
             Title: 'Grade 1',
             Min: 1,
-            Max: 1,
+            Max: (this.YearofMaster >= '2026' ? 1 : 2),
             Items: [
               [
                 '経過観察',
