@@ -86,11 +86,15 @@ export interface AEItem {
 export type ApproachValue = Record<string, string[]>
 
 /**
- * 症例ドキュメント (NeDB の 1 レコード)
+ * 症例ドキュメント
  */
-export interface CaseDocument {
-  _id?: string                    // NeDB が自動付与するもので、DocumentId とは別、取得することはない
+// 最小限の症例ドキュメントレコード (DocumentId のみ)
+export interface minimumCaseDocument {
   DocumentId: number
+}
+
+// 症例ドキュメント
+export interface CaseDocument {
   Name?: string
   Age?: number
   PatientId: string               // 必須
@@ -108,6 +112,11 @@ export interface CaseDocument {
   Note?: string
   Notification?: string
   Imported?: boolean
+}
+
+// データーベース内の症例ドキュメント (NeDB の 1 レコード)
+export interface databaseCaseDocument extends minimumCaseDocument, CaseDocument {
+  _id?: string // NeDB が自動付与するもので、DocumentId とは別、取得することはない
 }
 
 // -------- エクスポート用データー --------

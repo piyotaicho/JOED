@@ -153,29 +153,18 @@ import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 import { ZenToHan } from '@/modules/ZenHanChars'
 import * as Popups from '@/modules/Popups'
 import { ValidateCase } from '@/modules/CaseValidater'
+import type { minimumCaseDocument, CaseDocument } from '@/types/data'
 
 const store = useStore()
 const router = useRouter()
 
+// 編集用の症例データーは Diagnoses, Procedures, AEs を JSON 文字列化して保持しているので
+// 実際の CaseDocument とは型が異なる
 type JsonText = string
-
-interface EditCaseData {
-  Name: string
-  Age: string | undefined
-  PatientId: string
-  JSOGId: string
-  NCDId: string
-  DateOfProcedure: string
-  ProcedureTime: string
-  TypeOfProcedure: string
-  PresentAE: boolean
+interface EditCaseDocument extends Omit<CaseDocument, 'Diagnoses' | 'Procedures' | 'AEs'> {
   Diagnoses: JsonText[]
   Procedures: JsonText[]
-  Approach: Record<string, unknown>
   AEs: JsonText[]
-  Notification: string
-  Note: string
-  Denial: boolean
 }
 
 const props = defineProps({
@@ -186,7 +175,7 @@ const props = defineProps({
   },
 })
 
-const CaseData = reactive<EditCaseData>({
+const CaseData = reactive<EditCaseDocument>({
   Name: '',
   Age: undefined,
   PatientId: '',
@@ -224,16 +213,17 @@ function onCreated() {
   const uid = Number(props.uid)
   if (uid > 0) {
     store.dispatch('FetchDocument', { DocumentId: uid }).then(() => {
-      const storedDocument = store.getters.CaseDocument(uid) as Record<string, unknown> | undefined
+      const storedDocument = store.getters.CaseDocument(uid) as CaseDocument //Record<string, unknown> | undefined
       if (storedDocument !== undefined) {
-        const caseDataRecord = CaseData as unknown as Record<string, unknown>
-        for (const key in caseDataRecord) {
-          if (storedDocument[key] !== undefined) {
+        // keyごとに既存データーをreactiveな編集用データーにコピーする
+        for (const key in CaseData) {
+          const keyValue = storedDocument[key] as any
+          if (keyValue !== undefined) {
             // Arrayのアイテムはrouterへのハンドリングをよくするため事前にJSON文字列化して格納する
-            if (Array.isArray(storedDocument[key])) {
-              caseDataRecord[key] = (storedDocument[key] as unknown[]).map((item) => JSON.stringify(item))
+            if (Array.isArray(keyValue)) {
+              CaseData[key] = (keyValue as any[]).map((item) => JSON.stringify(item))
             } else {
-              caseDataRecord[key] = storedDocument[key]
+              CaseData[key] = keyValue
             }
           }
         }
@@ -340,7 +330,7 @@ const EditSection = (target: 'diagnosis' | 'procedure' | 'AE' | 'approach', payl
       query: {
         value: JSON.stringify(CaseData.Approach),
         procedureTypes: JSON.stringify(
-          CaseData.Procedures.map(item => JSON.parse(item)?.Chain[0]).map(item => item)
+          (CaseData.Procedures as any[]).map(item => JSON.parse(item)?.Chain[0]).map(item => item)
         ),
         year: CaseData.DateOfProcedure.substring(0, 4),
       },
@@ -349,7 +339,9 @@ const EditSection = (target: 'diagnosis' | 'procedure' | 'AE' | 'approach', payl
 }
 
 const ShowNotification = () => {
-  Popups.information(CaseData.Notification)
+  if (CaseData.Notification) {
+    Popups.information(CaseData.Notification)
+  }
 }
 
 const ToggleEditingNote = () => {
@@ -368,7 +360,10 @@ const ToggleEditingNote = () => {
 const EditListItem = (target: string, index: number, value: string | undefined) => {
   UpdateList(target, index, value)
   if (target === 'AEs') {
-    CaseData.PresentAE = CaseData.AEs.length > 0
+    // 合併症の入力後にエントリーがあったら PresentAE を更新する
+    if (CaseData.AEs) {
+      CaseData.PresentAE = CaseData.AEs.length > 0
+    }
   }
 }
 
@@ -381,7 +376,7 @@ const RemoveListItem = (target: string, index: number) => {
 const UpdateList = (target: string, index: number, value: string | undefined) => {
   if (['Diagnoses', 'Procedures', 'AEs'].includes(target)) {
     const listTarget = target as 'Diagnoses' | 'Procedures' | 'AEs'
-    const list = CaseData[listTarget]
+    const list = CaseData[listTarget] as any[]
     const isEmptyValue = typeof value === 'undefined' || (typeof value === 'string' && value === '')
     if (index >= 0) {
       if (list[index] !== undefined) {
@@ -465,10 +460,13 @@ const StoreCase = async (temporary = false) => {
     processing.value = true
 
     // データーベース登録に用いるレコードドキュメントを生成
+    //
+    // 空白オブジェクトに転記してデーターベースドキュメントを生成するので
+    // newDocumentはRecordで生成する
     const newDocument: Record<string, any> = {}
     const caseDataRecord = CaseData as unknown as Record<string, unknown>
     for (const key in caseDataRecord) {
-      // Arrayで保存されているDiganoses, ProceduresはJSON文字列の配列なので元に戻す
+      // Arrayで保存されているDiganoses, Procedures, AEs はJSON文字列の配列なので元に戻す
       if (Array.isArray(caseDataRecord[key])) {
         newDocument[key] = (caseDataRecord[key] as unknown[]).map((item) => JSON.parse(String(item)))
       } else {

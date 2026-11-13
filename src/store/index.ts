@@ -4,7 +4,7 @@ import * as NedbAccess from 'depmodules/NedbAccess'
 import system from '@/store/modules/system'
 import password from '@/store/modules/passwordauth'
 import { parseProcedureTime } from '@/modules/ProcedureTimes'
-import type { CaseDocument } from '@/types/data'
+import type { minimumCaseDocument, CaseDocument } from '@/types/data'
 
 interface ViewFilter {
   Field: string
@@ -55,10 +55,6 @@ type DbUpdatePayload = Parameters<typeof NedbAccess.Update>[0]
 type DbRemovePayload = Parameters<typeof NedbAccess.Remove>[0]
 
 type emptyObject = {}
-type minimumCaseDocument = {
-  DocumentId: number
-}
-
 
 // 内部定数
 const numberLoadAtAtime = 20 // 一度にロードするデーターの数
