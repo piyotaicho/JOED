@@ -3,6 +3,8 @@ import ProcedureMaster from '@/modules/Masters/ProcedureMaster'
 import ApproachMaster from '@/modules/Masters/ApproachMaster'
 import AEmaster from '@/modules/Masters/AE'
 
+import type { CaseDocument } from '@/types/data'
+
 import { procedureTimeFormat } from '@/modules/ProcedureTimes'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -66,7 +68,7 @@ function resolveYear (value: string | undefined): string {
 // @Param Object １症例分のドキュメントオブジェクト
 //
 // return string 症例区分
-export async function ValidateCase (item: CaseLike = {}, temporary = false): Promise<string | undefined> {
+export async function ValidateCase (item: CaseDocument, temporary = false): Promise<string | undefined> {
   // 年次の取得
   const year = resolveYear(item?.DateOfProcedure)
 
@@ -97,7 +99,7 @@ export async function ValidateCase (item: CaseLike = {}, temporary = false): Pro
 
 // 必須基本情報の有無
 //
-export async function ValidateDateOfProcedure (item: CaseLike): Promise<void> {
+export async function ValidateDateOfProcedure (item: CaseDocument): Promise<void> {
   if (
     !item.PatientId ||
     !DateFormat.test(item.DateOfProcedure ?? '')
@@ -108,7 +110,7 @@ export async function ValidateDateOfProcedure (item: CaseLike): Promise<void> {
 
 // 手術時間の入力を確認
 //
-export async function ValidateProcedureTime (item: CaseLike): Promise<void> {
+export async function ValidateProcedureTime (item: CaseDocument): Promise<void> {
   if (!item.ProcedureTime) {
     throw Error('手術時間は必須入力項目です.')
   }
@@ -122,7 +124,7 @@ export async function ValidateProcedureTime (item: CaseLike): Promise<void> {
 }
 // 補足登録情報の検証
 //
-export async function ValidateOptionalInformations (item: CaseLike): Promise<void> {
+export async function ValidateOptionalInformations (item: CaseDocument): Promise<void> {
   const errorMessages: string[] = []
   if (item.Age && (item.Age <= 0 || item.Age > 129)) {
     errorMessages.push('年齢の入力内容を確認してください.')
@@ -140,7 +142,7 @@ export async function ValidateOptionalInformations (item: CaseLike): Promise<voi
 
 // 主たる術後診断・実施術式のカテゴリの一致の検証
 //
-export async function ValidateCategory (item: CaseLike, year: string): Promise<string> {
+export async function ValidateCategory (item: CaseDocument, year: string): Promise<string> {
   // 判定はあくまで主たる診断・術式
   const categoryOfDiagnosis = item?.Diagnoses?.[0]?.Chain?.[0]
   const categoryOfProcedure = item?.Procedures?.[0]?.Chain?.[0]
@@ -210,7 +212,7 @@ export async function ValidateCategory (item: CaseLike, year: string): Promise<s
 
 // 術後診断の重複の有無
 //
-export async function CheckDupsInDiagnoses (item: CaseLike): Promise<void> {
+export async function CheckDupsInDiagnoses (item: CaseDocument): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const itemTexts = item.Diagnoses!.map((item: any) => item.Text)
   if (itemTexts.length > (new Set(itemTexts)).size) {
@@ -220,8 +222,8 @@ export async function CheckDupsInDiagnoses (item: CaseLike): Promise<void> {
 
 // 術後診断の重複確認と年次ツリーとの整合性検証
 //
-export async function ValidateDiagnoses (item: CaseLike, year: string): Promise<void> {
-  if (!(item?.Diagnoses?.length > 0)) {
+export async function ValidateDiagnoses (item: CaseDocument, year: string): Promise<void> {
+  if (item?.Diagnoses === undefined || !(item?.Diagnoses?.length > 0)) {
     throw Error('手術診断の入力がありません.')
   }
 
@@ -248,7 +250,7 @@ export async function ValidateDiagnoses (item: CaseLike, year: string): Promise<
 
 // 実施手術の重複の有無
 //
-export async function CheckDupsInProcedures (item: CaseLike): Promise<void> {
+export async function CheckDupsInProcedures (item: CaseDocument): Promise<void> {
   const itemTexts = item.Procedures!
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .map((item: any) => [
@@ -265,8 +267,8 @@ export async function CheckDupsInProcedures (item: CaseLike): Promise<void> {
 // 実施手術名の重複確認と年次ツリーとの整合性検証
 // 実施手術のアプローチの整合性検証
 //
-export async function ValidateProcedures (item: CaseLike, year: string): Promise<void> {
-  if (!(item?.Procedures?.length > 0)) {
+export async function ValidateProcedures (item: CaseDocument, year: string): Promise<void> {
+  if (item?.Procedures === undefined || !(item?.Procedures?.length > 0)) {
     throw Error('実施手術の入力がありません.')
   }
 
@@ -334,11 +336,11 @@ export async function ValidateProcedures (item: CaseLike, year: string): Promise
 }
 
 // アプローチ入力の整合性確認
-export async function ValidateApproach (item: CaseLike, year: string): Promise<void> {
+export async function ValidateApproach (item: CaseDocument, year: string): Promise<void> {
   const approach = new ApproachMaster(year)
   if (Object.keys(approach).length > 0) {
     // 実施手術のカテゴリを取得
-    const categories = item.Procedures
+    const categories = (item?.Procedures || [])
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((record: any) => record?.Chain?.[0])
         .filter((value: string | undefined): value is string => value !== undefined)
@@ -354,7 +356,7 @@ export async function ValidateApproach (item: CaseLike, year: string): Promise<v
         // カテゴリ毎の未入力をチェック
         const missing = Array.from(new Set(categories))
           .filter(category => approach.mapCategory(category as string) !== undefined)
-          .filter(category => !Object.keys(item.Approach).includes(category as string))
+          .filter(category => !Object.keys(item.Approach as Record<string, unknown>).includes(category as string))
         if (missing.length > 0) {
           throw Error(`実施手術カテゴリー ${missing.join(',')} のアプローチの入力がありません.`)
         } else {
