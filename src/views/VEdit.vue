@@ -153,7 +153,7 @@ import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 import { ZenToHan } from '@/modules/ZenHanChars'
 import * as Popups from '@/modules/Popups'
 import { ValidateCase } from '@/modules/CaseValidater'
-import type { minimumCaseDocument, CaseDocument } from '@/types/data'
+import type { CaseDocument, databaseCaseDocument } from '@/types/data'
 
 const store = useStore()
 const router = useRouter()
@@ -175,6 +175,7 @@ const props = defineProps({
   },
 })
 
+// 空白の症例データーを初期化
 const CaseData = reactive<EditCaseDocument>({
   Name: '',
   Age: undefined,
@@ -217,11 +218,11 @@ function onCreated() {
       if (storedDocument !== undefined) {
         // keyごとに既存データーをreactiveな編集用データーにコピーする
         for (const key in CaseData) {
-          const keyValue = storedDocument[key] as any
+          const keyValue = storedDocument[key]
           if (keyValue !== undefined) {
             // Arrayのアイテムはrouterへのハンドリングをよくするため事前にJSON文字列化して格納する
             if (Array.isArray(keyValue)) {
-              CaseData[key] = (keyValue as any[]).map((item) => JSON.stringify(item))
+              CaseData[key] = (keyValue as Array<unknown>).map((item) => JSON.stringify(item))
             } else {
               CaseData[key] = keyValue
             }
@@ -330,7 +331,7 @@ const EditSection = (target: 'diagnosis' | 'procedure' | 'AE' | 'approach', payl
       query: {
         value: JSON.stringify(CaseData.Approach),
         procedureTypes: JSON.stringify(
-          (CaseData.Procedures as any[]).map(item => JSON.parse(item)?.Chain[0]).map(item => item)
+          (CaseData.Procedures as Array<unknown>).map(item => JSON.parse(item)?.Chain[0]).map(item => item)
         ),
         year: CaseData.DateOfProcedure.substring(0, 4),
       },
@@ -376,7 +377,7 @@ const RemoveListItem = (target: string, index: number) => {
 const UpdateList = (target: string, index: number, value: string | undefined) => {
   if (['Diagnoses', 'Procedures', 'AEs'].includes(target)) {
     const listTarget = target as 'Diagnoses' | 'Procedures' | 'AEs'
-    const list = CaseData[listTarget] as any[]
+    const list = CaseData[listTarget] as string[]
     const isEmptyValue = typeof value === 'undefined' || (typeof value === 'string' && value === '')
     if (index >= 0) {
       if (list[index] !== undefined) {
@@ -461,26 +462,25 @@ const StoreCase = async (temporary = false) => {
 
     // データーベース登録に用いるレコードドキュメントを生成
     //
-    // 空白オブジェクトに転記してデーターベースドキュメントを生成するので
-    // newDocumentはRecordで生成する
-    const newDocument: Record<string, any> = {}
-    const caseDataRecord = CaseData as unknown as Record<string, unknown>
-    for (const key in caseDataRecord) {
+    // 空白オブジェクトに転記してデーターベースドキュメントを生成する
+    // 連番 (新規ドキュメントのuidは0もしくは00があるのでNumberで処理する)
+    const newDocument: databaseCaseDocument = {
+      DocumentId: uid.value
+    }
+
+    for (const key in CaseData) {
       // Arrayで保存されているDiganoses, Procedures, AEs はJSON文字列の配列なので元に戻す
-      if (Array.isArray(caseDataRecord[key])) {
-        newDocument[key] = (caseDataRecord[key] as unknown[]).map((item) => JSON.parse(String(item)))
+      if (Array.isArray(CaseData[key])) {
+        newDocument[key] = (CaseData[key] as string[]).map((item) => JSON.parse(String(item)))
       } else {
-        if (typeof caseDataRecord[key] === 'object' && caseDataRecord[key] !== null) {
+        if (typeof CaseData[key] === 'object' && CaseData[key] !== null) {
           // オブジェクト(Approachのみ)は生のオブジェクトに変換
-          newDocument[key] = JSON.parse(JSON.stringify(caseDataRecord[key]))
+          newDocument[key] = JSON.parse(JSON.stringify(CaseData[key]))
         } else {
-          newDocument[key] = caseDataRecord[key]
+          newDocument[key] = CaseData[key]
         }
       }
     }
-
-    // 連番 (新規ドキュメントのuidは0もしくは00があるのでNumberで処理する)
-    newDocument.DocumentId = uid.value
 
     if (temporary) {
       // 一次保存の場合メッセージを設定
