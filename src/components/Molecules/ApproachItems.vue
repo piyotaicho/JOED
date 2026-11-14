@@ -2,13 +2,13 @@
   <template v-if="title !== ''">
     <div style="display: inline-block;" v-show="requirment !== 'none'">
       <template v-if="noitems">
-        <el-button :type="requirment === 'optional' ? 'warning' : 'danger'" size="small" round @click="edit">{{ title }}</el-button>
+        <el-button :type="requirment === 'optional' ? 'warning' : 'danger'" size="small" round @click="Edit">{{ title }}</el-button>
       </template>
       <template v-else>
         <template v-for="category in dataCategories" :key="category">
           <el-button-group style="margin-right: 0.8rem;">
             <template v-for="item in itemsByCategory(category)" :key="item">
-              <el-button :color="getColorCode(category)" size="small" round @click="edit">{{ valueToLabel(item, category) }}</el-button>
+              <el-button :color="getColorCode(category)" size="small" round @click="Edit">{{ valueToLabel(item, category) }}</el-button>
             </template>
           </el-button-group>
         </template>
@@ -82,7 +82,7 @@ const itemsByCategory = (category: string): string[] => {
   return Array.isArray(items) ? items.map((item) => String(item)) : []
 }
 
-const edit = (): void => {
+const Edit = (): void => {
   emit('click')
 }
 </script>
