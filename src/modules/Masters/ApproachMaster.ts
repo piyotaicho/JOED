@@ -103,6 +103,10 @@ export default class ApproachMaster {
    * カテゴリーから必須かどうかを判断
    */
   getRequirement (categories: string[] = []): RequirementFlag {
+    if (this.requirement === 'none') {
+      return 'none'
+    }
+
     const mappedCategories = Array.from(new Set(categories.map(category => this.mapCategory(category)).filter(category => category !== undefined)))
     if (mappedCategories.length === 0) {
       return 'none'
