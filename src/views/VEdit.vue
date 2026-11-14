@@ -138,7 +138,7 @@
 
 <script setup lang="ts">
 import { CaretLeft, CaretRight, WarningFilled, ArrowLeft, Memo, Delete, Loading } from '@element-plus/icons-vue'
-import { reactive, ref, computed, onMounted, onBeforeUnmount, nextTick, useTemplateRef } from 'vue'
+import { reactive, ref, computed, onMounted, onBeforeUnmount, nextTick, useTemplateRef, watch } from 'vue'
 import { useStore } from '@/store'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
 import SectionPatientInfo from '@/components/SectionPatientInfo.vue'
@@ -153,6 +153,7 @@ import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 import { ZenToHan } from '@/modules/ZenHanChars'
 import * as Popups from '@/modules/Popups'
 import { ValidateCase } from '@/modules/CaseValidater'
+import ApproachMaster from '@/modules/Masters/ApproachMaster'
 import type { CaseDocument, databaseCaseDocument } from '@/types/data'
 
 const store = useStore()
@@ -278,7 +279,9 @@ onBeforeRouteUpdate((to) => {
 const uid = computed(() => Number(props.uid))
 
 const categories = computed(() => {
-  const procedureTypes = CaseData.Procedures.map(item => JSON.parse(item)?.Chain).filter(item => item !== undefined && Array.isArray(item)).map(item => item[0])
+  const procedureTypes = Array.from(new Set(
+    CaseData.Procedures.map(item => JSON.parse(item)?.Chain).filter(item => item !== undefined && Array.isArray(item)).map(item => item[0])
+  ))
   return procedureTypes
 })
 
@@ -456,6 +459,29 @@ const CancelEditing = async (to = '') => {
   }
 }
 
+// カテゴリーを監視して変更があった場合、未入力のアプローチへデフォルト値を展開する
+watch(categories, (newCategories) => {
+  if (newCategories.length > 0) {
+    const approachMaster = new ApproachMaster(CaseData.DateOfProcedure.substring(0, 4))
+    const defaultApproach = JSON.parse(store.getters['system/Approach'])
+    newCategories.forEach((category) => {
+      console.log('Processing category:', category)
+      if (approachMaster.getRequirement([category]) !== 'none') {
+        if (CaseData.Approach?.[category] === undefined || CaseData.Approach[category]?.length === 0) {
+          console.log('No approach data for category:', category)
+          if (defaultApproach?.[category]) {
+            console.log('Applying default approach for category:', category)
+            CaseData.Approach[category] = defaultApproach[category]
+          }
+        }
+      }
+    })
+  }
+})
+
+// データーベースに保存する
+//
+// @param temporary 一時保存かどうかを示すフラグ
 const StoreCase = async (temporary = false) => {
   try {
     processing.value = true
@@ -519,12 +545,21 @@ const StoreCase = async (temporary = false) => {
     }
 
     // Approachが不要ならば削除
-    for (const category in newDocument.Approach) {
-      if (
-        !Array.isArray(newDocument.Approach[category]) ||
-        newDocument.Approach[category].length === 0
-      ) {
-        delete newDocument.Approach[category]
+    const approachMaster = new ApproachMaster(newDocument.DateOfProcedure.substring(0, 4))
+    if (approachMaster.getRequirement(categories.value) === 'none') {
+      delete newDocument.Approach
+    } else {
+      // Approachが不要でない場合、必要なカテゴリーのみを残す
+      for (const category in newDocument.Approach) {
+        if (approachMaster.mapCategory(category) === undefined) {
+          try {
+            delete newDocument.Approach[category]
+          }
+          catch {
+            // categoryが存在しない場合の削除エラーは無視
+          }
+          continue
+        }
       }
     }
 
