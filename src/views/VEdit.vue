@@ -252,13 +252,13 @@ onCreated()
 
 // ライフサイクルフック - キーボードイベント登録と削除
 onMounted(() => {
-  document.addEventListener('keydown', keyboardEventListener, true)
+  document.addEventListener('keydown', KeyboardEventListener, true)
   window.addEventListener('beforeunload', BeforeUnloadLister)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', BeforeUnloadLister)
-  document.removeEventListener('keydown', keyboardEventListener, true)
+  document.removeEventListener('keydown', KeyboardEventListener, true)
 })
 
 onBeforeRouteUpdate((to) => {
@@ -299,7 +299,7 @@ const BackToList = (currentUid: number) => {
   }
 }
 
-const editAnother = (targetUid: number) => {
+const EditAnother = (targetUid: number) => {
   if (targetUid > 0) {
     router.push({ name: 'edit', params: { uid: targetUid.toString() } })
   }
@@ -417,13 +417,13 @@ const CommitCase = async (to = '') => {
       switch (to) {
         case 'new':
         case 'temporarynew':
-          editAnother(0)
+          EditAnother(0)
           break
         case 'prev':
-          if (prevUid.value !== 0) editAnother(prevUid.value)
+          if (prevUid.value !== 0) EditAnother(prevUid.value)
           break
         case 'next':
-          if (nextUid.value !== 0) editAnother(nextUid.value)
+          if (nextUid.value !== 0) EditAnother(nextUid.value)
           break
         default:
           BackToList(uid.value)
@@ -445,10 +445,10 @@ const CancelEditing = async (to = '') => {
   ) {
     switch (to) {
       case 'prev':
-        if (prevUid.value !== 0) editAnother(prevUid.value)
+        if (prevUid.value !== 0) EditAnother(prevUid.value)
         break
       case 'next':
-        if (nextUid.value !== 0) editAnother(nextUid.value)
+        if (nextUid.value !== 0) EditAnother(nextUid.value)
         break
       default:
         BackToList(uid.value)
@@ -574,7 +574,7 @@ const StoreCase = async (temporary = false) => {
  * K : 前の症例へ移動 (編集中保存)
  * S : 一時保存
  */
-const keyboardEventListener = async (event: KeyboardEvent) => {
+const KeyboardEventListener = async (event: KeyboardEvent) => {
   if (editingSection.value || event.repeat) {
     return
   }
