@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref, computed } from 'vue'
 import { useStore } from '@/store'
-import { ArrowDown } from '@element-plus/icons-vue'
 import InputSwitchField from '@/components/Molecules/InputSwitchField.vue'
 import LabeledCheckbox from '@/components/Atoms/LabeledCheckbox.vue'
 import LabeledRadio from '@/components/Atoms/LabeledRadio.vue'
@@ -23,6 +22,7 @@ const data = reactive({
   editJSOGId: false,
   editNCDId: false,
   showNote: true,
+  applyDefaultApproach: false,
   revertView: false
 })
 const categorySelections = ref<Record<string, string[]>>({})
@@ -33,6 +33,7 @@ data.showStartupDialog = store.getters['system/ShowStartupDialog']
 data.editJSOGId = store.getters['system/EditJSOGId']
 data.editNCDId = store.getters['system/EditNCDId']
 data.showNote = store.getters['system/ShowNote']
+data.applyDefaultApproach = store.getters['system/ApplyDefaultApproach']
 
 // 初期値を設定 aka onCreated
 const initValues = () => {
@@ -104,7 +105,8 @@ const CommitSettings = async () => {
     EditJSOGId: data.editJSOGId,
     EditNCDId: data.editNCDId,
     ShowNote: data.showNote,
-    Approach: JSON.stringify(approach)
+    Approach: JSON.stringify(approach),
+    ApplyDefaultApproach: data.applyDefaultApproach
   })
 
   await store.dispatch('system/SavePreferences')
@@ -118,8 +120,7 @@ const CommitSettings = async () => {
     <div class="utility-switches">
       <div>
         <div class="label">
-          <el-icon style="padding-top: 0.36rem; margin-right: 0.6rem;"><ArrowDown /></el-icon>
-          リスト表示画面の設定
+          ■ リスト表示画面の設定
         </div>
       </div>
       <InputSwitchField
@@ -132,8 +133,7 @@ const CommitSettings = async () => {
         :options="[{text: 'しない', value: false}, {text: 'する', value: true}]" />
       <div>
         <div class="label">
-          <el-icon style="padding-top: 0.36rem; margin-right: 0.6rem;"><ArrowDown /></el-icon>
-          症例編集画面の設定
+          ■ 症例編集画面の設定
         </div>
       </div>
       <InputSwitchField
@@ -151,18 +151,22 @@ const CommitSettings = async () => {
 
       <div>
         <div class="label">
-          <el-icon style="padding-top: 0.36rem; margin-right: 0.6rem;"><ArrowDown /></el-icon>
-          アプローチ入力の規定値
+          ■ アプローチ入力の規定値
         </div>
       </div>
-      <template v-for="category of master.getCategories()" :key="category">
+      <InputSwitchField
+        v-model="data.applyDefaultApproach"
+        title="自動的にアプローチ入力の規定値を適用する"
+        :options="[{text: 'しない', value: false}, {text: 'する', value: true}]" />
+
+        <template v-for="category of master.getCategories()" :key="category">
         <div class="flex-content" aria-category="{{ category }}" style="margin-bottom: 1.2rem;">
           <div style="width: 16%;">
             {{ category }}<br />
             <el-button type="primary" size="small" @click="ResetCategorySelection(category)">選択解除</el-button>
           </div>
           <div style="width: 84%; display: flex; flex-direction: column; word-break: break-all;">
-            <template v-for="directive of masterTree[category]" :key="directive">
+            <template v-for="(directive, index) of masterTree[category]" :key="category + '-' + index">
               <template v-if="Object.keys(directive)[0] === 'oneOf'">
                   <div style="display: inline;">
                     <template v-for="item in directive.oneOf" :key="item">

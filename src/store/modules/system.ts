@@ -16,6 +16,7 @@ export default {
       EditJSOGId: true,
       EditNCDId: false,
       ShowNote: true,
+      ApplyDefaultApproach: false,
       Approach: '{}',
       // 表示設定
       ShowStartupDialog: true,
@@ -117,7 +118,10 @@ export default {
     Approach(state: any) {
       return state.settings.Approach || '{}'
     },
-
+    // アプローチ入力の規定値を自動的に適用するか
+    ApplyDefaultApproach(state: any) {
+      return state.settings.ApplyDefaultApproach
+    },
     // 起動時のメッセージダイアログ表示の有無
     ShowStartupDialog(state: any) {
       return state.StartupDialogStatus
