@@ -129,32 +129,28 @@ export default class CaseDocumentHandler {
   // @Param Object
   static ExportCase(caserecord: Partial<CaseDocument> = {}): ExportCaseRecord {
     const temporaryItem: ExportCaseRecord = {
-      YearOfProcedure: String(caserecord.DateOfProcedure || '').substring(0, 4)
-    }
-
-    // ProcedureTimeをコピー
-    temporaryItem.ProcedureTime = caserecord.ProcedureTime
-
-    // TypeOfProcedureをコピー
-    temporaryItem.TypeOfProcedure = caserecord.TypeOfProcedure
-
+      YearOfProcedure: String(caserecord.DateOfProcedure || '').substring(0, 4),
+      ProcedureTime: caserecord.ProcedureTime || '',
+      TypeOfProcedure: caserecord.TypeOfProcedure || '',
     // 診断・実施手術を $.[*].Text, $.[*].Description に整形してコピー
-    temporaryItem.Diagnoses = this._flattenItem(caserecord.Diagnoses || [])
-    temporaryItem.Procedures = this._flattenItem(caserecord.Procedures || [])
-
-    // Approachがあればコピー
-    if (caserecord?.Approach !== undefined) {
-      if (Object.keys(caserecord.Approach).length > 0) {
-        temporaryItem.Approach = caserecord.Approach
-      }
+      Diagnoses: this._flattenItem(caserecord.Diagnoses || []),
+      Procedures: this._flattenItem(caserecord.Procedures || []),
+      Approach: {},
+      PresentAE: caserecord.PresentAE || false,
     }
 
-    // 合併症項目をコピー
-    // PresentAEをコピー
-    temporaryItem.PresentAE = caserecord.PresentAE
+    // Approachがあればコピー、なければ削除
+    if (caserecord?.Approach !== undefined && Object.keys(caserecord.Approach).length > 0) {
+      temporaryItem.Approach = caserecord.Approach
+    } else {
+      delete temporaryItem.Approach
+    }
 
+    // 合併症項目をコピーなければ削除
     if (caserecord?.AEs && caserecord.AEs.length > 0) {
       temporaryItem.AEs = Object.assign([], caserecord.AEs)
+    } else {
+      delete temporaryItem.AEs
     }
 
     // Importedがtrueの時のみコピー
@@ -162,6 +158,6 @@ export default class CaseDocumentHandler {
       temporaryItem.Imported = true
     }
 
-    return temporaryItem
+    return temporaryItem as ExportCaseRecord
   }
 }
