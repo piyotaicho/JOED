@@ -34,9 +34,11 @@ interface BaseRootState {
 }
 
 type RootState = BaseRootState & Record<string, any>
+type NedbQueryCondition = unknown | { $in: unknown[] } | { $gt: number } | { $regex: RegExp }
+type NedbQuery = Record<string, NedbQueryCondition>
 
 interface ViewQueryResult {
-  Query: Record<string, any>
+  Query: NedbQuery
   Sort: Record<string, number>
 }
 
@@ -55,6 +57,8 @@ type DbUpdatePayload = Parameters<typeof NedbAccess.Update>[0]
 type DbRemovePayload = Parameters<typeof NedbAccess.Remove>[0]
 
 type emptyObject = {}
+const hasInOperator = (value: NedbQueryCondition | undefined): value is { $in: unknown[] } =>
+  !!value && typeof value === 'object' && '$in' in value && Array.isArray((value as { $in: unknown[] }).$in)
 
 // 内部定数
 const numberLoadAtAtime = 20 // 一度にロードするデーターの数
@@ -196,7 +200,7 @@ const store = createStore<RootState>({
     },
     // 現在のView設定からのクエリを作成する
     ViewQuery (state: RootState): ViewQueryResult {
-      const query: Record<string, unknown> = {}
+      const query: NedbQuery = {}
 
       // フィルタの初期値を設定
       const filters = (state.Filters && [...state.Filters]) || []
@@ -220,15 +224,17 @@ const store = createStore<RootState>({
           continue
         }
 
-        if (query[field] === undefined) {
+        const condition = query[field]
+
+        if (condition === undefined) {
           // 指定フィールドへのフィルタ未定義ならば $eq として値を直接追加
           query[field] = value
         } else {
           // 指定フィールドへのフィルタ既定義 -> $in: [] 条件に変換
-          if (query[field]?.$in) {
-            query[field].$in.push(value)
+          if (hasInOperator(condition)) {
+            condition.$in.push(value)
           } else {
-            query[field] = { $in: [query[field], value] }
+            query[field] = { $in: [condition, value] }
           }
         }
       }
@@ -240,9 +246,10 @@ const store = createStore<RootState>({
 
       // DateOfProcedureの正規表現変換
       if (query.DateOfProcedure) {
-        const datepart = query.DateOfProcedure.$in
-          ? query.DateOfProcedure.$in.join('|')
-          : query.DateOfProcedure
+        const dateCondition = query.DateOfProcedure
+        const datepart = hasInOperator(dateCondition)
+          ? dateCondition.$in.map((item: unknown) => String(item)).join('|')
+          : String(dateCondition)
         query.DateOfProcedure = { $regex: new RegExp( `^(${datepart})-` ) }
       }
 
