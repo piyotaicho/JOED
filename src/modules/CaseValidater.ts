@@ -342,25 +342,26 @@ export async function ValidateApproach (item: CaseDocument, year: string): Promi
     // 実施手術のカテゴリを取得
     const categories = (item?.Procedures || [])
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((record: any) => record?.Chain?.[0])
+        .map((record: any) => CategoryMap[record?.Chain?.[0]])
         .filter((value: string | undefined): value is string => value !== undefined)
 
-    if (approach.getRequirement(categories) !== 'none') {
+    const approachRequirement = approach.getRequirement(categories)
+    if (approachRequirement !== 'none') {
       // アプローチ入力が必要なカテゴリあり
       if (item?.Approach === undefined || Object.keys(item.Approach).length === 0) {
         // 入力無しへの対応、アプローチの入力必須は2026年以降
-        if (year >= '2026') {
+        if (approachRequirement === 'mandatory') {
           throw Error('実施手術アプローチの入力がありません.')
         }
       } else {
         // カテゴリ毎の未入力をチェック
         const missing = Array.from(new Set(categories))
-          .filter(category => approach.mapCategory(category as string) !== undefined)
+          .filter(category => approach.mapCategory(category) !== undefined)
           .filter(category => !Object.keys(item.Approach as Record<string, unknown>).includes(category as string))
         if (missing.length > 0) {
           throw Error(`実施手術カテゴリー ${missing.join(',')} のアプローチの入力がありません.`)
         } else {
-          // 入力がされていたらチェックする
+          // 入力がされていたら内容をチェックする
           approach.validate(item.Approach)
         }
       }

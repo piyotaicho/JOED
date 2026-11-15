@@ -152,7 +152,7 @@ import TheWrapper from '@/components/Atoms/TheWrapper.vue'
 
 import { ZenToHan } from '@/modules/ZenHanChars'
 import * as Popups from '@/modules/Popups'
-import { ValidateCase } from '@/modules/CaseValidater'
+import { ValidateCase, CategoryMap } from '@/modules/CaseValidater'
 import ApproachMaster from '@/modules/Masters/ApproachMaster'
 import type { CaseDocument, databaseCaseDocument } from '@/types/data'
 
@@ -282,7 +282,11 @@ const uid = computed(() => Number(props.uid))
 
 const categories = computed(() => {
   const procedureTypes = Array.from(new Set(
-    CaseData.Procedures.map(item => JSON.parse(item)?.Chain).filter(item => item !== undefined && Array.isArray(item)).map(item => item[0])
+    CaseData.Procedures
+      .map(item => JSON.parse(item)?.Chain)
+      .filter(item => item !== undefined && Array.isArray(item))
+      .map(item => CategoryMap[item[0]])
+      .filter(item => item !== undefined)
   ))
   return procedureTypes
 })
@@ -328,12 +332,12 @@ const EditSection = (target: 'diagnosis' | 'procedure' | 'AE' | 'approach', payl
   if (editingSectionFlag.value) return
   const {index, value} = payload || {}
 
-  if (target !== 'approach') {
+  if (target === 'approach') {
     router.push({
       name: target,
       query: {
-        index: index !== undefined ? index : -1,
-        value: value || '{}',
+        value: JSON.stringify(CaseData.Approach),
+        categories: JSON.stringify(categories.value),
         year: CaseData.DateOfProcedure.substring(0, 4),
       },
     })
@@ -341,10 +345,8 @@ const EditSection = (target: 'diagnosis' | 'procedure' | 'AE' | 'approach', payl
     router.push({
       name: target,
       query: {
-        value: JSON.stringify(CaseData.Approach),
-        categories: JSON.stringify(
-          (CaseData.Procedures as Array<string>).map(item => JSON.parse(item)?.Chain[0])// .map(item => item)
-        ),
+        index: index !== undefined ? index : -1,
+        value: value || '{}',
         year: CaseData.DateOfProcedure.substring(0, 4),
       },
     })
@@ -499,24 +501,27 @@ const StoreCase = async (temporary = false) => {
 
     // データーベース登録に用いるレコードドキュメントを生成
     // 連番 (新規ドキュメントのuidは0もしくは00があるのでNumberで処理する)
-    const newDocument: databaseCaseDocument = {
+    const newDocument: databaseCaseDocument & Record<string, unknown> = {
       DocumentId: uid.value,
       DateOfProcedure: '',
       PatientId: ''
     }
 
     // レコードに転記してデーターベースドキュメントを生成する
-    for (const key in CaseData) {
-      // Arrayで保存されているDiganoses, Procedures, AEs はJSON文字列の配列なので元に戻す
-      if (Array.isArray(CaseData[key])) {
-        newDocument[key] = (CaseData[key] as string[]).map((item) => JSON.parse(String(item)))
-      } else {
-        if (typeof CaseData[key] === 'object' && CaseData[key] !== null) {
-          // オブジェクト(Approachのみ)は生のオブジェクトに変換
-          newDocument[key] = JSON.parse(JSON.stringify(CaseData[key]))
-        } else {
-          newDocument[key] = CaseData[key]
-        }
+    for (const [key, value] of Object.entries(CaseData) as Array<[keyof EditCaseDocument, unknown]>) {
+      switch (key) {
+        case 'Diagnoses':
+        case 'Procedures':
+        case 'AEs':
+          // Arrayで保存されているDiganoses, Procedures, AEs はJSON文字列の配列なので元に戻す
+          (newDocument as Record<string, unknown>)[key] = (value as string[]).map((item) => JSON.parse(String(item)))
+          continue
+        case 'Approach':
+          // Approachはオブジェクトなので生のオブジェクトに変換
+          (newDocument as Record<string, unknown>)[key] = JSON.parse(JSON.stringify(value))
+          continue
+        default:
+          (newDocument as Record<string, unknown>)[key] = value
       }
     }
 
@@ -562,16 +567,15 @@ const StoreCase = async (temporary = false) => {
     if (approachMaster.getRequirement(categories.value) === 'none') {
       delete newDocument.Approach
     } else {
-      // Approachが不要でない場合、必要なカテゴリーのみを残す
+      // Approachに現在入力されていないカテゴリーがあったら削除する
       for (const category in newDocument.Approach) {
-        if (approachMaster.mapCategory(category) === undefined) {
+        if (categories.value.includes(category) === false) {
           try {
             delete newDocument.Approach[category]
           }
           catch {
             // categoryが存在しない場合の削除エラーは無視
           }
-          continue
         }
       }
     }
@@ -589,7 +593,7 @@ const StoreCase = async (temporary = false) => {
     // データーの検証と区分の取得
     const typeofprocedure = await ValidateCase(newDocument, temporary)
 
-    // 区分コードの設定
+    // 区分の設定
     if (typeofprocedure) {
       newDocument.TypeOfProcedure = typeofprocedure
     }
