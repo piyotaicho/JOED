@@ -4,7 +4,7 @@ import * as NedbAccess from 'depmodules/NedbAccess'
 import system from '@/store/modules/system'
 import password from '@/store/modules/passwordauth'
 import { parseProcedureTime } from '@/modules/ProcedureTimes'
-import type { minimumCaseDocument, CaseDocument } from '@/types/data'
+import type { minimumCaseDocument, CaseDocument, databaseCaseDocument } from '@/types/data'
 
 interface ViewFilter {
   Field: string
@@ -140,9 +140,9 @@ const store = createStore<RootState>({
     CaseDocument (state: RootState): (uid: number) => CaseDocument|emptyObject {
       return function (uid: number) {
         if (Number.isInteger(uid) && uid > 0) {
-          const DocumentIndex = state.DataStore.findIndex((item: CaseDocument) => item.DocumentId === uid)
+          const DocumentIndex = state.DataStore.findIndex((item: CaseDocument) => (item as databaseCaseDocument)?.DocumentId === uid)
           if (DocumentIndex !== -1) {
-            return state.DataStore[DocumentIndex]
+            return state.DataStore[DocumentIndex] as CaseDocument
           }
         }
         return {} as emptyObject
@@ -268,8 +268,8 @@ const store = createStore<RootState>({
     // DataStoreにデーターベースをキャッシュする.
     //
     // @param {Object} document
-    SetDatastore (state: RootState, payload: CaseDocument) {
-      const foundIndex = state.DataStore.findIndex((item: CaseDocument) => item.DocumentId === payload.DocumentId)
+    SetDatastore (state: RootState, payload: databaseCaseDocument) {
+      const foundIndex = state.DataStore.findIndex((item: CaseDocument) => (item as databaseCaseDocument).DocumentId === payload.DocumentId)
       if (foundIndex === -1) {
         state.DataStore.push(payload)
       } else {
@@ -280,7 +280,7 @@ const store = createStore<RootState>({
     //
     // @param {Object} DocumentId
     RemoveDatastore (state: RootState, payload: { DocumentId: number }) {
-      const foundIndex = state.DataStore.findIndex((item: CaseDocument) => item.DocumentId === payload.DocumentId)
+      const foundIndex = state.DataStore.findIndex((item: CaseDocument) => (item as databaseCaseDocument).DocumentId === payload.DocumentId)
       if (foundIndex !== -1) {
         state.DataStore.splice(foundIndex, 1)
       }
@@ -412,7 +412,7 @@ const store = createStore<RootState>({
     async ReloadDocumentList (context: StoreActionContext) {
       try {
         const Projection: Record<string, 0|1> = { DocumentId: 1, _id: 0 }
-        let documents: minumumCaseDocument[] = []
+        let documents: minimumCaseDocument[] = []
 
         // 通常のFind
         if (context.getters.ViewQuery.Query.Hash === undefined) {
@@ -461,7 +461,7 @@ const store = createStore<RootState>({
 
         context.commit('SetDocumentIds',
           {
-            DocumentIds: documents.map((doc: minumumCaseDocument) => doc.DocumentId)
+            DocumentIds: documents.map((doc: minimumCaseDocument) => doc.DocumentId)
           }
         )
         context.commit('SetTotalDocumentCount',
@@ -478,19 +478,19 @@ const store = createStore<RootState>({
     //
     // @Param {Object} DocumentIdのみのオブジェクト
     async FetchDocument (context: StoreActionContext, payload: minimumCaseDocument|emptyObject) {
-      if (!payload.DocumentId) {
+      if (!(payload as minimumCaseDocument)?.DocumentId) {
         return undefined
       }
 
       // 既にロードされているデーターであればキャッシュから取得する
-      const DataStoreIndex = context.state.DataStore.findIndex((item: CaseDocument) => item.DocumentId === payload.DocumentId)
+      const DataStoreIndex = context.state.DataStore.findIndex((item: CaseDocument) => (item as databaseCaseDocument).DocumentId === (payload as minimumCaseDocument).DocumentId)
       if (DataStoreIndex !== -1) {
         return DataStoreIndex
       } else {
         // キャッシュされていないデーターなので読み込んでDatastoreにキャッシュする
         try {
           context.commit('SetDatastore',
-            await context.dispatch('dbFindOne', { Query: { DocumentId: payload.DocumentId }, Projection: { _id: 0 } })
+            await context.dispatch('dbFindOne', { Query: { DocumentId: (payload as minimumCaseDocument).DocumentId }, Projection: { _id: 0 } })
           )
         } catch {
           throw new Error('データーベースエラー(FINDONE)です.')
