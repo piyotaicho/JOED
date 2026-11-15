@@ -49,7 +49,7 @@ const routes: any[] = [
         props: (route: any) => ({
           value: route.query.value,
           year: route.query.year,
-          procedureTypes: route.query?.procedureTypes || '[]'
+          categories: route.query?.categories || '[]'
         })
       },
       {

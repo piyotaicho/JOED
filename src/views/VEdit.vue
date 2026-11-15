@@ -159,6 +159,14 @@ import type { CaseDocument, databaseCaseDocument } from '@/types/data'
 const store = useStore()
 const router = useRouter()
 
+const props = defineProps({
+  uid: {
+    type: String,
+    required: true,
+    default: '0',
+  },
+})
+
 // 編集用の症例データーは Diagnoses, Procedures, AEs を JSON 文字列化して保持しているので
 // 実際の CaseDocument とは型が異なる
 type JsonText = string
@@ -168,15 +176,7 @@ interface EditCaseDocument extends Omit<CaseDocument, 'Diagnoses' | 'Procedures'
   AEs: JsonText[]
 }
 
-const props = defineProps({
-  uid: {
-    type: String,
-    required: true,
-    default: '0',
-  },
-})
-
-// 空白の症例データーを初期化
+// 作業用の症例データーを空白で初期化
 const CaseData = reactive<EditCaseDocument>({
   Name: '',
   Age: undefined,
@@ -199,7 +199,7 @@ const CaseData = reactive<EditCaseDocument>({
 const prevUid = ref(0)
 const nextUid = ref(0)
 const processing = ref(true)
-const editingSection = ref(false)
+const editingSectionFlag = ref(false)
 const editingNote = ref(false)
 
 const editDialog = useTemplateRef<HTMLDivElement>('editDialog')
@@ -217,15 +217,17 @@ function onCreated() {
     store.dispatch('FetchDocument', { DocumentId: uid }).then(() => {
       const storedDocument = store.getters.CaseDocument(uid) as CaseDocument //Record<string, unknown> | undefined
       if (storedDocument !== undefined) {
-        // keyごとに既存データーをreactiveな編集用データーにコピーする
-        for (const key in CaseData) {
+        // CaseDataに代入するために型変換した参照に代入する
+        const editableCaseData = CaseData as Record<keyof EditCaseDocument, unknown>
+        // 編集用の症例データーオブジェクトのkeyごとに既存データーからコピーする
+        for (const key of Object.keys(CaseData) as Array<keyof EditCaseDocument>) {
           const keyValue = storedDocument[key]
           if (keyValue !== undefined) {
             // Arrayのアイテムはrouterへのハンドリングをよくするため事前にJSON文字列化して格納する
             if (Array.isArray(keyValue)) {
-              CaseData[key] = (keyValue as Array<unknown>).map((item) => JSON.stringify(item))
+              editableCaseData[key] = (keyValue as Array<unknown>).map((item) => JSON.stringify(item))
             } else {
-              CaseData[key] = keyValue
+              editableCaseData[key] = keyValue
             }
           }
         }
@@ -264,9 +266,9 @@ onBeforeUnmount(() => {
 
 onBeforeRouteUpdate((to) => {
   // 現在の編集状態を確認 - editはセクション編集中ではない
-  editingSection.value = to.name !== 'edit'
+  editingSectionFlag.value = to.name !== 'edit'
 
-  if (editingSection.value) {
+  if (editingSectionFlag.value) {
     preservedElement = document.activeElement as HTMLElement | null
   } else {
     try {
@@ -275,7 +277,7 @@ onBeforeRouteUpdate((to) => {
   }
 })
 
-//
+// props.uidがstringなのを利用したhackを実装しているので(0, 00)数値化する
 const uid = computed(() => Number(props.uid))
 
 const categories = computed(() => {
@@ -316,7 +318,7 @@ const EditAnother = (targetUid: number) => {
 }
 
 const EditSection = (target: 'diagnosis' | 'procedure' | 'AE' | 'approach', payload?: { index?: number; value?: string }) => {
-  if (editingSection.value) return
+  if (editingSectionFlag.value) return
   const {index, value} = payload || {}
 
   if (target !== 'approach') {
@@ -333,7 +335,7 @@ const EditSection = (target: 'diagnosis' | 'procedure' | 'AE' | 'approach', payl
       name: target,
       query: {
         value: JSON.stringify(CaseData.Approach),
-        procedureTypes: JSON.stringify(
+        categories: JSON.stringify(
           (CaseData.Procedures as Array<unknown>).map(item => JSON.parse(item)?.Chain[0]).map(item => item)
         ),
         year: CaseData.DateOfProcedure.substring(0, 4),
@@ -372,7 +374,7 @@ const EditListItem = (target: string, index: number, value: string | undefined) 
 }
 
 const RemoveListItem = (target: string, index: number) => {
-  if (editingSection.value) return
+  if (editingSectionFlag.value) return
 
   UpdateList(target, index, undefined)
 }
@@ -411,7 +413,7 @@ const RemoveCase = async () => {
 }
 
 const CommitCase = async (to = '') => {
-  if (processing.value || editingSection.value) {
+  if (processing.value || editingSectionFlag.value) {
     return
   }
 
@@ -438,7 +440,7 @@ const CommitCase = async (to = '') => {
 }
 
 const CancelEditing = async (to = '') => {
-  if (processing.value || editingSection.value) {
+  if (processing.value || editingSectionFlag.value) {
     return
   }
 
@@ -610,7 +612,7 @@ const StoreCase = async (temporary = false) => {
  * S : 一時保存
  */
 const KeyboardEventListener = async (event: KeyboardEvent) => {
-  if (editingSection.value || event.repeat) {
+  if (editingSectionFlag.value || event.repeat) {
     return
   }
 

@@ -19,7 +19,7 @@ const props = defineProps({
   year: {
     type: String
   },
-  procedureTypes: {
+  categories: {
     type: String,
     required: true
   }
@@ -30,20 +30,20 @@ const GoBack = () => router.replace('./')
 
 // マスターデーター取得(non-reactive)
 const master = new ApproachMaster(props.year || '')
-// propsのprocedureTypesを配列化(non-reactive)
-const procedureTypes = master.getCategories(JSON.parse(props.procedureTypes || '[]'))
+// propsのcategoriesを配列化(non-reactive)
+const categories = master.getCategories(JSON.parse(props.categories || '[]'))
 // マスターツリー取得(non-reactive)
-const masterTree = master.getTree(master.getCategories(procedureTypes))
+const masterTree = master.getTree(master.getCategories(categories))
 
 // 編集項目が無ければ戻る
-if (procedureTypes.length === 0) {
+if (categories.length === 0) {
   GoBack()
 }
 
 // reactivities
 const categorySelections = ref<Record<string, string[]>>({})
 const categorySelectionOfOneOf = ref<Record<string, string>>({})
-for (const category of procedureTypes) {
+for (const category of categories) {
   categorySelections.value[category] = []
   categorySelectionOfOneOf.value[category] = ''
 }
@@ -99,7 +99,7 @@ onMounted(() => {
 const CommitChange = async () => {
   // 現在の選択内容をemitする
   const returnValue: Record<string, string[]> = {}
-  for (const category of procedureTypes) {
+  for (const category of categories) {
     returnValue[category] = []
     if (
       categorySelectionOfOneOf?.value[category] === undefined ||
@@ -121,7 +121,7 @@ const CommitChange = async () => {
 <template>
   <TheWrapper alpha="10">
     <EditSection @commit="CommitChange" @discard="GoBack">
-      <template v-for="category of procedureTypes" :key="category">
+      <template v-for="category of categories" :key="category">
         <div class="flex-content" aria-category="{{ category }}" style="margin-bottom: 1.2rem;">
           <div class="w20">{{ category }}</div>
           <div class="w80">
