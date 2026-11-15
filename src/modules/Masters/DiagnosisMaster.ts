@@ -140,7 +140,7 @@ export default class DiagnosisMaster extends Master {
           },
           // 2026 新規
           {
-            Text: '子宮頸部切断術既往',
+            Text: 'トラケレクトミー既往',
             ValidFrom: '2026'
           },
           // 2026 新規
