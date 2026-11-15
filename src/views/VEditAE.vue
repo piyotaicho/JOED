@@ -52,7 +52,7 @@
         <div class="w80">
           <select v-model="AE.Grade">
             <option value="" disabled style="display:none;">リストから選択</option>
-            <template v-for="grade in master.Grading" :key="grade.Grading">
+            <template v-for="grade in master.Grading" :key="grade.Grade">
               <option :value="grade.Grade"> {{grade.Text}} </option>
             </template>
           </select>
