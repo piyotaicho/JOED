@@ -34,6 +34,7 @@ data.editJSOGId = store.getters['system/EditJSOGId']
 data.editNCDId = store.getters['system/EditNCDId']
 data.showNote = store.getters['system/ShowNote']
 
+// 初期値を設定 aka onCreated
 const initValues = () => {
   const categories = (master.getCategories() as string[])
   for (const category of categories) {
@@ -72,7 +73,12 @@ const initValues = () => {
 }
 initValues()
 
-const commitSettings = async () => {
+const ResetCategorySelection = (category: string) => {
+  categorySelections.value[category]?.splice(0)
+  categorySelectionOfOneOf.value[category] = ''
+}
+
+const CommitSettings = async () => {
   // リスト表示内容の規定値をアプリケーションの初期設定に戻す
   if (data.revertView) {
     store.commit('system/SetView', {})
@@ -151,7 +157,10 @@ const commitSettings = async () => {
       </div>
       <template v-for="category of master.getCategories()" :key="category">
         <div class="flex-content" aria-category="{{ category }}" style="margin-bottom: 1.2rem;">
-          <div style="width: 16%;">{{ category }}</div>
+          <div style="width: 16%;">
+            {{ category }}<br />
+            <el-button type="primary" size="small" @click="ResetCategorySelection(category)">選択解除</el-button>
+          </div>
           <div style="width: 84%; display: flex; flex-direction: column; word-break: break-all;">
             <template v-for="directive of masterTree[category]" :key="directive">
               <template v-if="Object.keys(directive)[0] === 'oneOf'">
@@ -181,7 +190,7 @@ const commitSettings = async () => {
       <div>
         <div class="label"></div>
         <div class="field">
-          <el-button type="primary" @click="commitSettings">上記設定を保存</el-button>
+          <el-button type="primary" @click="CommitSettings">上記設定を保存</el-button>
         </div>
       </div>
     </div>
