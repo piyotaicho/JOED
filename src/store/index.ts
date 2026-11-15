@@ -109,24 +109,30 @@ const store = createStore<RootState>({
     PagedUidsRange (state: RootState): number {
       return state.DocumentIds.Range
     },
-    // 指定された DocumentId の前後の DocumentId を返す.
+    // 指定された DocumentId のリスト内前後の DocumentId を返す.
     // 存在しないものは 0.
     // @param {Number} currentUid
     // @param {Number} offset 0:Self, -1:Prev, +1:Next
     GetRelativeDocumentId (state: RootState, getters: StoreGetters): (currentUid: number, offset: number) => number {
       return function (currentUid: number, offset: number): number {
+        // 引数チェック
+        if (currentUid <= 0) {
+          return 0
+        }
         const index = state.DocumentIds.List.indexOf(currentUid)
-        if (currentUid === 0 || index === -1) {
+        if (index === -1) {
           return 0
         }
-        const offsetedIndex = index + offset
-        if (offsetedIndex <= 0) {
+
+        // オフセット範囲の確認
+        const targetIndex = index + offset
+        if (targetIndex < 0) {
           return 0
         }
-        if (offsetedIndex > state.DocumentIds.List.length) {
+        if (targetIndex >= state.DocumentIds.List.length) {
           return 0
         }
-        return getters.Uids[offsetedIndex] ?? 0
+        return getters.Uids[targetIndex] ?? 0
       }
     },
     // DocumentId をもつドキュメントを取得する. ロードされていない場合は空のオブジェクトが返る.
