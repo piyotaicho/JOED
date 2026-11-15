@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, nextTick, useTemplateRef } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store'
 import TheWrapper from '@/components/Atoms/TheWrapper.vue'
@@ -25,6 +25,8 @@ const props = defineProps({
   }
 })
 const emit = defineEmits(['data-upsert'])
+
+const editSectionDOM = useTemplateRef('editSection')
 
 const GoBack = () => router.replace('./')
 
@@ -94,6 +96,16 @@ onMounted(() => {
       }
     }
   }
+
+  // ラッパーコンポーネントであるEditSectionの登録ボタンへフォーカス
+  nextTick().then(() => {
+    if (editSectionDOM.value) {
+      const buttons = editSectionDOM.value.$el.getElementsByTagName('button')
+      if (buttons && buttons.length > 0) {
+        buttons.item(buttons.length - 1)?.focus()
+      }
+    }
+  })
 })
 
 const CommitChange = async () => {
@@ -120,12 +132,12 @@ const CommitChange = async () => {
 
 <template>
   <TheWrapper alpha="10">
-    <EditSection @commit="CommitChange" @discard="GoBack">
+    <EditSection @commit="CommitChange" @discard="GoBack" ref="editSection">
       <template v-for="category of categories" :key="category">
         <div class="flex-content" aria-category="{{ category }}" style="margin-bottom: 1.2rem;">
           <div class="w20">{{ category }}</div>
           <div class="w80">
-            <template v-for="directive of masterTree[category]" :key="directive">
+            <template v-for="(directive, index) of masterTree[category]" :key="`${category}-${index}`">
               <template v-if="Object.keys(directive)[0] === 'oneOf'">
                   <template v-for="item in directive.oneOf" :key="item">
                     <LabeledRadio v-model="categorySelectionOfOneOf[category]" :value="ApproachMaster.asValue(item)" :required="required(category)">

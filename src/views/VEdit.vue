@@ -6,7 +6,7 @@
           v-model:DateOfProcedure="CaseData.DateOfProcedure"
           v-model:PatientId="CaseData.PatientId"
           v-model:Name="CaseData.Name"
-          v-model:Age="CaseData.Age"
+          v-model:Age="proxyAge"
           v-model:Denial="CaseData.Denial"
           v-model:ProcedureTime="CaseData.ProcedureTime"
           v-model:JSOGId.sync="CaseData.JSOGId"
@@ -74,7 +74,7 @@
       <div class="edit-controls">
         <div class="edit-controls-left">
           <el-button
-            :type="CaseData.Note.trim() !== '' ? 'primary' : 'default'"
+            :type="(CaseData.Note || '').trim() !== '' ? 'primary' : 'default'"
             :icon="Memo"
             style="padding-left: 8px; padding-right: 8px;" @click="ToggleEditingNote()"
           />
@@ -294,6 +294,13 @@ const isNoAEs = computed({
   },
 })
 
+const proxyAge = computed({
+  get: () => CaseData.Age === undefined ? '' : CaseData.Age.toString(),
+  set: (newvalue) => {
+    CaseData.Age = newvalue === '' ? undefined : Number(newvalue)
+  }
+})
+
 const isEditingExistingItem = computed(() => uid.value > 0)
 
 const BackToList = (currentUid: number) => {
@@ -336,7 +343,7 @@ const EditSection = (target: 'diagnosis' | 'procedure' | 'AE' | 'approach', payl
       query: {
         value: JSON.stringify(CaseData.Approach),
         categories: JSON.stringify(
-          (CaseData.Procedures as Array<unknown>).map(item => JSON.parse(item)?.Chain[0]).map(item => item)
+          (CaseData.Procedures as Array<string>).map(item => JSON.parse(item)?.Chain[0])// .map(item => item)
         ),
         year: CaseData.DateOfProcedure.substring(0, 4),
       },
@@ -461,25 +468,27 @@ const CancelEditing = async (to = '') => {
   }
 }
 
-// カテゴリーを監視して変更があった場合、未入力のアプローチへデフォルト値を展開する
-watch(categories, (newCategories) => {
-  if (newCategories.length > 0) {
-    const approachMaster = new ApproachMaster(CaseData.DateOfProcedure.substring(0, 4))
-    const defaultApproach = JSON.parse(store.getters['system/Approach'])
-    newCategories.forEach((category) => {
-      console.log('Processing category:', category)
-      if (approachMaster.getRequirement([category]) !== 'none') {
-        if (CaseData.Approach?.[category] === undefined || CaseData.Approach[category]?.length === 0) {
-          console.log('No approach data for category:', category)
-          if (defaultApproach?.[category]) {
-            console.log('Applying default approach for category:', category)
-            CaseData.Approach[category] = defaultApproach[category]
+// アプローチの自動適応が有効な場合
+// カテゴリーを監視して変更があった場合、未入力のアプローチへデフォルト値を展開するwatchを有効化
+if (store.getters['system/ApplyDefaultApproach']) {
+  watch(categories, (newCategories) => {
+    if (newCategories.length > 0) {
+      const approachMaster = new ApproachMaster(CaseData.DateOfProcedure.substring(0, 4))
+      const defaultApproach = JSON.parse(store.getters['system/Approach'])
+      newCategories.forEach((category) => {
+        if (approachMaster.getRequirement([category]) !== 'none') {
+          const currentApproach = CaseData.Approach ?? {}
+          if (currentApproach[category] === undefined || currentApproach[category]?.length === 0) {
+            if (defaultApproach?.[category] !== undefined) {
+              currentApproach[category] = defaultApproach[category]
+              CaseData.Approach = currentApproach
+            }
           }
         }
-      }
-    })
-  }
-})
+      })
+    }
+  })
+}
 
 // データーベースに保存する
 //
@@ -491,7 +500,9 @@ const StoreCase = async (temporary = false) => {
     // データーベース登録に用いるレコードドキュメントを生成
     // 連番 (新規ドキュメントのuidは0もしくは00があるのでNumberで処理する)
     const newDocument: databaseCaseDocument = {
-      DocumentId: uid.value
+      DocumentId: uid.value,
+      DateOfProcedure: '',
+      PatientId: ''
     }
 
     // レコードに転記してデーターベースドキュメントを生成する
@@ -519,26 +530,26 @@ const StoreCase = async (temporary = false) => {
 
     // テキストフィールドの整形(trimと半角英数に置換)
     // 患者名 : 前後トリムのみ
-    newDocument.Name = newDocument.Name.trim()
+    newDocument.Name = newDocument.Name?.trim()
     // 患者ID : 半角文字に置換・空白文字を除去
-    newDocument.PatientId = ZenToHan(newDocument.PatientId.trim()).replace(/\s/g, '')
+    newDocument.PatientId = ZenToHan(newDocument.PatientId?.trim() ?? '').replace(/\s/g, '')
 
     // 腫瘍登録番号 : 半角文字に置換・大文字変換・空白文字の除去
-    if (newDocument.JSOGId.trim() === '') {
+    if (newDocument.JSOGId?.trim() === '') {
       delete newDocument.JSOGId
     } else {
       newDocument.JSOGId = ZenToHan(newDocument.JSOGId).toUpperCase().replace(/\s/g, '')
     }
 
     // NCD登録番号 : 半角文字に置換・数値とハイフン以外を除去
-    if (newDocument.NCDId.trim() === '') {
+    if (newDocument.NCDId?.trim() === '') {
       delete newDocument.NCDId
     } else {
-      newDocument.NCDId = ZenToHan(newDocument.NCDId.trim()).replace(/[^\d-]/g, '')
+      newDocument.NCDId = ZenToHan(newDocument.NCDId?.trim() ?? '').replace(/[^\d-]/g, '')
     }
 
     // AEsが空白の際は削除
-    if (newDocument.AEs.length === 0) {
+    if (newDocument.AEs?.length === 0) {
       delete newDocument.AEs
       // AEsが空白なのに PresentAEがtrue=無編集 の場合はPresentAEも削除
       if (newDocument.PresentAE) {

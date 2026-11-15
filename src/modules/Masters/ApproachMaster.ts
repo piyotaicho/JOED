@@ -107,7 +107,9 @@ export default class ApproachMaster {
       return 'none'
     }
 
-    const mappedCategories = Array.from(new Set(categories.map(category => this.mapCategory(category)).filter(category => category !== undefined)))
+    const mappedCategories = Array.from(new Set(
+      categories.map(category => this.mapCategory(category)).filter(category => category !== undefined)
+    ))
     if (mappedCategories.length === 0) {
       return 'none'
     }
